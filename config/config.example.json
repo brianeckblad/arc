@@ -1,0 +1,16 @@
+{
+  "_comment": "ARC — Assisted Remote Console — config file. Copy to ~/.arc/config.json",
+  "scm": {
+    "bearer_token": "",
+    "client_id": "your-client-id",
+    "client_secret": "your-client-secret",
+    "tsg_id": "your-tsg-id"
+  },
+  "ssh": {
+    "user": "admin",
+    "key_path": "~/.ssh/panos_key",
+    "password": "",
+    "port": 22
+  },
+  "default_folder": "Shared"
+}
