@@ -4,24 +4,34 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ARC Documentation</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hl-theme" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <!-- Favicon -->
+  <link rel="icon"             type="image/png" href="static/arclogo.png" />
+  <link rel="apple-touch-icon"                  href="static/arclogo.png" />
+  <!-- Vendor files live in docs/vendor/ — downloaded once by `arc cliup`.  -->
+  <!-- docs-bundle.js embeds all Markdown so the page works via file://     -->
+  <!-- with no server needed.                                                -->
+  <script src="vendor/marked.min.js"></script>
+  <link rel="stylesheet" href="vendor/github-dark.min.css" id="hl-theme" />
+  <script src="vendor/highlight.min.js"></script>
+  <script src="docs-bundle.js"></script>
   <style>
-    /* ─── Design Tokens ──────────────────────────────────────────────── */
+    /* ─── Design Tokens ─────────────────────────────────────────────── */
     :root {
       --brand:          #0070D1;
       --brand-hover:    #3395E8;
+      --brand-dim:      rgba(0,112,209,.12);
       --teal:           #009CA6;
       --green:          #22C55E;
       --yellow:         #F59E0B;
       --red:            #EF4444;
+      --purple:         #A78BFA;
 
       --header-h:       60px;
       --sidebar-w:      260px;
       --toc-w:          220px;
       --content-max:    780px;
-      --radius:         6px;
+      --radius:         8px;
+      --radius-lg:      14px;
       --mono:           'JetBrains Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
       --sans:           'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
@@ -37,8 +47,10 @@
       --text:           #D8DCF0;
       --text-2:         #8896B8;
       --text-3:         #505A75;
-      --header-bg:      #0B0E1A;
+      --header-bg:      rgba(11,14,26,.92);
       --header-border:  #1E2340;
+      --hero-grad-a:    #0B0E1A;
+      --hero-grad-b:    #0f1428;
     }
     [data-theme="light"] {
       --bg:             #FFFFFF;
@@ -51,11 +63,13 @@
       --text:           #1A1D2E;
       --text-2:         #4A5272;
       --text-3:         #8896B8;
-      --header-bg:      #111525;
-      --header-border:  #1E2340;
+      --header-bg:      rgba(255,255,255,.92);
+      --header-border:  #DEE2F0;
+      --hero-grad-a:    #F4F6FB;
+      --hero-grad-b:    #EBEEf8;
     }
 
-    /* ─── Reset ──────────────────────────────────────────────────────── */
+    /* ─── Reset ─────────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
@@ -78,6 +92,8 @@
       z-index: 200;
       height: var(--header-h);
       background: var(--header-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--header-border);
       display: flex;
       align-items: center;
@@ -87,43 +103,28 @@
     .logo {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      min-width: var(--sidebar-w);
+      gap: .5rem;
+      min-width: 180px;
       text-decoration: none;
+      cursor: pointer;
     }
     .logo-badge {
-      background: var(--brand);
-      color: #fff;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: .08em;
-      padding: 3px 9px;
+      height: 32px;
+      width: auto;
+      display: block;
+      /* Slight border-radius to soften the image in the header */
       border-radius: 4px;
     }
-    .logo-name {
-      color: #fff;
-      font-weight: 600;
-      font-size: 16px;
-      letter-spacing: -.01em;
-    }
-    .logo-sub {
-      color: var(--text-2);
-      font-size: 13px;
-      font-weight: 400;
-    }
+    .logo-name  { color: var(--text); font-weight: 600; font-size: 16px; letter-spacing: -.01em; }
+    .logo-sub   { color: var(--text-2); font-size: 13px; font-weight: 400; }
+
     .search-wrap {
       flex: 1;
       max-width: 480px;
       position: relative;
+      display: none; /* shown only in docs view */
     }
-    .search-wrap svg {
-      position: absolute;
-      left: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      opacity: .45;
-      pointer-events: none;
-    }
+    .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); opacity: .45; pointer-events: none; }
     #search {
       width: 100%;
       background: var(--bg-card);
@@ -138,23 +139,16 @@
     }
     #search::placeholder { color: var(--text-3); }
     #search:focus { border-color: var(--brand); }
-    .header-right {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: .75rem;
-    }
+
+    .header-right { margin-left: auto; display: flex; align-items: center; gap: .75rem; }
     .icon-btn {
       background: none;
       border: 1px solid var(--border);
       color: var(--text-2);
       border-radius: var(--radius);
       cursor: pointer;
-      width: 34px;
-      height: 34px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
       font-size: 16px;
       transition: background .15s, color .15s;
     }
@@ -167,13 +161,287 @@
       padding: 2px 10px;
     }
 
-    /* ─── Layout ─────────────────────────────────────────────────────── */
-    .layout {
+    /* Back-to-home pill — only visible in docs view */
+    #header-back {
+      display: none;
+      align-items: center;
+      gap: .35rem;
+      font-size: 13px;
+      color: var(--text-2);
+      white-space: nowrap;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3px 12px 3px 8px;
+      cursor: pointer;
+      transition: color .12s, background .12s;
+      user-select: none;
+    }
+    #header-back:hover { color: var(--text); background: var(--bg-hover); }
+
+    /* Body classes set by JS to toggle search bar and back pill */
+    body.docs-active .search-wrap  { display: flex; }
+    body.docs-active #header-back { display: flex; }
+
+
+    /* ─── LANDING VIEW ───────────────────────────────────────────────── */
+    #landing-view { display: none; flex-direction: column; flex: 1; }
+    #landing-view.active { display: flex; }
+
+    /* Hero */
+    .hero {
+      padding: 5.5rem 2rem 5rem;
+      background: linear-gradient(155deg, var(--hero-grad-a) 0%, var(--hero-grad-b) 100%);
+      border-bottom: 1px solid var(--border);
       display: flex;
-      flex: 1;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 1.6rem;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Subtle dot-grid */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(var(--border) 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity: .55;
+      pointer-events: none;
+    }
+    /* Brand glow blob */
+    .hero::after {
+      content: '';
+      position: absolute;
+      width: 700px; height: 500px;
+      background: radial-gradient(ellipse at center, rgba(0,112,209,.16) 0%, transparent 68%);
+      top: -80px; left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+    .hero > * { position: relative; z-index: 1; }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: var(--brand-dim);
+      border: 1px solid rgba(0,112,209,.3);
+      color: var(--brand);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      font-weight: 800;
+      letter-spacing: -.035em;
+      line-height: 1.12;
+      max-width: 700px;
+    }
+    .hero h1 em { color: var(--brand); font-style: normal; }
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--text-2);
+      max-width: 560px;
+      line-height: 1.72;
+    }
+    .hero-actions {
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn-primary {
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: .7rem 1.5rem;
+      font-size: 14px; font-weight: 600;
+      font-family: var(--sans);
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: .45rem;
+      transition: background .15s, transform .1s, box-shadow .15s;
+    }
+    .btn-primary:hover { background: var(--brand-hover); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,112,209,.35); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: .7rem 1.5rem;
+      font-size: 14px; font-weight: 600;
+      font-family: var(--sans);
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: .45rem;
+      transition: background .15s, border-color .15s, transform .1s;
+    }
+    .btn-secondary:hover { background: var(--bg-hover); border-color: var(--brand); transform: translateY(-2px); }
+
+    /* Hero logo */
+    .hero-logo {
+      height: 96px;
+      width: auto;
+      border-radius: 16px;
+      filter: drop-shadow(0 4px 24px rgba(0,112,209,.35));
+    }
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: .65rem 1.25rem;
+      font-family: var(--mono);
+      font-size: 13.5px;
+      color: var(--teal);
+      display: inline-flex;
+      align-items: center;
+      gap: .9rem;
+    }
+    .hero-code .prompt { color: var(--text-3); user-select: none; }
+    .hero-code .cmd-copy {
+      color: var(--text-3);
+      cursor: pointer;
+      font-size: 11px;
+      font-family: var(--sans);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 8px;
+      transition: color .12s, background .12s;
+    }
+    .hero-code .cmd-copy:hover { color: var(--text); background: var(--bg-hover); }
+    .hero-code .cmd-copy.copied { color: var(--green); }
+
+    /* Cards section */
+    .cards-section {
+      padding: 4rem 2rem 2.5rem;
+      max-width: 1120px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 1.75rem;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
     }
 
-    /* ─── Sidebar ────────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem 2.25rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: .85rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .2s, transform .18s, box-shadow .2s;
+    }
+    /* Per-card glow overlay */
+    .card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      opacity: 0;
+      transition: opacity .25s;
+      pointer-events: none;
+    }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0,0,0,.22); }
+    .card:hover::after { opacity: 1; }
+
+    .card-blue   { --c-border: var(--brand);  --c-accent: var(--brand);  --c-glow: rgba(0,112,209,.13); }
+    .card-teal   { --c-border: var(--teal);   --c-accent: var(--teal);   --c-glow: rgba(0,156,166,.13); }
+    .card-green  { --c-border: var(--green);  --c-accent: var(--green);  --c-glow: rgba(34,197,94,.11); }
+    .card-purple { --c-border: var(--purple); --c-accent: var(--purple); --c-glow: rgba(167,139,250,.12); }
+
+    .card:hover { border-color: var(--c-border); }
+    .card::after { background: radial-gradient(ellipse at 20% 20%, var(--c-glow, transparent) 0%, transparent 65%); }
+
+    .card-icon {
+      width: 48px; height: 48px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-hover);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      transition: background .2s, border-color .2s;
+    }
+    .card:hover .card-icon { border-color: var(--c-border); background: var(--bg-active, var(--bg-hover)); }
+
+    .card-title { font-size: 1.1rem; font-weight: 700; color: var(--text); letter-spacing: -.015em; }
+    .card-desc  { font-size: 13.5px; color: var(--text-2); line-height: 1.68; flex: 1; }
+    .card-desc code {
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: .85em;
+      color: var(--teal);
+      font-family: var(--mono);
+    }
+    .card-link {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--c-accent);
+      margin-top: .3rem;
+      transition: gap .15s;
+    }
+    .card:hover .card-link { gap: .65rem; }
+
+    /* Feature strip */
+    .feature-strip {
+      border-top: 1px solid var(--border);
+      padding: 2.75rem 2rem 3.5rem;
+      max-width: 1120px;
+      width: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2.25rem;
+    }
+    .feature-item { display: flex; gap: 1rem; align-items: flex-start; }
+    .feature-icon {
+      font-size: 1.35rem;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: .1rem;
+    }
+    .feature-title { font-weight: 600; font-size: 14px; margin-bottom: .3rem; }
+    .feature-desc  { font-size: 13px; color: var(--text-2); line-height: 1.65; }
+    .feature-desc code {
+      font-family: var(--mono);
+      font-size: .88em;
+      color: var(--teal);
+    }
+
+
+    /* ─── DOCS VIEW ──────────────────────────────────────────────────── */
+    #docs-view { display: none; flex: 1; flex-direction: column; }
+    #docs-view.active { display: flex; }
+
+    .layout { display: flex; flex: 1; }
+
     .sidebar {
       position: sticky;
       top: var(--header-h);
@@ -192,24 +460,13 @@
 
     .nav-section { margin-bottom: .25rem; }
     .nav-section-header {
-      display: flex;
-      align-items: center;
-      gap: .5rem;
+      display: flex; align-items: center; gap: .5rem;
       padding: .5rem 1.25rem .35rem;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--text-3);
-      cursor: pointer;
-      user-select: none;
+      font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--text-3); cursor: pointer; user-select: none;
     }
     .nav-section-header:hover { color: var(--text-2); }
-    .nav-section-header .chevron {
-      margin-left: auto;
-      font-size: 10px;
-      transition: transform .2s;
-    }
+    .nav-section-header .chevron { margin-left: auto; font-size: 10px; transition: transform .2s; }
     .nav-section.collapsed .nav-items { display: none; }
     .nav-section.collapsed .chevron { transform: rotate(-90deg); }
 
@@ -218,33 +475,16 @@
       padding: 5px 1.25rem 5px 2.25rem;
       font-size: 13.5px;
       color: var(--text-2);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       border-left: 2px solid transparent;
       transition: color .12s, background .12s, border-color .12s;
       cursor: pointer;
     }
-    .nav-item:hover {
-      color: var(--text);
-      background: var(--bg-hover);
-      text-decoration: none;
-    }
-    .nav-item.active {
-      color: var(--brand);
-      background: var(--bg-active);
-      border-left-color: var(--brand);
-      font-weight: 500;
-    }
+    .nav-item:hover { color: var(--text); background: var(--bg-hover); }
+    .nav-item.active { color: var(--brand); background: var(--bg-active); border-left-color: var(--brand); font-weight: 500; }
     .nav-item.filtered-hide { display: none; }
 
-    /* ─── Main content area ──────────────────────────────────────────── */
-    .content-wrap {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-    }
+    .content-wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; }
     .breadcrumb {
       padding: .75rem 2rem;
       font-size: 12.5px;
@@ -254,83 +494,24 @@
     }
     .breadcrumb span { color: var(--text-2); }
     .breadcrumb span + span::before { content: ' / '; }
-    #article {
-      flex: 1;
-      padding: 2.5rem 2rem 3rem;
-      max-width: var(--content-max);
-      width: 100%;
-    }
+    #article { flex: 1; padding: 2.5rem 2rem 3rem; max-width: var(--content-max); width: 100%; }
 
-    /* ─── Markdown content styles ────────────────────────────────────── */
-    #article h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: .75rem;
-    }
-    #article h2 {
-      font-size: 1.45rem;
-      font-weight: 600;
-      margin-top: 2.5rem;
-      margin-bottom: .75rem;
-    }
-    #article h3 {
-      font-size: 1.15rem;
-      font-weight: 600;
-      margin-top: 2rem;
-      margin-bottom: .5rem;
-    }
-    #article h4 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-top: 1.5rem;
-      margin-bottom: .4rem;
-      color: var(--text-2);
-    }
+    /* Markdown content */
+    #article h1 { font-size: 2rem; font-weight: 700; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: .75rem; }
+    #article h2 { font-size: 1.45rem; font-weight: 600; margin-top: 2.5rem; margin-bottom: .75rem; }
+    #article h3 { font-size: 1.15rem; font-weight: 600; margin-top: 2rem; margin-bottom: .5rem; }
+    #article h4 { font-size: 1rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: .4rem; color: var(--text-2); }
     #article p { margin-bottom: 1rem; }
-    #article ul, #article ol {
-      margin: .5rem 0 1rem 1.5rem;
-    }
+    #article ul, #article ol { margin: .5rem 0 1rem 1.5rem; }
     #article li { margin-bottom: .25rem; }
     #article strong { font-weight: 600; }
     #article em { font-style: italic; }
-    #article hr {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 2rem 0;
-    }
-    #article table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1rem 0 1.5rem;
-      font-size: 14px;
-    }
-    #article th {
-      background: var(--bg-card);
-      font-weight: 600;
-      text-align: left;
-      padding: 8px 14px;
-      border: 1px solid var(--border);
-    }
-    #article td {
-      padding: 7px 14px;
-      border: 1px solid var(--border);
-      vertical-align: top;
-    }
+    #article hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+    #article table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; font-size: 14px; }
+    #article th { background: var(--bg-card); font-weight: 600; text-align: left; padding: 8px 14px; border: 1px solid var(--border); }
+    #article td { padding: 7px 14px; border: 1px solid var(--border); vertical-align: top; }
     #article tr:nth-child(even) td { background: var(--bg-card); }
-
-    /* Inline code */
-    #article :not(pre) > code {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 1px 6px;
-      font-family: var(--mono);
-      font-size: .85em;
-      color: var(--teal);
-    }
-    /* Code blocks */
+    #article :not(pre) > code { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-family: var(--mono); font-size: .85em; color: var(--teal); }
     #article pre {
       position: relative;
       background: var(--bg-code) !important;
@@ -342,168 +523,67 @@
       font-size: 13.5px;
       line-height: 1.6;
     }
-    #article pre > code {
-      font-family: var(--mono) !important;
-      font-size: inherit !important;
-      background: none !important;
-      border: none !important;
-      padding: 0 !important;
-      color: inherit;
-    }
-    /* copy button */
+    #article pre > code { font-family: var(--mono) !important; font-size: inherit !important; background: none !important; border: none !important; padding: 0 !important; color: inherit; }
     .copy-btn {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      color: var(--text-3);
-      cursor: pointer;
-      font-size: 11px;
-      padding: 3px 9px;
+      position: absolute; top: 8px; right: 8px;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px;
+      color: var(--text-3); cursor: pointer; font-size: 11px; padding: 3px 9px;
       font-family: var(--sans);
       transition: color .12s, background .12s;
     }
     .copy-btn:hover { color: var(--text); background: var(--bg-hover); }
     .copy-btn.copied { color: var(--green); }
+    #article blockquote { border-left: 3px solid var(--brand); background: var(--bg-card); border-radius: 0 var(--radius) var(--radius) 0; padding: .75rem 1rem; margin: 1rem 0 1.25rem; color: var(--text-2); }
+    #article blockquote.callout-warning { border-left-color: var(--yellow); }
+    #article blockquote.callout-danger  { border-left-color: var(--red); }
+    #article blockquote.callout-tip     { border-left-color: var(--teal); }
 
-    /* Blockquote callouts */
-    #article blockquote {
-      border-left: 3px solid var(--brand);
-      background: var(--bg-card);
-      border-radius: 0 var(--radius) var(--radius) 0;
-      padding: .75rem 1rem;
-      margin: 1rem 0 1.25rem;
-      color: var(--text-2);
-    }
-    /* Callout variants */
-    #article blockquote.callout-warning {
-      border-left-color: var(--yellow);
-    }
-    #article blockquote.callout-danger {
-      border-left-color: var(--red);
-    }
-    #article blockquote.callout-tip {
-      border-left-color: var(--teal);
-    }
-
-    /* Status badges */
-    .badge {
-      display: inline-block;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: .04em;
-      padding: 2px 8px;
-      border-radius: 20px;
-      vertical-align: middle;
-    }
-    .badge-live     { background: rgba(34,197,94,.15); color: var(--green); border: 1px solid rgba(34,197,94,.3); }
-    .badge-pending  { background: rgba(245,158,11,.12); color: var(--yellow); border: 1px solid rgba(245,158,11,.3); }
-    .badge-ssh      { background: rgba(0,156,166,.12); color: var(--teal); border: 1px solid rgba(0,156,166,.3); }
-
-    /* ─── TOC sidebar ─────────────────────────────────────────────────── */
     .toc-sidebar {
-      position: sticky;
-      top: var(--header-h);
+      position: sticky; top: var(--header-h);
       height: calc(100vh - var(--header-h));
-      width: var(--toc-w);
-      min-width: var(--toc-w);
-      overflow-y: auto;
-      padding: 1.5rem 1.25rem;
-      border-left: 1px solid var(--border);
-      font-size: 13px;
+      width: var(--toc-w); min-width: var(--toc-w);
+      overflow-y: auto; padding: 1.5rem 1.25rem;
+      border-left: 1px solid var(--border); font-size: 13px;
     }
-    .toc-title {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--text-3);
-      margin-bottom: .75rem;
-    }
+    .toc-title { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); margin-bottom: .75rem; }
     .toc-list { list-style: none; }
     .toc-item { margin-bottom: .2rem; }
-    .toc-item a {
-      color: var(--text-3);
-      font-size: 12.5px;
-      display: block;
-      padding: 2px 0;
-      transition: color .12s;
-    }
+    .toc-item a { color: var(--text-3); font-size: 12.5px; display: block; padding: 2px 0; transition: color .12s; }
     .toc-item a:hover { color: var(--text-2); text-decoration: none; }
     .toc-item.active a { color: var(--brand); font-weight: 500; }
     .toc-sub { padding-left: .85rem; }
     .toc-sub a { color: var(--text-3); font-size: 12px; }
 
-    /* ─── Loading / error states ─────────────────────────────────────── */
-    .loading-state, .error-state {
-      padding: 3rem 0;
-      text-align: center;
-      color: var(--text-3);
-    }
-    .loading-state .spinner {
-      width: 28px;
-      height: 28px;
-      border: 2px solid var(--border);
-      border-top-color: var(--brand);
-      border-radius: 50%;
-      animation: spin .6s linear infinite;
-      margin: 0 auto 1rem;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .error-state { color: var(--red); }
-
-    /* ─── Prev / Next navigation ─────────────────────────────────────── */
-    .page-nav {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 3rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid var(--border);
-      gap: 1rem;
-    }
-    .page-nav a {
-      display: flex;
-      flex-direction: column;
-      gap: .2rem;
-      padding: .75rem 1rem;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--bg-card);
-      color: var(--text);
-      min-width: 160px;
-      max-width: 48%;
-      transition: border-color .15s, background .15s;
-    }
-    .page-nav a:hover { border-color: var(--brand); background: var(--bg-active); text-decoration: none; }
-    .page-nav .nav-direction { font-size: 11px; color: var(--text-3); font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
-    .page-nav .nav-label { font-weight: 600; font-size: 14px; color: var(--brand); }
-    .page-nav .next-link { text-align: right; margin-left: auto; }
-
-    /* ─── Search highlight ─────────────────────────────────────────────── */
-    .search-highlight { background: rgba(0,112,209,.25); border-radius: 2px; }
+    .error-state { padding: 3rem 0; text-align: center; color: var(--red); }
 
     /* ─── Responsive ─────────────────────────────────────────────────── */
-    @media (max-width: 1100px) {
-      .toc-sidebar { display: none; }
-    }
-    @media (max-width: 720px) {
+    @media (max-width: 1100px) { .toc-sidebar { display: none; } }
+    @media (max-width: 900px)  { .cards-grid { grid-template-columns: 1fr; } .feature-strip { grid-template-columns: 1fr; } }
+    @media (max-width: 720px)  {
       :root { --sidebar-w: 0px; }
       .sidebar { display: none; }
       #article { padding: 1.5rem 1.25rem; }
+      .hero { padding: 3.5rem 1.25rem 3rem; }
+      .cards-section { padding: 2.5rem 1.25rem 2rem; }
+      .feature-strip { padding: 2rem 1.25rem 2.5rem; }
     }
   </style>
 </head>
 <body>
 
-<!-- ── Header ──────────────────────────────────────────────────────────── -->
+<!-- ── Header (always visible) ──────────────────────────────────────────── -->
 <header class="site-header">
-  <a class="logo" href="?page=README.md" onclick="navigate('README.md');return false;">
-    <span class="logo-badge">ARC</span>
+  <a class="logo" onclick="showLanding(); return false;" href=".">
+    <img class="logo-badge" src="static/arclogo.png" alt="ARC logo" />
     <span class="logo-name">Docs</span>
     <span class="logo-sub">Assisted Remote Console</span>
   </a>
+
+  <!-- Back-to-home pill — shown only in docs view via body.docs-active -->
+  <div id="header-back" onclick="showLanding()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Home
+  </div>
 
   <div class="search-wrap">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -518,42 +598,179 @@
   </div>
 </header>
 
-<!-- ── Layout ───────────────────────────────────────────────────────────── -->
-<div class="layout">
 
-  <!-- ── Sidebar ─────────────────────────────────────────────────────── -->
-  <aside class="sidebar" id="sidebar">
-    <nav id="nav-tree"></nav>
-  </aside>
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<!--  LANDING VIEW                                                          -->
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<div id="landing-view">
 
-  <!-- ── Main content ─────────────────────────────────────────────────── -->
-  <div class="content-wrap">
-    <div class="breadcrumb" id="breadcrumb">
-      <span>ARC</span>
+  <!-- Hero ─────────────────────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero-eyebrow">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      PAN&#8209;OS CLI &rarr; SCM REST APIs
     </div>
-    <div id="article">
-      <div class="loading-state">
-        <div class="spinner"></div>
-        Loading documentation…
+
+    <img class="hero-logo" src="static/arclogo.png" alt="ARC — Assisted Remote Console" />
+
+    <h1>Assisted<br><em>Remote Console</em></h1>
+
+    <p class="hero-sub">
+      A PAN&#8209;OS&#8209;style interactive shell for Palo Alto Networks
+      Strata Cloud Manager environments. Route familiar firewall commands
+      through SCM REST APIs&mdash;or over SSH to managed devices.
+    </p>
+
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="navigateTo('usage.md')">
+        Get Started
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <button class="btn-secondary" onclick="navigateTo('commands/index.md')">
+        &#9000; Shell Commands
+      </button>
+    </div>
+
+    <div class="hero-code">
+      <span class="prompt">$</span>
+      <span>arc cliup &amp;&amp; arc</span>
+      <span class="cmd-copy" id="hero-copy" onclick="copyInstall()">copy</span>
+    </div>
+  </section>
+
+  <!-- 4 Cards ──────────────────────────────────────────────────────────── -->
+  <section class="cards-section">
+    <div class="section-label">Documentation</div>
+
+    <div class="cards-grid">
+
+      <!-- Get Started -->
+      <article class="card card-blue" onclick="navigateTo('usage.md')">
+        <div class="card-icon">&#x1F680;</div>
+        <div class="card-title">Get Started</div>
+        <div class="card-desc">
+          Install ARC, configure your SCM credentials, and run your first
+          commands against Strata Cloud Manager or a managed device.
+          Covers <code>arc auth login</code> and first-run setup.
+        </div>
+        <div class="card-link">Usage Guide &rarr;</div>
+      </article>
+
+      <!-- Configuration -->
+      <article class="card card-teal" onclick="navigateTo('configuration.md')">
+        <div class="card-icon">&#x2699;&#xFE0F;</div>
+        <div class="card-title">Configuration</div>
+        <div class="card-desc">
+          Set up SCM bearer tokens or OAuth client credentials, SSH keys,
+          and environment variables. Covers <code>~/.arc/config.json</code>
+          and all supported env vars.
+        </div>
+        <div class="card-link">Configuration Guide &rarr;</div>
+      </article>
+
+      <!-- Shell Commands -->
+      <article class="card card-green" onclick="navigateTo('commands/index.md')">
+        <div class="card-icon">&#x2328;&#xFE0F;</div>
+        <div class="card-title">Shell Commands</div>
+        <div class="card-desc">
+          Browse every ARC shell command with syntax, usage examples,
+          and API vs SSH execution modes. Includes built-ins like
+          <code>cd</code>, <code>remote</code>, and <code>folder</code>.
+        </div>
+        <div class="card-link">Command Reference &rarr;</div>
+      </article>
+
+      <!-- Architecture -->
+      <article class="card card-purple" onclick="navigateTo('architecture.md')">
+        <div class="card-icon">&#x1F3D7;&#xFE0F;</div>
+        <div class="card-title">Architecture</div>
+        <div class="card-desc">
+          How ARC routes commands&mdash;API mode through SCM REST,
+          SSH passthrough via paramiko, the command registry pattern,
+          and the two-mode dispatch system.
+        </div>
+        <div class="card-link">Architecture Overview &rarr;</div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- Feature strip ────────────────────────────────────────────────────── -->
+  <section class="feature-strip">
+    <div class="feature-item">
+      <div class="feature-icon">&#x1F500;</div>
+      <div>
+        <div class="feature-title">Dual execution modes</div>
+        <div class="feature-desc">
+          Every registered command runs via SCM REST API or live&nbsp;SSH.
+          Append <code>--remote</code> for a single command, or type
+          <code>remote&nbsp;&lt;device&gt;</code> for a full SSH session.
+        </div>
       </div>
     </div>
+    <div class="feature-item">
+      <div class="feature-icon">&#x21E5;</div>
+      <div>
+        <div class="feature-title">Tab completion everywhere</div>
+        <div class="feature-desc">
+          Device names, folder names, command prefixes, and
+          <code>--remote</code> suffixes all complete with Tab.
+          Device and folder caches refresh on <code>ls</code>.
+        </div>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">&#x1F4F4;</div>
+      <div>
+        <div class="feature-title">Fully offline docs</div>
+        <div class="feature-desc">
+          These docs are a static <code>file://</code> page &mdash;
+          no server, no CDN after <code>arc&nbsp;cliup</code>, and no
+          internet needed to browse.
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- #landing-view -->
+
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<!--  DOCS VIEW                                                             -->
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<div id="docs-view">
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <nav id="nav-tree"></nav>
+    </aside>
+
+    <!-- Main content -->
+    <div class="content-wrap">
+      <div class="breadcrumb" id="breadcrumb">
+        <span>ARC</span>
+      </div>
+      <div id="article"></div>
+    </div>
+
+    <!-- TOC -->
+    <aside class="toc-sidebar" id="toc-sidebar">
+      <div class="toc-title">On This Page</div>
+      <ul class="toc-list" id="toc"></ul>
+    </aside>
+
   </div>
+</div><!-- #docs-view -->
 
-  <!-- ── TOC sidebar ──────────────────────────────────────────────────── -->
-  <aside class="toc-sidebar" id="toc-sidebar">
-    <div class="toc-title">On This Page</div>
-    <ul class="toc-list" id="toc"></ul>
-  </aside>
-
-</div>
 
 <script>
-/* ─── Navigation tree definition ─────────────────────────────────────── */
+/* ─── Navigation tree ─────────────────────────────────────────────────── */
 const NAV = [
   {
     id: 'getting-started',
     title: 'Getting Started',
-    icon: '🚀',
+    icon: '&#x1F680;',
     items: [
       { title: 'Overview',       page: 'README.md' },
       { title: 'Usage Guide',    page: 'usage.md' },
@@ -564,14 +781,14 @@ const NAV = [
   {
     id: 'shell-commands',
     title: 'Shell Commands',
-    icon: '⌨',
+    icon: '&#x2328;',
     items: [
       { title: 'cd — Change Device',        page: 'commands/cd.md' },
       { title: 'remote — SSH Passthrough',  page: 'commands/remote.md' },
       { title: 'connect — SSH Connect',     page: 'commands/connect.md' },
       { title: 'folder — Set Folder',       page: 'commands/folder.md' },
       { title: 'ls — List Devices',         page: 'commands/ls.md' },
-      { title: 'pwd — Show Context',         page: 'commands/pwd.md' },
+      { title: 'pwd — Show Context',        page: 'commands/pwd.md' },
       { title: 'docs / help',               page: 'commands/help.md' },
       { title: 'clear',                     page: 'commands/clear.md' },
       { title: 'exit / quit',               page: 'commands/exit.md' },
@@ -580,51 +797,65 @@ const NAV = [
   {
     id: 'registered-commands',
     title: 'Registered Commands',
-    icon: '📋',
-    dynamic: true,  // loaded from commands/index.md
+    icon: '&#x1F4CB;',
+    dynamic: true,   /* populated from docs-bundle at runtime */
     items: []
   },
 ];
 
 /* ─── State ───────────────────────────────────────────────────────────── */
-let currentPage = 'README.md';
-let allNavItems = [];   // flat list of {title, page} for search
+let currentPage = '';
 
 /* ─── Utilities ──────────────────────────────────────────────────────── */
 function slugify(str) {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
-
 function getPageParam() {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('page') || 'README.md';
+  return new URLSearchParams(window.location.search).get('page') || '';
 }
-
 function setPageParam(page) {
   const url = new URL(window.location);
-  url.searchParams.set('page', page);
-  history.pushState({page}, '', url);
+  if (page) { url.searchParams.set('page', page); }
+  else       { url.searchParams.delete('page'); }
+  history.pushState({ page: page || null }, '', url);
 }
 
-function sectionTitle(page) {
-  const parts = page.replace('.md', '').split('/');
-  return parts[parts.length - 1]
-    .replace(/-/g, ' ')
-    .replace(/\b\w/g, c => c.toUpperCase());
+/* ─── View switching ─────────────────────────────────────────────────── */
+function showLanding() {
+  document.getElementById('landing-view').classList.add('active');
+  document.getElementById('docs-view').classList.remove('active');
+  document.body.classList.remove('docs-active');
+  setPageParam('');
+  currentPage = '';
+}
+
+function showDocs() {
+  document.getElementById('landing-view').classList.remove('active');
+  document.getElementById('docs-view').classList.add('active');
+  document.body.classList.add('docs-active');
 }
 
 /* ─── Sidebar builder ────────────────────────────────────────────────── */
+function loadRegisteredCommands() {
+  /* Read from the pre-built bundle — works with file:// (no fetch needed) */
+  const text = window.DOCS_CONTENT?.['commands/index.md'];
+  if (!text) return [];
+  const items = [];
+  for (const line of text.split('\n')) {
+    const m = line.match(/^-\s+`([^`]+)`/);
+    if (m) {
+      const cmd = m[1];
+      items.push({ title: cmd, page: `commands/${slugify(cmd)}.md` });
+    }
+  }
+  return items;
+}
+
 function buildNav(registeredItems) {
   const nav = document.getElementById('nav-tree');
   nav.innerHTML = '';
-  allNavItems = [];
 
-  // Merge dynamic items
-  const sections = NAV.map(s => {
-    if (s.dynamic) return { ...s, items: registeredItems };
-    return s;
-  });
-
+  const sections = NAV.map(s => s.dynamic ? { ...s, items: registeredItems } : s);
   sections.forEach(section => {
     const el = document.createElement('div');
     el.className = 'nav-section';
@@ -632,18 +863,11 @@ function buildNav(registeredItems) {
 
     const header = document.createElement('div');
     header.className = 'nav-section-header';
-    header.innerHTML = `
-      <span>${section.icon}</span>
-      <span>${section.title}</span>
-      <span class="chevron">▾</span>
-    `;
-    header.addEventListener('click', () => {
-      el.classList.toggle('collapsed');
-    });
+    header.innerHTML = `<span>${section.icon}</span><span>${section.title}</span><span class="chevron">&#9662;</span>`;
+    header.addEventListener('click', () => el.classList.toggle('collapsed'));
 
     const itemsEl = document.createElement('div');
     itemsEl.className = 'nav-items';
-
     section.items.forEach(item => {
       const a = document.createElement('div');
       a.className = 'nav-item';
@@ -651,7 +875,6 @@ function buildNav(registeredItems) {
       a.dataset.page = item.page;
       a.addEventListener('click', () => navigate(item.page));
       itemsEl.appendChild(a);
-      allNavItems.push(item);
     });
 
     el.appendChild(header);
@@ -659,65 +882,34 @@ function buildNav(registeredItems) {
     nav.appendChild(el);
   });
 
-  markActive(currentPage);
+  if (currentPage) markActive(currentPage);
 }
 
 function markActive(page) {
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.toggle('active', el.dataset.page === page);
   });
-  // Expand the section containing the active item
   document.querySelectorAll('.nav-item.active').forEach(el => {
     el.closest('.nav-section')?.classList.remove('collapsed');
   });
 }
 
-/* ─── Fetch registered commands from index.md ────────────────────────── */
-async function loadRegisteredCommands() {
-  try {
-    const resp = await fetch('commands/index.md');
-    if (!resp.ok) return [];
-    const text = await resp.text();
-    const items = [];
-    for (const line of text.split('\n')) {
-      const m = line.match(/^-\s+`([^`]+)`/);
-      if (m) {
-        const cmd = m[1];
-        items.push({ title: cmd, page: `commands/${slugify(cmd)}.md` });
-      }
-    }
-    return items;
-  } catch {
-    return [];
-  }
-}
-
 /* ─── Markdown rendering ─────────────────────────────────────────────── */
 function renderMarkdown(text) {
-  // Configure marked
   marked.setOptions({
     gfm: true,
     breaks: false,
     highlight: (code, lang) => {
-      if (lang && hljs.getLanguage(lang)) {
-        return hljs.highlight(code, { language: lang }).value;
-      }
+      if (lang && hljs.getLanguage(lang)) return hljs.highlight(code, { language: lang }).value;
       return hljs.highlightAuto(code).value;
     }
   });
 
   let html = marked.parse(text);
-
-  // Detect callout blockquotes: > **Note:** / **Warning:** / **Tip:**
-  html = html.replace(
-    /<blockquote>\s*<p><strong>(Warning|Caution|Danger)<\/strong>/gi,
-    '<blockquote class="callout-warning"><p><strong>$1</strong>'
-  );
-  html = html.replace(
-    /<blockquote>\s*<p><strong>(Tip|Info)<\/strong>/gi,
-    '<blockquote class="callout-tip"><p><strong>$1</strong>'
-  );
-
+  html = html.replace(/<blockquote>\s*<p><strong>(Warning|Caution|Danger)<\/strong>/gi,
+    '<blockquote class="callout-warning"><p><strong>$1</strong>');
+  html = html.replace(/<blockquote>\s*<p><strong>(Tip|Info)<\/strong>/gi,
+    '<blockquote class="callout-tip"><p><strong>$1</strong>');
   return html;
 }
 
@@ -731,10 +923,7 @@ function addCopyButtons() {
       navigator.clipboard.writeText(code).then(() => {
         btn.textContent = 'copied!';
         btn.classList.add('copied');
-        setTimeout(() => {
-          btn.textContent = 'copy';
-          btn.classList.remove('copied');
-        }, 1800);
+        setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1800);
       });
     });
     pre.appendChild(btn);
@@ -745,12 +934,8 @@ function buildTOC() {
   const toc = document.getElementById('toc');
   toc.innerHTML = '';
   const headings = document.querySelectorAll('#article h2, #article h3');
-  if (headings.length === 0) {
-    document.getElementById('toc-sidebar').style.display = 'none';
-    return;
-  }
+  if (!headings.length) { document.getElementById('toc-sidebar').style.display = 'none'; return; }
   document.getElementById('toc-sidebar').style.display = '';
-
   headings.forEach((h, i) => {
     if (!h.id) h.id = `toc-${i}-${slugify(h.textContent)}`;
     const li = document.createElement('li');
@@ -767,11 +952,12 @@ function updateBreadcrumb(page) {
   const crumb = document.getElementById('breadcrumb');
   const parts = page.replace('.md', '').split('/');
   crumb.innerHTML = '<span>ARC</span>' +
-    parts.map(p => `<span>${p.replace(/-/g, ' ').replace(/\b\w/g,c=>c.toUpperCase())}</span>`).join('');
+    parts.map(p => `<span>${p.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>`).join('');
 }
 
-/* ─── Page loading ───────────────────────────────────────────────────── */
-async function navigate(page) {
+/* ─── Page navigation ────────────────────────────────────────────────── */
+function navigate(page) {
+  showDocs();
   currentPage = page;
   setPageParam(page);
   markActive(page);
@@ -779,53 +965,66 @@ async function navigate(page) {
   document.getElementById('toc').innerHTML = '';
 
   const article = document.getElementById('article');
-  article.innerHTML = '<div class="loading-state"><div class="spinner"></div>Loading…</div>';
 
-  try {
-    const resp = await fetch(page);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const text = await resp.text();
-
-    article.innerHTML = renderMarkdown(text);
-    hljs.highlightAll();
-    addCopyButtons();
-    buildTOC();
-    window.scrollTo(0, 0);
-
-    // Handle anchor from hash
-    if (window.location.hash) {
-      const el = document.querySelector(window.location.hash);
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    }
-  } catch (err) {
+  if (typeof window.DOCS_CONTENT === 'undefined') {
     article.innerHTML = `
       <div class="error-state">
-        <p>⚠ Could not load <code>${page}</code></p>
-        <p style="margin-top:.5rem;font-size:13px;color:var(--text-3)">${err.message}</p>
-        <p style="margin-top:1rem;font-size:13px;color:var(--text-3)">
-          Make sure ARC docs server is running: <code>arc docs</code>
+        <p>&#9888; Docs bundle not built yet.</p>
+        <p style="margin-top:.5rem;font-size:13px;color:var(--text-3)">
+          Run <code>arc cliup</code> from your terminal to generate
+          <code>docs-bundle.js</code> and <code>docs/vendor/</code>,
+          then reload this file.
         </p>
-      </div>
-    `;
+      </div>`;
+    return;
+  }
+
+  const text = window.DOCS_CONTENT[page];
+  if (text === undefined) {
+    article.innerHTML = `
+      <div class="error-state">
+        <p>&#9888; Page not found: <code>${page}</code></p>
+        <p style="margin-top:.5rem;font-size:13px;color:var(--text-3)">
+          Run <code>arc cliup</code> to rebuild the docs bundle.
+        </p>
+      </div>`;
+    return;
+  }
+
+  article.innerHTML = renderMarkdown(text);
+  hljs.highlightAll();
+  addCopyButtons();
+  buildTOC();
+  window.scrollTo(0, 0);
+
+  if (window.location.hash) {
+    const el = document.querySelector(window.location.hash);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
   }
 }
 
-/* ─── Search ─────────────────────────────────────────────────────────── */
+function navigateTo(page) { navigate(page); }
+
+/* ─── Hero install copy ──────────────────────────────────────────────── */
+function copyInstall() {
+  navigator.clipboard.writeText('arc cliup && arc').then(() => {
+    const btn = document.getElementById('hero-copy');
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+/* ─── Search (docs view) ─────────────────────────────────────────────── */
 document.getElementById('search').addEventListener('input', function () {
   const q = this.value.trim().toLowerCase();
   document.querySelectorAll('.nav-item').forEach(el => {
-    if (!q) {
-      el.classList.remove('filtered-hide');
-      return;
-    }
+    if (!q) { el.classList.remove('filtered-hide'); return; }
     const match = el.textContent.toLowerCase().includes(q) ||
                   (el.dataset.page || '').toLowerCase().includes(q);
     el.classList.toggle('filtered-hide', !match);
   });
-  // Expand all sections when searching, collapse when cleared
-  document.querySelectorAll('.nav-section').forEach(s => {
-    if (q) s.classList.remove('collapsed');
-  });
+  document.querySelectorAll('.nav-section').forEach(s => { if (q) s.classList.remove('collapsed'); });
 });
 
 /* ─── Theme toggle ───────────────────────────────────────────────────── */
@@ -833,14 +1032,12 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
   const root = document.documentElement;
   const isDark = root.dataset.theme === 'dark';
   root.dataset.theme = isDark ? 'light' : 'dark';
-  const hlTheme = document.getElementById('hl-theme');
-  hlTheme.href = isDark
-    ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css'
-    : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css';
+  document.getElementById('hl-theme').href = isDark
+    ? 'vendor/github.min.css'
+    : 'vendor/github-dark.min.css';
   try { localStorage.setItem('arc-docs-theme', root.dataset.theme); } catch {}
 });
 
-/* restore saved theme */
 try {
   const saved = localStorage.getItem('arc-docs-theme');
   if (saved) document.documentElement.dataset.theme = saved;
@@ -848,15 +1045,21 @@ try {
 
 /* ─── Browser history ────────────────────────────────────────────────── */
 window.addEventListener('popstate', e => {
-  if (e.state?.page) navigate(e.state.page);
+  const page = e.state?.page;
+  if (page) { navigate(page); }
+  else       { showLanding(); }
 });
 
 /* ─── Bootstrap ──────────────────────────────────────────────────────── */
-(async function init() {
-  const registeredItems = await loadRegisteredCommands();
+(function init() {
+  const registeredItems = loadRegisteredCommands();
   buildNav(registeredItems);
   const page = getPageParam();
-  navigate(page);
+  if (page) {
+    navigate(page);   // deep-link — jump straight to docs view
+  } else {
+    showLanding();    // no ?page= param — show the landing
+  }
 })();
 </script>
 </body>

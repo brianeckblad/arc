@@ -3,10 +3,23 @@
 from __future__ import annotations
 
 import os
+import select
+import shutil
+import signal
+import sys
 import traceback
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from typing import Optional
+
+# termios / tty are Unix-only.  On Windows the interactive PTY session will
+# fall back to a friendlier error rather than crashing at import time.
+try:
+    import termios
+    import tty
+    _TTY_AVAILABLE = True
+except ImportError:
+    _TTY_AVAILABLE = False
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
@@ -45,25 +58,9 @@ class ArcCompleter(Completer):
 
     - After `cd` / `remote` / `connect` → completes with managed device names
     - After `folder`           → completes with SCM folder names
-    - In SSH mode              → completes with common PAN-OS CLI commands
     - Otherwise               → completes with ARC command names + shell built-ins
     """
 
-    # Common PAN-OS CLI commands offered when in SSH passthrough mode
-    _SSH_HINTS = [
-        "show system info",
-        "show system resources",
-        "show interface all",
-        "show routing route",
-        "show routing summary",
-        "show high-availability all",
-        "show jobs all",
-        "show log system",
-        "show security policy",
-        "ping host",
-        "commit",
-        "exit",
-    ]
 
     def __init__(self, shell: "ArcShell") -> None:
         self._shell = shell
@@ -105,11 +102,7 @@ class ArcCompleter(Completer):
                     yield Completion(topic[len(partial_topic):], start_position=-len(partial_topic))
             return
 
-        # ---- SSH mode → offer common PAN-OS CLI hints ----
-        if self._shell._state.ssh_mode:
-            for hint in self._SSH_HINTS:
-                if hint.startswith(text):
-                    yield Completion(hint[len(text):], start_position=0)
+        # ---- Default: ARC command + built-in completion ----
             return
 
         # ---- Default: ARC command + built-in completion ----
@@ -126,8 +119,6 @@ class ArcCompleter(Completer):
             "clear", "exit", "quit",
             "help", "?",
         ]
-        if self._shell._state.ssh_mode:
-            builtins.insert(3, "disconnect")
         commands = list(COMMANDS.keys())
         if not include_remote_suffix:
             return builtins + commands
@@ -142,7 +133,6 @@ class ArcCompleter(Completer):
 PROMPT_STYLE = Style.from_dict({
     "arc":    "bold ansicyan",
     "device": "bold ansiyellow",
-    "ssh":    "bold ansigreen",
     "sep":    "ansicyan",
     "arrow":  "bold ansicyan",
 })
@@ -160,7 +150,14 @@ def _make_key_bindings() -> KeyBindings:
     @kb.add("?")
     def _handle_question(event) -> None:
         buf = event.current_buffer
-        buf.text = "?"
+        # Preserve any partial command the user has already typed so that
+        # dispatch can show context-sensitive help instead of the full menu.
+        # e.g.  "show address" + ? → submit "show address ?"
+        existing = buf.text
+        if existing.strip():
+            buf.text = existing.rstrip() + " ?"
+        else:
+            buf.text = "?"
         buf.validate_and_handle()
 
     return kb
@@ -173,8 +170,6 @@ class ShellState:
     devices_cache: list[dict] = field(default_factory=list)
     # SCM folder names cached at startup for tab completion
     folders_cache: list[str] = field(default_factory=lambda: ["Shared", "Global"])
-    # True when 'connect' is active — all non-built-in commands route via SSH
-    ssh_mode: bool = False
 
 
 class ArcShell:
@@ -183,6 +178,9 @@ class ArcShell:
     def __init__(self, config: ArcConfig) -> None:
         self._config = config
         self._state = ShellState(folder=config.default_folder)
+        # Prefix to restore in the next prompt after a '?' context-help lookup.
+        # e.g. "show ?" prints help then re-seeds the prompt with "show ".
+        self._pending_default: str = ""
 
         # Build clients
         self._scm: Optional[SCMClient] = None
@@ -238,11 +236,6 @@ class ArcShell:
     def _prompt(self) -> HTML:
         if self._state.device:
             name = self._state.device.get("hostname") or self._state.device.get("name") or "device"
-            if self._state.ssh_mode:
-                return HTML(
-                    f"<arc>arc</arc><sep>:</sep><device>{name}</device>"
-                    f"<ssh>[ssh]</ssh><arrow> > </arrow>"
-                )
             return HTML(f"<arc>arc</arc><sep>:</sep><device>{name}</device><arrow> > </arrow>")
         return HTML("<arc>arc</arc><arrow> > </arrow>")
 
@@ -254,7 +247,11 @@ class ArcShell:
         self._print_banner()
         while True:
             try:
-                line = self._session.prompt(self._prompt()).strip()
+                # Re-seed the prompt with any prefix saved by a '?' context-help lookup
+                # so the user can keep typing without re-entering what they had.
+                default = self._pending_default
+                self._pending_default = ""
+                line = self._session.prompt(self._prompt(), default=default).strip()
             except KeyboardInterrupt:
                 continue
             except EOFError:
@@ -288,41 +285,26 @@ class ArcShell:
         if not tokens:
             return False
 
+        # Context-sensitive help: trailing '?' means "what can I do here?"
+        # e.g.  "show address ?"  → scoped help for 'show address'
+        #        "show ?"         → list every command that starts with 'show'
+        #        "?"              → full command reference (existing behaviour)
+        if "?" in tokens:
+            question_idx = tokens.index("?")
+            prefix_tokens = tokens[:question_idx]
+            if prefix_tokens:
+                # Restore the prefix in the next prompt so the user can keep typing.
+                self._pending_default = " ".join(prefix_tokens) + " "
+                self._cmd_context_help(prefix_tokens)
+                return False
+            # Fall through so the existing `cmd in ("help", "?")` branch fires
+
         cmd = tokens[0].lower()
 
         # ---- exit / quit ----
-        # In SSH mode, 'exit' leaves SSH passthrough and returns to API mode.
-        # At the top level it exits ARC entirely.
         if cmd in ("exit", "quit"):
-            if self._state.ssh_mode:
-                self._state.ssh_mode = False
-                name = self._state.device.get("hostname") or self._state.device.get("name", "device")
-                console.print(
-                    f"[cyan]SSH mode ended.[/cyan] Still at device context "
-                    f"[bold]{name}[/bold] in API mode."
-                )
-                return False
             return True
 
-        # ---- disconnect: explicit SSH mode exit ----
-        if cmd == "disconnect":
-            if self._state.ssh_mode:
-                self._state.ssh_mode = False
-                console.print("[cyan]SSH mode disconnected.  Remaining at device API context.[/cyan]")
-            else:
-                console.print("[yellow]Not in SSH mode.[/yellow]")
-            return False
-
-        # ---- SSH passthrough mode ----
-        # When 'connect' is active, every command that isn't a shell built-in
-        # is forwarded verbatim to the device over SSH.
-        _shell_builtins = {
-            "cd", "pwd", "ls", "devices", "folder", "clear", "help", "?", "docs",
-            "connect", "remote", "disconnect",
-        }
-        if self._state.ssh_mode and cmd not in _shell_builtins:
-            self._exec_ssh_passthrough(line)
-            return False
 
         # ---- Shell built-ins ----
         if cmd == "clear":
@@ -472,13 +454,16 @@ class ArcShell:
     # ------------------------------------------------------------------
 
     def _cmd_connect(self, args: list[str], require_target: bool = False) -> None:
-        """Connect to a device via SSH and enter SSH passthrough mode.
+        """Connect to a device via SSH and hand the terminal over to the remote shell.
 
-        In SSH mode every subsequent command is forwarded verbatim to the
-        device over SSH.  Type 'exit' or 'disconnect' to return to API mode.
+        This is a true PTY session — ARC steps out of the way completely.
+        Every keystroke goes directly to the device; every byte from the device
+        is written straight to stdout.  ARC command dispatch is bypassed for the
+        duration.  When the user types 'exit' on the device the SSH channel closes
+        and ARC's prompt reappears.
 
-        `connect` with no argument uses the current `cd` device. `remote <device>`
-        requires a target and changes to that device before connecting.
+        ``connect``              — SSH to the current ``cd`` device.
+        ``remote <device>``      — SSH to a named device (also sets device context).
         """
         if require_target and not args:
             console.print(
@@ -499,7 +484,6 @@ class ArcShell:
             target = " ".join(args)
             if not self._state.devices_cache:
                 self._refresh_devices()
-
             match = self._find_device(target)
             if match:
                 self._state.device = match
@@ -526,10 +510,23 @@ class ArcShell:
         ssh_key_path = str(cfg_ssh.key_path)
         ssh_password = str(cfg_ssh.password)
         ssh_port = int(cfg_ssh.port)
-        console.print(f"[dim]Testing SSH: {ssh_user}@{host}:{ssh_port}…[/dim]")
+
+        # Pre-flight: if no auth method at all, prompt now so the user knows
+        # what's happening before the connection attempt starts.
+        if not ssh_key_path and not ssh_password:
+            console.print(
+                "[yellow]⚠  No SSH credentials stored for ARC.[/yellow]\n"
+                "  Trying SSH agent and default key files — if those are absent\n"
+                "  you will be prompted during the keyboard-interactive exchange.\n"
+                "  Run [bold]arc auth login[/bold] to store credentials so they\n"
+                "  auto-fill next time, or see [bold]help config osx[/bold] / "
+                "[bold]help config win[/bold] / [bold]help config nix[/bold].\n"
+            )
+
+        console.print(f"[dim]Connecting SSH: {ssh_user}@{host}:{ssh_port}…[/dim]")
 
         try:
-            self._ssh.verify_connection(
+            channel = self._ssh.open_shell(
                 host=host,
                 user=ssh_user,
                 key_path=ssh_key_path,
@@ -540,40 +537,107 @@ class ArcShell:
             console.print(f"[red]SSH connection failed:[/red] {exc}")
             return
 
-        self._state.ssh_mode = True
-        console.print(
-            f"[green]✓[/green] SSH connected to [bold]{name}[/bold] "
-            f"([dim]{ssh_user}@{host}[/dim])\n"
-            "[dim]All non-shell commands now execute directly on the device via SSH.\n"
-            "Type [bold]exit[/bold] or [bold]disconnect[/bold] to return to API mode.[/dim]"
-        )
+        self._run_interactive_shell(channel, name)
 
     # ------------------------------------------------------------------
-    # SSH passthrough: raw command forwarding
+    # True interactive PTY session
     # ------------------------------------------------------------------
 
-    def _exec_ssh_passthrough(self, command: str) -> None:
-        """Forward *command* verbatim to the connected device via SSH and print output."""
-        device = self._state.device
-        host = (device.get("ip_address") or device.get("hostname") or "") if device else ""
-        if not host:
-            console.print("[red]No device host configured. Use 'cd <device>' then 'connect', or 'remote <device>'.[/red]")
+    def _run_interactive_shell(self, channel, device_name: str) -> None:
+        """Hand the terminal over to *channel* for a fully interactive SSH session.
+
+        ARC is not a middle layer here — every keystroke goes directly to the
+        device and every byte from the device is written straight to stdout.
+        ARC command dispatch, completers, and key bindings are all inactive
+        for the duration.
+
+        The session ends when the remote device closes the channel (the user
+        types 'exit' or the device terminates the session).  The ARC prompt
+        reappears automatically once the channel closes.
+        """
+        if not _TTY_AVAILABLE:
+            console.print(
+                "[red]Interactive SSH sessions require a Unix terminal (termios/tty).[/red]\n"
+                "On Windows use `--remote` to run individual commands via SSH."
+            )
+            channel.close()
             return
 
-        cfg_ssh = self._config.ssh
-        ssh_user = str(cfg_ssh.user)
-        ssh_key_path = str(cfg_ssh.key_path)
-        ssh_password = str(cfg_ssh.password)
-        ssh_port = int(cfg_ssh.port)
-        output = self._ssh.execute(
-            host=host,
-            command=command,
-            user=ssh_user,
-            key_path=ssh_key_path,
-            password=ssh_password,
-            port=ssh_port,
+        # Resize the remote PTY to match the current local terminal.
+        cols, rows = shutil.get_terminal_size()
+        try:
+            channel.resize_pty(width=cols, height=rows)
+        except Exception:
+            pass
+
+        console.print(
+            f"\n[green]✓[/green] Authenticated — handing terminal to "
+            f"[bold]{device_name}[/bold]\n"
+            "[dim]ARC is now a transparent pipe. "
+            "Every keystroke goes directly to the device.\n"
+            "Type 'exit' on the device to close the session and return to ARC.[/dim]\n"
         )
-        console.print(fmt.format_raw(output, title=command))
+
+        def _handle_resize(_sig, _frame) -> None:
+            """Forward terminal resize events to the remote PTY."""
+            try:
+                c, r = shutil.get_terminal_size()
+                channel.resize_pty(width=c, height=r)
+            except Exception:
+                pass
+
+        old_sigwinch = signal.signal(signal.SIGWINCH, _handle_resize)
+        old_tty = termios.tcgetattr(sys.stdin)
+
+        try:
+            tty.setraw(sys.stdin.fileno())
+            channel.settimeout(0.0)
+
+            while True:
+                r_ready, _, _ = select.select([channel, sys.stdin], [], [], 0.1)
+
+                # Drain and print any output from the device.
+                if channel in r_ready:
+                    data = channel.recv(1024)
+                    if not data:
+                        break
+                    sys.stdout.buffer.write(data)
+                    sys.stdout.buffer.flush()
+
+                # Forward keystrokes to the device.
+                if sys.stdin in r_ready:
+                    data = os.read(sys.stdin.fileno(), 1024)
+                    if not data:
+                        break
+                    channel.send(data)
+
+                # Exit when the device closes the channel.
+                if channel.closed or channel.exit_status_ready():
+                    # Drain any final bytes.
+                    while channel.recv_ready():
+                        data = channel.recv(1024)
+                        if data:
+                            sys.stdout.buffer.write(data)
+                    sys.stdout.buffer.flush()
+                    break
+
+        except Exception:
+            pass  # Session ended unexpectedly — restore terminal below.
+
+        finally:
+            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_tty)
+            signal.signal(signal.SIGWINCH, old_sigwinch)
+            try:
+                channel.close()
+            except Exception:
+                pass
+
+        # Print on a fresh line (device may not have emitted a trailing newline).
+        console.print(
+            f"\n[cyan]SSH session ended.[/cyan]  "
+            f"Back in ARC — device context [bold]{device_name}[/bold] preserved."
+        )
+
 
     # ------------------------------------------------------------------
     # Command: ls / devices
@@ -593,15 +657,14 @@ class ArcShell:
     # ------------------------------------------------------------------
 
     def _cmd_pwd(self) -> None:
-        """Show current device context, SSH mode state, and active SCM folder."""
+        """Show current device context, active SCM folder, and SSH credential status."""
         if self._state.device:
             name = self._state.device.get("hostname") or self._state.device.get("name")
             serial = self._state.device.get("serial") or "n/a"
             ip = self._state.device.get("ip_address") or "n/a"
-            mode = "[green]SSH mode[/green]" if self._state.ssh_mode else "API mode"
             console.print(
                 f"[bold cyan]Device:[/bold cyan] {name}  "
-                f"serial: {serial}  ip: {ip}  [{mode}]"
+                f"serial: {serial}  ip: {ip}  [API mode]"
             )
         else:
             console.print("[bold cyan]Context:[/bold cyan] SCM / global  [API mode]")
@@ -623,9 +686,6 @@ class ArcShell:
     # ------------------------------------------------------------------
 
     def _cmd_help(self, args: list[str]) -> None:
-        if args and args[0] == "config":
-            self._print_help_config()
-            return
 
         if args:
             topic = " ".join(args)
@@ -658,41 +718,84 @@ class ArcShell:
         # Shell built-ins
         console.print("\n[bold yellow]SHELL[/bold yellow]")
         builtins = [
-            ("cd <device>",         "Change Device in SCM"),
-            ("remote <device>",     "SSH Passthrough to <device>"),
-            ("connect <device>",    "SSH Connect to <device>"),
-            ("folder <name>",       "Set the SCM Folder  [dim](Tab → available folders)[/dim]"),
-            ("ls",                  "List managed devices under the current folder"),
-            ("pwd",                 "Show current device, mode, and SCM folder"),
+            ("cd <device>",           "Change Device in SCM"),
+            ("connect [device]",      "SSH to device — full interactive session  [dim](returns to ARC on exit)[/dim]"),
+            ("remote <device>",       "SSH to device — full interactive session  [dim](also sets device context)[/dim]"),
+            ("folder <name>",         "Set the SCM Folder  [dim](Tab → available folders)[/dim]"),
+            ("ls",                    "List managed devices under the current folder"),
+            ("pwd",                   "Show current device and SCM folder"),
             ("docs / docs <command>", "Show Documentation  [dim]docs <command> shows help in shell[/dim]"),
-            ("? / help",            "Print this command reference"),
-            ("help config",         "Show configuration / credential help"),
-            ("clear",               "Clear the terminal screen"),
-            ("exit / quit",         "Exit the Application"),
+            ("? / help",              "Print this command reference"),
+            ("help <topic>",          "Open topic doc  [dim]e.g. help config, help config osx|win|nix[/dim]"),
+            ("help config",           "Configuration overview  [dim](osx / win / nix for platform guides)[/dim]"),
+            ("clear",                 "Clear the terminal screen"),
+            ("exit / quit",           "Exit ARC"),
         ]
-        if self._state.ssh_mode:
-            # In SSH mode clarify that exit returns to API mode
-            builtins[-1] = ("exit / quit", "Return to API mode  [dim](at top level: exit ARC)[/dim]")
         for name, desc in builtins:
             console.print(f"  [cyan]{name:<45}[/cyan] {desc}")
         console.print()
 
-    def _print_help_config(self) -> None:
-        console.print()
-        console.print(Panel(
-            "[bold]Environment Variables[/bold]\n\n"
-            "  [cyan]SCM_BEARER_TOKEN[/cyan]    Pre-issued SCM bearer token\n"
-            "  [cyan]SCM_CLIENT_ID[/cyan]       SCM OAuth client ID\n"
-            "  [cyan]SCM_CLIENT_SECRET[/cyan]   SCM OAuth client secret\n"
-            "  [cyan]SCM_TSG_ID[/cyan]          Tenant Services Group ID\n\n"
-            "  [cyan]ARC_SSH_USER[/cyan]        Default SSH username (default: admin)\n"
-            "  [cyan]ARC_SSH_KEY[/cyan]         Path to SSH private key\n"
-            "  [cyan]ARC_SSH_PASS[/cyan]        SSH password fallback\n"
-            "  [cyan]ARC_DEBUG[/cyan]           Set to 1 for verbose error output\n\n"
-            "[bold]Config File[/bold]  ~/.arc/config.json\n"
-            "  Copy config/config.example.json and fill in credentials.",
-            title="Configuration", border_style="cyan",
-        ))
+
+    def _cmd_context_help(self, prefix_tokens: list[str]) -> None:
+        """Show scoped help for a partial command prefix typed before '?'.
+
+        Behaviour mirrors the PAN-OS CLI convention:
+        - Exact registry match  → render its doc page (description + Markdown)
+        - Partial prefix match  → list every command that begins with the prefix
+        - Shell built-in        → render its doc page
+        - No match anywhere     → friendly fallback to the full command list
+        """
+        prefix = " ".join(prefix_tokens).lower()
+
+        # 1. Exact match in the command registry — show its full doc page.
+        if prefix in COMMANDS:
+            if render_help_topic(console, prefix):
+                return
+            # Doc file missing — fall back to showing description inline.
+            cmd_def = COMMANDS[prefix]
+            ssh_note = (
+                "  [dim](API only — no SSH equivalent)[/dim]"
+                if cmd_def.ssh_command is None
+                else ""
+            )
+            console.print(
+                f"\n[bold cyan]{prefix}[/bold cyan]  —  {cmd_def.description}{ssh_note}\n"
+                "  Append [bold]--remote[/bold] to run via SSH instead of the SCM API.\n"
+            )
+            return
+
+        # 2. Try to render a doc page by topic name (covers aliases / general topics).
+        if render_help_topic(console, prefix):
+            return
+
+        # 3. Partial prefix: list every registered command that begins with the prefix.
+        matches = sorted(k for k in COMMANDS if k.startswith(prefix))
+        if matches:
+            console.print(
+                f"\n[bold yellow]Commands matching[/bold yellow] "
+                f"'[cyan]{prefix}[/cyan]':\n"
+            )
+            for k in matches:
+                cmd_def = COMMANDS[k]
+                ssh_note = " [dim](API only)[/dim]" if cmd_def.ssh_command is None else ""
+                console.print(f"  [cyan]{k:<45}[/cyan] {cmd_def.description}{ssh_note}")
+            console.print()
+            return
+
+        # 4. Shell built-ins (cd, remote, connect, …) — render their doc page.
+        _shell_topic_keys = {
+            "cd", "remote", "connect", "exit", "quit",
+            "ls", "devices", "pwd", "folder", "clear", "help", "docs",
+        }
+        if prefix in _shell_topic_keys:
+            if render_help_topic(console, prefix):
+                return
+
+        # 5. Nothing matched — point the user to the full reference.
+        console.print(
+            f"[yellow]No help found for:[/yellow] [bold]{prefix}[/bold]  "
+            "— type [bold]?[/bold] for the full command list."
+        )
 
     # ------------------------------------------------------------------
     # API execution

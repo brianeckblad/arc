@@ -1,24 +1,111 @@
-"""Config loader — reads from environment variables and ~/.arc/config.json."""
+"""Config loader — reads from environment variables and ~/.arc/config.json.
+
+Sensitive credentials (bearer tokens, client secrets, SSH passwords) are
+stored in the OS keychain via the ``keyring`` library:
+
+  - macOS  : Keychain
+  - Linux  : Secret Service (GNOME Keyring / KWallet)
+  - Windows: Windows Credential Manager
+
+Non-sensitive values (client_id, tsg_id, default_folder, SSH user/key/port)
+remain in ``~/.arc/config.json``, which is always written with mode 0600.
+
+Environment variables override both the keychain and the config file —
+useful for CI/CD and short-lived overrides without touching stored values.
+"""
 
 from __future__ import annotations
 
 import json
+import logging
 import os
+import stat
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import keyring
+import keyring.errors
 import platformdirs
+
+logger = logging.getLogger(__name__)
 
 CONFIG_DIR = Path(platformdirs.user_config_dir("arc"))
 CONFIG_FILE = CONFIG_DIR / "config.json"
 
+# Keychain service name and per-credential usernames.
+# Keep these stable — changing them silently orphans stored secrets.
+_KEYCHAIN_SERVICE = "arc"
+_KEY_SCM_BEARER    = "scm.bearer_token"
+_KEY_SCM_SECRET    = "scm.client_secret"
+_KEY_SSH_PASSWORD  = "ssh.password"
+
+
+# ---------------------------------------------------------------------------
+# Keychain helpers
+# ---------------------------------------------------------------------------
+
+def _keychain_get(key: str) -> str:
+    """Return a credential from the OS keychain, or '' if absent / unavailable."""
+    try:
+        value = keyring.get_password(_KEYCHAIN_SERVICE, key)
+        return value or ""
+    except keyring.errors.KeyringError as exc:
+        logger.debug("Keychain read failed for %s: %s", key, exc)
+        return ""
+
+
+def _keychain_set(key: str, value: str) -> bool:
+    """Store *value* in the OS keychain.  Returns True on success.
+
+    An empty value deletes the entry rather than storing a blank secret.
+    """
+    try:
+        if value:
+            keyring.set_password(_KEYCHAIN_SERVICE, key, value)
+        else:
+            _keychain_delete(key)
+        return True
+    except keyring.errors.KeyringError as exc:
+        logger.warning("Keychain write failed for %s: %s", key, exc)
+        return False
+
+
+def _keychain_delete(key: str) -> None:
+    """Remove a credential from the keychain.  Silently ignores missing entries."""
+    try:
+        keyring.delete_password(_KEYCHAIN_SERVICE, key)
+    except keyring.errors.PasswordDeleteError:
+        pass  # already absent — not an error
+    except keyring.errors.KeyringError as exc:
+        logger.debug("Keychain delete failed for %s: %s", key, exc)
+
+
+def keychain_available() -> bool:
+    """Return True when the OS keychain can be read/written.
+
+    Used by ``arc auth show`` to surface a warning in headless environments
+    where keychain storage silently falls back to the config file.
+    """
+    try:
+        keyring.get_password(_KEYCHAIN_SERVICE, "__probe__")
+        return True
+    except keyring.errors.KeyringError:
+        return False
+
+
+# ---------------------------------------------------------------------------
+# Dataclasses
+# ---------------------------------------------------------------------------
 
 @dataclass
 class SCMConfig:
-    """SCM API configuration.
+    """SCM API credentials.
 
     ARC supports either a pre-issued bearer token or OAuth client credentials.
     A bearer token takes precedence when both are present.
+
+    Secrets (bearer_token, client_secret) are stored in the OS keychain.
+    client_id and tsg_id are non-sensitive identifiers stored in config.json.
     """
 
     bearer_token: str = ""
@@ -33,6 +120,12 @@ class SCMConfig:
 
 @dataclass
 class SSHConfig:
+    """SSH connection defaults.
+
+    ``password`` (if used) is stored in the OS keychain.
+    All other fields are non-sensitive and stored in config.json.
+    """
+
     user: str = "admin"
     key_path: str = ""
     password: str = ""
@@ -47,41 +140,63 @@ class ArcConfig:
     default_folder: str = "Shared"
 
 
+# ---------------------------------------------------------------------------
+# Load / save
+# ---------------------------------------------------------------------------
+
 def load_config() -> ArcConfig:
-    """Load config from file then overlay with environment variables."""
+    """Load config from keychain + config file, then overlay environment variables.
+
+    Priority (later overrides earlier):
+      1. OS keychain (for secrets)
+      2. ~/.arc/config.json (for non-sensitive values; legacy secrets as fallback)
+      3. Environment variables (always win — useful for CI and quick overrides)
+    """
     cfg = ArcConfig()
 
+    # --- Pull secrets from keychain first ---
+    cfg.scm.bearer_token  = _keychain_get(_KEY_SCM_BEARER)
+    cfg.scm.client_secret = _keychain_get(_KEY_SCM_SECRET)
+    cfg.ssh.password      = _keychain_get(_KEY_SSH_PASSWORD)
+
+    # --- Overlay with config file (non-sensitive fields; legacy secret fallback) ---
     if CONFIG_FILE.exists():
         try:
             raw = json.loads(CONFIG_FILE.read_text())
+
             scm = raw.get("scm", {})
-            cfg.scm = SCMConfig(
-                bearer_token=scm.get("bearer_token", ""),
-                client_id=scm.get("client_id", ""),
-                client_secret=scm.get("client_secret", ""),
-                tsg_id=scm.get("tsg_id", ""),
-            )
+            cfg.scm.client_id   = scm.get("client_id", "")
+            cfg.scm.tsg_id      = scm.get("tsg_id", "")
+            # Legacy plaintext secrets: migrate to keychain on next save.
+            # Only used if the keychain returned nothing.
+            if not cfg.scm.bearer_token:
+                cfg.scm.bearer_token  = scm.get("bearer_token", "")
+            if not cfg.scm.client_secret:
+                cfg.scm.client_secret = scm.get("client_secret", "")
+
             ssh = raw.get("ssh", {})
-            cfg.ssh = SSHConfig(
-                user=ssh.get("user", "admin"),
-                key_path=ssh.get("key_path", ""),
-                password=ssh.get("password", ""),
-                port=int(ssh.get("port", 22)),
-            )
+            cfg.ssh.user      = ssh.get("user", "admin")
+            cfg.ssh.key_path  = ssh.get("key_path", "")
+            cfg.ssh.port      = int(ssh.get("port", 22))
+            if not cfg.ssh.password:
+                cfg.ssh.password = ssh.get("password", "")
+
             cfg.default_folder = raw.get("default_folder", "Shared")
-        except (OSError, json.JSONDecodeError, TypeError, ValueError):
-            # Invalid local config should not prevent shell startup. Commands that
-            # require credentials will fail closed with a clear configuration error.
-            pass
 
-    cfg.scm.bearer_token = os.environ.get("SCM_BEARER_TOKEN", cfg.scm.bearer_token)
-    cfg.scm.client_id = os.environ.get("SCM_CLIENT_ID", cfg.scm.client_id)
+        except (OSError, json.JSONDecodeError, TypeError, ValueError) as exc:
+            # Invalid config must not block startup.  Commands requiring
+            # credentials will fail closed with a clear error.
+            logger.debug("Could not parse config file: %s", exc)
+
+    # --- Environment variables always win ---
+    cfg.scm.bearer_token  = os.environ.get("SCM_BEARER_TOKEN", cfg.scm.bearer_token)
+    cfg.scm.client_id     = os.environ.get("SCM_CLIENT_ID",    cfg.scm.client_id)
     cfg.scm.client_secret = os.environ.get("SCM_CLIENT_SECRET", cfg.scm.client_secret)
-    cfg.scm.tsg_id = os.environ.get("SCM_TSG_ID", cfg.scm.tsg_id)
+    cfg.scm.tsg_id        = os.environ.get("SCM_TSG_ID",        cfg.scm.tsg_id)
 
-    cfg.ssh.user = os.environ.get("ARC_SSH_USER", cfg.ssh.user)
-    cfg.ssh.key_path = os.environ.get("ARC_SSH_KEY", cfg.ssh.key_path)
-    cfg.ssh.password = os.environ.get("ARC_SSH_PASS", cfg.ssh.password)
+    cfg.ssh.user          = os.environ.get("ARC_SSH_USER", cfg.ssh.user)
+    cfg.ssh.key_path      = os.environ.get("ARC_SSH_KEY",  cfg.ssh.key_path)
+    cfg.ssh.password      = os.environ.get("ARC_SSH_PASS", cfg.ssh.password)
 
     cfg.debug = os.environ.get("ARC_DEBUG", "0") == "1"
 
@@ -89,21 +204,56 @@ def load_config() -> ArcConfig:
 
 
 def save_config(cfg: ArcConfig) -> None:
-    """Persist config to ~/.arc/config.json."""
+    """Persist config: secrets to OS keychain, non-sensitive values to config.json.
+
+    The config file is always written with mode 0600 (owner read/write only).
+    Secrets are never written to disk when the keychain is available — any
+    legacy plaintext secrets already in the file are removed on save.
+    """
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Store secrets in the keychain.  If the keychain is unavailable (e.g.
+    # headless CI) _keychain_set returns False and we fall back to the file.
+    bearer_saved  = _keychain_set(_KEY_SCM_BEARER,   cfg.scm.bearer_token)
+    secret_saved  = _keychain_set(_KEY_SCM_SECRET,   cfg.scm.client_secret)
+    sshpass_saved = _keychain_set(_KEY_SSH_PASSWORD, cfg.ssh.password)
+
+    # Build the on-disk payload.  Omit secrets when they were saved to keychain.
+    scm_block: dict = {
+        "client_id": cfg.scm.client_id,
+        "tsg_id":    cfg.scm.tsg_id,
+    }
+    if not bearer_saved:
+        scm_block["bearer_token"]  = cfg.scm.bearer_token
+    if not secret_saved:
+        scm_block["client_secret"] = cfg.scm.client_secret
+
+    ssh_block: dict = {
+        "user":     cfg.ssh.user,
+        "key_path": cfg.ssh.key_path,
+        "port":     cfg.ssh.port,
+    }
+    if not sshpass_saved:
+        ssh_block["password"] = cfg.ssh.password
+
     data = {
-        "scm": {
-            "bearer_token": cfg.scm.bearer_token,
-            "client_id": cfg.scm.client_id,
-            "client_secret": cfg.scm.client_secret,
-            "tsg_id": cfg.scm.tsg_id,
-        },
-        "ssh": {
-            "user": cfg.ssh.user,
-            "key_path": cfg.ssh.key_path,
-            "password": cfg.ssh.password,
-            "port": cfg.ssh.port,
-        },
+        "scm":            scm_block,
+        "ssh":            ssh_block,
         "default_folder": cfg.default_folder,
     }
+
     CONFIG_FILE.write_text(json.dumps(data, indent=2))
+
+    # Restrict to owner read/write only — defense-in-depth even if the
+    # keychain migration already moved secrets out of this file.
+    CONFIG_FILE.chmod(stat.S_IRUSR | stat.S_IWUSR)
+
+
+def clear_keychain() -> None:
+    """Remove all ARC secrets from the OS keychain.
+
+    Called by ``arc auth clear``.  Does not touch the config file.
+    """
+    for key in (_KEY_SCM_BEARER, _KEY_SCM_SECRET, _KEY_SSH_PASSWORD):
+        _keychain_delete(key)
+

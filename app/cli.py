@@ -3,19 +3,29 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
+import stat
 from typing import Optional
+
+import httpx
 
 import typer
 from rich.console import Console
 
 from app.api.client import SCMClient
-from app.config import load_config, save_config, CONFIG_FILE
+from app.config import (
+    clear_keychain,
+    keychain_available,
+    load_config,
+    save_config,
+    CONFIG_DIR,
+    CONFIG_FILE,
+)
 from app.docs import (
     COMMAND_DOCS_ROOT,
     COMMANDS,
     DOCS_ROOT,
     open_docs_in_browser,
+    render_help_topic,
     slugify,
 )
 from app.shell import ArcShell
@@ -46,6 +56,13 @@ def main(
     if ctx.invoked_subcommand is not None:
         return
 
+    # --- Auto-sync docs on every launch (silent, local-only — no network) ---
+    # Keeps command stubs and the docs bundle up to date without a manual
+    # `arc cliup` run during development.  Change `silent=True` to `False`
+    # here to see verbose output, or remove the call once the project matures.
+    _do_cliup(silent=True, skip_vendor=True)
+
+
     cfg = load_config()
     if debug:
         cfg.debug = True
@@ -58,7 +75,7 @@ def main(
 def open_docs(
     topic: Optional[str] = typer.Argument(None, help="Command or topic to open directly."),
 ) -> None:
-    """Open ARC documentation in the default browser (pan.dev-style portal)."""
+    """Open ARC documentation in the default browser (fully offline, no server)."""
     url = open_docs_in_browser(topic or "")
     console.print(f"[green]Docs opened:[/green] {url}")
 
@@ -80,11 +97,26 @@ def auth_login(
     ssh_user: Optional[str] = typer.Option(None, "--ssh-user"),
     ssh_key: Optional[str] = typer.Option(None, "--ssh-key"),
 ) -> None:
-    """Interactively configure ARC credentials and save to ~/.arc/config.json."""
+    """Interactively configure ARC credentials.
+
+    Secrets (bearer token, client secret, SSH password) are stored in the OS
+    keychain (macOS Keychain / Linux Secret Service / Windows Credential
+    Manager).  Non-sensitive values are saved to the config file.
+    """
     cfg = load_config()
+    kc = keychain_available()
 
     console.print("[bold cyan]ARC Credential Setup[/bold cyan]")
-    console.print(f"Config will be saved to: [dim]{CONFIG_FILE}[/dim]\n")
+    if kc:
+        console.print(
+            f"  Secrets  → [green]OS keychain[/green]  (bearer token, client secret, SSH password)\n"
+            f"  Config   → [dim]{CONFIG_FILE}[/dim]  (client_id, tsg_id, SSH user/key/port)\n"
+        )
+    else:
+        console.print(
+            f"  [yellow]⚠  OS keychain unavailable — secrets will be stored in {CONFIG_FILE}[/yellow]\n"
+            "  Consider setting SCM_BEARER_TOKEN / SCM_CLIENT_SECRET as env vars instead.\n"
+        )
 
     def _prompt(label: str, current: str, secret: bool = False) -> str:
         placeholder = "****" if (secret and current) else (current or "")
@@ -113,13 +145,21 @@ def auth_login(
     cfg.ssh.key_path = ssh_key or _prompt("SSH Key Path", cfg.ssh.key_path)
 
     save_config(cfg)
-    console.print(f"\n[green]✓[/green] Saved to [bold]{CONFIG_FILE}[/bold]")
+
+    if kc:
+        console.print(
+            f"\n[green]✓[/green] Secrets saved to OS keychain\n"
+            f"[green]✓[/green] Config file: [bold]{CONFIG_FILE}[/bold]  [dim](mode 0600)[/dim]"
+        )
+    else:
+        console.print(f"\n[green]✓[/green] Saved to [bold]{CONFIG_FILE}[/bold]  [dim](mode 0600)[/dim]")
 
 
 @auth_app.command("show")
 def auth_show() -> None:
     """Display current configuration (credentials masked)."""
     cfg = load_config()
+    kc = keychain_available()
 
     def _mask(s: str) -> str:
         return ("*" * 8) if s else "[dim](not set)[/dim]"
@@ -136,7 +176,107 @@ def auth_show() -> None:
     console.print(f"  port:    {cfg.ssh.port}")
 
     console.print(f"\n[bold cyan]Config file:[/bold cyan] {CONFIG_FILE}")
+    if kc:
+        console.print("[bold cyan]Keychain:[/bold cyan] [green]available[/green]  (secrets stored in OS keychain)")
+    else:
+        console.print(
+            "[bold cyan]Keychain:[/bold cyan] [yellow]unavailable[/yellow]  "
+            "— secrets fall back to config file or env vars"
+        )
     console.print()
+
+
+@auth_app.command("clear")
+def auth_clear() -> None:
+    """Remove all ARC secrets from the OS keychain.
+
+    This does not delete the config file.  Non-sensitive values (client_id,
+    tsg_id, SSH user/key/port) are preserved.  Run ``arc auth login`` to
+    re-enter credentials afterward.
+    """
+    clear_keychain()
+    console.print("[green]✓[/green] ARC secrets removed from OS keychain.")
+    console.print(
+        f"  Config file [dim]{CONFIG_FILE}[/dim] unchanged  "
+        "(run [bold]arc auth login[/bold] to re-enter credentials)"
+    )
+
+
+# ---------------------------------------------------------------------------
+# config sub-command
+# ---------------------------------------------------------------------------
+
+config_app = typer.Typer(help="Manage the ARC config file.")
+app.add_typer(config_app, name="config")
+
+# Template written by `arc config generate`.
+# _note fields are ignored by load_config() — they document the file for humans.
+_CONFIG_TEMPLATE = {
+    "_note": (
+        "ARC config — fill in the REPLACE_WITH_* values then run: arc auth login  "
+        "(secrets are moved to the OS keychain by that command)"
+    ),
+    "scm": {
+        "_note": (
+            "Use bearer_token OR the three OAuth fields (client_id + client_secret + tsg_id), "
+            "not both.  Leave bearer_token blank to use OAuth."
+        ),
+        "bearer_token": "",
+        "client_id":    "REPLACE_WITH_SCM_CLIENT_ID",
+        "client_secret": "REPLACE_WITH_SCM_CLIENT_SECRET",
+        "tsg_id":       "REPLACE_WITH_SCM_TSG_ID",
+    },
+    "ssh": {
+        "_note": (
+            "SSH is used for --remote, remote <device>, and connect commands.  "
+            "Prefer key_path over password — leave password blank if using a key."
+        ),
+        "user":     "admin",
+        "key_path": "",
+        "password": "",
+        "port":     22,
+    },
+    "default_folder": "Shared",
+}
+
+
+@config_app.command("generate")
+def config_generate(
+    force: bool = typer.Option(False, "--force", "-f", help="Overwrite an existing config file."),
+) -> None:
+    """Generate a starter config.json with annotated placeholders and mode 0600.
+
+    Creates the config directory if needed, writes template values, and sets
+    file permissions to 0600 (owner read/write only).  Secrets are left blank
+    or as REPLACE_WITH_* placeholders — run ``arc auth login`` afterward to
+    enter real values and migrate secrets to the OS keychain.
+    """
+    if CONFIG_FILE.exists() and not force:
+        console.print(
+            f"[yellow]Config file already exists:[/yellow] [bold]{CONFIG_FILE}[/bold]\n"
+            "  Use [bold]--force[/bold] to overwrite, or [bold]arc auth show[/bold] "
+            "to see current values."
+        )
+        raise typer.Exit(1)
+
+    already_existed = CONFIG_FILE.exists()
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    CONFIG_FILE.write_text(json.dumps(_CONFIG_TEMPLATE, indent=2))
+    CONFIG_FILE.chmod(stat.S_IRUSR | stat.S_IWUSR)
+
+    action = "Overwrote" if already_existed else "Created"
+    console.print(
+        f"\n[green]✓[/green] {action} [bold]{CONFIG_FILE}[/bold]  [dim](mode 0600)[/dim]\n"
+    )
+    console.print(
+        "[bold]Next steps:[/bold]\n"
+        f"  1. Edit the file and replace [cyan]REPLACE_WITH_*[/cyan] values:\n"
+        f"       [dim]{CONFIG_FILE}[/dim]\n"
+        "  2. Run [bold]arc auth login[/bold] — migrates secrets to the OS keychain\n"
+        "  3. Run [bold]arc auth show[/bold]  — confirm everything is configured\n\n"
+        "  See [bold]help config osx[/bold] / [bold]help config win[/bold] / "
+        "[bold]help config nix[/bold] for platform-specific keychain CLI commands."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -183,10 +323,71 @@ arc:fw-01[ssh] > {key}
 - `help commands` — Full command reference
 """
 
+# Vendor JS/CSS files downloaded once to docs/vendor/ by cliup.
+# All paths are CDN URLs; local filenames are the last path component.
+_VENDOR_DIR = DOCS_ROOT / "vendor"
+_VENDOR_FILES = [
+    ("marked.min.js",        "https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"),
+    ("highlight.min.js",     "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"),
+    ("github-dark.min.css",  "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"),
+    ("github.min.css",       "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"),
+]
+
+
+def _ensure_vendor_files() -> list[str]:
+    """Download vendor JS/CSS to docs/vendor/ if not already present.
+
+    Uses httpx (already a project dependency).  Files already on disk are
+    skipped so subsequent ``cliup`` runs are fully offline.
+    Returns a list of filenames that were newly downloaded.
+    """
+    _VENDOR_DIR.mkdir(parents=True, exist_ok=True)
+    downloaded: list[str] = []
+    for filename, url in _VENDOR_FILES:
+        dest = _VENDOR_DIR / filename
+        if dest.exists():
+            continue
+        try:
+            resp = httpx.get(url, follow_redirects=True, timeout=15)
+            resp.raise_for_status()
+            dest.write_bytes(resp.content)
+            downloaded.append(filename)
+        except Exception as exc:
+            console.print(f"  [yellow]⚠[/yellow] Could not download {filename}: {exc}")
+    return downloaded
+
+
+def _build_docs_bundle() -> int:
+    """Embed all docs/*.md files into docs/docs-bundle.js.
+
+    The bundle sets ``window.DOCS_CONTENT`` to a plain JS object keyed by
+    relative path (e.g. ``"commands/cd.md"``).  Loading it with a plain
+    ``<script src="docs-bundle.js">`` tag works under ``file://`` — no server
+    or fetch() required.
+
+    Returns the number of Markdown files bundled.
+    """
+    pages: dict[str, str] = {}
+    for md_path in sorted(DOCS_ROOT.rglob("*.md")):
+        rel = md_path.relative_to(DOCS_ROOT).as_posix()
+        pages[rel] = md_path.read_text(encoding="utf-8")
+
+    js_entries = ",\n".join(
+        f"  {json.dumps(key)}: {json.dumps(value)}"
+        for key, value in pages.items()
+    )
+    bundle_path = DOCS_ROOT / "docs-bundle.js"
+    bundle_path.write_text(
+        "// ARC docs bundle — auto-generated by `arc cliup`. Do not edit by hand.\n"
+        f"window.DOCS_CONTENT = {{\n{js_entries}\n}};\n",
+        encoding="utf-8",
+    )
+    return len(pages)
+
 
 def _build_stub(key: str, cmd) -> str:
     """Build a Markdown stub for a new command doc."""
-    from app.commands.registry import CommandDef
+    from app.commands.registry import CommandDef  # noqa: F401 — type reference only
 
     if cmd.api_handler is not None:
         fn_name = getattr(cmd.api_handler, "__name__", "")
@@ -232,16 +433,14 @@ def _regenerate_index() -> None:
     index_path.write_text("".join(lines), encoding="utf-8")
 
 
-@app.command("cliup")
-def cliup() -> None:
-    """Sync docs/commands/ with the registered command registry.
+def _do_cliup(silent: bool = False, skip_vendor: bool = False) -> dict:
+    """Core cliup logic — create missing command stubs, regenerate index, rebuild bundle.
 
-    For every command in COMMANDS:
-    - Creates a Markdown stub in docs/commands/ if one is missing.
-    - Leaves existing docs untouched.
-    - Regenerates docs/commands/index.md from the live registry.
+    Args:
+        silent:      Suppress all console output (used for auto-run at shell startup).
+        skip_vendor: Skip CDN vendor downloads (safe for startup; no internet required).
 
-    Run this after adding a new command to the registry to scaffold its doc page.
+    Returns a stats dict with keys: created, existing, downloaded, bundled.
     """
     COMMAND_DOCS_ROOT.mkdir(parents=True, exist_ok=True)
 
@@ -260,16 +459,55 @@ def cliup() -> None:
 
     _regenerate_index()
 
+    downloaded: list[str] = []
+    if not skip_vendor:
+        if not silent:
+            console.print("[dim]Checking vendor files…[/dim]")
+        downloaded = _ensure_vendor_files()
+
+    if not silent:
+        console.print("[dim]Building docs bundle…[/dim]")
+    bundled = _build_docs_bundle()
+
+    return {
+        "created":    created,
+        "existing":   existing,
+        "downloaded": downloaded,
+        "bundled":    bundled,
+    }
+
+
+@app.command("cliup")
+def cliup() -> None:
+    """Sync docs with the registry and rebuild the offline docs bundle.
+
+    Steps performed:
+    1. Create Markdown stubs in docs/commands/ for any new registered commands.
+    2. Regenerate docs/commands/index.md from the live registry.
+    3. Download vendor JS/CSS to docs/vendor/ (once; skipped if already present).
+    4. Rebuild docs/docs-bundle.js — embeds all Markdown so the browser portal
+       works via file:// with no server required.
+
+    Existing doc files are never overwritten.
+    """
+    stats = _do_cliup(silent=False, skip_vendor=False)
+    created   = stats["created"]
+    existing  = stats["existing"]
+    downloaded = stats["downloaded"]
+    bundled   = stats["bundled"]
+
     total = len(COMMANDS)
     console.print(
         f"\n[bold cyan]cliup[/bold cyan] — {total} registered commands\n"
         f"  [green]created:[/green]  {len(created)}\n"
         f"  [dim]existing:[/dim] {len(existing)}\n"
         f"  [cyan]index:[/cyan]    docs/commands/index.md regenerated\n"
+        f"  [cyan]vendor:[/cyan]   {len(downloaded)} file(s) downloaded"
+        + (" (all present)" if not downloaded else "") + "\n"
+        f"  [cyan]bundle:[/cyan]   docs/docs-bundle.js ({bundled} pages)\n"
     )
     for key in created:
-        slug = slugify(key)
-        console.print(f"  [green]+[/green] docs/commands/{slug}.md")
+        console.print(f"  [green]+[/green] docs/commands/{slugify(key)}.md")
     if not created:
         console.print("  [dim]All command docs are up to date.[/dim]")
     console.print()

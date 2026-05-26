@@ -1,8 +1,23 @@
-"""SSH connection manager using paramiko."""
+"""SSH connection manager using paramiko.
+
+Authentication order per connection attempt:
+  1. SSH agent keys (if agent is running)
+  2. Configured key file  (`ARC_SSH_KEY` / `arc auth login --ssh-key`)
+  3. Default key files    (~/.ssh/id_ed25519, id_rsa, id_ecdsa, id_dsa)
+  4. Keyboard-interactive — auto-fills stored password for "Password:" prompts,
+     then passes any remaining challenges (OTP, Duo push, etc.) to the terminal
+  5. Plain password auth  (fallback for servers that don't support kb-interactive)
+
+This order means password + 2FA flows work out of the box: the kb-interactive
+handler answers the password prompt silently from stored credentials, then the
+2FA challenge is printed and the user can approve the push or type a code.
+"""
 
 from __future__ import annotations
 
+import getpass
 import os
+import socket
 
 import paramiko
 
@@ -11,8 +26,93 @@ class SSHError(Exception):
     pass
 
 
+# ---------------------------------------------------------------------------
+# Keyboard-interactive handler
+# ---------------------------------------------------------------------------
+
+def _make_interactive_handler(password: str):
+    """Return a paramiko keyboard-interactive auth handler.
+
+    Behaviour:
+    - First prompt whose text looks like "Password" / "passwd" is auto-filled
+      from *password* (if provided) — the user never sees it.
+    - A prompt with empty text signals that the server sent an out-of-band push
+      (e.g. Duo) and is waiting; we respond with an empty string automatically.
+    - All other prompts (OTP, verification code, choice list) are shown in the
+      terminal so the user can type their response.
+
+    The ``echo`` flag from the server controls whether input is shown: echo=False
+    uses getpass so the response is not echoed.
+    """
+    password_consumed = [False]
+
+    def handler(title: str, instructions: str, prompt_list: list) -> list:
+        if title:
+            print(f"\n{title}")
+        if instructions:
+            print(instructions)
+
+        responses = []
+        for prompt_text, echo in prompt_list:
+            cleaned = prompt_text.strip().lower().rstrip(":").rstrip()
+
+            # Auto-fill the first password-style prompt from stored credentials.
+            if password and not password_consumed[0] and cleaned in (
+                "password", "passwd", "secret", "pass",
+            ):
+                responses.append(password)
+                password_consumed[0] = True
+
+            # Empty prompt = server is waiting for out-of-band push (Duo, etc.)
+            # Respond with empty string; the server will unblock when approved.
+            elif not prompt_text.strip():
+                print("[Waiting for 2FA push approval…]")
+                responses.append("")
+
+            # All other challenges go to the terminal.
+            elif echo:
+                responses.append(input(prompt_text))
+            else:
+                responses.append(getpass.getpass(prompt_text))
+
+        return responses
+
+    return handler
+
+
+# Default key locations tried when no explicit key is configured —
+# mirrors paramiko's look_for_keys=True behaviour.
+_DEFAULT_KEY_FILES: list[tuple[str, type]] = [
+    ("~/.ssh/id_ed25519", paramiko.Ed25519Key),
+    ("~/.ssh/id_rsa",     paramiko.RSAKey),
+    ("~/.ssh/id_ecdsa",   paramiko.ECDSAKey),
+]
+
+# Key classes tried when loading a user-specified key file.
+_ALL_KEY_CLASSES = (
+    paramiko.Ed25519Key,
+    paramiko.RSAKey,
+    paramiko.ECDSAKey,
+)
+
+
+def _try_pubkey(transport: paramiko.Transport, user: str, key) -> bool:
+    """Attempt public-key auth with *key*.  Returns True on success."""
+    try:
+        transport.auth_publickey(user, key)
+        return transport.is_authenticated()
+    except (paramiko.AuthenticationException, paramiko.SSHException):
+        return False
+
+
 class SSHManager:
-    """Manages a pool of SSH connections to PAN-OS devices."""
+    """Manages a pool of SSH connections to PAN-OS devices.
+
+    Each call to ``verify_connection`` or ``execute`` that requires a new
+    connection works through the authentication sequence described at the top
+    of this module.  Established connections are pooled by host and reused
+    until they go stale.
+    """
 
     def __init__(self) -> None:
         self._pool: dict[str, paramiko.SSHClient] = {}
@@ -32,9 +132,28 @@ class SSHManager:
         """Establish (or reuse) an SSH connection without running a command.
 
         Raises SSHError if the connection cannot be made.  Used by 'connect'
-        to validate SSH access before entering passthrough mode.
+        to validate SSH access before opening an interactive shell.
         """
         self._get_or_connect(host, user, key_path, password, port)
+
+    def open_shell(
+        self,
+        host: str,
+        user: str = "admin",
+        key_path: str = "",
+        password: str = "",
+        port: int = 22,
+    ) -> "paramiko.Channel":
+        """Authenticate and open an interactive PTY shell channel on *host*.
+
+        The returned channel is ready for raw I/O.  The caller owns the I/O
+        loop and must close the channel when done.
+
+        Raises SSHError if connection or authentication fails.
+        """
+        client = self._get_or_connect(host, user, key_path, password, port)
+        channel = client.invoke_shell(term="xterm-256color")
+        return channel
 
     def execute(
         self,
@@ -48,7 +167,7 @@ class SSHManager:
         """Run *command* on *host* via SSH and return combined stdout/stderr."""
         client = self._get_or_connect(host, user, key_path, password, port)
         try:
-            stdin, stdout, stderr = client.exec_command(command, timeout=30)
+            _, stdout, stderr = client.exec_command(command, timeout=30)
             out = stdout.read().decode(errors="replace")
             err = stderr.read().decode(errors="replace")
             return (out + err).strip()
@@ -82,36 +201,108 @@ class SSHManager:
         password: str,
         port: int,
     ) -> paramiko.SSHClient:
+        """Return a live SSH client for *host*, connecting if needed."""
+        # Return pooled connection if still alive.
         if host in self._pool:
-            # Test if still alive
             transport = self._pool[host].get_transport()
             if transport and transport.is_active():
                 return self._pool[host]
-            # Stale — reconnect
             self._pool.pop(host)
 
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-        connect_kwargs: dict = {
-            "hostname": host,
-            "username": user,
-            "port": port,
-            "timeout": 15,
-            "allow_agent": True,
-            "look_for_keys": True,
-        }
-        if key_path:
-            expanded = os.path.expanduser(key_path)
-            connect_kwargs["key_filename"] = expanded
-        elif password:
-            connect_kwargs["password"] = password
-
+        # --- Phase 1: TCP + SSH handshake ---
         try:
-            client.connect(**connect_kwargs)
-        except Exception as exc:
-            raise SSHError(f"Cannot connect to {host}:{port} as {user}: {exc}") from exc
+            sock = socket.create_connection((host, port), timeout=15)
+        except OSError as exc:
+            raise SSHError(f"Cannot reach {host}:{port}: {exc}") from exc
 
+        transport = paramiko.Transport(sock)
+        transport.set_missing_host_key_policy = lambda *_: None  # not used on Transport
+        try:
+            transport.start_client(timeout=15)
+        except paramiko.SSHException as exc:
+            transport.close()
+            raise SSHError(f"SSH handshake failed with {host}:{port}: {exc}") from exc
+
+        # --- Phase 2: Authentication ---
+        authenticated = self._authenticate(transport, host, user, key_path, password, port)
+
+        if not authenticated:
+            transport.close()
+            _no_creds_hint = (
+                f"Authentication failed for {user}@{host}:{port}.\n"
+                "  • Run `arc auth login` to configure SSH credentials.\n"
+                "  • See `help config osx` / `help config win` / `help config nix`."
+            )
+            raise SSHError(_no_creds_hint)
+
+        # Wrap the authenticated transport in an SSHClient so exec_command works.
+        client = paramiko.SSHClient()
+        client._transport = transport  # noqa: SLF001 — intentional private access
         self._pool[host] = client
         return client
 
+    def _authenticate(
+        self,
+        transport: paramiko.Transport,
+        host: str,
+        user: str,
+        key_path: str,
+        password: str,
+        port: int,
+    ) -> bool:
+        """Work through the auth method sequence.  Returns True if authenticated."""
+
+        # 1. SSH agent keys.
+        try:
+            agent = paramiko.Agent()
+            for agent_key in agent.get_keys():
+                if _try_pubkey(transport, user, agent_key):
+                    return True
+        except Exception:
+            pass  # no agent running — not an error
+
+        # 2. Configured key file.
+        if key_path:
+            expanded = os.path.expanduser(key_path)
+            for key_class in _ALL_KEY_CLASSES:
+                try:
+                    key = key_class.from_private_key_file(expanded)
+                    if _try_pubkey(transport, user, key):
+                        return True
+                except (paramiko.SSHException, IOError, OSError):
+                    continue
+
+        # 3. Default key files (~/.ssh/id_*).
+        if not key_path:
+            for default_path, key_class in _DEFAULT_KEY_FILES:
+                expanded = os.path.expanduser(default_path)
+                if not os.path.exists(expanded):
+                    continue
+                try:
+                    key = key_class.from_private_key_file(expanded)
+                    if _try_pubkey(transport, user, key):
+                        return True
+                except (paramiko.SSHException, IOError, OSError):
+                    continue
+
+        # 4. Keyboard-interactive — handles password + 2FA chains (Duo, TOTP, etc.)
+        #    The handler auto-fills password prompts and surfaces 2FA challenges.
+        handler = _make_interactive_handler(password)
+        try:
+            transport.auth_interactive(user, handler)
+            if transport.is_authenticated():
+                return True
+        except paramiko.AuthenticationException:
+            pass
+
+        # 5. Plain password auth — fallback for servers that don't support
+        #    keyboard-interactive (rare, but some older devices).
+        if password:
+            try:
+                transport.auth_password(user, password)
+                if transport.is_authenticated():
+                    return True
+            except paramiko.AuthenticationException:
+                pass
+
+        return False
