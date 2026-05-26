@@ -1,12 +1,15 @@
 {
-  "_comment": "ARC — Assisted Remote Console — config file. Copy to ~/.arc/config.json",
+  "_comment": "ARC config template — copy to the location shown by `arc auth show`",
+  "_note": "Secrets (bearer_token, client_secret, ssh.password) are stored in the OS keychain, not here",
   "scm": {
+    "_note": "Use bearer_token OR all three OAuth fields (client_id + client_secret + tsg_id)",
     "bearer_token": "",
-    "client_id": "your-client-id",
-    "client_secret": "your-client-secret",
-    "tsg_id": "your-tsg-id"
+    "client_id": "your-scm-client-id",
+    "client_secret": "your-scm-client-secret",
+    "tsg_id": "your-scm-tsg-id"
   },
   "ssh": {
+    "_note": "SSH credentials — prefer key_path over password",
     "user": "admin",
     "key_path": "~/.ssh/panos_key",
     "password": "",

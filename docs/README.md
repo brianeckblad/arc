@@ -1,6 +1,7 @@
 # ARC Help
 
-ARC — Assisted Remote Console — is a PAN-OS-style shell for Palo Alto Networks SCM environments with SSH passthrough to managed PAN-OS devices.
+ARC — Assisted Remote Console — is a PAN-OS-style shell for Palo Alto Networks
+SCM environments with interactive SSH access to managed PAN-OS devices.
 
 ## How help works inside ARC
 
@@ -8,15 +9,15 @@ ARC — Assisted Remote Console — is a PAN-OS-style shell for Palo Alto Networ
 - `help <topic>` reads Markdown from this `docs/` folder and renders it inside the ARC CLI.
 - `help commands` lists documented command topics.
 - `help show system info` opens the command detail page for `show system info`.
-- `help remote` explains SSH passthrough mode.
+- `help remote` explains the interactive SSH session model.
 
 ## Core workflows
 
 1. Set the SCM folder with `folder <name>`.
 2. List managed devices with `ls` or `devices`.
 3. Change API context with `cd <device>`.
-4. Run supported commands through SCM/SCM APIs by default.
-5. Use `--remote` for one remote SSH command, or `remote <device>` / `connect` for SSH passthrough mode.
+4. Run supported commands through SCM APIs by default.
+5. Use `connect` or `remote <device>` to open an interactive SSH session on a device.
 
 See also: `help usage`, `help architecture`, and `help configuration`.
 

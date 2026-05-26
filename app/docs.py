@@ -26,20 +26,19 @@ DOCS_ROOT = Path(__file__).resolve().parents[1] / "docs"
 COMMAND_DOCS_ROOT = DOCS_ROOT / "commands"
 
 SHELL_TOPICS = {
-    "cd": "commands/cd.md",
-    "remote": "commands/remote.md",
-    "connect": "commands/connect.md",
-    "disconnect": "commands/disconnect.md",
-    "exit": "commands/exit.md",
-    "quit": "commands/exit.md",
-    "ls": "commands/ls.md",
-    "devices": "commands/ls.md",
-    "pwd": "commands/pwd.md",
-    "folder": "commands/folder.md",
-    "clear": "commands/clear.md",
-    "help": "commands/help.md",
-    "?": "commands/help.md",
-    "docs": "commands/help.md",
+    "cd":       "commands/cd.md",
+    "remote":   "commands/remote.md",
+    "connect":  "commands/connect.md",
+    "exit":     "commands/exit.md",
+    "quit":     "commands/exit.md",
+    "ls":       "commands/ls.md",
+    "devices":  "commands/ls.md",
+    "pwd":      "commands/pwd.md",
+    "folder":   "commands/folder.md",
+    "clear":    "commands/clear.md",
+    "help":     "commands/help.md",
+    "?":        "commands/help.md",
+    "docs":     "commands/help.md",
 }
 
 GENERAL_TOPICS = {

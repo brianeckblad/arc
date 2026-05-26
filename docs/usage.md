@@ -27,32 +27,49 @@ show routing route
 show security policy
 ```
 
-## One-command SSH override
+## Interactive SSH session
 
-Append `--remote` while typing a registered command.
+`connect` and `remote <device>` open a true interactive SSH session. ARC
+authenticates using stored credentials (keychain + 2FA), then hands the
+terminal directly to the device.
+
+You are ON the device — every keystroke goes to it; every byte from the device
+is written to your terminal. ARC is a transparent byte pipe; no interception, no
+logging, no command dispatch.
+
+Type `exit` on the device to close the session and return to the ARC prompt.
+
+### SSH to a named device directly
 
 ```text
-show system info --remote
-ping host 8.8.8.8 --remote
+arc > remote fw-dallas-01
+
+✓ Authenticated — handing terminal to fw-dallas-01
+ARC is now a transparent pipe. Every keystroke goes directly to the device.
+Type 'exit' on the device to close the session and return to ARC.
+
+admin@fw-dallas-01> show system info
+...
+admin@fw-dallas-01> exit
+
+SSH session ended. Back in ARC — device context fw-dallas-01 preserved.
+arc:fw-dallas-01 >
 ```
 
-This runs only that command through SSH, then returns to API mode.
+### SSH to the current device
 
-## SSH passthrough
-
-```text
-remote fw-dallas-01
-show system info
-show counter global filter severity drop
-exit
-```
-
-Or use the current `cd` device:
+Use `cd` to set the device context, then `connect`:
 
 ```text
-cd fw-dallas-01
-connect
-show system info
-exit
+arc > cd fw-dallas-01
+arc:fw-dallas-01 > connect
+
+✓ Authenticated — handing terminal to fw-dallas-01
+...
+admin@fw-dallas-01> show system info
+admin@fw-dallas-01> exit
+
+SSH session ended. Back in ARC — device context fw-dallas-01 preserved.
+arc:fw-dallas-01 >
 ```
 

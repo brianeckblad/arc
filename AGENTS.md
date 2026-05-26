@@ -755,18 +755,15 @@ Handled directly in `ArcShell._dispatch()` before the registry is consulted:
 | Command | Behavior |
 |---------|----------|
 | `cd <device>` | Change Device in SCM — fuzzy-matches hostname / serial / IP. **Tab** after `cd ` lists all managed devices. |
-| `remote <device>` | SSH Passthrough to Device — connects to the target device and forwards subsequent non-shell commands verbatim over SSH. **Tab** after `remote ` lists all managed devices. |
-| `connect` | SSH to Device — connects to the current `cd` device and enters SSH mode. Optional `connect <device>` is accepted, but help shows `connect` as the canonical form. |
-| `disconnect` | Only shown in SSH mode. Exits SSH passthrough and stays at the current device context in API mode. |
-| `exit` (in SSH mode) | Only shown in SSH mode. Same as `disconnect` — returns to API mode for the current device. |
-| `exit` (at top level) | Close all connections and quit ARC. |
+| `remote <device>` | SSH to Device — opens an interactive SSH session on the named device (also sets device context). **Tab** after `remote ` lists all managed devices. |
+| `connect` | SSH to Device — opens an interactive SSH session on the current `cd` device. |
+| `exit` | Exit ARC — closes all connections and quits. |
 | `ls` / `devices` | List managed devices under the current folder and refresh the device cache. |
-| `pwd` | Print current device, mode (API or SSH), and active SCM folder. |
+| `pwd` | Print current device, SSH credential status, and active SCM folder. |
 | `folder <name>` | Set `ShellState.folder` (used by all SCM API calls). **Tab** after `folder ` lists available SCM folders. |
 | `?` / `help` | Print the full command reference. |
 | `help <topic>` | Render Markdown from `docs/` inside the CLI. |
 | `docs` | Open `docs/README.md` in the default browser. |
-| `help config` | Show credential / configuration help. |
 | `clear` | Clear the terminal. |
 | `--remote` | Not listed as a shell command. It appears only as a completion suffix while typing a registered command and runs that one command remotely. |
 
@@ -787,34 +784,40 @@ These are the canonical interaction patterns for ARC. All future shell features 
 | `help ` | Docs topics and registered command names |
 | `show sy` | All matching ARC command prefixes |
 | `show system info --` | `--remote` suffix for running that single command remotely |
-| *(in SSH mode)* | Common PAN-OS CLI command hints |
 
 Device and folder caches are populated at startup when SCM is configured. Both caches refresh on `ls` / `devices`.
 
-#### Two distinct SSH execution paths
+#### Interactive SSH model
 
-| Path | Trigger | Scope |
-|------|---------|-------|
-| `--remote` flag | Append `--remote` to any registered command while typing it | Single command only; returns to API mode after |
-| `remote <device>` | Connect directly to a named device | SSH passthrough mode until `exit` / `disconnect` |
-| `connect` | Connect to the current `cd` device | SSH passthrough mode until `exit` / `disconnect` |
+`connect` and `remote <device>` open a true interactive PTY session. ARC authenticates
+using stored credentials (keychain + 2FA), then hands the terminal directly to the device.
 
-In SSH passthrough mode the prompt changes to `arc:fw-dallas-01[ssh] > ` and every command is
-forwarded verbatim to the device. Shell built-ins (`cd`, `pwd`, `ls`, `folder`, `help`, `docs`, `?`) still work.
+You are ON the device — every keystroke goes to it; every byte from the device is written
+to your terminal. ARC is a transparent byte pipe; no interception, no logging, no command
+dispatch. The session ends when you type `exit` on the device; the ARC prompt reappears
+automatically.
+
+Authentication order:
+1. SSH agent keys
+2. Configured key file (`arc auth login --ssh-key`)
+3. Default key files (`~/.ssh/id_ed25519`, `id_rsa`, `id_ecdsa`)
+4. Keyboard-interactive (auto-fills stored password from keychain, surfaces 2FA prompts)
+5. Plain password fallback
 
 #### `?` is the canonical help trigger
 
 `?` and `help` are identical for the short command reference. `help <topic>` opens full docs from `docs/`.
 
-#### `pwd` always shows mode
+#### `pwd` always shows credential status
 
-`pwd` shows device name, serial, IP, current mode (API or SSH), and active SCM folder.
+`pwd` shows device name, serial, IP, and active SCM folder. SSH credential status is shown
+at connection time, not in `pwd`.
 
 #### `cd` never starts an SSH session
 
-`cd` only changes the SCM/API device context. To run commands via SSH, use `connect` for the current
-device or `remote <device>` for a named device. Do not list `cd ..` / `cd /` in help output; they may
-remain accepted as quiet convenience aliases.
+`cd` only changes the SCM/API device context. To open an interactive SSH session, use `connect`
+for the current device or `remote <device>` for a named device. Do not list `cd ..` / `cd /` in
+help output; they may remain accepted as quiet convenience aliases.
 
 #### Folder context applies to all SCM calls
 

@@ -379,16 +379,13 @@ class ArcShell:
         """Change the active SCM/API device context.
 
         This never starts SSH. Use `connect` for the current device or
-        `remote <device>` for SSH passthrough.
+        `remote <device>` to open an interactive SSH session.
         """
         if not args or args[0] in ("..", "/"):
             self._state.device = None
-            self._state.ssh_mode = False
             console.print("[cyan]Device context cleared.[/cyan] SCM / global")
             return
 
-        # Entering a new device context always drops SSH mode
-        self._state.ssh_mode = False
 
         target = " ".join(args)
         if not self._state.devices_cache:
@@ -454,17 +451,12 @@ class ArcShell:
     # ------------------------------------------------------------------
 
     def _cmd_connect(self, args: list[str], require_target: bool = False) -> None:
-        """Connect to a device via SSH and hand the terminal over to the remote shell.
+        """Connect to a device via SSH and hand the terminal over to the remote shell."""
+        # Treat 'connect help' / 'connect ?' as a help request, not a hostname.
+        if args and args[0].lower() in ("help", "?"):
+            self._cmd_context_help(["connect"])
+            return
 
-        This is a true PTY session — ARC steps out of the way completely.
-        Every keystroke goes directly to the device; every byte from the device
-        is written straight to stdout.  ARC command dispatch is bypassed for the
-        duration.  When the user types 'exit' on the device the SSH channel closes
-        and ARC's prompt reappears.
-
-        ``connect``              — SSH to the current ``cd`` device.
-        ``remote <device>``      — SSH to a named device (also sets device context).
-        """
         if require_target and not args:
             console.print(
                 "[yellow]Usage:[/yellow] remote <device-name | hostname | ip | serial>\n"
@@ -479,6 +471,11 @@ class ArcShell:
                 "Tab after 'remote ' to see available devices."
             )
             return
+
+        # Snapshot the current device context so we can restore it if the
+        # connection fails.  A failed connect should not permanently change
+        # which device is active — only a successful session should do that.
+        previous_device = self._state.device
 
         if args:
             target = " ".join(args)
@@ -502,6 +499,7 @@ class ArcShell:
 
         host = self._state.device.get("ip_address") or self._state.device.get("hostname") or ""
         if not host:
+            self._state.device = previous_device
             console.print("[red]Cannot determine SSH target — no IP or hostname for this device.[/red]")
             return
 
@@ -511,8 +509,6 @@ class ArcShell:
         ssh_password = str(cfg_ssh.password)
         ssh_port = int(cfg_ssh.port)
 
-        # Pre-flight: if no auth method at all, prompt now so the user knows
-        # what's happening before the connection attempt starts.
         if not ssh_key_path and not ssh_password:
             console.print(
                 "[yellow]⚠  No SSH credentials stored for ARC.[/yellow]\n"
@@ -534,6 +530,9 @@ class ArcShell:
                 port=ssh_port,
             )
         except Exception as exc:
+            # Restore the previous device context so a failed connect
+            # does not strand the user at a broken device stub.
+            self._state.device = previous_device
             console.print(f"[red]SSH connection failed:[/red] {exc}")
             return
 
@@ -702,8 +701,8 @@ class ArcShell:
             "[bold cyan]ARC — Assisted Remote Console[/bold cyan]\n"
             "A PAN-OS-style interactive shell for Palo Alto Networks SCM environments.\n"
             "Commands are routed through SCM APIs by default.\n"
-            "Use [bold]remote <device>[/bold] for SSH passthrough, or [bold]connect[/bold]\n"
-            "after [bold]cd <device>[/bold] to SSH into the current device.",
+            "Use [bold]connect[/bold] or [bold]remote <device>[/bold] to open an\n"
+            "interactive SSH session on a device.",
             title="Help  (? also works)", border_style="cyan",
         ))
 
