@@ -1,11 +1,11 @@
 {
   "_comment": "ARC config template — copy to the location shown by `arc auth show`",
-  "_note": "Secrets (bearer_token, client_secret, ssh.password) are stored in the OS keychain, not here",
+  "_note": "Secrets (bearer_token, client_secret, ssh.password) are stored in the OS keychain or temporary env vars, not here",
   "scm": {
-    "_note": "Use bearer_token OR all three OAuth fields (client_id + client_secret + tsg_id)",
+    "_note": "Use bearer_token OR OAuth. Leave bearer_token and client_secret blank in this file; enter secrets with arc auth login.",
     "bearer_token": "",
     "client_id": "your-scm-client-id",
-    "client_secret": "your-scm-client-secret",
+    "client_secret": "",
     "tsg_id": "your-scm-tsg-id"
   },
   "ssh": {

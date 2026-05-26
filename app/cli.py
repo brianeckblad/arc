@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import getpass
 import json
 import stat
 from typing import Optional
@@ -13,19 +14,19 @@ from rich.console import Console
 
 from app.api.client import SCMClient
 from app.config import (
+    CONFIG_DIR,
+    CONFIG_FILE,
+    ConfigSecurityError,
     clear_keychain,
     keychain_available,
     load_config,
     save_config,
-    CONFIG_DIR,
-    CONFIG_FILE,
 )
 from app.docs import (
     COMMAND_DOCS_ROOT,
     COMMANDS,
     DOCS_ROOT,
     open_docs_in_browser,
-    render_help_topic,
     slugify,
 )
 from app.shell import ArcShell
@@ -114,8 +115,8 @@ def auth_login(
         )
     else:
         console.print(
-            f"  [yellow]⚠  OS keychain unavailable — secrets will be stored in {CONFIG_FILE}[/yellow]\n"
-            "  Consider setting SCM_BEARER_TOKEN / SCM_CLIENT_SECRET as env vars instead.\n"
+            "  [yellow]⚠  OS keychain unavailable — ARC will not write secrets to disk.[/yellow]\n"
+            "  Use environment variables for secrets until keychain access is available.\n"
         )
 
     def _prompt(label: str, current: str, secret: bool = False) -> str:
@@ -123,7 +124,7 @@ def auth_login(
         hint = f" [[dim]{placeholder}[/dim]]" if placeholder else ""
         console.print(f"  {label}{hint}: ", end="")
         try:
-            val = input()
+            val = getpass.getpass("") if secret else input()
         except (EOFError, KeyboardInterrupt):
             val = ""
         return val.strip() or current
@@ -143,8 +144,17 @@ def auth_login(
     console.print("\n[yellow]─ SSH Defaults ─[/yellow]")
     cfg.ssh.user = ssh_user or _prompt("SSH Username", cfg.ssh.user)
     cfg.ssh.key_path = ssh_key or _prompt("SSH Key Path", cfg.ssh.key_path)
+    cfg.ssh.password = _prompt("SSH Password (blank if using key auth)", cfg.ssh.password, secret=True)
 
-    save_config(cfg)
+    try:
+        save_config(cfg)
+    except ConfigSecurityError as exc:
+        console.print(f"\n[yellow]⚠[/yellow] {exc}")
+        console.print(
+            f"[green]✓[/green] Non-sensitive config saved to [bold]{CONFIG_FILE}[/bold]  "
+            "[dim](mode 0600)[/dim]"
+        )
+        raise typer.Exit(1) from exc
 
     if kc:
         console.print(
@@ -152,7 +162,10 @@ def auth_login(
             f"[green]✓[/green] Config file: [bold]{CONFIG_FILE}[/bold]  [dim](mode 0600)[/dim]"
         )
     else:
-        console.print(f"\n[green]✓[/green] Saved to [bold]{CONFIG_FILE}[/bold]  [dim](mode 0600)[/dim]")
+        console.print(
+            f"\n[green]✓[/green] Non-sensitive config saved to [bold]{CONFIG_FILE}[/bold]  "
+            "[dim](mode 0600)[/dim]"
+        )
 
 
 @auth_app.command("show")
@@ -181,7 +194,7 @@ def auth_show() -> None:
     else:
         console.print(
             "[bold cyan]Keychain:[/bold cyan] [yellow]unavailable[/yellow]  "
-            "— secrets fall back to config file or env vars"
+            "— secrets must come from environment variables"
         )
     console.print()
 
@@ -213,17 +226,17 @@ app.add_typer(config_app, name="config")
 # _note fields are ignored by load_config() — they document the file for humans.
 _CONFIG_TEMPLATE = {
     "_note": (
-        "ARC config — fill in the REPLACE_WITH_* values then run: arc auth login  "
-        "(secrets are moved to the OS keychain by that command)"
+        "ARC config — fill in non-secret REPLACE_WITH_* values, then run: arc auth login  "
+        "(secrets are prompted securely and stored in the OS keychain)"
     ),
     "scm": {
         "_note": (
-            "Use bearer_token OR the three OAuth fields (client_id + client_secret + tsg_id), "
-            "not both.  Leave bearer_token blank to use OAuth."
+            "Use bearer_token OR OAuth. Do not put secrets in this file; leave bearer_token "
+            "and client_secret blank and enter them via arc auth login or env vars."
         ),
         "bearer_token": "",
         "client_id":    "REPLACE_WITH_SCM_CLIENT_ID",
-        "client_secret": "REPLACE_WITH_SCM_CLIENT_SECRET",
+        "client_secret": "",
         "tsg_id":       "REPLACE_WITH_SCM_TSG_ID",
     },
     "ssh": {

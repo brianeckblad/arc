@@ -5,7 +5,7 @@
 # 1. Generate a starter config file (annotated with what to fill in)
 arc config generate
 
-# 2. Edit the file — replace the REPLACE_WITH_* placeholders
+# 2. Edit the file — replace non-secret REPLACE_WITH_* placeholders
 notepad "$env:APPDATA\arc\config.json"
 
 # 3. Run the wizard — migrates secrets to Credential Manager, writes safe values to disk
@@ -104,13 +104,16 @@ arc config generate --force  # overwrite an existing config file
 ```
 
 The generated file has `_note` fields explaining each section.
-Edit the `REPLACE_WITH_*` values, then run `arc auth login` to migrate
-secrets to Credential Manager.
+Edit only non-secret `REPLACE_WITH_*` values, then run `arc auth login` to
+enter secrets securely and store them in Credential Manager.
 
-## Environment variables (override Credential Manager + config file)
+## Environment variables (temporary override)
 
-Set permanently via **System → Advanced System Settings → Environment Variables**,
-or in the current PowerShell session:
+Environment variables override Credential Manager and config values. Use them
+for the current PowerShell session or CI jobs. Do **not** store long-lived
+secrets permanently in Windows user environment variables or PowerShell
+profiles; those values are plaintext from ARC's perspective and easier to leak
+than Credential Manager entries.
 
 ```powershell
 # SCM — bearer token takes precedence over OAuth credentials
@@ -129,10 +132,10 @@ $env:ARC_SSH_KEY  = "$env:USERPROFILE\.ssh\panos_key"
 # $env:ARC_DEBUG = "1"
 ```
 
-To set them permanently from PowerShell (user scope):
+If you set non-secret values permanently from PowerShell (user scope), use:
 
 ```powershell
-[Environment]::SetEnvironmentVariable("SCM_BEARER_TOKEN", "your-token", "User")
+[Environment]::SetEnvironmentVariable("ARC_SSH_USER", "admin", "User")
 ```
 
 ## Config file location

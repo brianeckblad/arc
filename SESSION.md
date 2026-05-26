@@ -3,25 +3,26 @@
 <!-- Clear with: wipe | Clear and archive with: arc -->
 
 ## Current Work
-**Goal:** Secure credential storage — keychain + chmod 600 config file
+ **Goal:** Security hardening — fail-closed secret storage and updated setup guidance
 **Branch:** main
 **Status:** done
 
 **Recent progress:**
-- `app/config.py` rewritten: secrets (bearer_token, client_secret, ssh.password) go to OS keychain via `keyring`; non-sensitive values stay in config.json; `save_config()` always chmod 600s the file; legacy plaintext secrets migrate on next login
-- `app/cli.py`: `auth login` shows keychain vs file routing; `auth show` reports keychain availability; new `arc auth clear` command removes keychain entries
-- `docs/configuration.md` updated with storage table, migration guide, CI fallback notes
+- Hardened `app/config.py`: secrets are never written to `config.json`; keychain write failures save only non-sensitive config then raise `ConfigSecurityError`; config dir/file permissions enforced as 0700/0600 where supported
+- Hardened `app/cli.py`: secret prompts now use `getpass`; `arc auth login` prompts for SSH password for password+2FA workflows; keychain failure message is fail-closed and points to env vars
+- Updated config docs/templates to discourage long-lived secrets in shell profiles and remove plaintext secret placeholders
+- Created/updated `.github/copilot-instructions.md` and `AGENTS.md` with fail-closed ARC credential storage rules
 
 **Key decisions:**
-- `keyring` was already a declared dependency — no new dep needed
-- Secrets omitted from JSON entirely when keychain save succeeds
-- CI/headless fallback: if keychain unavailable, file still gets chmod 600 and env vars still override everything
-- `arc auth login` is the migration path for existing plaintext configs
+- Fail closed: no fallback path may persist bearer tokens, client secrets, or SSH passwords to disk
+- Environment variables are allowed for temporary shells/CI/secret-manager wrappers only; docs now discourage storing long-lived secrets in shell startup files
+- Existing legacy plaintext config values may be read for migration, but the next save strips them from disk; if keychain is unavailable they must be supplied again via env vars
 
 **Files in play:**
 - `app/config.py` — keychain helpers, updated load/save, clear_keychain()
 - `app/cli.py` — auth login/show/clear updates
-- `docs/configuration.md` — user-facing storage docs
+- `docs/configuration.md`, `docs/config-{osx,win,nix,generate}.md` — user-facing secure setup docs
+- `.github/copilot-instructions.md`, `AGENTS.md` — security design rules for future agents
 
 ---
 

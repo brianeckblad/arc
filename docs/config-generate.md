@@ -21,12 +21,12 @@ arc config generate --force   # overwrite an existing config file
 
 ```json
 {
-  "_note": "ARC config — fill in the REPLACE_WITH_* values, then run: arc auth login",
+  "_note": "ARC config — fill in non-secret REPLACE_WITH_* values, then run: arc auth login",
   "scm": {
-    "_note": "Use bearer_token OR all three OAuth fields, not both",
+    "_note": "Do not put secrets in this file; leave bearer_token and client_secret blank",
     "bearer_token": "",
     "client_id":     "REPLACE_WITH_SCM_CLIENT_ID",
-    "client_secret": "REPLACE_WITH_SCM_CLIENT_SECRET",
+    "client_secret": "",
     "tsg_id":        "REPLACE_WITH_SCM_TSG_ID"
   },
   "ssh": {
@@ -49,9 +49,9 @@ inside the file.
 # Step 1 — generate
 arc config generate
 
-# Step 2 — fill in non-sensitive values (client_id, tsg_id)
-#           you can leave bearer_token / client_secret blank here;
-#           arc auth login will prompt for them
+# Step 2 — fill in non-sensitive values (client_id, tsg_id, SSH user/key)
+#           leave bearer_token / client_secret / password blank;
+#           arc auth login prompts securely and stores them in the OS keychain
 $EDITOR ~/.config/arc/config.json     # Linux / macOS
 notepad %APPDATA%\arc\config.json     # Windows
 

@@ -40,6 +40,10 @@ _KEY_SCM_SECRET    = "scm.client_secret"
 _KEY_SSH_PASSWORD  = "ssh.password"
 
 
+class ConfigSecurityError(Exception):
+    """Raised when ARC refuses to persist secrets insecurely."""
+
+
 # ---------------------------------------------------------------------------
 # Keychain helpers
 # ---------------------------------------------------------------------------
@@ -84,7 +88,7 @@ def keychain_available() -> bool:
     """Return True when the OS keychain can be read/written.
 
     Used by ``arc auth show`` to surface a warning in headless environments
-    where keychain storage silently falls back to the config file.
+    where secrets must be supplied through environment variables instead.
     """
     try:
         keyring.get_password(_KEYCHAIN_SERVICE, "__probe__")
@@ -207,34 +211,37 @@ def save_config(cfg: ArcConfig) -> None:
     """Persist config: secrets to OS keychain, non-sensitive values to config.json.
 
     The config file is always written with mode 0600 (owner read/write only).
-    Secrets are never written to disk when the keychain is available — any
-    legacy plaintext secrets already in the file are removed on save.
+    Secrets are never written to disk.  If the OS keychain cannot store a
+    non-empty secret, non-sensitive config is still saved and ConfigSecurityError
+    is raised so callers can tell the user to use keychain or env vars.
     """
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    CONFIG_DIR.chmod(stat.S_IRWXU)
 
-    # Store secrets in the keychain.  If the keychain is unavailable (e.g.
-    # headless CI) _keychain_set returns False and we fall back to the file.
-    bearer_saved  = _keychain_set(_KEY_SCM_BEARER,   cfg.scm.bearer_token)
-    secret_saved  = _keychain_set(_KEY_SCM_SECRET,   cfg.scm.client_secret)
-    sshpass_saved = _keychain_set(_KEY_SSH_PASSWORD, cfg.ssh.password)
+    # Store secrets in the keychain.  Empty values delete existing entries.
+    failed_secret_keys: list[str] = []
+    for key, value in (
+        (_KEY_SCM_BEARER, cfg.scm.bearer_token),
+        (_KEY_SCM_SECRET, cfg.scm.client_secret),
+        (_KEY_SSH_PASSWORD, cfg.ssh.password),
+    ):
+        saved = _keychain_set(key, value)
+        if value and not saved:
+            failed_secret_keys.append(key)
 
-    # Build the on-disk payload.  Omit secrets when they were saved to keychain.
+    # Build the on-disk payload.  Secrets are deliberately omitted even when
+    # keychain storage fails.  This also strips legacy plaintext secrets from
+    # config.json the next time save_config() runs.
     scm_block: dict = {
         "client_id": cfg.scm.client_id,
         "tsg_id":    cfg.scm.tsg_id,
     }
-    if not bearer_saved:
-        scm_block["bearer_token"]  = cfg.scm.bearer_token
-    if not secret_saved:
-        scm_block["client_secret"] = cfg.scm.client_secret
 
     ssh_block: dict = {
         "user":     cfg.ssh.user,
         "key_path": cfg.ssh.key_path,
         "port":     cfg.ssh.port,
     }
-    if not sshpass_saved:
-        ssh_block["password"] = cfg.ssh.password
 
     data = {
         "scm":            scm_block,
@@ -242,11 +249,21 @@ def save_config(cfg: ArcConfig) -> None:
         "default_folder": cfg.default_folder,
     }
 
-    CONFIG_FILE.write_text(json.dumps(data, indent=2))
-
-    # Restrict to owner read/write only — defense-in-depth even if the
-    # keychain migration already moved secrets out of this file.
+    flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+    fd = os.open(CONFIG_FILE, flags, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as handle:
+        json.dump(data, handle, indent=2)
+        handle.write("\n")
     CONFIG_FILE.chmod(stat.S_IRUSR | stat.S_IWUSR)
+
+    if failed_secret_keys:
+        failed = ", ".join(failed_secret_keys)
+        raise ConfigSecurityError(
+            "OS keychain could not store ARC secret(s): "
+            f"{failed}. Secrets were not written to config.json. "
+            "Use `arc auth login` on a machine with keychain access, or provide "
+            "secrets through environment variables for this session."
+        )
 
 
 def clear_keychain() -> None:

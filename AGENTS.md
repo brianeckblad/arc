@@ -852,7 +852,11 @@ on every SCM REST call. Change it with `folder <name>` + Tab.
 
 ### Security Notes for ARC
 
-- Credentials are stored in `~/.arc/config.json` (user-owned, mode 600 recommended). Never commit this file.
+- Secrets (`SCM_BEARER_TOKEN`, `SCM_CLIENT_SECRET`, `ARC_SSH_PASS`, and config equivalents) are stored only in the OS keychain or supplied as temporary environment variables. ARC must never write secrets to `config.json`.
+- `~/.arc/config.json` / platform config path stores non-sensitive values only (`client_id`, `tsg_id`, SSH user/key path/port, default folder) and must be written with owner-only permissions (`0700` directory, `0600` file where supported).
+- If keychain storage fails, fail closed: save only non-sensitive config, do not persist secrets to disk, and tell the user to use keychain access or temporary environment variables.
+- `arc auth login` must use non-echoing prompts for secrets (`getpass` / hidden input). Never collect tokens, client secrets, or SSH passwords with plain `input()`.
+- Avoid documenting long-lived secrets in shell profiles (`~/.zshrc`, `~/.bashrc`, PowerShell profile). Environment variables are for temporary sessions, CI, or secret-manager wrappers only.
 - The `_mask()` helper in `cli.auth_show` ensures credentials are never printed in clear.
 - `ARC_DEBUG=1` prints full stack traces — do not enable in shared terminal sessions.
 - SSH `AutoAddPolicy` is used for managed devices; acceptable in controlled network-ops environments but means host keys are not verified. Document this when deploying.

@@ -1,4 +1,4 @@
-i# Configuration — macOS
+# Configuration — macOS
 
 ## Quick start
 
@@ -6,7 +6,7 @@ i# Configuration — macOS
 # 1. Generate a starter config file (0600, annotated with what to fill in)
 arc config generate
 
-# 2. Edit the file — replace the REPLACE_WITH_* placeholders
+# 2. Edit the file — replace non-secret REPLACE_WITH_* placeholders
 open "$(arc auth show 2>&1 | grep 'Config file:' | awk '{print $3}')"
 # or just: open ~/Library/Application\ Support/arc/config.json
 
@@ -103,12 +103,15 @@ arc config generate --force  # overwrite an existing config file
 ```
 
 The generated file has `_note` fields explaining each section.
-Edit the `REPLACE_WITH_*` values, then run `arc auth login` to migrate
-secrets to the Keychain.
+Edit only non-secret `REPLACE_WITH_*` values, then run `arc auth login` to
+enter secrets securely and store them in the Keychain.
 
-## Environment variables (override keychain + config file)
+## Environment variables (temporary override)
 
-Add to `~/.zshrc` (or `~/.zprofile` for login shells):
+Environment variables override keychain and config values. Use them for a
+single terminal session or automation. Do **not** put long-lived secrets in
+`~/.zshrc` or `~/.zprofile`; those files are plaintext and often backed up or
+synced. Prefer Keychain via `arc auth login` for local development.
 
 ```bash
 # SCM — bearer token takes precedence over OAuth credentials
@@ -128,7 +131,9 @@ export ARC_SSH_KEY=~/.ssh/panos_key
 # export ARC_DEBUG=1
 ```
 
-Reload your shell:
+When you close the terminal, these temporary values are gone. If you only set
+non-secret values such as `ARC_SSH_USER` or `ARC_SSH_KEY` in a profile, reload
+your shell with:
 
 ```bash
 source ~/.zshrc

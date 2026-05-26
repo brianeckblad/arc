@@ -6,7 +6,7 @@
 # 1. Generate a starter config file (0600, annotated with what to fill in)
 arc config generate
 
-# 2. Edit the file — replace the REPLACE_WITH_* placeholders
+# 2. Edit the file — replace non-secret REPLACE_WITH_* placeholders
 ${EDITOR:-nano} ~/.config/arc/config.json
 
 # 3. Run the wizard — migrates secrets to Secret Service, writes safe values to disk
@@ -103,7 +103,8 @@ daemon is running:
 
 1. `arc auth login` will warn you that the keychain is unavailable.
 2. Use **environment variables** instead (see below).
-3. If you must use the config file, ARC still writes it with mode `0600`.
+3. The config file is still written with mode `0600`, but secrets are not
+   written there.
 
 ```bash
 # Required Secret Service package (desktop only — skip on servers)
@@ -119,12 +120,15 @@ arc config generate --force  # overwrite an existing config file
 ```
 
 The generated file has `_note` fields explaining each section.
-Edit the `REPLACE_WITH_*` values, then run `arc auth login` to migrate
-secrets to Secret Service.
+Edit only non-secret `REPLACE_WITH_*` values, then run `arc auth login` to
+enter secrets securely and store them in Secret Service.
 
-## Environment variables (override keychain + config file)
+## Environment variables (temporary override)
 
-Add to `~/.bashrc`, `~/.zshrc`, or `~/.profile`:
+Environment variables override keychain and config values. Use them for a
+single terminal session, a wrapper script that reads from a secret manager, or
+CI jobs. Do **not** put long-lived secrets in `~/.bashrc`, `~/.zshrc`, or
+`~/.profile`; those files are plaintext and often backed up or synced.
 
 ```bash
 # SCM — bearer token takes precedence over OAuth credentials
@@ -144,7 +148,8 @@ export ARC_SSH_KEY=~/.ssh/panos_key
 # export ARC_DEBUG=1
 ```
 
-Reload your shell:
+If you only set non-secret values such as `ARC_SSH_USER` or `ARC_SSH_KEY` in a
+profile, reload your shell with:
 
 ```bash
 source ~/.bashrc
