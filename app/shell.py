@@ -119,6 +119,45 @@ class ArcCompleter(Completer):
                         yield Completion(tsg, start_position=-len(partial_arg))
             return
 
+        # ---- show device <name> [snippets] → device name completion ----
+        if text.lower().startswith("show device ") and len(parts) >= 2:
+            # Parts: ["show", "device", <partial_name>, ...]
+            if len(parts) == 3 or (len(parts) == 2 and text.endswith(" ")):
+                # Completing device name
+                partial_name = parts[2] if len(parts) > 2 else ""
+                for device in self._shell._state.devices_cache:
+                    candidate = device.get("hostname") or device.get("name") or ""
+                    if candidate and candidate.lower().startswith(partial_name.lower()):
+                        yield Completion(candidate, start_position=-len(partial_name))
+                return
+            if len(parts) == 4 or (len(parts) == 3 and text.endswith(" ")):
+                # Completing "snippets" after the device name
+                partial_sub = parts[3] if len(parts) > 3 else ""
+                if "snippets".startswith(partial_sub.lower()):
+                    yield Completion("snippets", start_position=-len(partial_sub))
+                return
+
+        # ---- show snippet <name> → snippet name completion ----
+        if text.lower().startswith("show snippet ") and len(parts) >= 2:
+            partial_name = parts[2] if len(parts) > 2 else ""
+            # Use device snippets if in device context, else all
+            device = self._shell._state.device
+            if device and device.get("snippets"):
+                candidates = device.get("snippets") or []
+            else:
+                candidates = [s.get("name", "") for s in getattr(self._shell, "_snippets_cache", [])]
+                if not candidates:
+                    # Fall back to device caches' snippet union
+                    seen: set[str] = set()
+                    for d in self._shell._state.devices_cache:
+                        for sn in (d.get("snippets") or []):
+                            seen.add(sn)
+                    candidates = sorted(seen)
+            for name in candidates:
+                if name.lower().startswith(partial_name.lower()):
+                    yield Completion(name, start_position=-len(partial_name))
+            return
+
         # ---- help → command/topic completion ----
         if first == "help" and has_arg_space:
             partial_topic = " ".join(parts[1:]).lower()
@@ -719,13 +758,49 @@ class ArcShell:
     # ------------------------------------------------------------------
 
     def _cmd_devices(self) -> None:
-        """Refresh and display the managed device list."""
-        self._refresh_devices()
-        if not self._state.devices_cache:
-            console.print("[yellow]No devices found or API not configured.[/yellow]")
+        """Context-aware ls/devices command.
+
+        At root (no device selected) → refresh and show the device list.
+        In device context (after cd <device>) → show that device's detail
+        and its attached snippets.
+        """
+        if not self._state.device:
+            # Root context — show all devices
+            self._refresh_devices()
+            if not self._state.devices_cache:
+                console.print("[yellow]No devices found or API not configured.[/yellow]")
+                return
+            console.print(fmt.format_devices(self._state.devices_cache))
             return
-        table = fmt.format_devices(self._state.devices_cache)
-        console.print(table)
+
+        # Device context — show detail + snippets for the current device
+        if not self._scm:
+            console.print("[yellow]SCM not configured — cannot fetch device detail.[/yellow]")
+            return
+        device = self._state.device
+        hostname = device.get("hostname") or device.get("name") or ""
+        console.print(fmt.format_device_detail(device))
+
+        # Fetch and display snippets attached to this device
+        snippet_names: list[str] = device.get("snippets") or []
+        if not snippet_names:
+            console.print(f"[dim]No snippets attached to {hostname}.[/dim]")
+            return
+
+        all_snippets = self._scm.get_snippets()
+        by_name = {s.get("name"): s for s in all_snippets}
+        enriched: list[dict] = []
+        for name in snippet_names:
+            s = by_name.get(name)
+            if s and s.get("id"):
+                try:
+                    enriched.append(self._scm.get_snippet_detail(s["id"]))
+                except Exception:
+                    enriched.append(s)
+            else:
+                enriched.append({"name": name})
+
+        console.print(fmt.format_snippets(enriched, device_filter=hostname))
 
     # ------------------------------------------------------------------
     # Command: pwd
@@ -734,15 +809,34 @@ class ArcShell:
     def _cmd_pwd(self) -> None:
         """Show current device context, active SCM folder, TSG, and SSH credential status."""
         if self._state.device:
-            name = self._state.device.get("hostname") or self._state.device.get("name")
-            serial = self._state.device.get("serial") or "n/a"
-            ip = self._state.device.get("ip_address") or "n/a"
+            d = self._state.device
+            name    = d.get("hostname") or d.get("name") or "?"
+            serial  = d.get("serial_number") or d.get("name") or "n/a"
+            ip      = d.get("ip_address") or "n/a"
+            model   = d.get("model") or ""
+            sw_ver  = d.get("software_version") or ""
+            connected = "[green]connected[/green]" if d.get("is_connected") else "[red]disconnected[/red]"
+            snippets = d.get("snippets") or []
             console.print(
                 f"[bold cyan]Device:[/bold cyan] {name}  "
-                f"serial: {serial}  ip: {ip}  [API mode]"
+                f"serial: {serial}  ip: {ip}  {model}  {sw_ver}  {connected}"
+            )
+            if snippets:
+                console.print(
+                    f"[bold cyan]Snippets:[/bold cyan] {', '.join(snippets)}"
+                )
+            console.print(
+                "[dim]  ls → device detail + snippets  |  "
+                "show device snippets → full snippet list  |  "
+                "show snippet <name> → snippet detail[/dim]"
             )
         else:
             console.print("[bold cyan]Context:[/bold cyan] SCM / global  [API mode]")
+            console.print(
+                "[dim]  ls → device list  |  "
+                "cd <device> → enter device context  |  "
+                "show devices → full device table[/dim]"
+            )
         console.print(f"[bold cyan]SCM folder:[/bold cyan] {self._state.folder}")
         active_tsg = self._state.tsg_id or "(root / config default)"
         console.print(f"[bold cyan]TSG:[/bold cyan] {active_tsg}")
@@ -909,7 +1003,7 @@ class ArcShell:
             ("remote <device>",       "SSH to device — full interactive session  [dim](also sets device context)[/dim]"),
             ("folder <name>",         "Set the SCM Folder  [dim](Tab → available folders)[/dim]"),
             ("tsg <id>",              "Set the active TSG (Tenant Services Group)  [dim](Tab → configured TSG)[/dim]"),
-            ("ls",                    "List managed devices under the current folder"),
+            ("ls",                    "List devices (root) or device detail + snippets (in device context)"),
             ("pwd",                   "Show current device, SCM folder, and active TSG"),
             ("docs / docs <command>", "Show Documentation  [dim]docs <command> shows help in shell[/dim]"),
             ("? / help",              "Print this command reference"),
@@ -1083,6 +1177,13 @@ class ArcShell:
             "system_info":     lambda d: fmt.format_system_info(d),
             "raw":             lambda d: fmt.format_raw(str(d), title=key),
             "devices":         lambda d: fmt.format_devices(d),
+            "device_detail":   lambda d: fmt.format_device_detail(
+                                   d.get("device", d) if isinstance(d, dict) else d),
+            "device_snippets": lambda d: fmt.format_snippets(
+                                   d.get("snippets", []) if isinstance(d, dict) else d,
+                                   device_filter=d.get("device_name", "") if isinstance(d, dict) else ""),
+            "snippets":        lambda d: fmt.format_snippets(d if isinstance(d, list) else []),
+            "snippet_detail":  lambda d: fmt.format_snippet_detail(d if isinstance(d, dict) else {}),
             "interfaces":      lambda d: fmt.format_interfaces(d),
             "routes":          lambda d: fmt.format_routes(d),
             "security_policy": lambda d: fmt.format_security_policy(d),
@@ -1106,6 +1207,13 @@ class ArcShell:
                 for item in data:
                     console.print(item)
         elif isinstance(data, dict):
+            # Check for the sentinel _render key used by some handlers
+            if "_render" in data:
+                sentinel_render = data["_render"]
+                r = dispatch.get(sentinel_render)
+                if r:
+                    console.print(r(data))
+                    return
             console.print(fmt.format_dict(data, title=key))
         else:
             console.print(fmt.format_raw(str(data), title=key))

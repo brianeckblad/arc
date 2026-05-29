@@ -95,6 +95,119 @@ def _show_devices(ctx: ExecutionContext, args: dict) -> Any:
     return scm.get_devices(folder=ctx.folder)
 
 
+def _show_device_detail(ctx: ExecutionContext, args: dict) -> Any:
+    """Show detail for a named device — show device <hostname|serial>."""
+    scm = _require_scm(ctx)
+    target = args.get("name") or args.get("_positional", [None])[0] or ""
+    if not target:
+        # No name given and we're in a device context → show current device detail
+        if ctx.device:
+            devices = scm.get_devices()
+            serial = ctx.device.get("serial_number") or ctx.device.get("name") or ""
+            hostname = ctx.device.get("hostname") or ""
+            match = next(
+                (d for d in devices
+                 if d.get("hostname", "").lower() == hostname.lower()
+                 or d.get("serial_number") == serial
+                 or d.get("name") == serial),
+                None,
+            )
+            return {"_render": "device_detail", "device": match or ctx.device}
+        raise RuntimeError(
+            "Usage: show device <hostname>  — or use 'cd <device>' first"
+        )
+    devices = scm.get_devices()
+    match = next(
+        (d for d in devices
+         if d.get("hostname", "").lower() == target.lower()
+         or d.get("serial_number", "").lower() == target.lower()
+         or d.get("name", "").lower() == target.lower()),
+        None,
+    )
+    if not match:
+        raise RuntimeError(f"Device not found: {target!r}")
+    return {"_render": "device_detail", "device": match}
+
+
+def _show_device_snippets(ctx: ExecutionContext, args: dict) -> Any:
+    """Show snippets attached to a named device — show device <name> snippets."""
+    scm = _require_scm(ctx)
+    target = args.get("name") or args.get("_positional", [None])[0] or ""
+    if not target:
+        # No name → use device context
+        if ctx.device:
+            target = ctx.device.get("hostname") or ctx.device.get("name") or ""
+        else:
+            raise RuntimeError(
+                "Usage: show device <hostname> snippets  — or use 'cd <device>' first"
+            )
+
+    devices = scm.get_devices()
+    device = next(
+        (d for d in devices
+         if d.get("hostname", "").lower() == target.lower()
+         or d.get("serial_number", "").lower() == target.lower()
+         or d.get("name", "").lower() == target.lower()),
+        None,
+    )
+    if not device:
+        raise RuntimeError(f"Device not found: {target!r}")
+
+    snippet_names: list[str] = device.get("snippets") or []
+    if not snippet_names:
+        return {"_render": "device_snippets", "device_name": target, "snippets": []}
+
+    # Fetch all snippets and match by name, enriching with detail
+    all_snippets = scm.get_snippets()
+    by_name = {s.get("name"): s for s in all_snippets}
+    matched: list[dict] = []
+    for name in snippet_names:
+        s = by_name.get(name)
+        if s and s.get("id"):
+            try:
+                detail = scm.get_snippet_detail(s["id"])
+                matched.append(detail)
+            except Exception:
+                matched.append(s)
+        elif s:
+            matched.append(s)
+        else:
+            matched.append({"name": name})
+
+    return {
+        "_render": "device_snippets",
+        "device_name": device.get("hostname") or target,
+        "snippets": matched,
+    }
+
+
+def _show_snippets(ctx: ExecutionContext, args: dict) -> Any:
+    """Show all SCM snippets — optionally filtered to those used by a device."""
+    scm = _require_scm(ctx)
+    snippets = scm.get_snippets()
+    # If in device context, filter to snippets on this device automatically
+    if ctx.device and not args.get("name"):
+        device_snippets = set(ctx.device.get("snippets") or [])
+        if device_snippets:
+            snippets = [s for s in snippets if s.get("name") in device_snippets]
+    return snippets
+
+
+def _show_snippet_detail(ctx: ExecutionContext, args: dict) -> Any:
+    """Show full detail for a named snippet — show snippet <name>."""
+    scm = _require_scm(ctx)
+    target = args.get("name") or args.get("_positional", [None])[0] or ""
+    if not target:
+        raise RuntimeError("Usage: show snippet <name>")
+    all_snippets = scm.get_snippets()
+    match = next((s for s in all_snippets if s.get("name", "").lower() == target.lower()), None)
+    if not match:
+        raise RuntimeError(f"Snippet not found: {target!r}")
+    if match.get("id"):
+        return scm.get_snippet_detail(match["id"])
+    return match
+
+
 # ---------- PAN-OS command translations pending in SCM ----------
 
 def _pending_show_system_info(ctx: ExecutionContext, args: dict) -> str:
@@ -204,6 +317,41 @@ def _ssh_commit(args: dict) -> str:
 
 
 COMMANDS: dict[str, CommandDef] = {
+    "show devices": CommandDef(
+        description="List all SCM-managed devices",
+        category="setup",
+        api_handler=_show_devices,
+        ssh_command=None,
+        render="devices",
+    ),
+    "show device": CommandDef(
+        description="Show detail for a device — show device <hostname>  (or just 'show device' when cd'd into one)",
+        category="setup",
+        api_handler=_show_device_detail,
+        ssh_command=None,
+        render="device_detail",
+    ),
+    "show device snippets": CommandDef(
+        description="Show snippets attached to a device — show device <hostname> snippets",
+        category="setup",
+        api_handler=_show_device_snippets,
+        ssh_command=None,
+        render="device_snippets",
+    ),
+    "show snippets": CommandDef(
+        description="List all SCM snippets (auto-filtered to current device when cd'd into one)",
+        category="setup",
+        api_handler=_show_snippets,
+        ssh_command=None,
+        render="snippets",
+    ),
+    "show snippet": CommandDef(
+        description="Show full detail for a snippet — show snippet <name>",
+        category="setup",
+        api_handler=_show_snippet_detail,
+        ssh_command=None,
+        render="snippet_detail",
+    ),
     "show system info": CommandDef(
         description="Show system information (hostname, model, SW version, uptime...)",
         category="system",

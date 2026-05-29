@@ -283,7 +283,74 @@ def format_zones(zones: list[dict]) -> Table:
     return t
 
 
-def format_ha(data: dict, title: str = "High Availability") -> Table:
+def format_snippets(snippets: list[dict], device_filter: str = "") -> Table:
+    """Render a list of SCM snippets.
+
+    If device_filter is set, the title reflects that the list is scoped
+    to a specific device.
+    """
+    title = f"Snippets — {device_filter}" if device_filter else f"Snippets ({len(snippets)})"
+    t = Table(box=box.ROUNDED, title=title, header_style="bold cyan")
+    t.add_column("Name", style="bold", no_wrap=True)
+    t.add_column("Type",    no_wrap=True)
+    t.add_column("Prefix",  no_wrap=True)
+    t.add_column("Shared",  no_wrap=True)
+    t.add_column("Folders attached", overflow="fold")
+    for s in snippets:
+        folders = s.get("folders", [])
+        folder_names = ", ".join(f.get("name", "") for f in folders) if isinstance(folders, list) else ""
+        t.add_row(
+            s.get("name", ""),
+            s.get("type", "") or "",
+            "yes" if s.get("enable_prefix") else "no",
+            s.get("shared_in", "") or "",
+            folder_names,
+        )
+    return t
+
+
+def format_snippet_detail(snippet: dict) -> Table:
+    """Render full detail for a single snippet (key-value pairs)."""
+    flat: dict[str, str] = {}
+    flat["Name"]       = snippet.get("name", "")
+    flat["ID"]         = snippet.get("id", "")
+    flat["Type"]       = snippet.get("type", "") or ""
+    flat["Prefix"]     = "enabled" if snippet.get("enable_prefix") else "disabled"
+    flat["Shared in"]  = snippet.get("shared_in", "") or ""
+    flat["Description"] = snippet.get("description", "") or ""
+    folders = snippet.get("folders", [])
+    if isinstance(folders, list):
+        flat["Attached folders"] = ", ".join(f.get("name", "") for f in folders) or "(none)"
+    return _kv_table(flat, title=f"Snippet: {snippet.get('name', '')}")
+
+
+def format_device_detail(device: dict) -> Table:
+    """Render full detail for a single device (key-value pairs)."""
+    fields = [
+        ("Hostname",          device.get("hostname") or device.get("display_name") or ""),
+        ("Serial",            device.get("serial_number") or device.get("name") or ""),
+        ("Model",             device.get("model") or ""),
+        ("Software Version",  device.get("software_version") or ""),
+        ("App Version",       device.get("app_version") or ""),
+        ("IP Address",        device.get("ip_address") or ""),
+        ("Connected",         "yes" if device.get("is_connected") else "no"),
+        ("Connected Since",   device.get("connected_since") or ""),
+        ("Uptime",            device.get("uptime") or ""),
+        ("HA State",          device.get("ha_state") or ""),
+        ("HA Peer Serial",    device.get("ha_peer_serial") or ""),
+        ("Folder",            device.get("folder") or ""),
+        ("Snippets",          ", ".join(device.get("snippets") or []) or "(none)"),
+        ("Cert Status",       device.get("dev_cert_detail") or ""),
+        ("Log DB Version",    device.get("log_db_version") or ""),
+    ]
+    t = Table(box=box.ROUNDED, show_header=False,
+              title=f"Device: {device.get('hostname') or device.get('name')}")
+    t.add_column("Field", style="bold cyan", no_wrap=True)
+    t.add_column("Value", style="white")
+    for k, v in fields:
+        if v:
+            t.add_row(k, str(v))
+    return t
     return _kv_table(
         {k: str(v) for k, v in _flatten(data).items()},
         title=title,

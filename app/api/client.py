@@ -285,6 +285,40 @@ class SCMClient:
         except (httpx.HTTPError, ValueError, TypeError):
             return ["Shared", "Global"]
 
+    def get_snippets(self) -> list[dict]:
+        """Return all SCM snippets.
+
+        pan.dev: GET /config/setup/v1/snippets
+        Spec: openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml
+        """
+        try:
+            data = self._get_setup("/snippets")
+            return data.get("data", [])
+        except (httpx.HTTPError, ValueError, TypeError):
+            return []
+
+    def get_snippet_detail(self, snippet_id: str) -> dict:
+        """Return full detail for one snippet including attached folders.
+
+        pan.dev: GET /config/setup/v1/snippets/{id}
+        """
+        return self._get_setup(f"/snippets/{snippet_id}")
+
+    def get_folder_detail(self, folder_name: str) -> Optional[dict]:
+        """Return the folder record whose name matches folder_name.
+
+        Useful for finding a device's SCM folder record (which carries the
+        snippet list).
+        """
+        try:
+            data = self._get_setup("/folders")
+            for f in data.get("data", []):
+                if f.get("name") == folder_name:
+                    return f
+            return None
+        except (httpx.HTTPError, ValueError, TypeError):
+            return None
+
     # ------------------------------------------------------------------
     # Objects  (api.strata.paloaltonetworks.com/config/objects/v1)
     # pan.dev: https://pan.dev/scm/api/config/cloudngfw/objects/
