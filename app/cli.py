@@ -100,17 +100,23 @@ def auth_login(
 ) -> None:
     """Interactively configure ARC credentials.
 
-    Secrets (bearer token, client secret, SSH password) are stored in the OS
-    keychain (macOS Keychain / Linux Secret Service / Windows Credential
-    Manager).  Non-sensitive values are saved to the config file.
+    SCM service accounts provide a client_id and client_secret — ARC uses
+    these to obtain a fresh OAuth token on every startup.  Secrets are stored
+    in the OS keychain; non-sensitive values go to the config file.
+
+    Press Enter to keep any value that is already stored.
     """
     cfg = load_config()
     kc = keychain_available()
 
-    console.print("[bold cyan]ARC Credential Setup[/bold cyan]")
+    console.print("\n[bold cyan]ARC Credential Setup[/bold cyan]")
+    console.print(
+        "  Press [bold]Enter[/bold] to keep an existing value.\n"
+        "  Secrets are shown as [dim]****[/dim] when already stored in the keychain.\n"
+    )
     if kc:
         console.print(
-            f"  Secrets  → [green]OS keychain[/green]  (bearer token, client secret, SSH password)\n"
+            f"  Secrets  → [green]OS keychain[/green]  (client_secret, SSH password)\n"
             f"  Config   → [dim]{CONFIG_FILE}[/dim]  (client_id, tsg_id, SSH user/key/port)\n"
         )
     else:
@@ -119,32 +125,75 @@ def auth_login(
             "  Use environment variables for secrets until keychain access is available.\n"
         )
 
-    def _prompt(label: str, current: str, secret: bool = False) -> str:
-        placeholder = "****" if (secret and current) else (current or "")
-        hint = f" [[dim]{placeholder}[/dim]]" if placeholder else ""
-        console.print(f"  {label}{hint}: ", end="")
+    def _prompt(label: str, current: str, secret: bool = False, hint: str = "") -> str:
+        """Prompt for a value.  Returns the existing value unchanged if the user presses Enter."""
+        display_current = "****" if (secret and current) else (current or "")
+        display_hint = f" [dim][{display_current}][/dim]" if display_current else ""
+        extra_hint = f"\n    [dim]{hint}[/dim]" if hint else ""
+        console.print(f"  {label}{display_hint}{extra_hint}: ", end="")
         try:
             val = getpass.getpass("") if secret else input()
         except (EOFError, KeyboardInterrupt):
             val = ""
+        # Empty input = keep existing value
         return val.strip() or current
 
-    # SCM
-    console.print("[yellow]─ Strata Cloud Manager ─[/yellow]")
+    # ── SCM service account (primary auth method) ────────────────────────────
+    console.print("[yellow]─ Strata Cloud Manager — Service Account ─[/yellow]")
+    console.print(
+        "  [dim]Your service account credentials come from the Palo Alto SCM portal.[/dim]\n"
+        "  [dim]SCM portal → Settings → Identity & Access → Service Accounts → your account[/dim]\n"
+    )
+
+    cfg.scm.client_id = scm_client_id or _prompt(
+        "Client ID",
+        cfg.scm.client_id,
+        hint="From SCM portal: the service account email, e.g. pa-api-you@1234567890.iam.panserviceaccount.com",
+    )
+    cfg.scm.client_secret = scm_secret or _prompt(
+        "Client Secret",
+        cfg.scm.client_secret,
+        secret=True,
+        hint="From SCM portal: the secret shown when you created or reset the service account",
+    )
+    cfg.scm.tsg_id = scm_tsg or _prompt(
+        "TSG ID",
+        cfg.scm.tsg_id,
+        hint="Your Tenant Services Group ID — the number in your SCM URL or service account name",
+    )
+
+    # ── Bearer token (advanced / optional) ───────────────────────────────────
+    console.print(
+        "\n[yellow]─ Bearer Token (optional — leave blank if using client credentials above) ─[/yellow]"
+    )
+    console.print(
+        "  [dim]Only needed for pre-issued tokens or testing.  ARC prefers client credentials.[/dim]\n"
+    )
     cfg.scm.bearer_token = scm_bearer_token or _prompt(
-        "Bearer Token (leave blank to use client credentials)",
+        "Bearer Token",
         cfg.scm.bearer_token,
         secret=True,
+        hint="Leave blank to have ARC generate tokens automatically from your client credentials",
     )
-    cfg.scm.client_id = scm_client_id or _prompt("Client ID", cfg.scm.client_id)
-    cfg.scm.client_secret = scm_secret or _prompt("Client Secret", cfg.scm.client_secret, secret=True)
-    cfg.scm.tsg_id = scm_tsg or _prompt("TSG ID", cfg.scm.tsg_id)
 
-    # SSH
+    # ── SSH Defaults ─────────────────────────────────────────────────────────
     console.print("\n[yellow]─ SSH Defaults ─[/yellow]")
-    cfg.ssh.user = ssh_user or _prompt("SSH Username", cfg.ssh.user)
-    cfg.ssh.key_path = ssh_key or _prompt("SSH Key Path", cfg.ssh.key_path)
-    cfg.ssh.password = _prompt("SSH Password (blank if using key auth)", cfg.ssh.password, secret=True)
+    cfg.ssh.user = ssh_user or _prompt(
+        "SSH Username",
+        cfg.ssh.user,
+        hint="Username for SSH sessions to managed devices (default: admin)",
+    )
+    cfg.ssh.key_path = ssh_key or _prompt(
+        "SSH Key Path",
+        cfg.ssh.key_path,
+        hint="Path to your SSH private key, e.g. ~/.ssh/id_ed25519 (leave blank to use password)",
+    )
+    cfg.ssh.password = _prompt(
+        "SSH Password",
+        cfg.ssh.password,
+        secret=True,
+        hint="Leave blank if using key auth or SSH agent",
+    )
 
     try:
         save_config(cfg)
@@ -159,13 +208,17 @@ def auth_login(
     if kc:
         console.print(
             f"\n[green]✓[/green] Secrets saved to OS keychain\n"
-            f"[green]✓[/green] Config file: [bold]{CONFIG_FILE}[/bold]  [dim](mode 0600)[/dim]"
+            f"[green]✓[/green] Config file: [bold]{CONFIG_FILE}[/bold]  [dim](mode 0600)[/dim]\n"
         )
     else:
         console.print(
             f"\n[green]✓[/green] Non-sensitive config saved to [bold]{CONFIG_FILE}[/bold]  "
-            "[dim](mode 0600)[/dim]"
+            "[dim](mode 0600)[/dim]\n"
         )
+
+    console.print(
+        "Run [bold]arc auth test[/bold] to verify your credentials work end-to-end."
+    )
 
 
 @auth_app.command("show")
@@ -213,6 +266,215 @@ def auth_clear() -> None:
         f"  Config file [dim]{CONFIG_FILE}[/dim] unchanged  "
         "(run [bold]arc auth login[/bold] to re-enter credentials)"
     )
+
+
+def _short_err(err_str: str) -> str:
+    """Return the first line of an error string — avoids huge httpx tracebacks in test output."""
+    return err_str.split("\n")[0]
+
+
+@auth_app.command("test")
+def auth_test() -> None:
+    """Test connectivity using stored credentials.
+
+    Checks (in order):
+
+    1. **Keychain** — verifies the OS keychain is readable and reports which
+       secrets are present.
+    2. **SCM authentication** — attempts to obtain / validate a bearer token.
+    3. **SCM API** — fetches ``/iam/v1/tenants`` as a lightweight live call.
+       Falls back to ``/sse/config/v1/folders`` if the IAM endpoint is not
+       authorised.
+    4. **Config file** — reports the path and whether it exists.
+
+    Exit code 0 = all configured checks passed.
+    Exit code 1 = at least one check failed.
+    """
+    import sys
+
+    cfg = load_config()
+    all_ok = True
+
+    # ── 1. Keychain ──────────────────────────────────────────────────────────
+    console.print("\n[bold cyan]1. OS Keychain[/bold cyan]")
+    kc = keychain_available()
+    if kc:
+        console.print("  [green]✓[/green] Keychain is accessible")
+        bearer_stored  = bool(cfg.scm.bearer_token)
+        secret_stored  = bool(cfg.scm.client_secret)
+        ssh_pass_stored = bool(cfg.ssh.password)
+        console.print(
+            f"  bearer_token  : {'[green]present[/green]' if bearer_stored  else '[dim]not set[/dim]'}"
+        )
+        console.print(
+            f"  client_secret : {'[green]present[/green]' if secret_stored  else '[dim]not set[/dim]'}"
+        )
+        console.print(
+            f"  ssh.password  : {'[green]present[/green]' if ssh_pass_stored else '[dim]not set[/dim]'}"
+        )
+    else:
+        console.print(
+            "  [yellow]⚠[/yellow]  Keychain unavailable — secrets must be supplied "
+            "via environment variables"
+        )
+        # Not fatal — env vars may still configure everything.
+
+    # ── 2. Config file ───────────────────────────────────────────────────────
+    console.print("\n[bold cyan]2. Config file[/bold cyan]")
+    console.print(f"  Path: [dim]{CONFIG_FILE}[/dim]")
+    if CONFIG_FILE.exists():
+        console.print("  [green]✓[/green] Config file exists")
+    else:
+        console.print(
+            "  [yellow]⚠[/yellow]  Config file not found — "
+            "run [bold]arc auth login[/bold] to create it"
+        )
+
+    # ── 3. SCM credentials present ───────────────────────────────────────────
+    console.print("\n[bold cyan]3. SCM credentials[/bold cyan]")
+    if not cfg.scm.is_configured:
+        console.print(
+            "  [red]✗[/red]  SCM is not configured.  "
+            "Run [bold]arc auth login[/bold] and provide:\n"
+            "    • client_id + client_secret + tsg_id  (recommended — service account flow)\n"
+            "    • OR a pre-issued bearer token"
+        )
+        all_ok = False
+        console.print()
+        raise typer.Exit(1)
+
+    # Determine which auth path will be used (mirrors SCMClient priority).
+    using_oauth = bool(cfg.scm.client_id and cfg.scm.client_secret and cfg.scm.tsg_id)
+    if using_oauth:
+        console.print(
+            f"  [green]✓[/green] OAuth client credentials present\n"
+            f"    client_id : {cfg.scm.client_id}\n"
+            f"    tsg_id    : {cfg.scm.tsg_id}\n"
+            f"    [dim]ARC will use these to obtain a fresh token (bearer_token in keychain is ignored)[/dim]"
+        )
+    else:
+        console.print(
+            "  [green]✓[/green] Bearer token present (no client credentials — token used directly)\n"
+            "  [yellow]⚠[/yellow]  Consider running [bold]arc auth login[/bold] to store "
+            "client_id + client_secret + tsg_id for automatic token refresh."
+        )
+
+    # ── 4. SCM authentication ────────────────────────────────────────────────
+    console.print("\n[bold cyan]4. SCM authentication[/bold cyan]")
+    if using_oauth:
+        console.print(
+            f"  [dim]Obtaining OAuth token for TSG {cfg.scm.tsg_id}…[/dim]"
+        )
+    else:
+        console.print("  [dim]Using pre-issued bearer token…[/dim]")
+    try:
+        client = SCMClient(cfg.scm)
+        if using_oauth:
+            console.print(
+                f"  [green]✓[/green] OAuth token obtained for TSG [bold]{cfg.scm.tsg_id}[/bold]"
+            )
+        else:
+            console.print("  [green]✓[/green] Bearer token accepted by SCMClient")
+    except Exception as exc:
+        console.print(f"  [red]✗[/red]  SCM authentication failed: {exc}")
+        all_ok = False
+        console.print()
+        raise typer.Exit(1) from exc
+
+    # ── 5. SCM API connectivity ─────────────────────────────────────────────
+    console.print("\n[bold cyan]5. SCM API connectivity[/bold cyan]")
+    # Probe results: track what worked so we can give an accurate summary.
+    probe_results: list[tuple[str, bool, str]] = []  # (label, ok, note)
+
+    def _probe(label: str, path: str, params: dict | None = None) -> bool:
+        try:
+            resp = client._http.get(
+                f"https://api.sase.paloaltonetworks.com{path}",
+                headers=client._headers(),
+                params=params,
+            )
+            if resp.status_code < 400:
+                data = resp.json()
+                count = len(data.get("data", data.get("items", [])))
+                note = f"{count} item(s)"
+                console.print(f"  [green]✓[/green] {label}  [dim]→ {note}[/dim]")
+                probe_results.append((label, True, note))
+                return True
+            else:
+                console.print(f"  [yellow]⚠[/yellow]  {label}  [dim]→ HTTP {resp.status_code}[/dim]")
+                probe_results.append((label, False, f"HTTP {resp.status_code}"))
+                return False
+        except Exception as exc:
+            console.print(f"  [yellow]⚠[/yellow]  {label}  [dim]→ {_short_err(str(exc))}[/dim]")
+            probe_results.append((label, False, _short_err(str(exc))))
+            return False
+
+    # These are ordered: first failure doesn't stop the rest — we want to know
+    # exactly which capabilities the service account has.
+    _probe("GET /sse/config/v1/addresses?folder=Shared  (policy read)",
+           "/sse/config/v1/addresses", {"folder": "Shared"})
+    _probe("GET /sse/config/v1/security-rules?folder=Shared (policy read)",
+           "/sse/config/v1/security-rules", {"folder": "Shared", "position": "pre"})
+    _probe("GET /sse/config/v1/devices?folder=Shared     (device read)",
+           "/sse/config/v1/devices", {"folder": "Shared"})
+    _probe("GET /sse/config/v1/folders                   (folder list)",
+           "/sse/config/v1/folders")
+    _probe("GET /iam/v1/tenants                          (tenant/TSG list)",
+           "/iam/v1/tenants")
+
+    any_ok = any(ok for _, ok, _ in probe_results)
+    all_probes_ok = all(ok for _, ok, _ in probe_results)
+
+    if not any_ok:
+        err_codes = {note for _, ok, note in probe_results if not ok}
+        is_forbidden = any("403" in n for n in err_codes)
+        is_unauthorized = any("401" in n for n in err_codes)
+        if is_forbidden:
+            console.print(
+                f"\n  [red]✗[/red]  All API probes returned 403.\n"
+                f"  Token is valid (OAuth succeeded) but the service account has no\n"
+                f"  read access to TSG [bold]{cfg.scm.tsg_id}[/bold].\n\n"
+                f"  [bold]Most likely cause:[/bold] your tsg_id is a child TSG that the\n"
+                f"  service account was not assigned permissions to.  Try authenticating\n"
+                f"  with the [bold]parent TSG ID[/bold] instead:\n\n"
+                f"    1. Find your parent TSG ID in the SCM portal URL or\n"
+                f"         Settings → Identity → Tenant Hierarchy\n"
+                f"    2. Run [bold]arc auth login[/bold] → update TSG ID to the parent.\n"
+                f"    3. Use [bold]tsg <child-id>[/bold] inside ARC to switch down.\n"
+            )
+        elif is_unauthorized:
+            console.print(
+                f"\n  [red]✗[/red]  All API probes returned 401.\n"
+                f"  The token was accepted by the auth server but rejected by the API.\n"
+                f"  Verify tsg_id [bold]{cfg.scm.tsg_id}[/bold] is the TSG the service\n"
+                f"  account was created under.\n"
+            )
+        all_ok = False
+    elif not all_probes_ok:
+        console.print(
+            f"\n  [dim]Some probes returned 403 — that is normal if your service account\n"
+            f"  is scoped to policy/config objects only (read-only admin role).\n"
+            f"  The probes that succeeded confirm API connectivity is working.[/dim]"
+        )
+
+    client.close()
+
+    # ── Summary ──────────────────────────────────────────────────────────────
+    console.print()
+    if all_ok:
+        if all_probes_ok:
+            console.print("[bold green]All checks passed.[/bold green]")
+        else:
+            ok_count  = sum(1 for _, ok, _ in probe_results if ok)
+            tot_count = len(probe_results)
+            console.print(
+                f"[bold green]Connected.[/bold green]  "
+                f"{ok_count}/{tot_count} API probes succeeded — "
+                f"partial access is normal for read-only service accounts."
+            )
+    else:
+        console.print("[bold red]One or more checks failed.[/bold red]  See details above.")
+        sys.exit(1)
 
 
 # ---------------------------------------------------------------------------

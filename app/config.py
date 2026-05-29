@@ -1,4 +1,4 @@
-"""Config loader — reads from environment variables and ~/.arc/config.json.
+"""Config loader — reads from environment variables and the project config directory.
 
 Sensitive credentials (bearer tokens, client secrets, SSH passwords) are
 stored in the OS keychain via the ``keyring`` library:
@@ -8,7 +8,8 @@ stored in the OS keychain via the ``keyring`` library:
   - Windows: Windows Credential Manager
 
 Non-sensitive values (client_id, tsg_id, default_folder, SSH user/key/port)
-remain in ``~/.arc/config.json``, which is always written with mode 0600.
+are stored in ``<project_root>/config/<os_username>/config.json``, which is
+always written with mode 0600.
 
 Environment variables override both the keychain and the config file —
 useful for CI/CD and short-lived overrides without touching stored values.
@@ -16,6 +17,7 @@ useful for CI/CD and short-lived overrides without touching stored values.
 
 from __future__ import annotations
 
+import getpass as _getpass
 import json
 import logging
 import os
@@ -25,12 +27,31 @@ from pathlib import Path
 
 import keyring
 import keyring.errors
-import platformdirs
 
 logger = logging.getLogger(__name__)
 
-CONFIG_DIR = Path(platformdirs.user_config_dir("arc"))
+# ---------------------------------------------------------------------------
+# Config path — <project_root>/config/<os_username>/config.json
+#
+# The project root is two levels above this file (app/config.py →app/ → root).
+# Using the OS username as the per-user subdirectory keeps multiple developer
+# accounts on the same machine isolated without touching their home directories.
+# ---------------------------------------------------------------------------
+
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+_OS_USERNAME  = _getpass.getuser()
+
+CONFIG_DIR  = _PROJECT_ROOT / "config" / _OS_USERNAME
 CONFIG_FILE = CONFIG_DIR / "config.json"
+
+# Legacy path (platformdirs-based — used by earlier ARC versions).
+# Checked once during load if the new path is missing so existing installs
+# are not silently broken.  The user is notified to re-save via arc auth login.
+try:
+    import platformdirs as _platformdirs
+    _LEGACY_CONFIG_FILE: Path | None = Path(_platformdirs.user_config_dir("arc")) / "config.json"
+except ImportError:
+    _LEGACY_CONFIG_FILE = None
 
 # Keychain service name and per-credential usernames.
 # Keep these stable — changing them silently orphans stored secrets.
@@ -128,6 +149,9 @@ class SSHConfig:
 
     ``password`` (if used) is stored in the OS keychain.
     All other fields are non-sensitive and stored in config.json.
+
+    The on-disk key is ``username`` (matching the Palo Alto portal field name).
+    The legacy key ``user`` is accepted as a fallback when reading old config files.
     """
 
     user: str = "admin"
@@ -164,9 +188,19 @@ def load_config() -> ArcConfig:
     cfg.ssh.password      = _keychain_get(_KEY_SSH_PASSWORD)
 
     # --- Overlay with config file (non-sensitive fields; legacy secret fallback) ---
-    if CONFIG_FILE.exists():
+    # Prefer the new project-local path; fall back to the legacy platformdirs path
+    # for users who configured ARC before this change.
+    config_file_to_read = CONFIG_FILE
+    if not config_file_to_read.exists() and _LEGACY_CONFIG_FILE and _LEGACY_CONFIG_FILE.exists():
+        config_file_to_read = _LEGACY_CONFIG_FILE
+        logger.debug(
+            "Using legacy config path %s — run `arc auth login` to migrate to %s",
+            _LEGACY_CONFIG_FILE, CONFIG_FILE,
+        )
+
+    if config_file_to_read.exists():
         try:
-            raw = json.loads(CONFIG_FILE.read_text())
+            raw = json.loads(config_file_to_read.read_text())
 
             scm = raw.get("scm", {})
             cfg.scm.client_id   = scm.get("client_id", "")
@@ -179,7 +213,8 @@ def load_config() -> ArcConfig:
                 cfg.scm.client_secret = scm.get("client_secret", "")
 
             ssh = raw.get("ssh", {})
-            cfg.ssh.user      = ssh.get("user", "admin")
+            # Accept both "username" (current) and legacy "user" key.
+            cfg.ssh.user      = ssh.get("username", ssh.get("user", "admin"))
             cfg.ssh.key_path  = ssh.get("key_path", "")
             cfg.ssh.port      = int(ssh.get("port", 22))
             if not cfg.ssh.password:
@@ -238,7 +273,7 @@ def save_config(cfg: ArcConfig) -> None:
     }
 
     ssh_block: dict = {
-        "user":     cfg.ssh.user,
+        "username": cfg.ssh.user,  # written as "username" to match the Palo Alto portal field name
         "key_path": cfg.ssh.key_path,
         "port":     cfg.ssh.port,
     }

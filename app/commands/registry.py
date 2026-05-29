@@ -27,6 +27,7 @@ class ExecutionContext:
     config: Optional["ArcConfig"] = None
     device: Optional[dict] = None
     folder: str = "Shared"
+    tsg_id: str = ""
 
     @property
     def target(self) -> Optional[str]:

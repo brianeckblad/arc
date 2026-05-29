@@ -3,9 +3,47 @@
 <!-- Clear with: wipe | Clear and archive with: arc -->
 
 ## Current Work
- **Goal:** Security hardening — fail-closed secret storage and updated setup guidance
+**Goal:** Move config from Application Support to project config/<username>/ and add arc auth test
 **Branch:** main
 **Status:** done
+
+**Recent progress:**
+- CONFIG_DIR/CONFIG_FILE now resolves to `<project_root>/config/<os_username>/config.json`
+- Legacy `~/Library/Application Support/arc/config.json` silently checked as fallback on first load
+- platformdirs import made optional/try-except in config.py (still used by shell.py for HISTORY_FILE)
+- `config/*/` added to .gitignore; `config/config.example.json` kept tracked
+- Added `arc auth test` command: checks keychain, config file, SCM credentials, SCM auth, live API call (IAM tenants → folders fallback); exits 1 on failure
+
+**Key decisions:**
+- Project-local config path uses os username as subdirectory (matches user request: config/<username>/)
+- Legacy path migration is silent (debug log only) — no banner nag unless user runs arc auth login
+- auth test does not require SSH device context; tests what is actually configured
+
+**Files in play:**
+- `app/config.py` — CONFIG_DIR/CONFIG_FILE path change, legacy fallback
+- `app/cli.py` — auth test command added
+- `.gitignore` — config/*/ added
+**Branch:** main
+**Status:** done
+
+**Recent progress:**
+- Added `tsg` built-in to `ArcShell` — shows or changes the active TSG ID
+- `ShellState.tsg_id` seeds from `ArcConfig.scm.tsg_id` at startup
+- OAuth flow: `tsg <id>` re-authenticates automatically with new TSG scope
+- Bearer-token flow: TSG context is recorded in state; token is used as-is
+- `pwd` now shows active TSG; tab after `tsg ` completes with configured TSG
+- `ExecutionContext.tsg_id` exposed so API handlers can inspect TSG if needed
+- Created `docs/commands/tsg.md`; added entry to `docs/commands/index.md`
+
+**Key decisions:**
+- Fail closed on OAuth re-auth: state rolls back to previous TSG on error
+- `import copy` placed inline with deferred-import comment (avoids importing at module level for a rare code path)
+
+**Files in play:**
+- `app/shell.py` — ShellState, ArcShell._cmd_tsg(), _cmd_pwd(), _make_context(), _cmd_help(), completer
+- `app/commands/registry.py` — ExecutionContext.tsg_id field
+- `docs/commands/tsg.md` — new doc
+- `docs/commands/index.md` — entry added
 
 **Recent progress:**
 - Hardened `app/config.py`: secrets are never written to `config.json`; keychain write failures save only non-sensitive config then raise `ConfigSecurityError`; config dir/file permissions enforced as 0700/0600 where supported

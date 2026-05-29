@@ -94,6 +94,31 @@ class ArcCompleter(Completer):
                     yield Completion(folder, start_position=-len(partial_arg))
             return
 
+        # ---- tsg → hint with TSGs from SCM IAM cache (or config fallback) ----
+        if first == "tsg" and has_arg_space:
+            tsgs = self._shell._state.tsgs_cache
+            if tsgs:
+                # Cache populated — show real TSG IDs with their display names.
+                for entry in tsgs:
+                    tsg_id = str(entry.get("id") or entry.get("tsg_id") or "")
+                    display_name = str(entry.get("display_name") or entry.get("name") or "")
+                    if not tsg_id:
+                        continue
+                    if tsg_id.lower().startswith(partial_arg.lower()):
+                        yield Completion(
+                            tsg_id,
+                            start_position=-len(partial_arg),
+                            display_meta=display_name,
+                        )
+            else:
+                # Cache empty (IAM not accessible) — fall back to configured values.
+                config_tsg = self._shell._config.scm.tsg_id
+                active_tsg = self._shell._state.tsg_id
+                for tsg in dict.fromkeys(filter(None, [config_tsg, active_tsg])):
+                    if tsg.lower().startswith(partial_arg.lower()):
+                        yield Completion(tsg, start_position=-len(partial_arg))
+            return
+
         # ---- help → command/topic completion ----
         if first == "help" and has_arg_space:
             partial_topic = " ".join(parts[1:]).lower()
@@ -115,7 +140,7 @@ class ArcCompleter(Completer):
         builtins = [
             "cd", "remote", "connect", "docs",
             "ls", "devices", "pwd",
-            "folder",
+            "folder", "tsg",
             "clear", "exit", "quit",
             "help", "?",
         ]
@@ -167,9 +192,15 @@ def _make_key_bindings() -> KeyBindings:
 class ShellState:
     device: Optional[dict] = None
     folder: str = "Shared"
+    # Active TSG ID — overrides the value from ArcConfig when set.
+    # Useful when a bearer token was issued at the root and the user needs
+    # to work within a specific child TSG without re-authenticating.
+    tsg_id: str = ""
     devices_cache: list[dict] = field(default_factory=list)
     # SCM folder names cached at startup for tab completion
     folders_cache: list[str] = field(default_factory=lambda: ["Shared", "Global"])
+    # TSG entries fetched from /iam/v1/tenants — each dict has 'id' and 'display_name'
+    tsgs_cache: list[dict] = field(default_factory=list)
 
 
 class ArcShell:
@@ -177,7 +208,11 @@ class ArcShell:
 
     def __init__(self, config: ArcConfig) -> None:
         self._config = config
-        self._state = ShellState(folder=config.default_folder)
+        self._state = ShellState(
+            folder=config.default_folder,
+            # Seed from config so pwd shows the right TSG from the start.
+            tsg_id=config.scm.tsg_id,
+        )
         # Prefix to restore in the next prompt after a '?' context-help lookup.
         # e.g. "show ?" prints help then re-seeds the prompt with "show ".
         self._pending_default: str = ""
@@ -207,7 +242,10 @@ class ArcShell:
         if self._config.scm.is_configured:
             try:
                 self._scm = SCMClient(self._config.scm)
-                console.print("[green]✓[/green] Connected to Strata Cloud Manager")
+                console.print(
+                    f"[green]✓[/green] SCM connected  "
+                    f"[dim](TSG {self._config.scm.tsg_id})[/dim]"
+                )
             except Exception as exc:
                 console.print(f"[yellow]⚠[/yellow] SCM unavailable: {exc}")
 
@@ -216,18 +254,35 @@ class ArcShell:
                 "[yellow]⚠  No API backend configured.[/yellow] "
                 "Commands will fail unless you use [bold]remote <device>[/bold] or "
                 "[bold]--remote[/bold] with SSH credentials, "
-                "or set SCM_BEARER_TOKEN / SCM_CLIENT_ID credentials and restart.\n"
-                "Run [bold]help config[/bold] to see configuration options."
+                "or set SCM credentials and restart.\n"
+                "Run [bold]arc auth login[/bold] to configure."
             )
             return
 
-        # Pre-populate caches so Tab completion works immediately on first keystroke
-        console.print("[dim]Loading device list...[/dim]", end="\r")
+        # Pre-populate caches — failures are silent; the cache just stays empty
+        # and tab completion falls back to defaults.
+        console.print("[dim]Loading caches…[/dim]", end="\r")
         self._refresh_devices(silent=True)
-        if self._scm:
-            self._refresh_folders(silent=True)
-        # Clear the loading line
-        console.print(" " * 30, end="\r")
+        self._refresh_folders(silent=True)
+        self._refresh_tsgs(silent=True)
+        console.print(" " * 40, end="\r")
+
+        # Report what was actually loaded so users know their access level.
+        parts: list[str] = []
+        if self._state.devices_cache:
+            parts.append(f"{len(self._state.devices_cache)} device(s)")
+        if self._state.folders_cache and self._state.folders_cache != ["Shared", "Global"]:
+            parts.append(f"{len(self._state.folders_cache)} folder(s)")
+        if self._state.tsgs_cache:
+            parts.append(f"{len(self._state.tsgs_cache)} TSG(s)")
+
+        if parts:
+            console.print(f"[dim]Loaded: {', '.join(parts)}[/dim]")
+        else:
+            console.print(
+                "[dim]API connected — device/folder list not available with this service "
+                "account role (policy commands will still work)[/dim]"
+            )
 
     # ------------------------------------------------------------------
     # Prompt
@@ -333,6 +388,10 @@ class ArcShell:
 
         if cmd == "folder":
             self._cmd_folder(tokens[1:])
+            return False
+
+        if cmd == "tsg":
+            self._cmd_tsg(tokens[1:])
             return False
 
         if cmd in ("help", "?"):
@@ -445,6 +504,23 @@ class ArcShell:
         except Exception as exc:
             if not silent:
                 console.print(f"[yellow]Could not refresh folder list: {exc}[/yellow]")
+
+    def _refresh_tsgs(self, silent: bool = False) -> None:
+        """Fetch TSG entries from SCM IAM and populate the cache used by 'tsg' tab completion.
+
+        Each entry is a dict with at minimum 'id' and 'display_name'.  The list
+        may be empty if the token lacks IAM read permissions — the completer falls
+        back to the configured TSG ID in that case.
+        """
+        if not self._scm:
+            return
+        try:
+            tenants = self._scm.get_tenants()
+            if tenants:
+                self._state.tsgs_cache = tenants
+        except Exception as exc:
+            if not silent:
+                console.print(f"[yellow]Could not refresh TSG list: {exc}[/yellow]")
 
     # ------------------------------------------------------------------
     # Command: connect  (SSH passthrough mode)
@@ -656,7 +732,7 @@ class ArcShell:
     # ------------------------------------------------------------------
 
     def _cmd_pwd(self) -> None:
-        """Show current device context, active SCM folder, and SSH credential status."""
+        """Show current device context, active SCM folder, TSG, and SSH credential status."""
         if self._state.device:
             name = self._state.device.get("hostname") or self._state.device.get("name")
             serial = self._state.device.get("serial") or "n/a"
@@ -668,6 +744,8 @@ class ArcShell:
         else:
             console.print("[bold cyan]Context:[/bold cyan] SCM / global  [API mode]")
         console.print(f"[bold cyan]SCM folder:[/bold cyan] {self._state.folder}")
+        active_tsg = self._state.tsg_id or "(root / config default)"
+        console.print(f"[bold cyan]TSG:[/bold cyan] {active_tsg}")
 
     # ------------------------------------------------------------------
     # Command: folder
@@ -679,6 +757,115 @@ class ArcShell:
             return
         self._state.folder = args[0]
         console.print(f"[cyan]SCM folder set to:[/cyan] {self._state.folder}")
+
+    # ------------------------------------------------------------------
+    # Command: tsg
+    # ------------------------------------------------------------------
+
+    def _cmd_tsg(self, args: list[str]) -> None:
+        """Switch the active Tenant Services Group (TSG) context.
+
+        ARC authenticates to the parent / root TSG at startup.  Use this
+        command to switch into a child TSG so that all subsequent API calls
+        (devices, policy, addresses…) are scoped to that tenant.
+
+        ARC re-authenticates automatically via OAuth to obtain a token
+        scoped to the new TSG — no manual token management needed.
+
+        Usage:
+          tsg                  — show current TSG and list available child TSGs
+          tsg <id>             — switch to the given TSG ID
+        """
+        if not args:
+            active = self._state.tsg_id or self._config.scm.tsg_id or "(not set)"
+            console.print(f"[cyan]Active TSG:[/cyan] [bold]{active}[/bold]")
+
+            # Show cached child TSGs if available
+            if self._state.tsgs_cache:
+                console.print("\n[bold yellow]Available TSGs[/bold yellow]  "
+                              "[dim](Tab after 'tsg ' to complete)[/dim]")
+                for entry in self._state.tsgs_cache:
+                    tsg_id = str(entry.get("id") or entry.get("tsg_id") or "")
+                    name   = str(entry.get("display_name") or entry.get("name") or "")
+                    marker = " [green]◀ active[/green]" if tsg_id == active else ""
+                    console.print(f"  [cyan]{tsg_id:<20}[/cyan] {name}{marker}")
+            else:
+                console.print(
+                    "[dim]No TSG list cached — ARC will attempt to fetch child TSGs.[/dim]"
+                )
+                self._refresh_tsgs(silent=False)
+                if self._state.tsgs_cache:
+                    console.print("\n[bold yellow]Available TSGs[/bold yellow]")
+                    for entry in self._state.tsgs_cache:
+                        tsg_id = str(entry.get("id") or entry.get("tsg_id") or "")
+                        name   = str(entry.get("display_name") or entry.get("name") or "")
+                        console.print(f"  [cyan]{tsg_id:<20}[/cyan] {name}")
+                else:
+                    console.print(
+                        "[yellow]No child TSGs found.[/yellow]  "
+                        "Your service account may only have access to "
+                        f"TSG [bold]{active}[/bold] itself.\n"
+                        "Use [bold]tsg <id>[/bold] to switch if you know the child TSG ID."
+                    )
+            return
+
+        new_tsg = args[0].strip()
+        if not new_tsg:
+            console.print("[yellow]TSG ID cannot be blank.[/yellow]")
+            return
+
+        previous_tsg = self._state.tsg_id
+        has_client_creds = bool(
+            self._config.scm.client_id and self._config.scm.client_secret
+        )
+
+        if not has_client_creds:
+            # Bearer-token-only mode: just record the context change.
+            # The token covers all TSGs it was issued for; SCM enforces access.
+            self._state.tsg_id = new_tsg
+            console.print(
+                f"[cyan]TSG context set to:[/cyan] [bold]{new_tsg}[/bold]\n"
+                "[dim]Bearer token used as-is — SCM enforces TSG-level access.[/dim]"
+            )
+            return
+
+        # OAuth mode: re-authenticate with the new TSG scope so every subsequent
+        # API call carries a token that explicitly claims this TSG.
+        console.print(f"[dim]Re-authenticating with TSG {new_tsg}…[/dim]")
+        self._state.tsg_id = new_tsg
+        try:
+            if self._scm:
+                self._scm.reauthenticate(new_tsg)
+            else:
+                # SCM client was never initialised — build it now.
+                import copy  # Deferred: avoids import at module level
+                new_scm_cfg = copy.copy(self._config.scm)
+                new_scm_cfg.tsg_id = new_tsg
+                self._scm = SCMClient(new_scm_cfg)
+
+            # Refresh caches for the new TSG context
+            console.print(f"[dim]Refreshing device and folder lists for TSG {new_tsg}…[/dim]")
+            self._refresh_devices(silent=True)
+            self._refresh_folders(silent=True)
+            self._refresh_tsgs(silent=True)
+
+            console.print(
+                f"[green]✓[/green] Switched to TSG [bold]{new_tsg}[/bold]  "
+                f"({len(self._state.devices_cache)} device(s) visible)"
+            )
+        except Exception as exc:
+            # Roll back so a failed switch doesn't strand the user.
+            self._state.tsg_id = previous_tsg
+            if self._scm:
+                # Restore the old token by re-authing back to the previous TSG.
+                try:
+                    self._scm.reauthenticate(previous_tsg or self._config.scm.tsg_id)
+                except Exception:
+                    pass
+            console.print(
+                f"[red]TSG switch failed:[/red] {exc}\n"
+                f"[dim]TSG context restored to {previous_tsg or self._config.scm.tsg_id}.[/dim]"
+            )
 
     # ------------------------------------------------------------------
     # Command: help
@@ -721,8 +908,9 @@ class ArcShell:
             ("connect [device]",      "SSH to device — full interactive session  [dim](returns to ARC on exit)[/dim]"),
             ("remote <device>",       "SSH to device — full interactive session  [dim](also sets device context)[/dim]"),
             ("folder <name>",         "Set the SCM Folder  [dim](Tab → available folders)[/dim]"),
+            ("tsg <id>",              "Set the active TSG (Tenant Services Group)  [dim](Tab → configured TSG)[/dim]"),
             ("ls",                    "List managed devices under the current folder"),
-            ("pwd",                   "Show current device and SCM folder"),
+            ("pwd",                   "Show current device, SCM folder, and active TSG"),
             ("docs / docs <command>", "Show Documentation  [dim]docs <command> shows help in shell[/dim]"),
             ("? / help",              "Print this command reference"),
             ("help <topic>",          "Open topic doc  [dim]e.g. help config, help config osx|win|nix[/dim]"),
@@ -784,7 +972,7 @@ class ArcShell:
         # 4. Shell built-ins (cd, remote, connect, …) — render their doc page.
         _shell_topic_keys = {
             "cd", "remote", "connect", "exit", "quit",
-            "ls", "devices", "pwd", "folder", "clear", "help", "docs",
+            "ls", "devices", "pwd", "folder", "tsg", "clear", "help", "docs",
         }
         if prefix in _shell_topic_keys:
             if render_help_topic(console, prefix):
@@ -933,6 +1121,7 @@ class ArcShell:
             config=self._config,
             device=self._state.device,
             folder=self._state.folder,
+            tsg_id=self._state.tsg_id,
         )
 
     # ------------------------------------------------------------------

@@ -1,4 +1,4 @@
-# Configuration — macOS
+rc # Configuration — macOS
 
 ## Quick start
 

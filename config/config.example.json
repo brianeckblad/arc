@@ -2,15 +2,15 @@
   "_comment": "ARC config template — copy to the location shown by `arc auth show`",
   "_note": "Secrets (bearer_token, client_secret, ssh.password) are stored in the OS keychain or temporary env vars, not here",
   "scm": {
-    "_note": "Use bearer_token OR OAuth. Leave bearer_token and client_secret blank in this file; enter secrets with arc auth login.",
+    "_note": "Palo Alto SCM service accounts provide a client_id and client_secret — paste those values here. Use bearer_token only if you have a pre-issued token (not the typical service account flow). Secrets (bearer_token, client_secret) are stored in the OS keychain; run `arc auth login` to store them securely rather than editing this file.",
     "bearer_token": "",
-    "client_id": "your-scm-client-id",
+    "client_id": "your-scm-client-id (from the SCM service account — labelled 'Client ID' in the portal)",
     "client_secret": "",
-    "tsg_id": "your-scm-tsg-id"
+    "tsg_id": "your-scm-tsg-id (Tenant Services Group ID — shown alongside the service account in the SCM portal)"
   },
   "ssh": {
-    "_note": "SSH credentials — prefer key_path over password",
-    "user": "admin",
+    "_note": "SSH credentials for managed PAN-OS devices. username is the login user (default: admin). Prefer key_path over password. password is stored in the OS keychain; run `arc auth login` to set it.",
+    "username": "admin",
     "key_path": "~/.ssh/panos_key",
     "password": "",
     "port": 22
