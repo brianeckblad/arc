@@ -7,6 +7,7 @@ import select
 import shutil
 import signal
 import sys
+import time
 import traceback
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
@@ -137,25 +138,40 @@ class ArcCompleter(Completer):
                     yield Completion("snippets", start_position=-len(partial_sub))
                 return
 
-        # ---- show snippet <name> → snippet name completion ----
-        if text.lower().startswith("show snippet ") and len(parts) >= 2:
-            partial_name = parts[2] if len(parts) > 2 else ""
-            # Use device snippets if in device context, else all
+        # ---- show snippet <name> [details] → context-aware completion ----
+        # "show snippet "          → complete snippet name
+        # "show snippet <name> "   → offer "details" subcommand
+        # "show snippet <name> d"  → complete "details"
+        if text.lower().startswith("show snippet ") and not text.lower().startswith("show snippets"):
+            # parts[0]="show", parts[1]="snippet", parts[2]=name-or-partial, parts[3]=subcommand
+            name_part    = parts[2] if len(parts) > 2 else ""
+            subcmd_part  = parts[3] if len(parts) > 3 else ""
+            has_subcmd_space = len(parts) > 3 or (len(parts) == 3 and text.endswith(" "))
+
+            # Collect candidate snippet names
             device = self._shell._state.device
             if device and device.get("snippets"):
-                candidates = device.get("snippets") or []
+                candidates = list(device.get("snippets") or [])
             else:
-                candidates = [s.get("name", "") for s in getattr(self._shell, "_snippets_cache", [])]
-                if not candidates:
-                    # Fall back to device caches' snippet union
-                    seen: set[str] = set()
-                    for d in self._shell._state.devices_cache:
-                        for sn in (d.get("snippets") or []):
-                            seen.add(sn)
-                    candidates = sorted(seen)
-            for name in candidates:
-                if name.lower().startswith(partial_name.lower()):
-                    yield Completion(name, start_position=-len(partial_name))
+                seen: set[str] = set()
+                for d in self._shell._state.devices_cache:
+                    for sn in (d.get("snippets") or []):
+                        seen.add(sn)
+                candidates = sorted(seen)
+
+            if has_subcmd_space:
+                # Name is already complete — offer "details" subcommand
+                if "details".startswith(subcmd_part.lower()):
+                    yield Completion(
+                        "details",
+                        start_position=-len(subcmd_part),
+                        display_meta="show full configured objects",
+                    )
+            else:
+                # Still completing the name
+                for name in candidates:
+                    if name.lower().startswith(name_part.lower()):
+                        yield Completion(name, start_position=-len(name_part))
             return
 
         # ---- help → command/topic completion ----
@@ -197,6 +213,8 @@ class ArcCompleter(Completer):
 PROMPT_STYLE = Style.from_dict({
     "arc":    "bold ansicyan",
     "device": "bold ansiyellow",
+    "folder": "bold ansigreen",
+    "ctx":    "ansicyan dim",        # context-tier label (:global, :device)
     "sep":    "ansicyan",
     "arrow":  "bold ansicyan",
 })
@@ -306,6 +324,13 @@ class ArcShell:
         self._refresh_tsgs(silent=True)
         console.print(" " * 40, end="\r")
 
+        # SCM sometimes returns an empty device list on the very first request
+        # right after OAuth (token propagation / eventual consistency).  Retry
+        # once after a short pause before giving up and showing the hint.
+        if not self._state.devices_cache:
+            time.sleep(1.5)
+            self._refresh_devices(silent=True)
+
         # Report what was actually loaded so users know their access level.
         parts: list[str] = []
         if self._state.devices_cache:
@@ -323,15 +348,60 @@ class ArcShell:
                 "account role (policy commands will still work)[/dim]"
             )
 
+        if not self._state.devices_cache:
+            console.print(
+                "[dim]No devices loaded — run [bold]ls[/bold] to retry, "
+                "or check your service account has Device Administrator access.[/dim]"
+            )
+
     # ------------------------------------------------------------------
     # Prompt
     # ------------------------------------------------------------------
 
     def _prompt(self) -> HTML:
+        """Build the prompt string reflecting the active context tier.
+
+        Tier rules:
+          No device, Shared folder  → arc:global >        (global context)
+          No device, named folder   → arc:Production >     (folder context)
+          Device, Shared folder     → arc:fw01:device >    (device context)
+          Device, named folder      → arc:fw01:Production > (folder context on device)
+        """
+        folder    = self._state.folder or "Shared"
+        at_shared = folder.lower() == "shared"
+
         if self._state.device:
             name = self._state.device.get("hostname") or self._state.device.get("name") or "device"
-            return HTML(f"<arc>arc</arc><sep>:</sep><device>{name}</device><arrow> > </arrow>")
-        return HTML("<arc>arc</arc><arrow> > </arrow>")
+            if at_shared:
+                # Device selected but still at Shared — show context tier as ':device'
+                return HTML(
+                    f"<arc>arc</arc>"
+                    f"<sep>:</sep><device>{name}</device>"
+                    f"<sep>:</sep><ctx>device</ctx>"
+                    f"<arrow> > </arrow>"
+                )
+            # Device selected and in a specific folder — show both
+            return HTML(
+                f"<arc>arc</arc>"
+                f"<sep>:</sep><device>{name}</device>"
+                f"<sep>:</sep><folder>{folder}</folder>"
+                f"<arrow> > </arrow>"
+            )
+
+        if at_shared:
+            # No device, no specific folder — global context
+            return HTML(
+                f"<arc>arc</arc>"
+                f"<sep>:</sep><ctx>global</ctx>"
+                f"<arrow> > </arrow>"
+            )
+
+        # No device but in a specific folder — folder context
+        return HTML(
+            f"<arc>arc</arc>"
+            f"<sep>:</sep><folder>{folder}</folder>"
+            f"<arrow> > </arrow>"
+        )
 
     # ------------------------------------------------------------------
     # Main loop
@@ -481,41 +551,81 @@ class ArcShell:
         """
         if not args or args[0] in ("..", "/"):
             self._state.device = None
-            console.print("[cyan]Device context cleared.[/cyan] SCM / global")
+            console.print(
+                f"[cyan]Device context cleared.[/cyan]  "
+                f"SCM / global  folder: [bold green]{self._state.folder}[/bold green]"
+            )
             return
 
-
         target = " ".join(args)
+
+        # Always try to refresh if cache is empty so we give the most
+        # accurate answer about whether the device exists in this TSG.
         if not self._state.devices_cache:
             self._refresh_devices()
 
         match = self._find_device(target)
         if match:
             self._state.device = match
-            name = match.get("hostname") or match.get("name") or target
+            name    = match.get("hostname") or match.get("display_name") or match.get("name") or target
+            serial  = match.get("serial_number") or match.get("serial") or match.get("name") or "n/a"
+            ip_raw  = match.get("ip_address") or match.get("ip-address") or ""
+            ip      = ip_raw if ip_raw and ip_raw.lower() not in ("unknown", "none") else "n/a"
+            model   = match.get("model") or ""
+            sw_ver  = match.get("software_version") or match.get("sw_version") or ""
+            connected = (
+                "  [green]connected[/green]" if match.get("is_connected")
+                else "  [red]disconnected[/red]" if match.get("is_connected") is False
+                else ""
+            )
+            parts = [f"[cyan]SCM device:[/cyan] [bold]{name}[/bold]"]
+            parts.append(f"serial: [bold]{serial}[/bold]")
+            parts.append(f"ip: {ip}")
+            if model:
+                parts.append(f"model: {model}")
+            if sw_ver:
+                parts.append(f"sw: {sw_ver}")
+            console.print("  ".join(parts) + connected)
+            return
+
+        # Device not found.
+        if self._state.devices_cache:
+            # Cache is populated — this TSG has no such device. Hard stop.
+            active_tsg = self._state.tsg_id or self._config.scm.tsg_id or "current TSG"
             console.print(
-                f"[cyan]SCM device:[/cyan] [bold]{name}[/bold]  "
-                f"serial: {match.get('serial', 'n/a')}  "
-                f"ip: {match.get('ip_address', 'n/a')}"
+                f"[red]Device '{target}' not found in TSG {active_tsg}.[/red]\n"
+                f"  [dim]Use [bold]ls[/bold] or [bold]show devices[/bold] to see "
+                f"the {len(self._state.devices_cache)} device(s) visible in this TSG.\n"
+                "  Use [bold]tsg <id>[/bold] to switch to a different tenant.[/dim]"
             )
         else:
+            # Cache empty even after refresh (API unavailable / empty tenant).
+            # Permit a stub only in this case so SSH still works when SCM
+            # device inventory is inaccessible.
             console.print(
-                f"[yellow]Device '{target}' not found in cache.[/yellow] "
-                "Creating a stub — run [bold]ls[/bold] to refresh the device list."
+                f"[yellow]Device list unavailable — creating stub for '{target}'.[/yellow]\n"
+                "  [dim]SSH with [bold]remote[/bold] / [bold]connect[/bold] may still "
+                "work if the device is reachable directly.[/dim]"
             )
             self._state.device = {
                 "name": target,
                 "hostname": target,
                 "ip_address": target,
-                "serial": "",
+                "serial_number": "",
             }
 
     def _find_device(self, query: str) -> Optional[dict]:
+        """Find a device in the cache by hostname, serial, name, or IP.
+
+        Checks all field-name variants the SCM API may return.
+        """
         q = query.lower()
         for d in self._state.devices_cache:
             if (
                 (d.get("hostname") or "").lower() == q
+                or (d.get("display_name") or "").lower() == q
                 or (d.get("name") or "").lower() == q
+                or (d.get("serial_number") or "").lower() == q
                 or (d.get("serial") or "").lower() == q
                 or (d.get("ip_address") or "").lower() == q
             ):
@@ -523,11 +633,19 @@ class ArcShell:
         return None
 
     def _refresh_devices(self, silent: bool = False) -> None:
-        """Fetch managed devices and populate the cache used by tab completion and cd."""
+        """Fetch managed devices and populate the cache used by tab completion and cd.
+
+        Uses self._scm directly (same pattern as _refresh_folders / _refresh_tsgs)
+        rather than going through _make_context().  The devices endpoint returns
+        all managed devices TSG-wide regardless of the active folder, so no folder
+        parameter is passed.
+        """
+        if not self._scm:
+            return
         try:
-            ctx = self._make_context()
-            if ctx.scm:
-                self._state.devices_cache = ctx.scm.get_devices(folder=self._state.folder)
+            devices = self._scm.get_devices()
+            if devices:
+                self._state.devices_cache = devices
         except Exception as exc:
             if not silent:
                 console.print(f"[yellow]Could not refresh device list: {exc}[/yellow]")
@@ -600,13 +718,25 @@ class ArcShell:
             if match:
                 self._state.device = match
                 name = match.get("hostname") or match.get("name") or target
-            else:
+            elif self._state.devices_cache:
+                # Cache populated — device genuinely not in this TSG.
+                active_tsg = self._state.tsg_id or self._config.scm.tsg_id or "current TSG"
+                self._state.device = previous_device
                 console.print(
-                    f"[yellow]Device '{target}' not found in cache — using as hostname/IP directly.[/yellow]"
+                    f"[red]Device '{target}' not found in TSG {active_tsg}.[/red]\n"
+                    f"  [dim]Use [bold]ls[/bold] to see available devices, "
+                    "or [bold]tsg <id>[/bold] to switch tenant.[/dim]"
+                )
+                return
+            else:
+                # Cache empty — allow direct SSH by hostname/IP as a fallback.
+                console.print(
+                    f"[yellow]Device '{target}' not in cache — "
+                    "attempting SSH directly.[/yellow]"
                 )
                 self._state.device = {
                     "name": target, "hostname": target,
-                    "ip_address": target, "serial": "",
+                    "ip_address": target, "serial_number": "",
                 }
                 name = target
         else:
@@ -837,7 +967,11 @@ class ArcShell:
                 "cd <device> → enter device context  |  "
                 "show devices → full device table[/dim]"
             )
-        console.print(f"[bold cyan]SCM folder:[/bold cyan] {self._state.folder}")
+        # Folder is always shown — it is the primary SCM scope for all API calls.
+        console.print(
+            f"[bold cyan]SCM folder:[/bold cyan] [bold green]{self._state.folder}[/bold green]"
+            "  [dim](all API calls scoped to this folder — change with 'folder <name>')[/dim]"
+        )
         active_tsg = self._state.tsg_id or "(root / config default)"
         console.print(f"[bold cyan]TSG:[/bold cyan] {active_tsg}")
 
@@ -846,11 +980,83 @@ class ArcShell:
     # ------------------------------------------------------------------
 
     def _cmd_folder(self, args: list[str]) -> None:
+        """Set or display the active SCM folder context.
+
+        The active folder is passed as the ``?folder=`` query parameter on
+        every SCM REST call.  It is always visible in the prompt so there is
+        no ambiguity about which folder a command is scoped to.
+
+        Usage:
+          folder             — list available folders and show the active one
+          folder <name>      — switch to <name>
+          folder ..          — switch to 'Shared' (root / default)
+        """
         if not args:
-            console.print(f"[cyan]Current SCM folder:[/cyan] {self._state.folder}")
+            # Show current folder and available options, same pattern as `tsg` with no args.
+            console.print(f"[cyan]Active SCM folder:[/cyan] [bold]{self._state.folder}[/bold]")
+            if self._state.folders_cache:
+                console.print("\n[bold yellow]Available Folders[/bold yellow]  "
+                              "[dim](Tab after 'folder ' to complete)[/dim]")
+                for name in sorted(self._state.folders_cache):
+                    marker = " [green]◀ active[/green]" if name == self._state.folder else ""
+                    console.print(f"  [green]{name}[/green]{marker}")
+            else:
+                console.print(
+                    "[dim]No folder list cached — run [bold]ls[/bold] or "
+                    "[bold]folder[/bold] after SCM is connected to populate.[/dim]"
+                )
+                self._refresh_folders(silent=False)
+                if self._state.folders_cache:
+                    console.print("\n[bold yellow]Available Folders[/bold yellow]")
+                    for name in sorted(self._state.folders_cache):
+                        marker = " [green]◀ active[/green]" if name == self._state.folder else ""
+                        console.print(f"  [green]{name}[/green]{marker}")
+            console.print(
+                "\n[dim]  folder <name> → switch  |  "
+                "folder .. → back to Shared  |  "
+                "Tab after 'folder ' → complete folder name[/dim]"
+            )
             return
-        self._state.folder = args[0]
-        console.print(f"[cyan]SCM folder set to:[/cyan] {self._state.folder}")
+
+        # `folder ..` or `folder /` → reset to default (Shared).
+        if args[0] in ("..", "/"):
+            self._state.folder = "Shared"
+            console.print("[cyan]SCM folder reset to:[/cyan] [bold]Shared[/bold]")
+            return
+
+        new_folder = args[0]
+
+        # Validate against the known folder list when the cache is populated.
+        # This prevents silently setting a folder that doesn't exist in the
+        # active TSG — same principle as cd refusing unknown devices.
+        if (
+            self._state.folders_cache
+            and self._state.folders_cache != ["Shared", "Global"]
+            and new_folder not in self._state.folders_cache
+        ):
+            active_tsg = self._state.tsg_id or self._config.scm.tsg_id or "current TSG"
+            console.print(
+                f"[red]Folder '{new_folder}' not found in TSG {active_tsg}.[/red]\n"
+                f"  [dim]Available folders: {', '.join(sorted(self._state.folders_cache))}\n"
+                "  Tab after 'folder ' to complete, or 'folder' alone to list folders.[/dim]"
+            )
+            return
+
+        self._state.folder = new_folder
+        # Clear device context when switching folder — a device cd'd to in one
+        # folder may not be visible or relevant in another.
+        if self._state.device:
+            device_name = (
+                self._state.device.get("hostname") or
+                self._state.device.get("name") or "device"
+            )
+            self._state.device = None
+            console.print(
+                f"[cyan]SCM folder set to:[/cyan] [bold]{new_folder}[/bold]  "
+                f"[dim](device context {device_name} cleared — use cd to re-enter)[/dim]"
+            )
+        else:
+            console.print(f"[cyan]SCM folder set to:[/cyan] [bold]{new_folder}[/bold]")
 
     # ------------------------------------------------------------------
     # Command: tsg
@@ -908,57 +1114,83 @@ class ArcShell:
             console.print("[yellow]TSG ID cannot be blank.[/yellow]")
             return
 
-        previous_tsg = self._state.tsg_id
+        previous_tsg    = self._state.tsg_id
+        previous_device = self._state.device
+        previous_folder = self._state.folder
         has_client_creds = bool(
             self._config.scm.client_id and self._config.scm.client_secret
         )
 
         if not has_client_creds:
-            # Bearer-token-only mode: just record the context change.
-            # The token covers all TSGs it was issued for; SCM enforces access.
+            # Bearer-token-only mode: record context change, clear stale
+            # device/folder state from the old TSG, then refresh caches.
             self._state.tsg_id = new_tsg
+            self._state.device = None
+            self._state.folder = self._config.default_folder
+            self._state.devices_cache = []
+            self._state.folders_cache = ["Shared", "Global"]
+            console.print(f"[dim]Refreshing caches for TSG {new_tsg}…[/dim]")
+            self._refresh_devices(silent=True)
+            self._refresh_folders(silent=True)
+            device_count = len(self._state.devices_cache)
             console.print(
-                f"[cyan]TSG context set to:[/cyan] [bold]{new_tsg}[/bold]\n"
+                f"[cyan]TSG context set to:[/cyan] [bold]{new_tsg}[/bold]  "
+                f"({device_count} device(s) visible)\n"
                 "[dim]Bearer token used as-is — SCM enforces TSG-level access.[/dim]"
             )
+            if device_count == 0:
+                console.print(
+                    "[yellow]No devices visible in this TSG.[/yellow]  "
+                    "[dim]cd and device-scope commands unavailable here — "
+                    "use [bold]tsg <id>[/bold] to switch to a TSG with devices.[/dim]"
+                )
             return
 
-        # OAuth mode: re-authenticate with the new TSG scope so every subsequent
-        # API call carries a token that explicitly claims this TSG.
+        # OAuth mode: re-authenticate with the new TSG scope.
         console.print(f"[dim]Re-authenticating with TSG {new_tsg}…[/dim]")
+        # Clear stale context immediately so nothing from the old TSG leaks.
         self._state.tsg_id = new_tsg
+        self._state.device = None
+        self._state.folder = self._config.default_folder
         try:
             if self._scm:
                 self._scm.reauthenticate(new_tsg)
             else:
-                # SCM client was never initialised — build it now.
-                import copy  # Deferred: avoids import at module level
+                import copy  # Deferred: avoids circular import
                 new_scm_cfg = copy.copy(self._config.scm)
                 new_scm_cfg.tsg_id = new_tsg
                 self._scm = SCMClient(new_scm_cfg)
 
-            # Refresh caches for the new TSG context
+            # Refresh all caches for the new TSG context.
             console.print(f"[dim]Refreshing device and folder lists for TSG {new_tsg}…[/dim]")
             self._refresh_devices(silent=True)
             self._refresh_folders(silent=True)
             self._refresh_tsgs(silent=True)
 
+            device_count = len(self._state.devices_cache)
             console.print(
                 f"[green]✓[/green] Switched to TSG [bold]{new_tsg}[/bold]  "
-                f"({len(self._state.devices_cache)} device(s) visible)"
+                f"({device_count} device(s) visible)"
             )
+            if device_count == 0:
+                console.print(
+                    "[yellow]No devices visible in this TSG.[/yellow]  "
+                    "[dim]cd and device-scope commands unavailable here — "
+                    "use [bold]tsg <id>[/bold] to switch to a TSG with devices.[/dim]"
+                )
         except Exception as exc:
-            # Roll back so a failed switch doesn't strand the user.
+            # Roll back fully on failure so context is consistent.
             self._state.tsg_id = previous_tsg
+            self._state.device = previous_device
+            self._state.folder = previous_folder
             if self._scm:
-                # Restore the old token by re-authing back to the previous TSG.
                 try:
                     self._scm.reauthenticate(previous_tsg or self._config.scm.tsg_id)
                 except Exception:
                     pass
             console.print(
                 f"[red]TSG switch failed:[/red] {exc}\n"
-                f"[dim]TSG context restored to {previous_tsg or self._config.scm.tsg_id}.[/dim]"
+                f"[dim]Context restored to TSG {previous_tsg or self._config.scm.tsg_id}.[/dim]"
             )
 
     # ------------------------------------------------------------------
@@ -966,8 +1198,15 @@ class ArcShell:
     # ------------------------------------------------------------------
 
     def _cmd_help(self, args: list[str]) -> None:
+        """Print the command reference.
 
-        if args:
+        Bare `?` / `help` is always context-aware — commands are shown in three
+        tiers (global → folder → device) so the operator sees what is available
+        at the current navigation level, mirroring PAN-OS/Panorama CLI behaviour.
+
+        `help all` always forces the full unfiltered reference.
+        """
+        if args and args[0].lower() != "all":
             topic = " ".join(args)
             if render_help_topic(console, topic):
                 return
@@ -977,44 +1216,168 @@ class ArcShell:
             )
             return
 
+        if args and args[0].lower() == "all":
+            self._cmd_help_full()
+        else:
+            self._cmd_help_contextual()
+
+    def _cmd_help_contextual(self) -> None:
+        """Print context-aware help organised in three tiers.
+
+        Tier 1 — GLOBAL: always available regardless of navigation context.
+        Tier 2 — FOLDER COMMANDS: scoped to the active folder (always callable,
+                  most meaningful in a specific non-Shared folder).
+        Tier 3 — DEVICE COMMANDS: require an active device context (cd <device>).
+
+        This mirrors the PAN-OS / Panorama CLI mental model where the command set
+        visible to the operator expands as they navigate deeper into context.
+        Operators at root see global commands clearly, folder commands with a
+        "Shared" annotation and a hint to navigate, and device commands clearly
+        locked behind 'cd <device>'.
+        """
+        device = self._state.device
+        folder = self._state.folder
+        device_name = (device.get("hostname") or device.get("name") or "device") if device else ""
+
+        # Build context header line
+        if device:
+            ctx_line = (
+                f"[bold cyan]Context:[/bold cyan]  "
+                f"folder [bold green]{folder}[/bold green]  "
+                f"device [bold yellow]{device_name}[/bold yellow]"
+            )
+        elif folder and folder.lower() != "shared":
+            ctx_line = (
+                f"[bold cyan]Context:[/bold cyan]  "
+                f"folder [bold green]{folder}[/bold green]  "
+                f"[dim](cd <device> to unlock device commands)[/dim]"
+            )
+        else:
+            ctx_line = (
+                f"[bold cyan]Context:[/bold cyan]  "
+                f"folder [bold green]{folder}[/bold green]  "
+                f"[dim](root — folder <name> to scope | cd <device> for device commands)[/dim]"
+            )
+
+        console.print()
+        console.print(Panel(
+            f"{ctx_line}\n"
+            "[dim]Commands shown by context level — navigate deeper to unlock more.\n"
+            "Type [bold]help all[/bold] for the full unfiltered reference  |  "
+            "[bold]help <command>[/bold] for command docs[/dim]",
+            title="Help  (? also works)", border_style="cyan",
+        ))
+
+        # --- Tier 1: GLOBAL — always available ---
+        global_keys = sorted(k for k, cmd in COMMANDS.items() if cmd.scope == "global")
+        if global_keys:
+            console.print("\n[bold yellow]GLOBAL[/bold yellow]  [dim]— always available[/dim]")
+            for k in global_keys:
+                cmd = COMMANDS[k]
+                ssh_note = " [dim](SSH)[/dim]" if cmd.ssh_command and cmd.api_handler else ""
+                console.print(f"  [cyan]{k:<45}[/cyan] {cmd.description}{ssh_note}")
+
+        # --- Tier 2: FOLDER COMMANDS ---
+        folder_keys = sorted(k for k, cmd in COMMANDS.items() if cmd.scope == "folder")
+        if folder_keys:
+            if folder and folder.lower() != "shared":
+                folder_header = (
+                    f"[bold yellow]FOLDER COMMANDS[/bold yellow]  "
+                    f"[dim]— folder: {folder}[/dim]"
+                )
+            else:
+                folder_header = (
+                    f"[bold yellow]FOLDER COMMANDS[/bold yellow]  "
+                    f"[dim]— folder: {folder}  "
+                    f"(use 'folder <name>' to scope to a specific folder)[/dim]"
+                )
+            console.print(f"\n{folder_header}")
+            for k in folder_keys:
+                cmd = COMMANDS[k]
+                ssh_note = " [dim](SSH)[/dim]" if cmd.ssh_command and cmd.api_handler else ""
+                ctx_note = self._context_annotation(k)
+                console.print(f"  [cyan]{k:<45}[/cyan] {cmd.description}{ssh_note}{ctx_note}")
+
+        # --- Tier 3: DEVICE COMMANDS ---
+        device_keys = sorted(k for k, cmd in COMMANDS.items() if cmd.scope == "device")
+        if device_keys:
+            if device:
+                device_header = (
+                    f"[bold yellow]DEVICE COMMANDS[/bold yellow]  "
+                    f"[dim]— device: {device_name}  "
+                    f"(append --remote to target another device)[/dim]"
+                )
+                console.print(f"\n{device_header}")
+                for k in device_keys:
+                    cmd = COMMANDS[k]
+                    ssh_note = " [dim](SSH)[/dim]" if cmd.ssh_command else ""
+                    console.print(f"  [cyan]{k:<45}[/cyan] {cmd.description}{ssh_note}")
+            else:
+                console.print(
+                    "\n[dim bold]DEVICE COMMANDS[/dim bold]  "
+                    "[dim]— requires cd <device>  "
+                    "(or append --remote <device> to any command)[/dim]"
+                )
+                for k in device_keys:
+                    cmd = COMMANDS[k]
+                    console.print(f"  [dim]{k:<45}  {cmd.description}[/dim]")
+                console.print(
+                    "  [dim]→ [bold dim]cd <device>[/bold dim][dim] to unlock.  "
+                    "Tab after 'cd ' lists all managed devices.[/dim]"
+                )
+
+        self._print_shell_builtins()
+        console.print()
+
+    def _cmd_help_full(self) -> None:
+        """Print the full command reference regardless of context."""
         console.print()
         console.print(Panel(
             "[bold cyan]ARC — Assisted Remote Console[/bold cyan]\n"
             "A PAN-OS-style interactive shell for Palo Alto Networks SCM environments.\n"
             "Commands are routed through SCM APIs by default.\n"
             "Use [bold]connect[/bold] or [bold]remote <device>[/bold] to open an\n"
-            "interactive SSH session on a device.",
-            title="Help  (? also works)", border_style="cyan",
+            "interactive SSH session on a device.\n\n"
+            "[dim]Scope tags:  (folder) → scoped to active folder  "
+            "(device) → requires cd <device>  "
+            "(global) → no context filtering[/dim]",
+            title="Help  (? also works | help all → this view)", border_style="cyan",
         ))
 
-        # Registered commands grouped by category
         for category, keys in sorted(CATEGORIES.items()):
             console.print(f"\n[bold yellow]{category.upper()}[/bold yellow]")
             for k in sorted(keys):
-                desc = COMMANDS[k].description
-                ssh_note = " [dim](API only)[/dim]" if COMMANDS[k].ssh_command is None else ""
-                console.print(f"  [cyan]{k:<45}[/cyan] {desc}{ssh_note}")
+                cmd = COMMANDS[k]
+                scope_tag = (
+                    "  [dim][global][/dim]" if cmd.scope == "global"
+                    else "  [dim][device][/dim]" if cmd.scope == "device"
+                    else ""
+                )
+                ssh_note = " [dim](SSH)[/dim]" if cmd.ssh_command else ""
+                console.print(f"  [cyan]{k:<45}[/cyan] {cmd.description}{scope_tag}{ssh_note}")
 
-        # Shell built-ins
+        self._print_shell_builtins()
+        console.print()
+
+    def _print_shell_builtins(self) -> None:
+        """Print the shell built-in commands table (shared by contextual and full help)."""
         console.print("\n[bold yellow]SHELL[/bold yellow]")
         builtins = [
             ("cd <device>",           "Change Device in SCM"),
             ("connect [device]",      "SSH to device — full interactive session  [dim](returns to ARC on exit)[/dim]"),
             ("remote <device>",       "SSH to device — full interactive session  [dim](also sets device context)[/dim]"),
-            ("folder <name>",         "Set the SCM Folder  [dim](Tab → available folders)[/dim]"),
+            ("folder <name>",         "Set SCM Folder — always shown in prompt  [dim](Tab → available folders | folder .. → Shared)[/dim]"),
             ("tsg <id>",              "Set the active TSG (Tenant Services Group)  [dim](Tab → configured TSG)[/dim]"),
             ("ls",                    "List devices (root) or device detail + snippets (in device context)"),
             ("pwd",                   "Show current device, SCM folder, and active TSG"),
             ("docs / docs <command>", "Show Documentation  [dim]docs <command> shows help in shell[/dim]"),
-            ("? / help",              "Print this command reference"),
+            ("? / help",              "Context-sensitive help  [dim](help all → full list)[/dim]"),
             ("help <topic>",          "Open topic doc  [dim]e.g. help config, help config osx|win|nix[/dim]"),
-            ("help config",           "Configuration overview  [dim](osx / win / nix for platform guides)[/dim]"),
             ("clear",                 "Clear the terminal screen"),
             ("exit / quit",           "Exit ARC"),
         ]
         for name, desc in builtins:
             console.print(f"  [cyan]{name:<45}[/cyan] {desc}")
-        console.print()
 
 
     def _cmd_context_help(self, prefix_tokens: list[str]) -> None:
@@ -1025,6 +1388,9 @@ class ArcShell:
         - Partial prefix match  → list every command that begins with the prefix
         - Shell built-in        → render its doc page
         - No match anywhere     → friendly fallback to the full command list
+
+        Context annotations are added where relevant (e.g. what 'show snippets'
+        will actually return given the current folder/device context).
         """
         prefix = " ".join(prefix_tokens).lower()
 
@@ -1032,7 +1398,6 @@ class ArcShell:
         if prefix in COMMANDS:
             if render_help_topic(console, prefix):
                 return
-            # Doc file missing — fall back to showing description inline.
             cmd_def = COMMANDS[prefix]
             ssh_note = (
                 "  [dim](API only — no SSH equivalent)[/dim]"
@@ -1043,6 +1408,8 @@ class ArcShell:
                 f"\n[bold cyan]{prefix}[/bold cyan]  —  {cmd_def.description}{ssh_note}\n"
                 "  Append [bold]--remote[/bold] to run via SSH instead of the SCM API.\n"
             )
+            # Inline context hint for snippet/folder-scoped commands
+            self._print_context_hint_for(prefix)
             return
 
         # 2. Try to render a doc page by topic name (covers aliases / general topics).
@@ -1059,7 +1426,11 @@ class ArcShell:
             for k in matches:
                 cmd_def = COMMANDS[k]
                 ssh_note = " [dim](API only)[/dim]" if cmd_def.ssh_command is None else ""
-                console.print(f"  [cyan]{k:<45}[/cyan] {cmd_def.description}{ssh_note}")
+                # Add live context annotation for snippet commands
+                ctx_note = self._context_annotation(k)
+                console.print(
+                    f"  [cyan]{k:<45}[/cyan] {cmd_def.description}{ssh_note}{ctx_note}"
+                )
             console.print()
             return
 
@@ -1078,12 +1449,58 @@ class ArcShell:
             "— type [bold]?[/bold] for the full command list."
         )
 
+    def _context_annotation(self, command_key: str) -> str:
+        """Return a short inline context note for commands whose output depends on state.
+
+        All folder-scope commands show the active folder.
+        All device-scope commands show the active device when one is set.
+        Returns empty string when there is nothing context-specific to note.
+        """
+        device = self._state.device
+        folder = self._state.folder
+
+        cmd = COMMANDS.get(command_key)
+        if not cmd:
+            return ""
+
+        if cmd.scope == "folder":
+            return f"  [dim]→ folder: {folder}[/dim]"
+
+        if cmd.scope == "device" and device:
+            device_name = device.get("hostname") or device.get("name") or "device"
+            return f"  [dim]→ device: {device_name}[/dim]"
+
+        return ""
+
+    def _print_context_hint_for(self, command_key: str) -> None:
+        """Print a one-line context note below an exact-match help result."""
+        note = self._context_annotation(command_key)
+        if note:
+            # Strip Rich markup for the plain print (it will re-render via console.print)
+            console.print(f"[dim]Current context:[/dim]{note}")
+
     # ------------------------------------------------------------------
     # API execution
     # ------------------------------------------------------------------
 
     def _execute_api(self, key: str, cmd_def: CommandDef, args: dict) -> None:
         ctx = self._make_context()
+
+        # Enforce scope declared on the CommandDef before calling the handler.
+        if cmd_def.scope == "device" and not ctx.device:
+            device_hint = (
+                "Use [bold]cd <device>[/bold] to select a device first, "
+                "then run this command again.\n"
+                f"Or run [bold]{key} --remote <device>[/bold] to target a "
+                "device directly without changing context.\n"
+                "Tab after 'cd ' or '--remote ' to see available devices."
+            )
+            console.print(
+                f"[yellow]'{key}'[/yellow] requires a device context  "
+                f"[dim](scope: device)[/dim]\n  {device_hint}"
+            )
+            return
+
         if cmd_def.api_handler is None:
             console.print(f"[yellow]No API handler for '{key}'.[/yellow]")
             return
@@ -1173,6 +1590,14 @@ class ArcShell:
             console.print(fmt.format_raw(data, title=key))
             return
 
+        # If the handler embedded a _render override key (e.g. snippet_detail_full
+        # returned from show snippet <name> details), honour it BEFORE consulting
+        # the dispatch table — otherwise cmd_def.render would call the wrong formatter.
+        if isinstance(data, dict) and "_render" in data:
+            render_hint = data["_render"]
+        else:
+            render_hint = cmd_def.render
+
         dispatch = {
             "system_info":     lambda d: fmt.format_system_info(d),
             "raw":             lambda d: fmt.format_raw(str(d), title=key),
@@ -1183,7 +1608,9 @@ class ArcShell:
                                    d.get("snippets", []) if isinstance(d, dict) else d,
                                    device_filter=d.get("device_name", "") if isinstance(d, dict) else ""),
             "snippets":        lambda d: fmt.format_snippets(d if isinstance(d, list) else []),
-            "snippet_detail":  lambda d: fmt.format_snippet_detail(d if isinstance(d, dict) else {}),
+            "snippets_scoped": lambda d: fmt.format_snippets_scoped(d if isinstance(d, dict) else {}),
+            "snippet_detail":  lambda d: fmt.format_snippet_detail(d if isinstance(d, dict) else {}) or [],
+            "snippet_detail_full": lambda d: fmt.format_snippet_detail_full(d if isinstance(d, dict) else {}) or [],
             "interfaces":      lambda d: fmt.format_interfaces(d),
             "routes":          lambda d: fmt.format_routes(d),
             "security_policy": lambda d: fmt.format_security_policy(d),
@@ -1192,6 +1619,9 @@ class ArcShell:
             "address_objects": lambda d: fmt.format_address_objects(d),
             "address_groups":  lambda d: fmt.format_address_groups(d),
             "services":        lambda d: fmt.format_services(d),
+            "tags":            lambda d: fmt.format_tags(d if isinstance(d, list) else []),
+            "edl_list":        lambda d: fmt.format_edl_list(d if isinstance(d, list) else []),
+            "url_categories":  lambda d: fmt._list_table(d if isinstance(d, list) else [], title="URL Categories"),
             "zones":           lambda d: fmt.format_zones(d),
             "ha":              lambda d: fmt.format_ha(d, title=key),
             "dict":            lambda d: fmt.format_dict(d, title=key),
@@ -1199,7 +1629,12 @@ class ArcShell:
         renderer = dispatch.get(render_hint)
         if renderer:
             result = renderer(data)
-            console.print(result)
+            # format_snippet_detail returns a list of renderables; others return one.
+            if isinstance(result, list):
+                for renderable in result:
+                    console.print(renderable)
+            else:
+                console.print(result)
         elif isinstance(data, list):
             if data and isinstance(data[0], dict):
                 console.print(fmt._list_table(data, title=key))
@@ -1207,13 +1642,6 @@ class ArcShell:
                 for item in data:
                     console.print(item)
         elif isinstance(data, dict):
-            # Check for the sentinel _render key used by some handlers
-            if "_render" in data:
-                sentinel_render = data["_render"]
-                r = dispatch.get(sentinel_render)
-                if r:
-                    console.print(r(data))
-                    return
             console.print(fmt.format_dict(data, title=key))
         else:
             console.print(fmt.format_raw(str(data), title=key))
@@ -1246,8 +1674,8 @@ class ArcShell:
         # Compact ASCII art — Unicode block characters used verbatim to avoid Rich markup.
         art = (
             "\n"
-            "      \u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2588\u2588\u2588\u2588\u2557   \u2588\u2588\u2588\u2588\u2588\u2588\u2557\n"
-            "     \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557 \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557 \u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d\n"
+            "      \u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2588\u2588\u2588\u2588\u2557\n"
+            "     \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2551 \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557 \u2588\u2588\u2551\n"
             "     \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551 \u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d \u2588\u2588\u2551\n"
             "     \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2551 \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557 \u2588\u2588\u2551\n"
             "     \u2588\u2588\u2551  \u2588\u2588\u2551 \u2588\u2588\u2551  \u2588\u2588\u2551 \u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2557\n"
@@ -1260,7 +1688,7 @@ class ArcShell:
             "  [cyan]cd <device>[/cyan]               Change Device in SCM  [dim](Tab → device list)[/dim]\n"
             "  [cyan]remote <device>[/cyan]           SSH Passthrough to device\n"
             "  [cyan]connect <device>[/cyan]          SSH Connect to device\n"
-            "  [cyan]folder <name>[/cyan]             Set SCM Folder  [dim](Tab → folder list)[/dim]\n"
+            "  [cyan]folder <name>[/cyan]             Set SCM Folder  [dim](Tab → folder list | always shown in prompt)[/dim]\n"
             "  [cyan]?[/cyan]                         List all commands"
         )
         console.print()

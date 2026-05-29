@@ -15,9 +15,13 @@ Gateway map (from the OpenAPI ``servers`` field in each spec):
     https://api.strata.paloaltonetworks.com/config/security/v1
     Spec: openapi-specs/scm/config/ngfw/security/security-services-R2-2026.yaml
 
-  Setup    (devices, folders, snippets, labels, …)
+  Setup    (devices, folders, snippets, labels, jobs, …)
     https://api.strata.paloaltonetworks.com/config/setup/v1
     Spec: openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml
+
+  Network  (interfaces, zones, routing, HA, …)
+    https://api.strata.paloaltonetworks.com/config/network/v1
+    Spec: openapi-specs/scm/config/ngfw/network/  (verify exact file at pan.dev)
 
   IAM / Tenancy
     https://api.sase.paloaltonetworks.com
@@ -60,6 +64,9 @@ class SCMClient:
 
     # pan.dev: openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml
     SETUP_URL = "https://api.strata.paloaltonetworks.com/config/setup/v1"
+
+    # pan.dev: openapi-specs/scm/config/ngfw/network/  (verify exact spec file at pan.dev)
+    NETWORK_URL = "https://api.strata.paloaltonetworks.com/config/network/v1"
 
     # pan.dev: openapi-specs/scm/iam/ServiceAccounts.yaml
     #          openapi-specs/scm/tenancy/TenantServiceGroup.yaml
@@ -165,6 +172,29 @@ class SCMClient:
         """GET from api.strata.paloaltonetworks.com/config/setup/v1."""
         resp = self._http.get(
             f"{self.SETUP_URL}{path}",
+            headers=self._headers(),
+            params=params,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+    def _post_setup(self, path: str, json: Optional[dict] = None) -> Any:
+        """POST to api.strata.paloaltonetworks.com/config/setup/v1."""
+        resp = self._http.post(
+            f"{self.SETUP_URL}{path}",
+            headers=self._headers(),
+            json=json or {},
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+    def _get_network(self, path: str, params: Optional[dict] = None) -> Any:
+        """GET from api.strata.paloaltonetworks.com/config/network/v1.
+
+        pan.dev: https://pan.dev/scm/api/config/cloudngfw/network/
+        """
+        resp = self._http.get(
+            f"{self.NETWORK_URL}{path}",
             headers=self._headers(),
             params=params,
         )
@@ -285,6 +315,59 @@ class SCMClient:
         except (httpx.HTTPError, ValueError, TypeError):
             return ["Shared", "Global"]
 
+    def get_jobs(self) -> list[dict]:
+        """Return all SCM jobs (TSG-wide, no folder scope).
+
+        pan.dev: GET /config/setup/v1/jobs
+        Spec: openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml
+
+        Returns [] on any error so callers can handle gracefully.
+        """
+        try:
+            data = self._get_setup("/jobs")
+            return data.get("data", [])
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 403:
+                return []
+            raise
+        except (httpx.HTTPError, ValueError, TypeError):
+            return []
+
+    def get_job(self, job_id: str) -> dict | None:
+        """Return a single SCM job by ID (TSG-wide, no folder scope).
+
+        pan.dev: GET /config/setup/v1/jobs/{id}
+        Spec: openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml
+
+        Returns None if the job is not found or access is denied.
+        """
+        try:
+            return self._get_setup(f"/jobs/{job_id}")
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code in (403, 404):
+                return None
+            raise
+        except (httpx.HTTPError, ValueError, TypeError):
+            return None
+
+    def get_folders_full(self) -> list[dict]:
+        """Return full folder records including their snippet lists.
+
+        Each folder object carries a 'snippets' field (list of snippet name
+        strings) that is the authoritative source for which snippets are
+        attached to a folder.  This is the correct way to determine folder→
+        snippet membership; the snippet list response does not carry folder
+        references reliably.
+
+        pan.dev: GET /config/setup/v1/folders
+        Returns [] on any error so callers can handle gracefully.
+        """
+        try:
+            data = self._get_setup("/folders")
+            return data.get("data", [])
+        except (httpx.HTTPError, ValueError, TypeError):
+            return []
+
     def get_snippets(self) -> list[dict]:
         """Return all SCM snippets.
 
@@ -303,6 +386,53 @@ class SCMClient:
         pan.dev: GET /config/setup/v1/snippets/{id}
         """
         return self._get_setup(f"/snippets/{snippet_id}")
+
+    def get_snippet_objects(self, snippet_name: str) -> dict[str, list[dict]]:
+        """Fetch all configured objects/rules scoped to a snippet.
+
+        The SCM objects and security APIs accept a ?snippet=<name> query
+        parameter that filters results to only items defined within that
+        snippet.  This method queries all relevant endpoints and returns
+        a dict keyed by object type.  Empty lists are omitted so the
+        caller can tell at a glance what the snippet actually contains.
+
+        pan.dev: GET /config/objects/v1/addresses?snippet=<name>  (and others)
+        Returns {} on any total failure; per-endpoint failures are swallowed
+        so a 403 on one type doesn't prevent other types from loading.
+        """
+        p = {"snippet": snippet_name}
+        sections: dict[str, list[dict]] = {}
+
+        endpoints: list[tuple[str, str, str]] = [
+            # (label, base, path)
+            ("Addresses",           "objects",  "/addresses"),
+            ("Address Groups",      "objects",  "/address-groups"),
+            ("Services",            "objects",  "/services"),
+            ("Service Groups",      "objects",  "/service-groups"),
+            ("Tags",                "objects",  "/tags"),
+            ("External Dynamic Lists", "objects", "/external-dynamic-lists"),
+            ("Security Rules",      "security", "/security-rules"),
+            ("URL Categories",      "security", "/url-categories"),
+            ("Application Filters", "objects",  "/application-filters"),
+            ("Application Groups",  "objects",  "/application-groups"),
+            ("Log Forwarding",      "objects",  "/log-forwarding-profiles"),
+        ]
+
+        for label, base, path in endpoints:
+            try:
+                if base == "objects":
+                    data = self._get_objects(path, params=p)
+                else:
+                    data = self._get_security(path, params=p)
+                items = data.get("data", [])
+                if items:
+                    sections[label] = items
+            except Exception:
+                # Individual endpoint failures are swallowed — some object
+                # types may not exist in a given snippet; 404/403 is normal.
+                pass
+
+        return sections
 
     def get_folder_detail(self, folder_name: str) -> Optional[dict]:
         """Return the folder record whose name matches folder_name.
@@ -373,6 +503,155 @@ class SCMClient:
         """pan.dev: GET /config/security/v1/dns-security-profiles"""
         data = self._get_security("/dns-security-profiles", params={"folder": folder})
         return data.get("data", [])
+
+    # ------------------------------------------------------------------
+    # Network  (api.strata.paloaltonetworks.com/config/network/v1)
+    # pan.dev: https://pan.dev/scm/api/config/cloudngfw/network/
+    # Spec: openapi-specs/scm/config/ngfw/network/  (verify exact file at pan.dev)
+    # ------------------------------------------------------------------
+
+    def get_interfaces(self, folder: str = "Shared") -> list[dict]:
+        """Return ethernet interfaces configured in the active folder.
+
+        pan.dev: GET /config/network/v1/ethernet?folder=<folder>
+        Returns [] on 403/404 so callers degrade gracefully.
+        """
+        try:
+            data = self._get_network("/ethernet", params={"folder": folder})
+            return data.get("data", [])
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code in (403, 404):
+                return []
+            raise
+        except (httpx.HTTPError, ValueError, TypeError):
+            return []
+
+    def get_aggregate_interfaces(self, folder: str = "Shared") -> list[dict]:
+        """Return aggregate (AE) interfaces configured in the active folder.
+
+        pan.dev: GET /config/network/v1/aggregate-ethernet?folder=<folder>
+        """
+        try:
+            data = self._get_network("/aggregate-ethernet", params={"folder": folder})
+            return data.get("data", [])
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code in (403, 404):
+                return []
+            raise
+        except (httpx.HTTPError, ValueError, TypeError):
+            return []
+
+    def get_loopback_interfaces(self, folder: str = "Shared") -> list[dict]:
+        """Return loopback interfaces configured in the active folder.
+
+        pan.dev: GET /config/network/v1/loopback-interfaces?folder=<folder>
+        """
+        try:
+            data = self._get_network("/loopback-interfaces", params={"folder": folder})
+            return data.get("data", [])
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code in (403, 404):
+                return []
+            raise
+        except (httpx.HTTPError, ValueError, TypeError):
+            return []
+
+    def get_zones(self, folder: str = "Shared") -> list[dict]:
+        """Return security zones configured in the active folder.
+
+        pan.dev: GET /config/network/v1/zones?folder=<folder>
+        Returns [] on 403/404 so callers degrade gracefully.
+        """
+        try:
+            data = self._get_network("/zones", params={"folder": folder})
+            return data.get("data", [])
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code in (403, 404):
+                return []
+            raise
+        except (httpx.HTTPError, ValueError, TypeError):
+            return []
+
+    def get_static_routes(self, folder: str = "Shared") -> list[dict]:
+        """Return static routes configured in the active folder.
+
+        pan.dev: GET /config/network/v1/routing/static-routes?folder=<folder>
+        Returns [] on 403/404.
+        """
+        try:
+            data = self._get_network("/routing/static-routes", params={"folder": folder})
+            return data.get("data", [])
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code in (403, 404):
+                return []
+            raise
+        except (httpx.HTTPError, ValueError, TypeError):
+            return []
+
+    def get_routing_profiles(self, folder: str = "Shared") -> list[dict]:
+        """Return routing profiles / virtual routers in the active folder.
+
+        pan.dev: GET /config/network/v1/virtual-routers?folder=<folder>
+        Returns [] on 403/404.
+        """
+        try:
+            data = self._get_network("/virtual-routers", params={"folder": folder})
+            return data.get("data", [])
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code in (403, 404):
+                return []
+            raise
+        except (httpx.HTTPError, ValueError, TypeError):
+            return []
+
+    def get_ha_config(self, folder: str = "Shared") -> list[dict]:
+        """Return HA configuration in the active folder.
+
+        pan.dev: GET /config/network/v1/ha?folder=<folder>
+        Returns [] on 403/404.
+        """
+        try:
+            data = self._get_network("/ha", params={"folder": folder})
+            # HA may return a single object or a list — normalise to list
+            if isinstance(data, list):
+                return data
+            if isinstance(data, dict):
+                items = data.get("data", [])
+                return items if items else ([data] if data else [])
+            return []
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code in (403, 404):
+                return []
+            raise
+        except (httpx.HTTPError, ValueError, TypeError):
+            return []
+
+    # ------------------------------------------------------------------
+    # Commit / push config  (api.strata.paloaltonetworks.com/config/setup/v1)
+    # pan.dev: https://pan.dev/scm/api/config/cloudngfw/setup/
+    # ------------------------------------------------------------------
+
+    def push_config(
+        self,
+        folders: Optional[list[str]] = None,
+        devices: Optional[list[str]] = None,
+        description: str = "",
+    ) -> dict:
+        """Push the candidate configuration to managed devices.
+
+        Creates an SCM push job.  Returns the job record so the caller can
+        display the job ID and check progress with 'show jobs id <n>'.
+
+        pan.dev: POST /config/setup/v1/config-versions/candidate:push
+        """
+        payload: dict = {}
+        if folders:
+            payload["folders"] = folders
+        if devices:
+            payload["devices"] = devices
+        if description:
+            payload["description"] = description
+        return self._post_setup("/config-versions/candidate:push", json=payload)
 
     def close(self) -> None:
         self._http.close()

@@ -622,10 +622,34 @@ arc/
     ├── ssh/
     │   └── manager.py              ← SSHManager (paramiko connection pool)
     ├── commands/
-    │   └── registry.py             ← COMMANDS dict, CommandDef, ExecutionContext, match_command()
+    │   ├── base.py                 ← CommandDef, ExecutionContext, require_scm(), require_device(), translation_pending()
+    │   ├── registry.py             ← thin assembler: merges all domain COMMANDS, exposes match_command()
+    │   ├── setup.py                ← /config/setup/v1  — devices, snippets, folders
+    │   ├── objects.py              ← /config/objects/v1 — addresses, services, tags, EDLs
+    │   ├── security.py             ← /config/security/v1 — security-rules, url-categories
+    │   ├── network.py              ← /config/network/v1 — interfaces, routing, zones, HA
+    │   └── operations.py           ← jobs, commit (SCM); system resources, logs, ping (SSH/--remote only)
     └── utils/
         └── formatter.py            ← rich Table/Panel renderers for all output types
 ```
+
+#### Command module layout — mirrors SCM URI structure
+
+Each module under `app/commands/` maps to one SCM API domain or operational group:
+
+| Module | SCM URI prefix | Commands |
+|--------|---------------|----------|
+| `setup.py` | `/config/setup/v1` | devices, snippets, folders |
+| `objects.py` | `/config/objects/v1` | addresses, address-groups, services, tags, EDLs |
+| `security.py` | `/config/security/v1` | security-rules, url-categories, policy-match test |
+| `network.py` | `/config/network/v1` | interfaces, zones, routing, HA |
+| `operations.py` | `/config/setup/v1` + live-device | jobs, commit (SCM); system resources, logs, ping (SSH via --remote) |
+
+`base.py` contains only shared types (`CommandDef`, `ExecutionContext`) and utility functions (`require_scm`, `require_device`, `translation_pending`). No handler logic goes in `base.py`.
+
+`registry.py` is a **thin assembler only** — it imports each module's `COMMANDS` dict, merges them, builds `SORTED_COMMANDS` and `CATEGORIES`, and exposes `match_command()`. No handler logic goes in `registry.py`.
+
+**When adding a new SCM endpoint family**, create `app/commands/<domain>.py`, add the base URL constant and `_get_<domain>()` helper to `SCMClient`, and add the module to the merge block in `registry.py`. Nothing else needs to change.
 
 ---
 
@@ -662,9 +686,14 @@ ARC routes every command through a two-mode dispatch in `ArcShell._dispatch()`:
 | **API** (default) | Any command without `--remote` | `SCMClient` REST API |
 | **SSH** | `--remote`, `remote <device>`, or `connect` | `SSHManager` runs commands on the device |
 
-Config/object commands (security policy, address objects, services, managed devices) are SCM-backed.
-Operational commands that do not yet have an SCM translation return a clear "translation pending"
-message and should be run through SSH when live device output is required.
+**SCM API covers all configuration commands** — objects, security policy, network config (interfaces,
+zones, routing, HA), jobs, commit, and device inventory. Every config command that ARC exposes runs
+against the SCM REST API by default.
+
+**Live operational state** (CPU/memory, traffic logs, live routing table, ping, software check) is
+**not stored in SCM**. These commands return a clear message directing the operator to use `--remote`
+for SSH execution against the device. Never use "translation pending" language — instead say clearly
+that the command requires live device state and show the `--remote` usage.
 
 Device context is set by `cd <device>` and stored in `ShellState.device`. SCM folder context is stored
 in `ShellState.folder` and passed as the `?folder=` query parameter on SCM calls.
@@ -673,42 +702,62 @@ in `ShellState.folder` and passed as the `?folder=` query parameter on SCM calls
 
 ### Command Registry Pattern
 
-Every supported command lives in `COMMANDS` in `app/commands/registry.py`:
+eEvery supported command lives in one of the domain modules under `app/commands/`.
+Each module exports a `COMMANDS: dict[str, CommandDef]` dict. `registry.py` merges them.
 
 ```python
-'show bgp peers': CommandDef(
-    description='Show BGP peer summary',
-    category='network',
-    api_handler=_show_bgp_peers,    # Callable(ctx: ExecutionContext, args: dict) -> Any
-    ssh_command='show routing protocol bgp peer',  # str or Callable(args: dict) -> str
-    render='raw',                   # key into ArcShell._render() dispatch table
-),
+# In app/commands/objects.py (or whichever domain module owns this command)
+def _show_bgp_peers(ctx: ExecutionContext, args: dict) -> Any:
+    scm = require_scm(ctx)
+    return scm.get_bgp_peers(folder=ctx.folder)
+
+COMMANDS: dict[str, CommandDef] = {
+    ...
+    'show bgp peers': CommandDef(
+        description='Show BGP peer summary',
+        category='network',
+        scope='folder',                      # 'folder' | 'device' | 'global'
+        api_handler=_show_bgp_peers,         # Callable(ctx: ExecutionContext, args: dict) -> Any
+        ssh_command='show routing protocol bgp peer',  # str or Callable(args: dict) -> str
+        render='raw',                         # key into ArcShell._render() dispatch table
+    ),
+}
 ```
+
+#### Command scope — declared on every CommandDef
+
+| scope | Meaning | When to use |
+|-------|---------|-------------|
+| `"folder"` | Scoped to `ctx.folder`. Handler passes `folder=ctx.folder` to SCM. | All config/policy/objects/network commands — anything stored in SCM at the folder or snippet level. Default. |
+| `"device"` | Requires active device context (`cd <device>`). ARC blocks execution with a clear error if no device is selected. | Per-device operational info that SCM stores (system info, logs). Live-device commands that need `--remote`. |
+| `"global"` | No context filtering. Returns TSG-wide data regardless of folder or device. | `show devices`, `show jobs all/id`, `show snippet`, `show snippets global`, `show device snippets` (takes name arg), `commit`. |
+
+**Scope assignment rules:**
+- Network config (interfaces, zones, routing, HA) → `"folder"` — these are stored in SCM at folder/snippet level
+- SCM inventory + jobs + commit → `"global"` — TSG-wide, no folder/device required
+- Live operational state (resources, logs, ping, software check) → `"device"` — need a device context for `--remote` targeting
+- Do NOT assign `"device"` scope to network config commands; they are configuration, not live device state
 
 **Rules for adding commands:**
 
-- Handler function must be a private module-level `def _handler_name(ctx, args)` — never
-  an inline lambda.
-- `api_handler` receives `ExecutionContext` (`.scm`, `.ssh`, `.device`, `.folder`, `.target`,
-  `.device_host`) and an `args` dict parsed from the remainder tokens after the matched command prefix.
-- `ssh_command` is a plain string for static commands, or a `Callable(args) -> str` for commands that
-  embed dynamic arguments (e.g. `ping host <ip>`).
-- `render` is a string key into the dispatch table in `ArcShell._render()`. Add a renderer in
-  `formatter.py` for new output types.
-- After adding an entry, tab completion picks it up automatically.
-- Run `python -m py_compile app/commands/registry.py app/shell.py app/docs.py` to validate.
+- Handler function must be a private module-level `def _handler_name(ctx, args)` in the correct domain module — never an inline lambda, never in `registry.py` or `base.py`.
+- Import `require_scm` and `require_device` from `app.commands.base`. Import `translation_pending` only if genuinely needed (it exists for legacy SSH-only stubs).
+- Every new `CommandDef` **must** declare `scope=` explicitly — do not rely on the default.
+- `ssh_command` must be a named function or a plain string — **never an inline lambda**.
+- `api_handler` receives `ExecutionContext` (`.scm`, `.ssh`, `.device`, `.folder`, `.target`, `.device_host`) and an `args` dict parsed from the remainder tokens after the matched command prefix.
+- `ssh_command` is a plain string for static commands, or a `Callable(args) -> str` for commands that embed dynamic arguments (e.g. `ping host <ip>`).
+- `render` is a string key into the dispatch table in `ArcShell._render()`. Add a renderer in `formatter.py` for new output types.
+- After adding an entry to a domain module's `COMMANDS`, tab completion picks it up automatically.
 
 **Adding a command — checklist:**
 
-1. Write `_handler(ctx, args)` in `registry.py`.
-2. Add `CommandDef` entry to `COMMANDS`.
-3. Add or update `docs/commands/<command-slug>.md` so `help <command>` works.
-4. Add renderer in `formatter.py` if needed; add dispatch case in `ArcShell._render()`.
-5. Validate: `python -m py_compile app/commands/registry.py app/shell.py app/docs.py`.
-6. Smoke-test: `printf 'help your new command
-your new command
-exit
-' | arc`.
+1. Identify or create the right domain module (`setup.py`, `objects.py`, `security.py`, `network.py`, `operations.py`).
+2. Write `_handler(ctx, args)` in that module.
+3. Add `CommandDef` entry with explicit `scope=` to that module's `COMMANDS` dict.
+4. Add or update `docs/commands/<command-slug>.md` so `help <command>` works.
+5. Add renderer in `formatter.py` if needed; add dispatch case in `ArcShell._render()`.
+6. Validate: `python -m py_compile app/commands/registry.py app/shell.py app/docs.py`.
+7. Smoke-test: `printf 'help your new command\nyour new command\nexit\n' | arc`.
 
 ---
 
@@ -767,6 +816,58 @@ Handled directly in `ArcShell._dispatch()` before the registry is consulted:
 ### Shell UX Design — Key Principles
 
 These are the canonical interaction patterns for ARC. All future shell features must follow these rules.
+
+#### Context-aware help — 3-tier display
+
+`?` / `help` always shows a context-aware 3-tier command display. **Never show a flat all-commands
+dump for bare `?`/`help`** — that is `help all`. The three tiers:
+
+| Tier | Label | Commands shown |
+|------|-------|----------------|
+| **Tier 1 — GLOBAL** | "always available" | All `scope="global"` commands |
+| **Tier 2 — FOLDER COMMANDS** | "folder: \<name\>" | All `scope="folder"` commands with active folder annotation |
+| **Tier 3 — DEVICE COMMANDS** | bright if device set; dim + nav hint if not | All `scope="device"` commands |
+
+At root (Shared, no device): Tier 1 bright, Tier 2 with "(use 'folder \<name\>' to scope)" hint, Tier 3 dim.  
+In folder: Tier 1 + 2 bright (annotated with folder name), Tier 3 dim.  
+On device: all three tiers bright.
+
+`help all` bypasses tiers and shows the full unfiltered reference.
+
+#### Prompt reflects context tier
+
+The prompt uses four forms that tell the operator exactly which tier they are operating in:
+
+| Context state | Prompt | Notes |
+|---|---|---|
+| No device, Shared folder | `arc:global >` | Root / global tier — dim cyan label |
+| No device, named folder | `arc:Production >` | Folder tier — green folder name |
+| Device set, Shared folder | `arc:fw01:device >` | Device tier at Shared — yellow device + dim cyan label |
+| Device set, named folder | `arc:fw01:Production >` | Device + specific folder — yellow device + green folder |
+
+**Rule:** Never show `:Shared` in the prompt. Shared is the default/unset state — replace it with
+the context tier label (`:global` or `:device`). Only show a folder name when it is a meaningful
+non-Shared folder that the operator explicitly navigated to.
+
+#### Everything is context-aware by default
+
+**This is the primary design rule.** No command, built-in, or navigation gesture should silently accept invalid context or produce results from the wrong scope.
+
+| Context constraint | Enforcement |
+|---|---|
+| `cd <device>` when cache populated | Hard error if device not in TSG device list — never create a stub |
+| `folder <name>` when cache populated | Hard error if folder not in TSG folder list |
+| `tsg <id>` switch | Always clears device + folder context; refreshes all caches; warns if new TSG has 0 devices |
+| `remote <device>` / `connect <device>` | Same as `cd` — refuses unknown device when cache populated |
+| Commands with `scope="device"` | `_execute_api` blocks execution and shows actionable error before calling handler |
+| Commands with `scope="folder"` | Handler uses `ctx.folder`; always scoped to the active folder |
+| Commands with `scope="global"` | Handler ignores `ctx.folder`/`ctx.device`; returns TSG-wide data |
+
+**Explicitly global commands** (declared `scope="global"`): `show devices`, `show device`, `show device snippets`, `show snippet <name>`, `show snippets global`, `show jobs all`, `show jobs id`, `commit`, `exit`, `pwd`, `tsg`, `help`, `?`, `docs`, `clear`.
+
+**Exception — empty cache:** When the SCM API is unavailable and the device/folder cache is empty, fall back gracefully (allow SSH stub for `cd`, allow free-form folder name). Document this in the fallback message so the operator knows why the constraint is relaxed.
+
+When adding any new built-in or registered command, explicitly decide its scope and enforce it. Do not add a command and leave scope as an afterthought.
 
 #### Tab completion is context-aware
 
@@ -830,7 +931,7 @@ the correct endpoint in the pan.dev OpenAPI specs before implementing or
 changing any API call.  The pan.dev GitHub source for all specs is:
   `https://github.com/PaloAltoNetworks/pan.dev/tree/master/openapi-specs/scm/`
 
-SCM uses **three separate base URLs** — the same OAuth bearer token works on all
+SCM uses **four separate base URLs** — the same OAuth bearer token works on all
 of them.  The correct base URL for each resource category comes from the
 `servers[0].url` field in the relevant OpenAPI spec:
 
@@ -838,7 +939,8 @@ of them.  The correct base URL for each resource category comes from the
 |----------|----------|--------------|
 | **Objects** (addresses, address-groups, services, tags, EDLs, …) | `https://api.strata.paloaltonetworks.com/config/objects/v1` | `openapi-specs/scm/config/ngfw/objects/objects_v1.3_feb.yaml` |
 | **Security** (security-rules, url-categories, decryption, profiles, …) | `https://api.strata.paloaltonetworks.com/config/security/v1` | `openapi-specs/scm/config/ngfw/security/security-services-R2-2026.yaml` |
-| **Setup** (devices, folders, snippets, labels, …) | `https://api.strata.paloaltonetworks.com/config/setup/v1` | `openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml` |
+| **Setup** (devices, folders, snippets, labels, jobs, commit/push, …) | `https://api.strata.paloaltonetworks.com/config/setup/v1` | `openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml` |
+| **Network** (interfaces, zones, routing, HA, …) | `https://api.strata.paloaltonetworks.com/config/network/v1` | `openapi-specs/scm/config/ngfw/network/` (verify exact file at pan.dev) |
 | **IAM** (service accounts, access policies, roles) | `https://api.sase.paloaltonetworks.com` | `openapi-specs/scm/iam/ServiceAccounts.yaml` |
 | **Tenancy** (TSGs, tenant hierarchy) | `https://api.sase.paloaltonetworks.com` | `openapi-specs/scm/tenancy/TenantServiceGroup.yaml` |
 | **Authentication** (OAuth token endpoint) | `https://auth.apps.paloaltonetworks.com` | `openapi-specs/scm/auth/AuthService.yaml` |
@@ -864,6 +966,18 @@ GET  https://api.strata.paloaltonetworks.com/config/security/v1/url-categories?f
 # Setup (devices, folders — no folder param needed for devices)
 GET  https://api.strata.paloaltonetworks.com/config/setup/v1/devices
 GET  https://api.strata.paloaltonetworks.com/config/setup/v1/folders
+GET  https://api.strata.paloaltonetworks.com/config/setup/v1/jobs
+GET  https://api.strata.paloaltonetworks.com/config/setup/v1/jobs/{id}
+POST https://api.strata.paloaltonetworks.com/config/setup/v1/config-versions/candidate:push
+
+# Network config (verify exact paths at pan.dev/scm/api/)
+GET  https://api.strata.paloaltonetworks.com/config/network/v1/ethernet?folder=Shared
+GET  https://api.strata.paloaltonetworks.com/config/network/v1/aggregate-ethernet?folder=Shared
+GET  https://api.strata.paloaltonetworks.com/config/network/v1/loopback-interfaces?folder=Shared
+GET  https://api.strata.paloaltonetworks.com/config/network/v1/zones?folder=Shared
+GET  https://api.strata.paloaltonetworks.com/config/network/v1/routing/static-routes?folder=Shared
+GET  https://api.strata.paloaltonetworks.com/config/network/v1/virtual-routers?folder=Shared
+GET  https://api.strata.paloaltonetworks.com/config/network/v1/ha?folder=Shared
 
 # Tenancy — list child TSGs
 GET  https://api.sase.paloaltonetworks.com/tenancy/v1/tenant_service_groups/{tsg_id}/operations/list_children

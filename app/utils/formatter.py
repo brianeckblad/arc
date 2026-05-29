@@ -123,21 +123,37 @@ def format_devices(devices: list[dict]) -> Table:
 
 
 def format_interfaces(interfaces: list[dict]) -> Table:
+    """Render a list of interfaces from SCM or SSH.
+
+    SCM network API returns configuration fields (name, type, ip, zone, comment).
+    SSH operational output returns state fields (state, speed, etc.).
+    Both are handled by showing whatever fields are present.
+    """
     t = Table(box=box.ROUNDED, title="Interfaces", header_style="bold cyan")
-    t.add_column("Name", style="bold")
-    t.add_column("State")
-    t.add_column("IP Address")
-    t.add_column("Speed")
-    t.add_column("Zone")
+    t.add_column("Name", style="bold", no_wrap=True)
+    t.add_column("Type", no_wrap=True)
+    t.add_column("IP / Layer3", overflow="fold")
+    t.add_column("Zone", no_wrap=True)
+    t.add_column("State / Comment", overflow="fold")
     for iface in interfaces:
-        state = iface.get("state", "")
-        state_str = f"[green]{state}[/green]" if state == "up" else f"[red]{state}[/red]" if state else ""
+        # IP: may be in nested layer3 block (SCM) or flat ip-address (SSH)
+        ip = (
+            iface.get("ip") or
+            iface.get("ip-address") or
+            iface.get("layer3", {}).get("ip", [{}])[0].get("addr", "") if iface.get("layer3") else "" or
+            ""
+        )
+        state = iface.get("state", "") or iface.get("comment", "") or ""
+        if state == "up":
+            state = "[green]up[/green]"
+        elif state in ("down", "disabled"):
+            state = "[red]down[/red]"
         t.add_row(
             iface.get("name", ""),
-            state_str,
-            iface.get("ip") or iface.get("ip-address") or "",
-            iface.get("speed", ""),
+            iface.get("type", ""),
+            ip,
             iface.get("zone", ""),
+            state,
         )
     return t
 
@@ -271,6 +287,47 @@ def format_services(services: list[dict]) -> Table:
     return t
 
 
+def format_tags(tags: list[dict]) -> Table:
+    t = Table(box=box.ROUNDED, title="Tags", header_style="bold cyan")
+    t.add_column("Name", style="bold")
+    t.add_column("Color")
+    t.add_column("Comments")
+    for tag in tags:
+        t.add_row(tag.get("name", ""), tag.get("color", ""), tag.get("comments", ""))
+    return t
+
+
+def format_edl_list(edls: list[dict]) -> Table:
+    """Render external dynamic lists."""
+    t = Table(box=box.ROUNDED, title="External Dynamic Lists", header_style="bold cyan")
+    t.add_column("Name",        style="bold")
+    t.add_column("Type",        no_wrap=True)
+    t.add_column("URL / Source", overflow="fold")
+    t.add_column("Repeat",      no_wrap=True)
+    t.add_column("Description", overflow="fold")
+    for e in edls:
+        edl_type = e.get("type", "")
+        source = ""
+        repeat = ""
+        if isinstance(edl_type, dict):
+            for kind, cfg in edl_type.items():
+                edl_type = kind
+                if isinstance(cfg, dict):
+                    source = cfg.get("url", "") or cfg.get("source", "")
+                    repeat = cfg.get("recurring", "") or ""
+                    if isinstance(repeat, dict):
+                        repeat = next(iter(repeat.keys()), "")
+                break
+        t.add_row(
+            e.get("name", ""),
+            str(edl_type),
+            source,
+            str(repeat),
+            e.get("description", "") or "",
+        )
+    return t
+
+
 def format_zones(zones: list[dict]) -> Table:
     t = Table(box=box.ROUNDED, title="Zones", header_style="bold cyan")
     t.add_column("Name", style="bold")
@@ -280,6 +337,34 @@ def format_zones(zones: list[dict]) -> Table:
         ifaces = z.get("interfaces", [])
         ifaces_str = ", ".join(ifaces) if isinstance(ifaces, list) else str(ifaces)
         t.add_row(z.get("name", ""), z.get("type", ""), ifaces_str)
+    return t
+
+
+def format_ha(data: Any, title: str = "High Availability") -> Table:
+    """Render HA configuration as a flat key/value table.
+
+    Accepts either a single dict (from show high-availability state) or a
+    list of dicts (from show high-availability all).  Lists are flattened into
+    separate sections separated by a blank row.
+    """
+    if isinstance(data, list):
+        if not data:
+            t = Table(box=box.ROUNDED, title=title, show_header=False)
+            t.add_column("Info")
+            t.add_row("[dim]No HA configuration found in this folder.[/dim]")
+            return t
+        # Multiple HA entries — flatten the first for now; most deployments have one.
+        return _kv_table(_flatten(data[0]), title=title)
+    if isinstance(data, dict):
+        if not data:
+            t = Table(box=box.ROUNDED, title=title, show_header=False)
+            t.add_column("Info")
+            t.add_row("[dim]No HA configuration found in this folder.[/dim]")
+            return t
+        return _kv_table(_flatten(data), title=title)
+    t = Table(box=box.ROUNDED, title=title, show_header=False)
+    t.add_column("Info")
+    t.add_row(str(data))
     return t
 
 
@@ -309,19 +394,306 @@ def format_snippets(snippets: list[dict], device_filter: str = "") -> Table:
     return t
 
 
-def format_snippet_detail(snippet: dict) -> Table:
-    """Render full detail for a single snippet (key-value pairs)."""
+def format_snippets_scoped(data: dict) -> list:
+    """Render a context-scoped snippet list with a scope header and hint footer.
+
+    The snippet list API does not populate folder references on list items,
+    so the table only shows fields that are reliably present: name, shared_in,
+    description.  The "Folders attached" column is omitted here — it is only
+    meaningful in the detail view (show snippet <name>).
+    """
+    from rich.text import Text
+
+    snippets: list[dict] = data.get("snippets", [])
+    scope: str = data.get("scope", "")
+    hint: str = data.get("hint", "")
+
+    renderables: list = []
+
+    # Scope header
+    renderables.append(Text.from_markup(
+        f"[bold cyan]Snippets[/bold cyan]  [dim]({scope})[/dim]"
+    ))
+
+    if snippets:
+        t = Table(box=box.ROUNDED, header_style="bold cyan",
+                  title=f"{len(snippets)} snippet(s)")
+        t.add_column("Name",        style="bold", no_wrap=True)
+        t.add_column("Shared in",   no_wrap=True)
+        t.add_column("Prefix",      no_wrap=True)
+        t.add_column("Description", overflow="fold")
+        for s in snippets:
+            t.add_row(
+                s.get("name", ""),
+                s.get("shared_in", "") or "",
+                "yes" if s.get("enable_prefix") else "no",
+                s.get("description", "") or "",
+            )
+        renderables.append(t)
+    else:
+        renderables.append(Text.from_markup("[dim]No snippets in this context.[/dim]"))
+
+    if hint:
+        renderables.append(Text.from_markup(f"[dim]  {hint}[/dim]"))
+
+    return renderables
+
+
+def format_snippet_detail(snippet: dict) -> list:
+    """Render metadata + variables for a single snippet.
+
+    Returns a list of Rich renderables.
+    Called by 'show snippet <name>' (no details flag).
+    """
+    name = snippet.get("name", "")
+    renderables: list = []
+
+    # --- Header: identity and metadata ---
     flat: dict[str, str] = {}
-    flat["Name"]       = snippet.get("name", "")
-    flat["ID"]         = snippet.get("id", "")
-    flat["Type"]       = snippet.get("type", "") or ""
-    flat["Prefix"]     = "enabled" if snippet.get("enable_prefix") else "disabled"
-    flat["Shared in"]  = snippet.get("shared_in", "") or ""
+    flat["Name"]        = name
+    flat["ID"]          = snippet.get("id", "") or ""
+    flat["Type"]        = snippet.get("type", "") or ""
+    flat["Prefix"]      = "enabled" if snippet.get("enable_prefix") else "disabled"
+    flat["Shared in"]   = snippet.get("shared_in", "") or ""
     flat["Description"] = snippet.get("description", "") or ""
+
+    labels = snippet.get("labels", [])
+    if labels:
+        flat["Labels"] = ", ".join(str(l) for l in labels) if isinstance(labels, list) else str(labels)
+
     folders = snippet.get("folders", [])
-    if isinstance(folders, list):
-        flat["Attached folders"] = ", ".join(f.get("name", "") for f in folders) or "(none)"
-    return _kv_table(flat, title=f"Snippet: {snippet.get('name', '')}")
+    if isinstance(folders, list) and folders:
+        folder_labels = []
+        for f in folders:
+            if isinstance(f, dict):
+                label = f.get("name") or f.get("id") or ""
+            else:
+                label = str(f)
+            if label:
+                folder_labels.append(label)
+        flat["Attached folders"] = ", ".join(folder_labels) if folder_labels else "(none)"
+    else:
+        flat["Attached folders"] = "(none)"
+
+    renderables.append(_kv_table(flat, title=f"Snippet: {name}"))
+
+    # --- Variables ---
+    _append_variables(renderables, snippet.get("variables", []))
+
+    from rich.text import Text
+    renderables.append(Text.from_markup(
+        "[dim]  Tip: [bold]show snippet " + name + " details[/bold] "
+        "→ also shows configured addresses, rules, services, and tags[/dim]"
+    ))
+
+    return renderables
+
+
+def format_snippet_detail_full(data: dict) -> list:
+    """Render full snippet detail: metadata + variables + all configured objects.
+
+    Called by 'show snippet <name> details'.
+    data keys:
+        snippet  — dict from GET /config/setup/v1/snippets/{id}
+        objects  — dict[label, list[dict]] from get_snippet_objects()
+    """
+    from rich.text import Text
+
+    snippet: dict = data.get("snippet", {})
+    objects: dict[str, list] = data.get("objects", {})
+    name = snippet.get("name", "")
+    renderables: list = []
+
+    # --- Header ---
+    flat: dict[str, str] = {}
+    flat["Name"]        = name
+    flat["ID"]          = snippet.get("id", "") or ""
+    flat["Type"]        = snippet.get("type", "") or ""
+    flat["Prefix"]      = "enabled" if snippet.get("enable_prefix") else "disabled"
+    flat["Shared in"]   = snippet.get("shared_in", "") or ""
+    flat["Description"] = snippet.get("description", "") or ""
+
+    labels = snippet.get("labels", [])
+    if labels:
+        flat["Labels"] = ", ".join(str(l) for l in labels) if isinstance(labels, list) else str(labels)
+
+    folders = snippet.get("folders", [])
+    if isinstance(folders, list) and folders:
+        folder_labels = []
+        for f in folders:
+            label = (f.get("name") or f.get("id") or "") if isinstance(f, dict) else str(f)
+            if label:
+                folder_labels.append(label)
+        flat["Attached folders"] = ", ".join(folder_labels) if folder_labels else "(none)"
+    else:
+        flat["Attached folders"] = "(none)"
+
+    renderables.append(_kv_table(flat, title=f"Snippet: {name}"))
+
+    # --- Variables ---
+    _append_variables(renderables, snippet.get("variables", []))
+
+    # --- Configured objects ---
+    if not objects:
+        renderables.append(Text.from_markup(
+            "[dim]  No configured objects found in this snippet "
+            "(addresses, rules, services, tags, etc.)[/dim]"
+        ))
+        return renderables
+
+    renderables.append(Text.from_markup(
+        f"\n[bold cyan]Configured Objects[/bold cyan]  "
+        f"[dim]({sum(len(v) for v in objects.values())} item(s) across "
+        f"{len(objects)} type(s))[/dim]"
+    ))
+
+    # Render each object type as a dedicated table.
+    # Known types get purpose-built renderers; everything else gets a generic table.
+    _KNOWN_RENDERERS: dict[str, callable] = {
+        "Addresses":        _snippet_addresses_table,
+        "Address Groups":   _snippet_address_groups_table,
+        "Services":         _snippet_services_table,
+        "Security Rules":   _snippet_security_rules_table,
+        "Tags":             _snippet_tags_table,
+    }
+    for label, items in objects.items():
+        renderer = _KNOWN_RENDERERS.get(label)
+        if renderer:
+            renderables.append(renderer(items, label))
+        else:
+            renderables.append(_generic_objects_table(items, label))
+
+    return renderables
+
+
+# ---------------------------------------------------------------------------
+# Snippet object section renderers (used by format_snippet_detail_full)
+# ---------------------------------------------------------------------------
+
+def _append_variables(renderables: list, variables: list) -> None:
+    """Append a variables table to renderables if any variables exist."""
+    if not variables or not isinstance(variables, list):
+        return
+    vt = Table(box=box.ROUNDED, title="Variables", header_style="bold cyan")
+    vt.add_column("Name",        style="bold", no_wrap=True)
+    vt.add_column("Type",        no_wrap=True)
+    vt.add_column("Default",     overflow="fold")
+    vt.add_column("Description", overflow="fold")
+    for v in variables:
+        if isinstance(v, dict):
+            vt.add_row(
+                v.get("name", ""),
+                v.get("type", "") or "",
+                str(v.get("default", "")) if v.get("default") is not None else "",
+                v.get("description", "") or "",
+            )
+    renderables.append(vt)
+
+
+def _snippet_addresses_table(items: list[dict], title: str) -> Table:
+    t = Table(box=box.ROUNDED, title=f"{title} ({len(items)})", header_style="bold cyan")
+    t.add_column("Name",        style="bold", no_wrap=True)
+    t.add_column("Type",        no_wrap=True)
+    t.add_column("Value",       overflow="fold")
+    t.add_column("Description", overflow="fold")
+    for a in items:
+        addr_type = ""
+        value = ""
+        for key in ("ip_netmask", "ip_range", "ip_wildcard", "fqdn"):
+            if a.get(key):
+                addr_type = key.replace("_", "-")
+                value = str(a[key])
+                break
+        t.add_row(a.get("name", ""), addr_type, value, a.get("description", "") or "")
+    return t
+
+
+def _snippet_address_groups_table(items: list[dict], title: str) -> Table:
+    t = Table(box=box.ROUNDED, title=f"{title} ({len(items)})", header_style="bold cyan")
+    t.add_column("Name",    style="bold", no_wrap=True)
+    t.add_column("Type",    no_wrap=True)
+    t.add_column("Members", overflow="fold")
+    for g in items:
+        if g.get("static"):
+            members = ", ".join(g["static"]) if isinstance(g["static"], list) else str(g["static"])
+            t.add_row(g.get("name", ""), "static", members)
+        elif g.get("dynamic"):
+            t.add_row(g.get("name", ""), "dynamic", str(g["dynamic"].get("filter", "")))
+        else:
+            t.add_row(g.get("name", ""), "", "")
+    return t
+
+
+def _snippet_services_table(items: list[dict], title: str) -> Table:
+    t = Table(box=box.ROUNDED, title=f"{title} ({len(items)})", header_style="bold cyan")
+    t.add_column("Name",     style="bold", no_wrap=True)
+    t.add_column("Protocol", no_wrap=True)
+    t.add_column("Port",     no_wrap=True)
+    t.add_column("Description", overflow="fold")
+    for s in items:
+        proto = s.get("protocol", {})
+        if isinstance(proto, dict):
+            if "tcp" in proto:
+                p, port = "tcp", str(proto["tcp"].get("destination_port", ""))
+            elif "udp" in proto:
+                p, port = "udp", str(proto["udp"].get("destination_port", ""))
+            else:
+                p, port = "", ""
+        else:
+            p, port = str(proto), ""
+        t.add_row(s.get("name", ""), p, port, s.get("description", "") or "")
+    return t
+
+
+def _snippet_security_rules_table(items: list[dict], title: str) -> Table:
+    t = Table(box=box.ROUNDED, title=f"{title} ({len(items)})", header_style="bold cyan")
+    t.add_column("Name",        style="bold", no_wrap=True)
+    t.add_column("From",        no_wrap=True)
+    t.add_column("Source",      overflow="fold")
+    t.add_column("To",          no_wrap=True)
+    t.add_column("Destination", overflow="fold")
+    t.add_column("Application", overflow="fold")
+    t.add_column("Action",      no_wrap=True, style="bold")
+    for r in items:
+        def _join(val):
+            if isinstance(val, list):
+                return ", ".join(str(v) for v in val)
+            return str(val) if val else ""
+        action = r.get("action", "")
+        action_style = "green" if action == "allow" else "red" if action == "deny" else ""
+        t.add_row(
+            r.get("name", ""),
+            _join(r.get("from", [])),
+            _join(r.get("source", [])),
+            _join(r.get("to", [])),
+            _join(r.get("destination", [])),
+            _join(r.get("application", [])),
+            f"[{action_style}]{action}[/{action_style}]" if action_style else action,
+        )
+    return t
+
+
+def _snippet_tags_table(items: list[dict], title: str) -> Table:
+    t = Table(box=box.ROUNDED, title=f"{title} ({len(items)})", header_style="bold cyan")
+    t.add_column("Name",    style="bold", no_wrap=True)
+    t.add_column("Color",   no_wrap=True)
+    t.add_column("Comments", overflow="fold")
+    for tag in items:
+        t.add_row(tag.get("name", ""), tag.get("color", "") or "", tag.get("comments", "") or "")
+    return t
+
+
+def _generic_objects_table(items: list[dict], title: str) -> Table:
+    """Fallback renderer for object types without a dedicated renderer."""
+    if not items:
+        return Table(title=title)
+    cols = list(items[0].keys())
+    t = Table(box=box.ROUNDED, title=f"{title} ({len(items)})", header_style="bold cyan")
+    for c in cols:
+        t.add_column(c.replace("_", " ").replace("-", " ").title(), overflow="fold")
+    for item in items:
+        t.add_row(*[str(item.get(c, "") or "") for c in cols])
+    return t
 
 
 def format_device_detail(device: dict) -> Table:

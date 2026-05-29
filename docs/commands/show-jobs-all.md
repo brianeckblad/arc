@@ -1,25 +1,33 @@
 # show jobs all
 
-Show all jobs
+Show all SCM jobs for the current tenant (TSG-wide).
 
 ## Category
 
-system
+operations
+
+## Scope
+
+**Global** — no folder or device context required. Returns jobs for the entire
+TSG regardless of the active folder or whether a device is selected.
 
 ## Default path
 
-API mode through SCM REST when a translation exists; otherwise use SSH for live device output.
+SCM REST API: `GET /config/setup/v1/jobs`
 
 ## Remote behavior
 
-Supported
+Supported — pass `--remote` or use `remote <device>` to run the PAN-OS
+`show jobs all` command on a specific device instead.
 
 ## Examples
 
 ```text
 show jobs all
+show jobs all --remote
 ```
 
 ## Notes
 
-Use `pwd` to confirm the current device and mode before running device-scoped commands.
+This command queries SCM directly and works without a `cd` context. To see
+jobs on a specific managed device, use `show jobs all --remote` while connected.
