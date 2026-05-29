@@ -821,12 +821,58 @@ on every SCM REST call. Change it with `folder <name>` + Tab.
 
 ---
 
-### SCM REST API Notes
+### SCM REST API — Gateway Map
 
-- **Base URL:** `https://api.sase.paloaltonetworks.com`
-- **Auth:** `SCM_BEARER_TOKEN` directly, or OAuth2 client credentials → bearer token in `Authorization` header.
-- **Folder:** SCM config requests include `?folder=<ShellState.folder>` (default: `Shared`) when required by the endpoint.
-- **Token refresh:** Not yet implemented — restart if a long session produces 401 errors.
+**Source of truth for all SCM API information: https://pan.dev/scm/api/**
+
+Never guess or invent SCM API paths, parameters, or base URLs.  Always look up
+the correct endpoint in the pan.dev OpenAPI specs before implementing or
+changing any API call.  The pan.dev GitHub source for all specs is:
+  `https://github.com/PaloAltoNetworks/pan.dev/tree/master/openapi-specs/scm/`
+
+SCM uses **three separate base URLs** — the same OAuth bearer token works on all
+of them.  The correct base URL for each resource category comes from the
+`servers[0].url` field in the relevant OpenAPI spec:
+
+| Category | Base URL | pan.dev spec |
+|----------|----------|--------------|
+| **Objects** (addresses, address-groups, services, tags, EDLs, …) | `https://api.strata.paloaltonetworks.com/config/objects/v1` | `openapi-specs/scm/config/ngfw/objects/objects_v1.3_feb.yaml` |
+| **Security** (security-rules, url-categories, decryption, profiles, …) | `https://api.strata.paloaltonetworks.com/config/security/v1` | `openapi-specs/scm/config/ngfw/security/security-services-R2-2026.yaml` |
+| **Setup** (devices, folders, snippets, labels, …) | `https://api.strata.paloaltonetworks.com/config/setup/v1` | `openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml` |
+| **IAM** (service accounts, access policies, roles) | `https://api.sase.paloaltonetworks.com` | `openapi-specs/scm/iam/ServiceAccounts.yaml` |
+| **Tenancy** (TSGs, tenant hierarchy) | `https://api.sase.paloaltonetworks.com` | `openapi-specs/scm/tenancy/TenantServiceGroup.yaml` |
+| **Authentication** (OAuth token endpoint) | `https://auth.apps.paloaltonetworks.com` | `openapi-specs/scm/auth/AuthService.yaml` |
+
+Key paths (always verify current spec before using):
+
+```
+# Authentication
+POST https://auth.apps.paloaltonetworks.com/auth/v1/oauth2/access_token
+  body: grant_type=client_credentials&scope=tsg_id:<TSG_ID>
+  auth: HTTP Basic (client_id:client_secret)
+
+# Objects
+GET  https://api.strata.paloaltonetworks.com/config/objects/v1/addresses?folder=Shared
+GET  https://api.strata.paloaltonetworks.com/config/objects/v1/address-groups?folder=Shared
+GET  https://api.strata.paloaltonetworks.com/config/objects/v1/services?folder=Shared
+GET  https://api.strata.paloaltonetworks.com/config/objects/v1/tags?folder=Shared
+
+# Security
+GET  https://api.strata.paloaltonetworks.com/config/security/v1/security-rules?folder=Shared&position=pre
+GET  https://api.strata.paloaltonetworks.com/config/security/v1/url-categories?folder=Shared
+
+# Setup (devices, folders — no folder param needed for devices)
+GET  https://api.strata.paloaltonetworks.com/config/setup/v1/devices
+GET  https://api.strata.paloaltonetworks.com/config/setup/v1/folders
+
+# Tenancy — list child TSGs
+GET  https://api.sase.paloaltonetworks.com/tenancy/v1/tenant_service_groups/{tsg_id}/operations/list_children
+GET  https://api.sase.paloaltonetworks.com/tenancy/v1/tenant_service_groups
+```
+
+**Token scope:** Every OAuth token is scoped to a specific TSG (`scope=tsg_id:<id>`).
+Tokens scoped to a parent TSG can read data across child TSGs.
+Use `arc auth test` to verify which endpoints are accessible with the current credentials.
 
 ---
 

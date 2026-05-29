@@ -383,98 +383,102 @@ def auth_test() -> None:
 
     # ── 5. SCM API connectivity ─────────────────────────────────────────────
     console.print("\n[bold cyan]5. SCM API connectivity[/bold cyan]")
-    # Probe results: track what worked so we can give an accurate summary.
-    probe_results: list[tuple[str, bool, str]] = []  # (label, ok, note)
+    console.print(
+        "  [dim]Probing all three pan.dev API gateways…[/dim]\n"
+        "  [dim]Source: https://pan.dev/scm/api/[/dim]"
+    )
+    probe_results: list[tuple[str, bool, str]] = []
 
-    def _probe(label: str, path: str, params: dict | None = None) -> bool:
+    def _probe_url(label: str, url: str, params: dict | None = None) -> bool:
         try:
-            resp = client._http.get(
-                f"https://api.sase.paloaltonetworks.com{path}",
-                headers=client._headers(),
-                params=params,
-            )
-            if resp.status_code < 400:
+            resp = client._http.get(url, headers=client._headers(), params=params)
+            code = resp.status_code
+            if code < 400:
                 data = resp.json()
                 count = len(data.get("data", data.get("items", [])))
-                note = f"{count} item(s)"
-                console.print(f"  [green]✓[/green] {label}  [dim]→ {note}[/dim]")
-                probe_results.append((label, True, note))
+                console.print(f"  [green]✓[/green] {label}  [dim]→ {count} item(s)[/dim]")
+                probe_results.append((label, True, f"{count} item(s)"))
                 return True
             else:
-                console.print(f"  [yellow]⚠[/yellow]  {label}  [dim]→ HTTP {resp.status_code}[/dim]")
-                probe_results.append((label, False, f"HTTP {resp.status_code}"))
+                console.print(f"  [yellow]⚠[/yellow]  {label}  [dim]→ HTTP {code}[/dim]")
+                probe_results.append((label, False, f"HTTP {code}"))
                 return False
         except Exception as exc:
             console.print(f"  [yellow]⚠[/yellow]  {label}  [dim]→ {_short_err(str(exc))}[/dim]")
             probe_results.append((label, False, _short_err(str(exc))))
             return False
 
-    # These are ordered: first failure doesn't stop the rest — we want to know
-    # exactly which capabilities the service account has.
-    _probe("GET /sse/config/v1/addresses?folder=Shared  (policy read)",
-           "/sse/config/v1/addresses", {"folder": "Shared"})
-    _probe("GET /sse/config/v1/security-rules?folder=Shared (policy read)",
-           "/sse/config/v1/security-rules", {"folder": "Shared", "position": "pre"})
-    _probe("GET /sse/config/v1/devices?folder=Shared     (device read)",
-           "/sse/config/v1/devices", {"folder": "Shared"})
-    _probe("GET /sse/config/v1/folders                   (folder list)",
-           "/sse/config/v1/folders")
-    _probe("GET /iam/v1/tenants                          (tenant/TSG list)",
-           "/iam/v1/tenants")
+    STRATA = "https://api.strata.paloaltonetworks.com"
+    SASE   = "https://api.sase.paloaltonetworks.com"
 
-    any_ok = any(ok for _, ok, _ in probe_results)
-    all_probes_ok = all(ok for _, ok, _ in probe_results)
+    console.print("  [dim]── Objects gateway (strata/config/objects/v1) ──[/dim]")
+    _probe_url("GET /config/objects/v1/addresses",
+               f"{STRATA}/config/objects/v1/addresses",
+               {"folder": "Shared"})
+    _probe_url("GET /config/objects/v1/services",
+               f"{STRATA}/config/objects/v1/services",
+               {"folder": "Shared"})
+
+    console.print("  [dim]── Security gateway (strata/config/security/v1) ──[/dim]")
+    _probe_url("GET /config/security/v1/security-rules",
+               f"{STRATA}/config/security/v1/security-rules",
+               {"folder": "Shared", "position": "pre"})
+
+    console.print("  [dim]── Setup gateway (strata/config/setup/v1) ──[/dim]")
+    _probe_url("GET /config/setup/v1/devices",
+               f"{STRATA}/config/setup/v1/devices")
+    _probe_url("GET /config/setup/v1/folders",
+               f"{STRATA}/config/setup/v1/folders")
+
+    console.print("  [dim]── IAM/Tenancy gateway (sase) ──[/dim]")
+    _probe_url("GET /tenancy/v1/tenant_service_groups",
+               f"{SASE}/tenancy/v1/tenant_service_groups")
+
+    any_ok       = any(ok for _, ok, _ in probe_results)
+    all_ok_probes = all(ok for _, ok, _ in probe_results)
+    ok_count     = sum(1 for _, ok, _ in probe_results if ok)
+    tot_count    = len(probe_results)
 
     if not any_ok:
+        all_ok = False
         err_codes = {note for _, ok, note in probe_results if not ok}
-        is_forbidden = any("403" in n for n in err_codes)
+        is_forbidden    = any("403" in n for n in err_codes)
         is_unauthorized = any("401" in n for n in err_codes)
         if is_forbidden:
             console.print(
-                f"\n  [red]✗[/red]  All API probes returned 403.\n"
-                f"  Token is valid (OAuth succeeded) but the service account has no\n"
-                f"  read access to TSG [bold]{cfg.scm.tsg_id}[/bold].\n\n"
-                f"  [bold]Most likely cause:[/bold] your tsg_id is a child TSG that the\n"
-                f"  service account was not assigned permissions to.  Try authenticating\n"
-                f"  with the [bold]parent TSG ID[/bold] instead:\n\n"
-                f"    1. Find your parent TSG ID in the SCM portal URL or\n"
-                f"         Settings → Identity → Tenant Hierarchy\n"
-                f"    2. Run [bold]arc auth login[/bold] → update TSG ID to the parent.\n"
-                f"    3. Use [bold]tsg <child-id>[/bold] inside ARC to switch down.\n"
+                f"\n  [red]✗[/red]  All probes returned 403 — token is valid but the\n"
+                f"  service account has no read access to TSG [bold]{cfg.scm.tsg_id}[/bold].\n"
+                f"  Check the role assignment in:\n"
+                f"    SCM portal → Settings → Identity & Access → Service Accounts\n"
             )
         elif is_unauthorized:
             console.print(
-                f"\n  [red]✗[/red]  All API probes returned 401.\n"
-                f"  The token was accepted by the auth server but rejected by the API.\n"
-                f"  Verify tsg_id [bold]{cfg.scm.tsg_id}[/bold] is the TSG the service\n"
-                f"  account was created under.\n"
+                f"\n  [red]✗[/red]  All probes returned 401.\n"
+                f"  Verify tsg_id [bold]{cfg.scm.tsg_id}[/bold] is correct.\n"
             )
-        all_ok = False
-    elif not all_probes_ok:
+    elif not all_ok_probes:
+        failed_labels = [l for l, ok, _ in probe_results if not ok]
         console.print(
-            f"\n  [dim]Some probes returned 403 — that is normal if your service account\n"
-            f"  is scoped to policy/config objects only (read-only admin role).\n"
-            f"  The probes that succeeded confirm API connectivity is working.[/dim]"
+            f"\n  [dim]{ok_count}/{tot_count} probes succeeded.\n"
+            f"  403s on: {', '.join(failed_labels)}\n"
+            f"  This is normal if your service account role does not include those\n"
+            f"  permissions (e.g. tenancy list requires a higher IAM role).[/dim]"
         )
 
     client.close()
 
     # ── Summary ──────────────────────────────────────────────────────────────
     console.print()
-    if all_ok:
-        if all_probes_ok:
-            console.print("[bold green]All checks passed.[/bold green]")
-        else:
-            ok_count  = sum(1 for _, ok, _ in probe_results if ok)
-            tot_count = len(probe_results)
-            console.print(
-                f"[bold green]Connected.[/bold green]  "
-                f"{ok_count}/{tot_count} API probes succeeded — "
-                f"partial access is normal for read-only service accounts."
-            )
-    else:
+    if not any_ok:
         console.print("[bold red]One or more checks failed.[/bold red]  See details above.")
         sys.exit(1)
+    elif all_ok_probes:
+        console.print("[bold green]All checks passed.[/bold green]")
+    else:
+        console.print(
+            f"[bold green]Connected.[/bold green]  "
+            f"{ok_count}/{tot_count} API probes succeeded."
+        )
 
 
 # ---------------------------------------------------------------------------

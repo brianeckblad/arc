@@ -1,4 +1,33 @@
-"""Strata Cloud Manager REST API client."""
+"""Strata Cloud Manager REST API client.
+
+All endpoint paths and base URLs are sourced directly from the pan.dev
+OpenAPI specifications:
+
+  https://pan.dev/scm/api/
+
+Gateway map (from the OpenAPI ``servers`` field in each spec):
+
+  Objects  (addresses, services, tags, …)
+    https://api.strata.paloaltonetworks.com/config/objects/v1
+    Spec: openapi-specs/scm/config/ngfw/objects/objects_v1.3_feb.yaml
+
+  Security (security-rules, url-categories, decryption, …)
+    https://api.strata.paloaltonetworks.com/config/security/v1
+    Spec: openapi-specs/scm/config/ngfw/security/security-services-R2-2026.yaml
+
+  Setup    (devices, folders, snippets, labels, …)
+    https://api.strata.paloaltonetworks.com/config/setup/v1
+    Spec: openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml
+
+  IAM / Tenancy
+    https://api.sase.paloaltonetworks.com
+    Spec: openapi-specs/scm/iam/ServiceAccounts.yaml
+          openapi-specs/scm/tenancy/TenantServiceGroup.yaml
+
+  Authentication
+    https://auth.apps.paloaltonetworks.com/auth/v1/oauth2/access_token
+    Spec: openapi-specs/scm/auth/AuthService.yaml
+"""
 
 from __future__ import annotations
 
@@ -16,12 +45,28 @@ class SCMError(Exception):
 class SCMClient:
     """Strata Cloud Manager (SCM) REST API client.
 
-    ARC is SCM-only for API calls. Device-local execution is handled separately
-    through SSH. A configured bearer token is used directly; otherwise ARC uses
-    OAuth client credentials to obtain one.
+    Uses three separate base URLs sourced from pan.dev OpenAPI specs —
+    all share the same OAuth bearer token.
     """
 
-    AUTH_URL = "https://auth.apps.paloaltonetworks.com/oauth2/access_token"
+    # pan.dev: openapi-specs/scm/auth/AuthService.yaml
+    AUTH_URL = "https://auth.apps.paloaltonetworks.com/auth/v1/oauth2/access_token"
+
+    # pan.dev: openapi-specs/scm/config/ngfw/objects/objects_v1.3_feb.yaml
+    OBJECTS_URL = "https://api.strata.paloaltonetworks.com/config/objects/v1"
+
+    # pan.dev: openapi-specs/scm/config/ngfw/security/security-services-R2-2026.yaml
+    SECURITY_URL = "https://api.strata.paloaltonetworks.com/config/security/v1"
+
+    # pan.dev: openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml
+    SETUP_URL = "https://api.strata.paloaltonetworks.com/config/setup/v1"
+
+    # pan.dev: openapi-specs/scm/iam/ServiceAccounts.yaml
+    #          openapi-specs/scm/tenancy/TenantServiceGroup.yaml
+    IAM_URL = "https://api.sase.paloaltonetworks.com"
+
+    # Keep BASE_URL pointing at the sase gateway for backward-compat with
+    # any callers that use the generic .get() / .post() methods directly.
     BASE_URL = "https://api.sase.paloaltonetworks.com"
 
     def __init__(self, cfg: SCMConfig) -> None:
@@ -31,13 +76,8 @@ class SCMClient:
 
         # Auth priority:
         #   1. OAuth client credentials (client_id + client_secret + tsg_id) — always
-        #      preferred because they produce a fresh token scoped to the correct TSG.
-        #   2. Pre-issued bearer token — used only when no client credentials are
-        #      configured (e.g. a short-lived token supplied for testing).
-        #
-        # Reason: a bearer token stored in the keychain may be stale or scoped to a
-        # different TSG.  Client credentials are the standard service-account flow and
-        # always produce a valid, correctly-scoped token.
+        #      preferred; produces a fresh token scoped to the correct TSG.
+        #   2. Pre-issued bearer token — only when no client credentials exist.
         if cfg.client_id and cfg.client_secret and cfg.tsg_id:
             self._authenticate()
         elif cfg.bearer_token.strip():
@@ -49,12 +89,15 @@ class SCMClient:
             )
 
     def _authenticate(self) -> None:
+        """Obtain an OAuth token via the client-credentials flow.
+
+        pan.dev ref: https://pan.dev/scm/api/auth/post-auth-v-1-oauth-2-access-token/
+        """
         if not (self._cfg.client_id and self._cfg.client_secret and self._cfg.tsg_id):
             raise SCMError(
                 "SCM is not configured. Set SCM_BEARER_TOKEN, or set "
                 "SCM_CLIENT_ID / SCM_CLIENT_SECRET / SCM_TSG_ID."
             )
-
         resp = self._http.post(
             self.AUTH_URL,
             data={
@@ -74,7 +117,12 @@ class SCMClient:
     def _headers(self) -> dict[str, str]:
         return {"Authorization": f"Bearer {self._token}"}
 
+    # ------------------------------------------------------------------
+    # Generic request helpers
+    # ------------------------------------------------------------------
+
     def get(self, path: str, params: Optional[dict] = None) -> Any:
+        """GET against the IAM/sase gateway (api.sase.paloaltonetworks.com)."""
         resp = self._http.get(
             f"{self.BASE_URL}{path}",
             headers=self._headers(),
@@ -84,6 +132,7 @@ class SCMClient:
         return resp.json()
 
     def post(self, path: str, json: Optional[dict] = None) -> Any:
+        """POST against the IAM/sase gateway."""
         resp = self._http.post(
             f"{self.BASE_URL}{path}",
             headers=self._headers(),
@@ -92,118 +141,204 @@ class SCMClient:
         resp.raise_for_status()
         return resp.json()
 
+    def _get_objects(self, path: str, params: Optional[dict] = None) -> Any:
+        """GET from api.strata.paloaltonetworks.com/config/objects/v1."""
+        resp = self._http.get(
+            f"{self.OBJECTS_URL}{path}",
+            headers=self._headers(),
+            params=params,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+    def _get_security(self, path: str, params: Optional[dict] = None) -> Any:
+        """GET from api.strata.paloaltonetworks.com/config/security/v1."""
+        resp = self._http.get(
+            f"{self.SECURITY_URL}{path}",
+            headers=self._headers(),
+            params=params,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+    def _get_setup(self, path: str, params: Optional[dict] = None) -> Any:
+        """GET from api.strata.paloaltonetworks.com/config/setup/v1."""
+        resp = self._http.get(
+            f"{self.SETUP_URL}{path}",
+            headers=self._headers(),
+            params=params,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+    # Keep the public alias used by shell.py _cmd_tsg and auth_test
+    def get_setup(self, path: str, params: Optional[dict] = None) -> Any:
+        """Public alias for _get_setup — kept for backward compatibility."""
+        return self._get_setup(path, params)
+
+    # ------------------------------------------------------------------
+    # TSG switching
+    # ------------------------------------------------------------------
+
     def reauthenticate(self, tsg_id: str) -> None:
         """Obtain a fresh OAuth token scoped to a different TSG.
 
-        Used by the ``tsg <id>`` shell command to switch context without
-        creating a new client.  Closes the current HTTP session and opens
-        a new one so there are no stale connection-level state issues.
+        Used by the ``tsg <id>`` shell command.
         """
         if not (self._cfg.client_id and self._cfg.client_secret):
             raise SCMError(
                 "Cannot re-authenticate: no client_id / client_secret configured. "
                 "TSG switching requires OAuth client credentials."
             )
-        # Swap the TSG on a copy of the config so the original is unchanged.
         import copy  # Deferred: avoids import at module level for a rarely-called path
         new_cfg = copy.copy(self._cfg)
         new_cfg.tsg_id = tsg_id
         self._cfg = new_cfg
-        # Re-open HTTP client to avoid any connection-level caching issues.
         self._http.close()
         self._http = httpx.Client(timeout=30)
         self._authenticate()
 
+    # ------------------------------------------------------------------
+    # Tenancy / IAM  (api.sase.paloaltonetworks.com)
+    # pan.dev: https://pan.dev/scm/api/tenancy/
+    # ------------------------------------------------------------------
+
     def get_tenants(self) -> list[dict]:
-        """Return child TSG entries visible to the current token.
+        """Return child TSG entries.
 
-        Tries two strategies ordered by permission requirement:
+        pan.dev: GET /tenancy/v1/tenant_service_groups/{tsg_id}/operations/list_children
+        Fallback: GET /tenancy/v1/tenant_service_groups (list all visible)
 
-        1. ``GET /iam/v1/tenants`` — lists all tenants the token can see.
-        2. ``GET /iam/v1/tenants?parent_id=<tsg_id>`` — scoped to direct
-           children of the configured TSG (useful when the token lacks
-           global IAM read but does have tenant-scoped read).
-
-        Returns a list of dicts; each has at minimum ``id`` and
-        ``display_name`` (or ``name``).  Returns [] on any failure so
-        callers can fall back gracefully.
+        Returns [] on any permission error so callers can handle gracefully.
         """
-        # Strategy 1: unscoped list
-        try:
-            resp = self.get("/iam/v1/tenants")
-            entries = resp.get("data", []) or []
-            if entries:
-                return entries
-        except httpx.HTTPStatusError as exc:
-            if exc.response.status_code not in (403, 404):
-                return []
-            # 403/404 — fall through to strategy 2
-        except (httpx.HTTPError, ValueError, TypeError):
-            return []
-
-        # Strategy 2: scoped to parent TSG
+        # Strategy 1: list children of current TSG
         if self._cfg.tsg_id:
             try:
-                resp = self.get("/iam/v1/tenants", params={"parent_id": self._cfg.tsg_id})
-                entries = resp.get("data", []) or []
-                if entries:
-                    return entries
+                resp = self._http.get(
+                    f"{self.IAM_URL}/tenancy/v1/tenant_service_groups"
+                    f"/{self._cfg.tsg_id}/operations/list_children",
+                    headers=self._headers(),
+                )
+                if resp.status_code < 400:
+                    data = resp.json()
+                    entries = data.get("data", data.get("items", []))
+                    if entries:
+                        return entries
             except (httpx.HTTPError, ValueError, TypeError):
                 pass
 
+        # Strategy 2: flat list of all visible TSGs
+        try:
+            resp = self._http.get(
+                f"{self.IAM_URL}/tenancy/v1/tenant_service_groups",
+                headers=self._headers(),
+            )
+            if resp.status_code < 400:
+                data = resp.json()
+                return data.get("data", data.get("items", []))
+        except (httpx.HTTPError, ValueError, TypeError):
+            pass
+
         return []
 
-    def get_folders(self) -> list[str]:
-        """Return SCM folder names for tab completion.
+    # ------------------------------------------------------------------
+    # Setup  (api.strata.paloaltonetworks.com/config/setup/v1)
+    # pan.dev: https://pan.dev/scm/api/config/cloudngfw/setup/
+    # ------------------------------------------------------------------
 
-        Tries the ``/sse/config/v1/folders`` endpoint.  Falls back to common
-        defaults if the endpoint is unavailable or returns a 403/404 (some
-        read-only service accounts do not have folder-list permission).
+    def get_devices(self, folder: str = "Shared") -> list[dict]:
+        """Return managed NGFW devices.
+
+        pan.dev: GET /config/setup/v1/devices
+        Spec: openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml
+
+        The folder param is accepted for interface compatibility; the endpoint
+        returns all visible devices regardless of folder.
+        Returns [] on 403 so callers can handle quietly.
         """
         try:
-            scm_response = self.get("/sse/config/v1/folders")
-            names = [
-                f.get("name", "")
-                for f in scm_response.get("data", [])
-                if f.get("name")
-            ]
+            data = self._get_setup("/devices")
+            return data.get("data", [])
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 403:
+                return []
+            raise
+        except (httpx.HTTPError, ValueError, TypeError):
+            return []
+
+    def get_folders(self) -> list[str]:
+        """Return folder names for tab completion.
+
+        pan.dev: GET /config/setup/v1/folders
+        Spec: openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml
+
+        Falls back to common defaults on any error.
+        """
+        try:
+            data = self._get_setup("/folders")
+            names = [f.get("name", "") for f in data.get("data", []) if f.get("name")]
             return names if names else ["Shared", "Global"]
         except httpx.HTTPStatusError as exc:
-            # 403/404 = no permission or endpoint absent — use safe defaults.
             if exc.response.status_code in (403, 404):
                 return ["Shared", "Global"]
             raise
         except (httpx.HTTPError, ValueError, TypeError):
             return ["Shared", "Global"]
 
-    def get_devices(self, folder: str = "Shared") -> list[dict]:
-        """Return managed devices. Returns [] on 403 so callers can handle quietly."""
-        try:
-            scm_response = self.get("/sse/config/v1/devices", params={"folder": folder})
-            return scm_response.get("data", [])
-        except httpx.HTTPStatusError as exc:
-            if exc.response.status_code == 403:
-                return []
-            raise
+    # ------------------------------------------------------------------
+    # Objects  (api.strata.paloaltonetworks.com/config/objects/v1)
+    # pan.dev: https://pan.dev/scm/api/config/cloudngfw/objects/
+    # Spec: openapi-specs/scm/config/ngfw/objects/objects_v1.3_feb.yaml
+    # ------------------------------------------------------------------
 
     def get_addresses(self, folder: str = "Shared") -> list[dict]:
-        scm_response = self.get("/sse/config/v1/addresses", params={"folder": folder})
-        return scm_response.get("data", [])
+        """pan.dev: GET /config/objects/v1/addresses"""
+        data = self._get_objects("/addresses", params={"folder": folder})
+        return data.get("data", [])
 
     def get_address_groups(self, folder: str = "Shared") -> list[dict]:
-        scm_response = self.get("/sse/config/v1/address-groups", params={"folder": folder})
-        return scm_response.get("data", [])
+        """pan.dev: GET /config/objects/v1/address-groups"""
+        data = self._get_objects("/address-groups", params={"folder": folder})
+        return data.get("data", [])
 
     def get_services(self, folder: str = "Shared") -> list[dict]:
-        scm_response = self.get("/sse/config/v1/services", params={"folder": folder})
-        return scm_response.get("data", [])
+        """pan.dev: GET /config/objects/v1/services"""
+        data = self._get_objects("/services", params={"folder": folder})
+        return data.get("data", [])
+
+    def get_tags(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/objects/v1/tags"""
+        data = self._get_objects("/tags", params={"folder": folder})
+        return data.get("data", [])
+
+    def get_external_dynamic_lists(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/objects/v1/external-dynamic-lists"""
+        data = self._get_objects("/external-dynamic-lists", params={"folder": folder})
+        return data.get("data", [])
+
+    # ------------------------------------------------------------------
+    # Security  (api.strata.paloaltonetworks.com/config/security/v1)
+    # pan.dev: https://pan.dev/scm/api/config/cloudngfw/security/
+    # Spec: openapi-specs/scm/config/ngfw/security/security-services-R2-2026.yaml
+    # ------------------------------------------------------------------
 
     def get_security_policy(self, folder: str = "Shared", position: str = "pre") -> list[dict]:
-        scm_response = self.get(
-            "/sse/config/v1/security-rules",
+        """pan.dev: GET /config/security/v1/security-rules"""
+        data = self._get_security(
+            "/security-rules",
             params={"folder": folder, "position": position},
         )
-        return scm_response.get("data", [])
+        return data.get("data", [])
+
+    def get_url_categories(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/security/v1/url-categories"""
+        data = self._get_security("/url-categories", params={"folder": folder})
+        return data.get("data", [])
+
+    def get_dns_security_profiles(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/security/v1/dns-security-profiles"""
+        data = self._get_security("/dns-security-profiles", params={"folder": folder})
+        return data.get("data", [])
 
     def close(self) -> None:
         self._http.close()
