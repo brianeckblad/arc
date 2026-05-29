@@ -58,23 +58,67 @@ def format_system_info(data: dict) -> Table:
 
 
 def format_devices(devices: list[dict]) -> Table:
-    t = Table(box=box.ROUNDED, title="Managed Devices", header_style="bold cyan")
-    t.add_column("Hostname", style="bold")
-    t.add_column("Serial")
-    t.add_column("IP Address")
-    t.add_column("Model")
-    t.add_column("SW Version")
-    t.add_column("Connected")
+    """Render the SCM device list.
+
+    Field names sourced from GET /config/setup/v1/devices (api.strata.paloaltonetworks.com).
+    Key fields: is_connected (bool), software_version, serial_number, ip_address,
+                ha_state, uptime, model, folder.
+    """
+    t = Table(box=box.ROUNDED, title=f"Managed Devices ({len(devices)})", header_style="bold cyan")
+    t.add_column("",          width=2, no_wrap=True)   # connected indicator
+    t.add_column("Hostname",  style="bold", no_wrap=True)
+    t.add_column("Serial",    no_wrap=True)
+    t.add_column("Model",     no_wrap=True)
+    t.add_column("SW Version",no_wrap=True)
+    t.add_column("IP Address",no_wrap=True)
+    t.add_column("HA",        no_wrap=True)
+    t.add_column("Uptime",    no_wrap=True)
+    t.add_column("Folder",    style="dim", no_wrap=True)
+
     for d in devices:
-        connected = "[green]✓[/green]" if d.get("connected") else "[red]✗[/red]"
-        t.add_row(
-            d.get("hostname") or d.get("name") or "",
-            d.get("serial") or "",
-            d.get("ip_address") or d.get("ip-address") or "",
-            d.get("model") or "",
-            d.get("sw_version") or d.get("sw-version") or "",
-            connected,
-        )
+        is_connected = d.get("is_connected")
+        if is_connected is True:
+            indicator = "[green]●[/green]"
+        elif is_connected is False:
+            indicator = "[red]●[/red]"
+        else:
+            # Field absent — derive from connected_since / last_disconnect_time
+            has_connected_since  = bool(d.get("connected_since"))
+            has_last_disconnect  = bool(d.get("last_disconnect_time"))
+            if has_connected_since and not has_last_disconnect:
+                indicator = "[green]●[/green]"
+            else:
+                indicator = "[dim]●[/dim]"
+
+        hostname = d.get("hostname") or d.get("display_name") or d.get("name") or ""
+        # Serial: API returns it as both 'serial_number' and 'name' (name == serial)
+        serial   = d.get("serial_number") or d.get("serial") or d.get("name") or ""
+        model    = d.get("model") or ""
+        sw_ver   = d.get("software_version") or d.get("sw_version") or d.get("installed_software_version") or ""
+        ip       = d.get("ip_address") or d.get("ip-address") or ""
+        if ip == "unknown":
+            ip = ""
+
+        ha_state = d.get("ha_state") or ""
+        if ha_state in ("unknown", ""):
+            ha_state = ""
+
+        uptime = d.get("uptime") or ""
+        # Shorten "118 days, 17:37:33" → "118d 17:37"
+        if uptime and "days," in uptime:
+            parts = uptime.split(",")
+            day_part = parts[0].strip()   # "118 days"
+            time_part = parts[1].strip() if len(parts) > 1 else ""
+            # drop seconds from time_part
+            time_parts = time_part.split(":")
+            time_short = ":".join(time_parts[:2]) if len(time_parts) >= 2 else time_part
+            day_num = day_part.split()[0]
+            uptime = f"{day_num}d {time_short}"
+
+        folder = d.get("folder") or ""
+
+        t.add_row(indicator, hostname, serial, model, sw_ver, ip, ha_state, uptime, folder)
+
     return t
 
 
