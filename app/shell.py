@@ -1671,24 +1671,33 @@ class ArcShell:
         console.print("\n[cyan]Goodbye.[/cyan]")
 
     def _print_banner(self) -> None:
-        # Compact ASCII art — Unicode block characters used verbatim to avoid Rich markup.
+        # Each letter is 8 chars wide; 5-space left indent centres on an 80-col terminal.
+        #
+        # A:            R:            C:
+        #  █████╗       ██████╗        ██████╗
+        # ██╔══██╗      ██╔══██╗      ██╔════╝
+        # ███████║      ███████║      ██║
+        # ██╔══██║      ██╔═══╝       ██║
+        # ██║  ██║      ██║  ██╗      ╚██████╗
+        # ╚═╝  ╚═╝      ╚═╝  ╚═╝       ╚═════╝
         art = (
             "\n"
-            "      \u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2588\u2588\u2588\u2588\u2557\n"
-            "     \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2551 \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557 \u2588\u2588\u2551\n"
-            "     \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551 \u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d \u2588\u2588\u2551\n"
-            "     \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2551 \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557 \u2588\u2588\u2551\n"
-            "     \u2588\u2588\u2551  \u2588\u2588\u2551 \u2588\u2588\u2551  \u2588\u2588\u2551 \u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2557\n"
-            "     \u255a\u2550\u255d  \u255a\u2550\u255d \u255a\u2550\u255d  \u255a\u2550\u255d  \u255a\u2550\u2550\u2550\u2550\u2550\u255d\n"
+            "      \u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2588\u2588\u2588\u2588\u2557\n"
+            "     \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d\n"
+            "     \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2551     \n"
+            "     \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2550\u255d \u2588\u2588\u2551     \n"
+            "     \u2588\u2588\u2551  \u2588\u2588\u2551\u2588\u2588\u2551  \u2588\u2588\u2557\u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2557\n"
+            "     \u255a\u2550\u255d  \u255a\u2550\u255d\u255a\u2550\u255d  \u255a\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u255d\n"
         )
         console.print()
         console.print(f"[bold cyan]{art}[/bold cyan]")
+        console.print("  [dim]Assisted Remote Console  —  Palo Alto Networks SCM + PAN-OS[/dim]")
         console.print()
         console.print(
             "  [cyan]cd <device>[/cyan]               Change Device in SCM  [dim](Tab → device list)[/dim]\n"
-            "  [cyan]remote <device>[/cyan]           SSH Passthrough to device\n"
-            "  [cyan]connect <device>[/cyan]          SSH Connect to device\n"
-            "  [cyan]folder <name>[/cyan]             Set SCM Folder  [dim](Tab → folder list | always shown in prompt)[/dim]\n"
-            "  [cyan]?[/cyan]                         List all commands"
+            "  [cyan]remote <device>[/cyan]           SSH to device  [dim](keyboard-interactive + 2FA)[/dim]\n"
+            "  [cyan]connect[/cyan]                   SSH to current device\n"
+            "  [cyan]folder <name>[/cyan]             Set SCM Folder  [dim](Tab → folder list)[/dim]\n"
+            "  [cyan]?[/cyan]                         Context-aware help  [dim](or  help <topic>)[/dim]"
         )
         console.print()
