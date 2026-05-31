@@ -182,8 +182,6 @@ class ArcCompleter(Completer):
                     yield Completion(topic[len(partial_topic):], start_position=-len(partial_topic))
             return
 
-        # ---- Default: ARC command + built-in completion ----
-            return
 
         # ---- Default: ARC command + built-in completion ----
         include_remote_suffix = " --" in text
@@ -449,19 +447,27 @@ class ArcShell:
         if not tokens:
             return False
 
-        # Context-sensitive help: trailing '?' means "what can I do here?"
-        # e.g.  "show address ?"  → scoped help for 'show address'
-        #        "show ?"         → list every command that starts with 'show'
-        #        "?"              → full command reference (existing behaviour)
+        # "<command> help" — trailing 'help' opens the full docs page for that command.
+        # This must be checked before any individual builtin dispatcher so that
+        # e.g. "cd help" shows docs instead of treating "help" as a device name.
+        if len(tokens) >= 2 and tokens[-1].lower() == "help":
+            topic = " ".join(tokens[:-1]).lower()
+            self._cmd_help_docs(topic)
+            return False
+
+        # Cisco-style inline help: trailing '?' shows a compact one-liner per command.
+        # e.g.  "show address ?"  → all commands starting with "show address"
+        #        "show ?"         → all commands starting with "show"
+        #        "?"              → full 3-tier inline listing
         if "?" in tokens:
             question_idx = tokens.index("?")
             prefix_tokens = tokens[:question_idx]
             if prefix_tokens:
-                # Restore the prefix in the next prompt so the user can keep typing.
+                # Restore the prefix so the user can keep typing after help renders.
                 self._pending_default = " ".join(prefix_tokens) + " "
-                self._cmd_context_help(prefix_tokens)
+                self._cmd_help_inline(prefix_tokens)
                 return False
-            # Fall through so the existing `cmd in ("help", "?")` branch fires
+            # Fall through so the bare "?" branch below fires
 
         cmd = tokens[0].lower()
 
@@ -504,7 +510,15 @@ class ArcShell:
             return False
 
         if cmd in ("help", "?"):
-            self._cmd_help(tokens[1:])
+            rest = tokens[1:]
+            if rest and rest[0].lower() == "all":
+                self._cmd_help_full()
+            elif rest:
+                # "help <topic>" — render docs page for the topic
+                self._cmd_help_docs(" ".join(rest).lower())
+            else:
+                # Bare "help" or "?" — Cisco-style compact inline listing
+                self._cmd_help_inline([])
             return False
 
         if cmd == "docs":
@@ -685,10 +699,6 @@ class ArcShell:
 
     def _cmd_connect(self, args: list[str], require_target: bool = False) -> None:
         """Connect to a device via SSH and hand the terminal over to the remote shell."""
-        # Treat 'connect help' / 'connect ?' as a help request, not a hostname.
-        if args and args[0].lower() in ("help", "?"):
-            self._cmd_context_help(["connect"])
-            return
 
         if require_target and not args:
             console.print(
@@ -1219,115 +1229,155 @@ class ArcShell:
         if args and args[0].lower() == "all":
             self._cmd_help_full()
         else:
-            self._cmd_help_contextual()
+            self._cmd_help_inline([])
 
-    def _cmd_help_contextual(self) -> None:
-        """Print context-aware help organised in three tiers.
+    def _cmd_help_inline(self, prefix_tokens: list[str]) -> None:
+        """Cisco-style compact inline help — one line per command, no panels.
 
-        Tier 1 — GLOBAL: always available regardless of navigation context.
-        Tier 2 — FOLDER COMMANDS: scoped to the active folder (always callable,
-                  most meaningful in a specific non-Shared folder).
-        Tier 3 — DEVICE COMMANDS: require an active device context (cd <device>).
+        prefix_tokens empty  → 3-tier listing: global / folder / device / shell.
+        prefix_tokens set    → all registered commands starting with that prefix.
 
-        This mirrors the PAN-OS / Panorama CLI mental model where the command set
-        visible to the operator expands as they navigate deeper into context.
-        Operators at root see global commands clearly, folder commands with a
-        "Shared" annotation and a hint to navigate, and device commands clearly
-        locked behind 'cd <device>'.
+        This is the `?` mode. It is intentionally compact and panel-free so
+        operators get a fast visual scan — identical to how Cisco IOS presents
+        context-sensitive completion help.
         """
         device = self._state.device
         folder = self._state.folder
-        device_name = (device.get("hostname") or device.get("name") or "device") if device else ""
+        device_name = (
+            (device.get("hostname") or device.get("name") or "device") if device else ""
+        )
 
-        # Build context header line
-        if device:
-            ctx_line = (
-                f"[bold cyan]Context:[/bold cyan]  "
-                f"folder [bold green]{folder}[/bold green]  "
-                f"device [bold yellow]{device_name}[/bold yellow]"
-            )
-        elif folder and folder.lower() != "shared":
-            ctx_line = (
-                f"[bold cyan]Context:[/bold cyan]  "
-                f"folder [bold green]{folder}[/bold green]  "
-                f"[dim](cd <device> to unlock device commands)[/dim]"
-            )
-        else:
-            ctx_line = (
-                f"[bold cyan]Context:[/bold cyan]  "
-                f"folder [bold green]{folder}[/bold green]  "
-                f"[dim](root — folder <name> to scope | cd <device> for device commands)[/dim]"
-            )
-
-        console.print()
-        console.print(Panel(
-            f"{ctx_line}\n"
-            "[dim]Commands shown by context level — navigate deeper to unlock more.\n"
-            "Type [bold]help all[/bold] for the full unfiltered reference  |  "
-            "[bold]help <command>[/bold] for command docs[/dim]",
-            title="Help  (? also works)", border_style="cyan",
-        ))
-
-        # --- Tier 1: GLOBAL — always available ---
-        global_keys = sorted(k for k, cmd in COMMANDS.items() if cmd.scope == "global")
-        if global_keys:
-            console.print("\n[bold yellow]GLOBAL[/bold yellow]  [dim]— always available[/dim]")
-            for k in global_keys:
-                cmd = COMMANDS[k]
-                ssh_note = " [dim](SSH)[/dim]" if cmd.ssh_command and cmd.api_handler else ""
-                console.print(f"  [cyan]{k:<45}[/cyan] {cmd.description}{ssh_note}")
-
-        # --- Tier 2: FOLDER COMMANDS ---
-        folder_keys = sorted(k for k, cmd in COMMANDS.items() if cmd.scope == "folder")
-        if folder_keys:
-            if folder and folder.lower() != "shared":
-                folder_header = (
-                    f"[bold yellow]FOLDER COMMANDS[/bold yellow]  "
-                    f"[dim]— folder: {folder}[/dim]"
+        if prefix_tokens:
+            # Scoped listing: every registered command that begins with the prefix.
+            prefix = " ".join(prefix_tokens).lower()
+            matches = sorted(k for k in COMMANDS if k.startswith(prefix))
+            if matches:
+                console.print()
+                for k in matches:
+                    cmd_def = COMMANDS[k]
+                    ctx = self._context_annotation(k)
+                    console.print(
+                        f"  [cyan]{k:<45}[/cyan] {cmd_def.description}{ctx}"
+                    )
+                console.print()
+                console.print(
+                    "  [dim]Append [bold]help[/bold] to any command for full docs  "
+                    "— e.g. [bold]show address help[/bold][/dim]"
                 )
             else:
-                folder_header = (
-                    f"[bold yellow]FOLDER COMMANDS[/bold yellow]  "
-                    f"[dim]— folder: {folder}  "
-                    f"(use 'folder <name>' to scope to a specific folder)[/dim]"
-                )
-            console.print(f"\n{folder_header}")
-            for k in folder_keys:
-                cmd = COMMANDS[k]
-                ssh_note = " [dim](SSH)[/dim]" if cmd.ssh_command and cmd.api_handler else ""
-                ctx_note = self._context_annotation(k)
-                console.print(f"  [cyan]{k:<45}[/cyan] {cmd.description}{ssh_note}{ctx_note}")
+                _builtin_names = {
+                    "cd", "connect", "remote", "folder", "tsg",
+                    "ls", "devices", "pwd", "docs", "help", "clear", "exit", "quit",
+                }
+                if prefix in _builtin_names:
+                    console.print(
+                        f"\n  [cyan]{prefix}[/cyan]  is a shell built-in.  "
+                        f"Type [bold]{prefix} help[/bold] for full docs.\n"
+                    )
+                else:
+                    console.print(
+                        f"\n  [yellow]No commands match:[/yellow] [bold]{prefix}[/bold]  "
+                        "— type [bold]?[/bold] for the full command list.\n"
+                    )
+            return
 
-        # --- Tier 3: DEVICE COMMANDS ---
-        device_keys = sorted(k for k, cmd in COMMANDS.items() if cmd.scope == "device")
+        # --- Bare ? or help — compact 3-tier listing ---
+        console.print()
+
+        # Tier 1: GLOBAL — always available
+        global_keys = sorted(k for k, c in COMMANDS.items() if c.scope == "global")
+        if global_keys:
+            console.print("  [bold yellow]GLOBAL[/bold yellow]  [dim]— always available[/dim]")
+            for k in global_keys:
+                c = COMMANDS[k]
+                console.print(f"    [cyan]{k:<43}[/cyan] {c.description}")
+
+        # Tier 2: FOLDER — scoped to active folder
+        folder_keys = sorted(k for k, c in COMMANDS.items() if c.scope == "folder")
+        if folder_keys:
+            if folder.lower() != "shared":
+                folder_label = (
+                    f"[bold yellow]FOLDER[/bold yellow]  [dim]— folder: {folder}[/dim]"
+                )
+            else:
+                folder_label = (
+                    f"[bold yellow]FOLDER[/bold yellow]  "
+                    f"[dim]— folder: {folder}  "
+                    f"(use 'folder <name>' to scope)[/dim]"
+                )
+            console.print(f"\n  {folder_label}")
+            for k in folder_keys:
+                c = COMMANDS[k]
+                ctx = self._context_annotation(k)
+                console.print(f"    [cyan]{k:<43}[/cyan] {c.description}{ctx}")
+
+        # Tier 3: DEVICE — bright when a device is active, dim when locked
+        device_keys = sorted(k for k, c in COMMANDS.items() if c.scope == "device")
         if device_keys:
             if device:
-                device_header = (
-                    f"[bold yellow]DEVICE COMMANDS[/bold yellow]  "
-                    f"[dim]— device: {device_name}  "
-                    f"(append --remote to target another device)[/dim]"
+                console.print(
+                    f"\n  [bold yellow]DEVICE[/bold yellow]  "
+                    f"[dim]— device: {device_name}[/dim]"
                 )
-                console.print(f"\n{device_header}")
                 for k in device_keys:
-                    cmd = COMMANDS[k]
-                    ssh_note = " [dim](SSH)[/dim]" if cmd.ssh_command else ""
-                    console.print(f"  [cyan]{k:<45}[/cyan] {cmd.description}{ssh_note}")
+                    c = COMMANDS[k]
+                    console.print(f"    [cyan]{k:<43}[/cyan] {c.description}")
             else:
                 console.print(
-                    "\n[dim bold]DEVICE COMMANDS[/dim bold]  "
-                    "[dim]— requires cd <device>  "
-                    "(or append --remote <device> to any command)[/dim]"
+                    "\n  [dim bold]DEVICE[/dim bold]  "
+                    "[dim]— locked  "
+                    "(cd <device> to unlock | Tab after 'cd ' lists devices)[/dim]"
                 )
                 for k in device_keys:
-                    cmd = COMMANDS[k]
-                    console.print(f"  [dim]{k:<45}  {cmd.description}[/dim]")
-                console.print(
-                    "  [dim]→ [bold dim]cd <device>[/bold dim][dim] to unlock.  "
-                    "Tab after 'cd ' lists all managed devices.[/dim]"
-                )
+                    c = COMMANDS[k]
+                    console.print(f"    [dim]{k:<43}  {c.description}[/dim]")
 
         self._print_shell_builtins()
+
         console.print()
+        console.print(
+            "  [dim]"
+            "<command> help  → full docs page  |  "
+            "help all        → complete reference"
+            "[/dim]"
+        )
+        console.print()
+
+    def _cmd_help_docs(self, topic: str) -> None:
+        """Show the full documentation page for a command or topic.
+
+        Resolution order:
+        1. Render Markdown from docs/ when a matching file exists.
+        2. Exact registry match — print inline description + context hint.
+        3. Friendly fallback pointing the operator to ? or help all.
+
+        Called by  `<command> help`  and  `help <topic>`.
+        """
+        # 1. Try docs/ Markdown page (covers commands, aliases, general topics).
+        if render_help_topic(console, topic):
+            return
+
+        # 2. Exact registry match — print description inline.
+        if topic in COMMANDS:
+            cmd_def = COMMANDS[topic]
+            api_note = (
+                "  [dim](API only — no SSH equivalent)[/dim]"
+                if cmd_def.ssh_command is None
+                else "  [dim](API + SSH via --remote)[/dim]"
+            )
+            console.print(
+                f"\n[bold cyan]{topic}[/bold cyan]  —  {cmd_def.description}{api_note}\n"
+                "  Append [bold]--remote[/bold] to run via SSH instead of the SCM API.\n"
+            )
+            self._print_context_hint_for(topic)
+            return
+
+        # 3. Nothing found.
+        console.print(
+            f"\n[yellow]No docs found for:[/yellow] [bold]{topic}[/bold]\n"
+            "  Type [bold]?[/bold] for available commands  |  "
+            "[bold]help all[/bold] for the full reference\n"
+        )
 
     def _cmd_help_full(self) -> None:
         """Print the full command reference regardless of context."""
@@ -1341,7 +1391,7 @@ class ArcShell:
             "[dim]Scope tags:  (folder) → scoped to active folder  "
             "(device) → requires cd <device>  "
             "(global) → no context filtering[/dim]",
-            title="Help  (? also works | help all → this view)", border_style="cyan",
+            title="Full Command Reference  (help all)", border_style="cyan",
         ))
 
         for category, keys in sorted(CATEGORIES.items()):
@@ -1360,101 +1410,29 @@ class ArcShell:
         console.print()
 
     def _print_shell_builtins(self) -> None:
-        """Print the shell built-in commands table (shared by contextual and full help)."""
-        console.print("\n[bold yellow]SHELL[/bold yellow]")
+        """Print the shell built-in commands section (shared by inline and full help)."""
+        console.print("\n  [bold yellow]SHELL[/bold yellow]  [dim]— navigation & session[/dim]")
         builtins = [
-            ("cd <device>",           "Change Device in SCM"),
-            ("connect [device]",      "SSH to device — full interactive session  [dim](returns to ARC on exit)[/dim]"),
-            ("remote <device>",       "SSH to device — full interactive session  [dim](also sets device context)[/dim]"),
-            ("folder <name>",         "Set SCM Folder — always shown in prompt  [dim](Tab → available folders | folder .. → Shared)[/dim]"),
-            ("tsg <id>",              "Set the active TSG (Tenant Services Group)  [dim](Tab → configured TSG)[/dim]"),
-            ("ls",                    "List devices (root) or device detail + snippets (in device context)"),
-            ("pwd",                   "Show current device, SCM folder, and active TSG"),
-            ("docs / docs <command>", "Show Documentation  [dim]docs <command> shows help in shell[/dim]"),
-            ("? / help",              "Context-sensitive help  [dim](help all → full list)[/dim]"),
-            ("help <topic>",          "Open topic doc  [dim]e.g. help config, help config osx|win|nix[/dim]"),
-            ("clear",                 "Clear the terminal screen"),
-            ("exit / quit",           "Exit ARC"),
+            ("cd <device>",      "Change Device in SCM  (Tab → device list)"),
+            ("connect [device]", "SSH to device — interactive session  (returns to ARC on exit)"),
+            ("remote <device>",  "SSH to named device — interactive session"),
+            ("folder <name>",    "Set SCM Folder scope  (Tab → folder list | folder .. → Shared)"),
+            ("tsg <id>",         "Set active TSG  (Tab → configured TSG)"),
+            ("ls",               "List devices and refresh device cache"),
+            ("pwd",              "Show device, folder, and TSG context"),
+            ("docs",             "Open docs in browser"),
+            ("clear",            "Clear the terminal screen"),
+            ("exit / quit",      "Exit ARC"),
         ]
         for name, desc in builtins:
-            console.print(f"  [cyan]{name:<45}[/cyan] {desc}")
-
-
-    def _cmd_context_help(self, prefix_tokens: list[str]) -> None:
-        """Show scoped help for a partial command prefix typed before '?'.
-
-        Behaviour mirrors the PAN-OS CLI convention:
-        - Exact registry match  → render its doc page (description + Markdown)
-        - Partial prefix match  → list every command that begins with the prefix
-        - Shell built-in        → render its doc page
-        - No match anywhere     → friendly fallback to the full command list
-
-        Context annotations are added where relevant (e.g. what 'show snippets'
-        will actually return given the current folder/device context).
-        """
-        prefix = " ".join(prefix_tokens).lower()
-
-        # 1. Exact match in the command registry — show its full doc page.
-        if prefix in COMMANDS:
-            if render_help_topic(console, prefix):
-                return
-            cmd_def = COMMANDS[prefix]
-            ssh_note = (
-                "  [dim](API only — no SSH equivalent)[/dim]"
-                if cmd_def.ssh_command is None
-                else ""
-            )
-            console.print(
-                f"\n[bold cyan]{prefix}[/bold cyan]  —  {cmd_def.description}{ssh_note}\n"
-                "  Append [bold]--remote[/bold] to run via SSH instead of the SCM API.\n"
-            )
-            # Inline context hint for snippet/folder-scoped commands
-            self._print_context_hint_for(prefix)
-            return
-
-        # 2. Try to render a doc page by topic name (covers aliases / general topics).
-        if render_help_topic(console, prefix):
-            return
-
-        # 3. Partial prefix: list every registered command that begins with the prefix.
-        matches = sorted(k for k in COMMANDS if k.startswith(prefix))
-        if matches:
-            console.print(
-                f"\n[bold yellow]Commands matching[/bold yellow] "
-                f"'[cyan]{prefix}[/cyan]':\n"
-            )
-            for k in matches:
-                cmd_def = COMMANDS[k]
-                ssh_note = " [dim](API only)[/dim]" if cmd_def.ssh_command is None else ""
-                # Add live context annotation for snippet commands
-                ctx_note = self._context_annotation(k)
-                console.print(
-                    f"  [cyan]{k:<45}[/cyan] {cmd_def.description}{ssh_note}{ctx_note}"
-                )
-            console.print()
-            return
-
-        # 4. Shell built-ins (cd, remote, connect, …) — render their doc page.
-        _shell_topic_keys = {
-            "cd", "remote", "connect", "exit", "quit",
-            "ls", "devices", "pwd", "folder", "tsg", "clear", "help", "docs",
-        }
-        if prefix in _shell_topic_keys:
-            if render_help_topic(console, prefix):
-                return
-
-        # 5. Nothing matched — point the user to the full reference.
-        console.print(
-            f"[yellow]No help found for:[/yellow] [bold]{prefix}[/bold]  "
-            "— type [bold]?[/bold] for the full command list."
-        )
+            console.print(f"    [cyan]{name:<43}[/cyan] {desc}")
 
     def _context_annotation(self, command_key: str) -> str:
         """Return a short inline context note for commands whose output depends on state.
 
-        All folder-scope commands show the active folder.
-        All device-scope commands show the active device when one is set.
-        Returns empty string when there is nothing context-specific to note.
+        Folder-scope commands show the active folder.
+        Device-scope commands show the active device when one is set.
+        Returns an empty string when there is nothing context-specific to note.
         """
         device = self._state.device
         folder = self._state.folder
@@ -1473,10 +1451,9 @@ class ArcShell:
         return ""
 
     def _print_context_hint_for(self, command_key: str) -> None:
-        """Print a one-line context note below an exact-match help result."""
+        """Print a one-line context note below an exact-match docs result."""
         note = self._context_annotation(command_key)
         if note:
-            # Strip Rich markup for the plain print (it will re-render via console.print)
             console.print(f"[dim]Current context:[/dim]{note}")
 
     # ------------------------------------------------------------------
@@ -1682,10 +1659,10 @@ class ArcShell:
         # ╚═╝  ╚═╝      ╚═╝  ╚═╝       ╚═════╝
         art = (
             "\n"
-            "      \u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2588\u2588\u2588\u2588\u2557\n"
-            "     \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d\n"
-            "     \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2551     \n"
-            "     \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2550\u255d \u2588\u2588\u2551     \n"
+            "      \u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557\n"
+            "     \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2550\u255d\n"
+            "     \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2551\u2588\u2551     \n"
+            "     \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u255d \u2588\u2588\u2551     \n"
             "     \u2588\u2588\u2551  \u2588\u2588\u2551\u2588\u2588\u2551  \u2588\u2588\u2557\u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2557\n"
             "     \u255a\u2550\u255d  \u255a\u2550\u255d\u255a\u2550\u255d  \u255a\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u255d\n"
         )

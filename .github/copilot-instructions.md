@@ -817,20 +817,32 @@ Handled directly in `ArcShell._dispatch()` before the registry is consulted:
 
 These are the canonical interaction patterns for ARC. All future shell features must follow these rules.
 
-#### Context-aware help — 3-tier display
+#### Two-mode help system — Cisco-style inline vs full docs
 
-`?` / `help` always shows a context-aware 3-tier command display. **Never show a flat all-commands
-dump for bare `?`/`help`** — that is `help all`. The three tiers:
+ARC has two distinct help modes:
+
+| Trigger | Mode | Behavior |
+|---------|------|----------|
+| `?` (bare) | Cisco inline | Compact 3-tier listing — one line per command, no panels |
+| `show ?` | Cisco inline | All `show *` commands with one-liner descriptions |
+| `help` (bare) | Cisco inline | Same as bare `?` |
+| `cd help` | Full docs | Renders `docs/commands/cd.md` for the command before `help` |
+| `show address help` | Full docs | Renders docs page for `show address` |
+| `help <topic>` | Full docs | Renders docs by topic name |
+| `help all` | Full dump | Unfiltered complete reference |
+
+**`?` is always the quick inline reference — never show elaborate panels for bare `?`.**
+
+The inline `?` output is organized in three tiers with plain section headers:
 
 | Tier | Label | Commands shown |
 |------|-------|----------------|
-| **Tier 1 — GLOBAL** | "always available" | All `scope="global"` commands |
-| **Tier 2 — FOLDER COMMANDS** | "folder: \<name\>" | All `scope="folder"` commands with active folder annotation |
-| **Tier 3 — DEVICE COMMANDS** | bright if device set; dim + nav hint if not | All `scope="device"` commands |
+| **Tier 1 — GLOBAL** | `GLOBAL` | All `scope="global"` commands |
+| **Tier 2 — FOLDER** | `FOLDER [<name>]` | All `scope="folder"` commands with active folder annotation |
+| **Tier 3 — DEVICE** | `DEVICE [<name>]` bright / `DEVICE [locked]` dim | All `scope="device"` commands |
+| **SHELL** | `SHELL` | Built-in navigation commands |
 
-At root (Shared, no device): Tier 1 bright, Tier 2 with "(use 'folder \<name\>' to scope)" hint, Tier 3 dim.  
-In folder: Tier 1 + 2 bright (annotated with folder name), Tier 3 dim.  
-On device: all three tiers bright.
+Footer line always shown: `<command> help  → docs  |  help all → full reference`
 
 `help all` bypasses tiers and shows the full unfiltered reference.
 

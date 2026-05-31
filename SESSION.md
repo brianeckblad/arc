@@ -3,7 +3,35 @@
 <!-- Clear with: wipe | Clear and archive with: arc -->
 
 ## Current Work
-**Goal:** Context-aware CLI help — 3-tier command visibility (global → folder → device)
+**Goal:** Two-mode help system — Cisco-style `?` inline + `<cmd> help` docs page
+**Branch:** main
+**Status:** done
+
+**Recent progress:**
+- Replaced single `?`/`help` handler with two focused modes
+- `?` (bare or `show ?`) → compact Cisco-style inline listing: one line per command, 3-tier GLOBAL/FOLDER/DEVICE sections, no Rich panels
+- `<command> help` (trailing `help`) → full docs page from `docs/` — e.g. `cd help`, `show address help`
+- `help <topic>` still works (calls same `_cmd_help_docs`)
+- `help all` → full unfiltered dump (unchanged)
+- Early dispatch intercept catches trailing `help` before any individual builtin handler, so `cd help` cannot accidentally try SSH to host "help"
+- Removed old `_cmd_help_contextual` and `_cmd_context_help` methods entirely
+- Added `_cmd_help_inline`, `_cmd_help_docs` (new), updated `_cmd_help_full` and `_print_shell_builtins`
+- CPI updated with two-mode help table
+
+**Key decisions:**
+- `?` is always the fast inline scan (Cisco muscle memory) — no panels, just lines
+- `<cmd> help` is the manual page gateway — mirrors Cisco `?` + `show help` pattern
+- The 3-tier GLOBAL/FOLDER/DEVICE structure is preserved in inline mode
+
+**Files in play:**
+- `app/shell.py` — _cmd_help_inline, _cmd_help_docs, _dispatch early help intercept, _print_shell_builtins
+- `.github/copilot-instructions.md` — two-mode help table added
+
+**Open questions / blockers:**
+- none
+
+---
+
 **Branch:** main
 **Status:** done
 
