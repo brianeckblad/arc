@@ -40,7 +40,7 @@ from app.commands.registry import (
     ExecutionContext,
     match_command,
 )
-from app.config import ArcConfig
+from app.config import ArcConfig, list_profiles, load_config, set_active_profile
 from app.docs import available_help_topics, open_docs_in_browser, render_help_topic
 from app.ssh.manager import SSHManager
 from app.utils import formatter as fmt
@@ -88,11 +88,43 @@ class ArcCompleter(Completer):
                     yield Completion(candidate, start_position=-len(partial_arg))
             return
 
-        # ---- folder → SCM folder name completion ----
+        # ---- ls → 'folder' sub-command offers folder tree view ----
+        if first == "ls" and has_arg_space:
+            if "folder".startswith(partial_arg.lower()):
+                yield Completion(
+                    "folder",
+                    start_position=-len(partial_arg),
+                    display_meta="folder hierarchy with devices",
+                )
+            return
+
+        # ---- folder → SCM folder name completion + 'create' subcommand ----
         if first == "folder" and has_arg_space:
+            # 'create' is a special subcommand — offer it before folder names.
+            if len(parts) <= 2 and "create".startswith(partial_arg.lower()):
+                yield Completion(
+                    "create",
+                    start_position=-len(partial_arg),
+                    display_meta="create a new folder",
+                )
+            # Don't complete further after 'folder create <name>' (arbitrary name).
+            if len(parts) >= 2 and parts[1].lower() == "create":
+                return
             for folder in self._shell._state.folders_cache:
                 if folder.lower().startswith(partial_arg.lower()):
                     yield Completion(folder, start_position=-len(partial_arg))
+            return
+
+        # ---- account → profile name completion ----
+        if first == "account" and has_arg_space:
+            for p in list_profiles():
+                if p["name"].lower().startswith(partial_arg.lower()):
+                    meta = "(active)" if p["active"] else (p["tsg_id"] or p["client_id"] or "")
+                    yield Completion(
+                        p["name"],
+                        start_position=-len(partial_arg),
+                        display_meta=meta,
+                    )
             return
 
         # ---- tsg → hint with TSGs from SCM IAM cache (or config fallback) ----
@@ -193,7 +225,7 @@ class ArcCompleter(Completer):
         builtins = [
             "cd", "remote", "connect", "docs",
             "ls", "devices", "pwd",
-            "folder", "tsg",
+            "folder", "tsg", "account",
             "clear", "exit", "quit",
             "help", "?",
         ]
@@ -297,9 +329,12 @@ class ArcShell:
         if self._config.scm.is_configured:
             try:
                 self._scm = SCMClient(self._config.scm)
+                profile_label = self._config.profile_name
+                client_id     = self._config.scm.client_id or "(bearer token)"
+                tsg_id        = self._config.scm.tsg_id or "n/a"
                 console.print(
                     f"[green]✓[/green] SCM connected  "
-                    f"[dim](TSG {self._config.scm.tsg_id})[/dim]"
+                    f"[dim](profile: {profile_label}  |  TSG: {tsg_id})[/dim]"
                 )
             except Exception as exc:
                 console.print(f"[yellow]⚠[/yellow] SCM unavailable: {exc}")
@@ -486,7 +521,7 @@ class ArcShell:
             return False
 
         if cmd in ("ls", "devices"):
-            self._cmd_devices()
+            self._cmd_devices(tokens[1:])
             return False
 
         if cmd == "cd":
@@ -507,6 +542,10 @@ class ArcShell:
 
         if cmd == "tsg":
             self._cmd_tsg(tokens[1:])
+            return False
+
+        if cmd == "account":
+            self._cmd_account(tokens[1:])
             return False
 
         if cmd in ("help", "?"):
@@ -897,13 +936,21 @@ class ArcShell:
     # Command: ls / devices
     # ------------------------------------------------------------------
 
-    def _cmd_devices(self) -> None:
+    def _cmd_devices(self, args: list[str] | None = None) -> None:
         """Context-aware ls/devices command.
 
         At root (no device selected) → refresh and show the device list.
         In device context (after cd <device>) → show that device's detail
         and its attached snippets.
+
+        Subcommands:
+          ls folder  — show full folder hierarchy with devices in each folder
         """
+        # Subcommand: ls folder
+        if args and args[0].lower() == "folder":
+            self._cmd_ls_folder()
+            return
+
         if not self._state.device:
             # Root context — show all devices
             self._refresh_devices()
@@ -941,6 +988,53 @@ class ArcShell:
                 enriched.append({"name": name})
 
         console.print(fmt.format_snippets(enriched, device_filter=hostname))
+
+    # ------------------------------------------------------------------
+    # Command: ls folder
+    # ------------------------------------------------------------------
+
+    def _cmd_ls_folder(self) -> None:
+        """Show the full folder hierarchy with devices placed in their folder.
+
+        Fetches the live folder list (with parent relationships) and the device
+        list, then renders a Rich tree that shows the folder structure and which
+        devices live in each folder.
+
+        Use this to answer "which folder is my device in?" or "what's the
+        folder hierarchy for this tenant?".
+        """
+        if not self._scm:
+            console.print("[yellow]SCM not configured — cannot fetch folder structure.[/yellow]")
+            return
+
+        console.print("[dim]Loading folder structure and devices…[/dim]", end="\r")
+        folders = self._scm.get_folders_full()
+        devices = self._scm.get_devices()
+        # Clear the loading line before rendering.
+        console.print(" " * 55, end="\r")
+
+        if not folders:
+            console.print("[yellow]No folders returned by the SCM API.[/yellow]")
+            return
+
+        tree = fmt.format_folder_tree(folders, devices)
+        console.print(tree)
+
+        total_folders = len(folders)
+        total_devices = len(devices)
+        assigned = sum(
+            1 for d in devices
+            if d.get("folder") and d.get("folder") != "Shared"
+        )
+        unassigned = total_devices - assigned
+        notes: list[str] = [f"{total_folders} folder(s)", f"{total_devices} device(s)"]
+        if unassigned and total_devices:
+            notes.append(f"{unassigned} in Shared/unassigned")
+        console.print(f"\n[dim]{', '.join(notes)}[/dim]")
+        console.print(
+            "[dim]  folder <name> → switch active folder  |  "
+            "folder create <name> → create a new folder[/dim]"
+        )
 
     # ------------------------------------------------------------------
     # Command: pwd
@@ -985,6 +1079,14 @@ class ArcShell:
         active_tsg = self._state.tsg_id or "(root / config default)"
         console.print(f"[bold cyan]TSG:[/bold cyan] {active_tsg}")
 
+        # Show active profile — always useful to see which account you are on.
+        profile_name = self._config.profile_name
+        client_id    = self._config.scm.client_id or "(bearer token)"
+        console.print(
+            f"[bold cyan]Account profile:[/bold cyan] [bold]{profile_name}[/bold]  "
+            f"[dim]{client_id}[/dim]"
+        )
+
     # ------------------------------------------------------------------
     # Command: folder
     # ------------------------------------------------------------------
@@ -997,10 +1099,17 @@ class ArcShell:
         no ambiguity about which folder a command is scoped to.
 
         Usage:
-          folder             — list available folders and show the active one
-          folder <name>      — switch to <name>
-          folder ..          — switch to 'Shared' (root / default)
+          folder                  — list available folders and show the active one
+          folder <name>           — switch to <name>
+          folder ..               — switch to 'Shared' (root / default)
+          folder create <name>    — create a new folder (interactive parent selection)
         """
+        # Subcommand: folder create <name>
+        if args and args[0].lower() == "create":
+            folder_name = args[1] if len(args) > 1 else None
+            self._cmd_folder_create(folder_name)
+            return
+
         if not args:
             # Show current folder and available options, same pattern as `tsg` with no args.
             console.print(f"[cyan]Active SCM folder:[/cyan] [bold]{self._state.folder}[/bold]")
@@ -1069,7 +1178,135 @@ class ArcShell:
             console.print(f"[cyan]SCM folder set to:[/cyan] [bold]{new_folder}[/bold]")
 
     # ------------------------------------------------------------------
+    # Command: folder create
+    # ------------------------------------------------------------------
+
+    def _cmd_folder_create(self, name: Optional[str]) -> None:
+        """Interactive folder creation: prompt for a parent, confirm, and POST to SCM.
+
+        Displays the full folder hierarchy as a numbered list so the operator
+        can see the tree and pick the parent by number or by name.
+
+        "above" = pick a folder closer to the root (shorter path).
+        "below" = pick a folder deeper in the tree (longer path / a child folder).
+        The new folder will be created as a direct child of the selected parent.
+        """
+        if not name or not name.strip():
+            console.print(
+                "[yellow]Usage:[/yellow] folder create <name>\n"
+                "  Example: folder create Production-West"
+            )
+            return
+
+        name = name.strip()
+
+        if not self._scm:
+            console.print("[red]SCM not configured — cannot create folders.[/red]")
+            return
+
+        console.print("[dim]Fetching folder list…[/dim]", end="\r")
+        folders = self._scm.get_folders_full()
+        console.print(" " * 40, end="\r")
+
+        if not folders:
+            console.print("[yellow]No folders returned — cannot determine placement.[/yellow]")
+            return
+
+        # Build a flat ordered list: [(depth, name, full_path), …]
+        flat = fmt._folder_flat_list(folders)
+
+        # Display the numbered selection table.
+        console.print(f"\n[bold]Creating folder:[/bold] [cyan]{name}[/cyan]\n")
+        console.print(
+            "[bold yellow]Select parent folder[/bold yellow]  "
+            "[dim]('above' → pick a shorter path; 'below' → pick a deeper path)[/dim]\n"
+        )
+
+        # Header row
+        console.print(f"  [dim]{'#':<5}{'Folder':<35}Path[/dim]")
+        console.print("  " + "─" * 65)
+
+        for i, (depth, fname, path) in enumerate(flat, start=1):
+            indent   = "  " * depth
+            name_col = f"{indent}{fname}"
+            console.print(
+                f"  [cyan]{i:<5}[/cyan]"
+                f"[green]{name_col:<35}[/green]"
+                f"[dim]{path}[/dim]"
+            )
+
+        console.print()
+
+        # Prompt for the parent.
+        try:
+            raw = input("  Enter # or folder name for parent [Shared]: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            console.print("\n[dim]Cancelled.[/dim]")
+            return
+
+        # Resolve selection to a folder name.
+        parent_name = "Shared"  # sensible default
+        if raw:
+            if raw.isdigit():
+                idx = int(raw) - 1
+                if 0 <= idx < len(flat):
+                    parent_name = flat[idx][1]
+                else:
+                    console.print(f"[red]Invalid number: {raw}  (valid range 1–{len(flat)})[/red]")
+                    return
+            else:
+                # Accept a raw folder name too.
+                known_names = {f[1] for f in flat}
+                if raw in known_names:
+                    parent_name = raw
+                else:
+                    console.print(
+                        f"[red]Folder '{raw}' not found.[/red]\n"
+                        "  Enter a number from the list or an exact folder name."
+                    )
+                    return
+
+        # Confirm.
+        console.print(
+            f"\n  Create [bold cyan]{name}[/bold cyan] "
+            f"inside [bold green]{parent_name}[/bold green]?"
+        )
+        try:
+            confirm = input("  [y/n]: ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            console.print("\n[dim]Cancelled.[/dim]")
+            return
+
+        if confirm not in ("y", "yes"):
+            console.print("[dim]Cancelled.[/dim]")
+            return
+
+        # Create via API.
+        try:
+            result       = self._scm.create_folder(name, parent_name)
+            created_id   = result.get("id", "")
+            created_name = result.get("name") or name
+            console.print(
+                f"\n[green]✓[/green] Folder [bold cyan]{created_name}[/bold cyan] created "
+                f"inside [bold green]{parent_name}[/bold green]"
+                + (f"  [dim](id: {created_id})[/dim]" if created_id else "")
+            )
+        except Exception as exc:
+            console.print(f"[red]Failed to create folder:[/red] {exc}")
+            return
+
+        # Refresh folder cache so the new folder appears in completions immediately.
+        self._refresh_folders(silent=True)
+        total = len(self._state.folders_cache)
+        console.print(
+            f"[dim]Folder list refreshed — {total} folder(s) total.  "
+            f"Use [bold]folder {created_name}[/bold] to switch into it.[/dim]"
+        )
+
+    # ------------------------------------------------------------------
     # Command: tsg
+    # ------------------------------------------------------------------
+
     # ------------------------------------------------------------------
 
     def _cmd_tsg(self, args: list[str]) -> None:
@@ -1201,6 +1438,138 @@ class ArcShell:
             console.print(
                 f"[red]TSG switch failed:[/red] {exc}\n"
                 f"[dim]Context restored to TSG {previous_tsg or self._config.scm.tsg_id}.[/dim]"
+            )
+
+    # ------------------------------------------------------------------
+    # Command: account
+    # ------------------------------------------------------------------
+
+    def _cmd_account(self, args: list[str]) -> None:
+        """List or switch named credential profiles.
+
+        Profiles hold a separate set of SCM credentials (client_id, client_secret,
+        tsg_id) stored under their own keychain entries.  A typical setup has a
+        read-only profile for day-to-day monitoring and a read-write profile for
+        making policy changes.
+
+        Create profiles outside the shell with:
+          arc auth login --profile <name>
+
+        Usage:
+          account               — list all profiles with active marker
+          account <name>        — switch to the named profile
+        """
+        profiles = list_profiles()
+
+        if not args:
+            # List all configured profiles.
+            active_name = self._config.profile_name
+
+            if len(profiles) == 1 and profiles[0]["name"] == "default":
+                p = profiles[0]
+                client_id = p["client_id"] or "(not set)"
+                tsg_id    = p["tsg_id"]    or "(not set)"
+                console.print(
+                    f"\n[cyan]Active account:[/cyan] [bold]{active_name}[/bold]\n"
+                    f"  client_id : {client_id}\n"
+                    f"  tsg_id    : {tsg_id}\n\n"
+                    "[dim]Create additional profiles with: "
+                    "[bold]arc auth login --profile <name>[/bold][/dim]"
+                )
+                return
+
+            console.print(
+                "\n[bold yellow]Credential Profiles[/bold yellow]  "
+                "[dim](use [bold]account <name>[/bold] to switch)[/dim]\n"
+            )
+            for p in profiles:
+                marker      = " [green]◀ active[/green]" if p["active"] else ""
+                name_col    = f"[bold]{p['name']}[/bold]" if p["active"] else p["name"]
+                client_id   = p["client_id"] or "[dim](not set)[/dim]"
+                tsg_id      = p["tsg_id"]    or "[dim](not set)[/dim]"
+                console.print(f"  {name_col:<22} {client_id:<55} {tsg_id}{marker}")
+            return
+
+        target       = args[0].strip()
+        profile_names = [p["name"] for p in profiles]
+
+        if target not in profile_names:
+            console.print(
+                f"[red]Profile '{target}' not found.[/red]\n"
+                f"  Available: [bold]{', '.join(profile_names)}[/bold]\n"
+                f"  Create it with: [bold]arc auth login --profile {target}[/bold]"
+            )
+            return
+
+        if target == self._config.profile_name:
+            p = next(p for p in profiles if p["name"] == target)
+            console.print(
+                f"[cyan]Already using profile:[/cyan] [bold]{target}[/bold]  "
+                f"[dim](TSG: {p['tsg_id'] or 'n/a'})[/dim]"
+            )
+            return
+
+        console.print(f"[dim]Loading profile '{target}'…[/dim]")
+
+        previous_config = self._config
+        previous_scm    = self._scm
+
+        try:
+            new_cfg = load_config(profile=target)
+            new_cfg.debug = self._config.debug  # preserve session debug flag
+
+            if new_cfg.scm.is_configured:
+                new_scm: Optional[SCMClient] = SCMClient(new_cfg.scm)
+            else:
+                new_scm = None
+
+            # Swap config and client atomically.
+            self._config = new_cfg
+            self._scm    = new_scm
+
+            # Clear all context — new account = different TSG + devices.
+            self._state.device         = None
+            self._state.folder         = new_cfg.default_folder
+            self._state.tsg_id         = new_cfg.scm.tsg_id
+            self._state.devices_cache  = []
+            self._state.folders_cache  = ["Shared", "Global"]
+            self._state.tsgs_cache     = []
+
+            # Persist the new active profile to disk so the next launch uses it.
+            set_active_profile(target)
+
+            if new_scm:
+                console.print(f"[dim]Refreshing caches for profile '{target}'…[/dim]")
+                self._refresh_devices(silent=True)
+                self._refresh_folders(silent=True)
+                self._refresh_tsgs(silent=True)
+
+                device_count = len(self._state.devices_cache)
+                client_id    = new_cfg.scm.client_id or "(bearer token)"
+                console.print(
+                    f"[green]✓[/green] Switched to profile [bold]{target}[/bold]  "
+                    f"[dim]({device_count} device(s) — {client_id}  TSG: {new_cfg.scm.tsg_id})[/dim]"
+                )
+                if device_count == 0:
+                    console.print(
+                        "[yellow]No devices visible.[/yellow]  "
+                        "[dim]Check your service account has Device Administrator access, "
+                        "or use [bold]tsg <id>[/bold] to switch to a TSG with devices.[/dim]"
+                    )
+            else:
+                console.print(
+                    f"[yellow]⚠[/yellow] Switched to profile [bold]{target}[/bold] "
+                    f"but SCM is not configured for this profile.\n"
+                    f"  Run [bold]arc auth login --profile {target}[/bold] to add credentials."
+                )
+
+        except Exception as exc:
+            # Roll back to the previous config on any failure.
+            self._config = previous_config
+            self._scm    = previous_scm
+            console.print(
+                f"[red]Failed to switch to profile '{target}':[/red] {exc}\n"
+                f"[dim]Still using profile '{previous_config.profile_name}'.[/dim]"
             )
 
     # ------------------------------------------------------------------
@@ -1413,16 +1782,18 @@ class ArcShell:
         """Print the shell built-in commands section (shared by inline and full help)."""
         console.print("\n  [bold yellow]SHELL[/bold yellow]  [dim]— navigation & session[/dim]")
         builtins = [
-            ("cd <device>",      "Change Device in SCM  (Tab → device list)"),
-            ("connect [device]", "SSH to device — interactive session  (returns to ARC on exit)"),
-            ("remote <device>",  "SSH to named device — interactive session"),
-            ("folder <name>",    "Set SCM Folder scope  (Tab → folder list | folder .. → Shared)"),
-            ("tsg <id>",         "Set active TSG  (Tab → configured TSG)"),
-            ("ls",               "List devices and refresh device cache"),
-            ("pwd",              "Show device, folder, and TSG context"),
-            ("docs",             "Open docs in browser"),
-            ("clear",            "Clear the terminal screen"),
-            ("exit / quit",      "Exit ARC"),
+            ("cd <device>",           "Change Device in SCM  (Tab -> device list)"),
+            ("connect [device]",      "SSH to device — interactive session  (returns to ARC on exit)"),
+            ("remote <device>",       "SSH to named device — interactive session  (keyboard-interactive + 2FA)"),
+            ("folder <name>",         "Set SCM Folder scope  (Tab -> folder list | folder .. -> Shared)"),
+            ("folder create <name>",  "Create a new folder  (interactive parent selection)"),
+            ("tsg <id>",              "Set active TSG  (Tab -> configured TSG)"),
+            ("account [name]",        "List or switch credential profiles  (Tab -> profile names)"),
+            ("ls",                    "List devices and refresh cache  (ls folder -> folder tree view)"),
+            ("pwd",                   "Show device, folder, TSG, and active account"),
+            ("docs",                  "Open docs in browser"),
+            ("clear",                 "Clear the terminal screen"),
+            ("exit / quit",           "Exit ARC"),
         ]
         for name, desc in builtins:
             console.print(f"    [cyan]{name:<43}[/cyan] {desc}")
@@ -1670,11 +2041,23 @@ class ArcShell:
         console.print(f"[bold cyan]{art}[/bold cyan]")
         console.print("  [dim]Assisted Remote Console  —  Palo Alto Networks SCM + PAN-OS[/dim]")
         console.print()
+
+        # Show active profile when multiple profiles exist — so operators
+        # always know which credential set is in use before touching anything.
+        profiles = list_profiles()
+        if len(profiles) > 1:
+            active_name = self._config.profile_name
+            console.print(
+                f"  [dim]Account:[/dim] [bold]{active_name}[/bold]  "
+                f"[dim](use [bold]account <name>[/bold] to switch)[/dim]\n"
+            )
+
         console.print(
             "  [cyan]cd <device>[/cyan]               Change Device in SCM  [dim](Tab → device list)[/dim]\n"
             "  [cyan]remote <device>[/cyan]           SSH to device  [dim](keyboard-interactive + 2FA)[/dim]\n"
             "  [cyan]connect[/cyan]                   SSH to current device\n"
-            "  [cyan]folder <name>[/cyan]             Set SCM Folder  [dim](Tab → folder list)[/dim]\n"
+            "  [cyan]folder <name>[/cyan]             Set SCM Folder  [dim](Tab → folder list | always shown in prompt)[/dim]\n"
+            "  [cyan]account [name][/cyan]            List / switch credential profiles\n"
             "  [cyan]?[/cyan]                         Context-aware help  [dim](or  help <topic>)[/dim]"
         )
         console.print()

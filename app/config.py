@@ -13,6 +13,11 @@ always written with mode 0600.
 
 Environment variables override both the keychain and the config file —
 useful for CI/CD and short-lived overrides without touching stored values.
+
+Named profiles allow multiple SCM service accounts to coexist — e.g. a
+read-only account for day-to-day monitoring and a read-write account for
+policy changes.  Use ``arc auth login --profile <name>`` to create a profile
+and ``account <name>`` in the ARC shell to switch between them.
 """
 
 from __future__ import annotations
@@ -32,10 +37,6 @@ logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Config path — <project_root>/config/<os_username>/config.json
-#
-# The project root is two levels above this file (app/config.py →app/ → root).
-# Using the OS username as the per-user subdirectory keeps multiple developer
-# accounts on the same machine isolated without touching their home directories.
 # ---------------------------------------------------------------------------
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -45,20 +46,37 @@ CONFIG_DIR  = _PROJECT_ROOT / "config" / _OS_USERNAME
 CONFIG_FILE = CONFIG_DIR / "config.json"
 
 # Legacy path (platformdirs-based — used by earlier ARC versions).
-# Checked once during load if the new path is missing so existing installs
-# are not silently broken.  The user is notified to re-save via arc auth login.
 try:
     import platformdirs as _platformdirs
     _LEGACY_CONFIG_FILE: Path | None = Path(_platformdirs.user_config_dir("arc")) / "config.json"
 except ImportError:
     _LEGACY_CONFIG_FILE = None
 
-# Keychain service name and per-credential usernames.
-# Keep these stable — changing them silently orphans stored secrets.
-_KEYCHAIN_SERVICE = "arc"
+# ---------------------------------------------------------------------------
+# Profile support
+# ---------------------------------------------------------------------------
+
+# The built-in profile name.  All legacy (single-profile) configs are treated
+# as this profile; its keychain keys use the historic non-suffixed format.
+_DEFAULT_PROFILE = "default"
+
+# Keychain service name and per-credential base keys.
+_KEYCHAIN_SERVICE  = "arc"
 _KEY_SCM_BEARER    = "scm.bearer_token"
 _KEY_SCM_SECRET    = "scm.client_secret"
 _KEY_SSH_PASSWORD  = "ssh.password"
+
+
+def _profile_key(base: str, profile: str) -> str:
+    """Return a profile-scoped keychain key.
+
+    The ``default`` profile uses the historic non-suffixed keys so that
+    existing keychain entries are read without migration.  All other profiles
+    append a dot-separated profile name: ``scm.bearer_token.readwrite``.
+    """
+    if profile == _DEFAULT_PROFILE:
+        return base
+    return f"{base}.{profile}"
 
 
 class ConfigSecurityError(Exception):
@@ -106,11 +124,7 @@ def _keychain_delete(key: str) -> None:
 
 
 def keychain_available() -> bool:
-    """Return True when the OS keychain can be read/written.
-
-    Used by ``arc auth show`` to surface a warning in headless environments
-    where secrets must be supplied through environment variables instead.
-    """
+    """Return True when the OS keychain can be read/written."""
     try:
         keyring.get_password(_KEYCHAIN_SERVICE, "__probe__")
         return True
@@ -149,9 +163,6 @@ class SSHConfig:
 
     ``password`` (if used) is stored in the OS keychain.
     All other fields are non-sensitive and stored in config.json.
-
-    The on-disk key is ``username`` (matching the Palo Alto portal field name).
-    The legacy key ``user`` is accepted as a fallback when reading old config files.
     """
 
     user: str = "admin"
@@ -166,146 +177,330 @@ class ArcConfig:
     ssh: SSHConfig = field(default_factory=SSHConfig)
     debug: bool = False
     default_folder: str = "Shared"
+    # Which named profile was loaded.  Set automatically by load_config().
+    # Used by save_config() to write back to the correct profile slot.
+    profile_name: str = _DEFAULT_PROFILE
+
+
+# ---------------------------------------------------------------------------
+# Raw config file I/O
+# ---------------------------------------------------------------------------
+
+def _read_config_file() -> dict:
+    """Read the raw config.json from disk and return it as a dict.
+
+    Falls back to the legacy platformdirs path if the primary path is missing.
+    Returns an empty dict if no config file exists or parsing fails.
+    """
+    config_file = CONFIG_FILE
+    if not config_file.exists() and _LEGACY_CONFIG_FILE and _LEGACY_CONFIG_FILE.exists():
+        config_file = _LEGACY_CONFIG_FILE
+        logger.debug(
+            "Using legacy config path %s — run `arc auth login` to migrate to %s",
+            _LEGACY_CONFIG_FILE, CONFIG_FILE,
+        )
+    if config_file.exists():
+        try:
+            return json.loads(config_file.read_text())
+        except (OSError, json.JSONDecodeError, TypeError, ValueError) as exc:
+            logger.debug("Could not parse config file: %s", exc)
+    return {}
+
+
+def _write_config_file(raw: dict) -> None:
+    """Atomically write *raw* to CONFIG_FILE with mode 0600."""
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    CONFIG_DIR.chmod(stat.S_IRWXU)
+    flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+    fd = os.open(CONFIG_FILE, flags, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as handle:
+        json.dump(raw, handle, indent=2)
+        handle.write("\n")
+    CONFIG_FILE.chmod(stat.S_IRUSR | stat.S_IWUSR)
+
+
+def _to_new_format(raw: dict) -> dict:
+    """Migrate a legacy single-profile config dict to the multi-profile format.
+
+    The original top-level ``scm`` / ``ssh`` / ``default_folder`` keys become
+    the ``default`` profile.  The original dict is not mutated.
+    """
+    if "profiles" in raw:
+        return raw  # already in new format
+
+    legacy_scm = {
+        k: v for k, v in raw.get("scm", {}).items()
+        if not k.startswith("_") and k not in ("bearer_token", "client_secret")
+    }
+    legacy_ssh = {
+        k: v for k, v in raw.get("ssh", {}).items()
+        if not k.startswith("_") and k != "password"
+    }
+    return {
+        "active_profile": raw.get("active_profile", _DEFAULT_PROFILE),
+        "profiles": {
+            _DEFAULT_PROFILE: {
+                "scm": legacy_scm,
+                "ssh": legacy_ssh,
+                "default_folder": raw.get("default_folder", "Shared"),
+            }
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
+# Profile management
+# ---------------------------------------------------------------------------
+
+def list_profiles() -> list[dict]:
+    """Return metadata for every configured profile.
+
+    Each entry is a dict with keys: ``name``, ``client_id``, ``tsg_id``,
+    ``default_folder``, ``active`` (bool).
+
+    When no config file exists, returns a single placeholder for ``default``.
+    """
+    raw = _read_config_file()
+    active = raw.get("active_profile", _DEFAULT_PROFILE)
+
+    if "profiles" in raw:
+        result: list[dict] = []
+        for name, pdata in raw["profiles"].items():
+            scm_block = pdata.get("scm", {}) if isinstance(pdata, dict) else {}
+            result.append({
+                "name":           name,
+                "client_id":      scm_block.get("client_id", ""),
+                "tsg_id":         scm_block.get("tsg_id", ""),
+                "default_folder": pdata.get("default_folder", "Shared") if isinstance(pdata, dict) else "Shared",
+                "active":         name == active,
+            })
+        return result
+
+    # Legacy single-profile format.
+    scm_block = raw.get("scm", {})
+    return [{
+        "name":           _DEFAULT_PROFILE,
+        "client_id":      scm_block.get("client_id", ""),
+        "tsg_id":         scm_block.get("tsg_id", ""),
+        "default_folder": raw.get("default_folder", "Shared"),
+        "active":         True,
+    }]
+
+
+def get_active_profile() -> str:
+    """Return the name of the currently active profile (default: ``"default"``)."""
+    return _read_config_file().get("active_profile", _DEFAULT_PROFILE)
+
+
+def set_active_profile(name: str) -> None:
+    """Persist *name* as the active profile without touching credential data.
+
+    Migrates a legacy config to the multi-profile format on first call if
+    the config file has not been migrated yet.
+    """
+    raw = _to_new_format(_read_config_file())
+    raw["active_profile"] = name
+    _write_config_file(raw)
 
 
 # ---------------------------------------------------------------------------
 # Load / save
 # ---------------------------------------------------------------------------
 
-def load_config() -> ArcConfig:
-    """Load config from keychain + config file, then overlay environment variables.
+def load_config(profile: str | None = None) -> ArcConfig:
+    """Load config for the named *profile* (or the active profile when None).
 
     Priority (later overrides earlier):
-      1. OS keychain (for secrets)
-      2. ~/.arc/config.json (for non-sensitive values; legacy secrets as fallback)
-      3. Environment variables (always win — useful for CI and quick overrides)
+      1. OS keychain (profile-scoped secrets)
+      2. config.json profile block (non-sensitive fields; legacy plaintext as fallback)
+      3. Environment variables (always win)
     """
     cfg = ArcConfig()
+    raw = _read_config_file()
 
-    # --- Pull secrets from keychain first ---
-    cfg.scm.bearer_token  = _keychain_get(_KEY_SCM_BEARER)
-    cfg.scm.client_secret = _keychain_get(_KEY_SCM_SECRET)
-    cfg.ssh.password      = _keychain_get(_KEY_SSH_PASSWORD)
+    # Determine which profile data block to load.
+    if "profiles" in raw:
+        active = raw.get("active_profile", _DEFAULT_PROFILE)
+        target = profile or active
+        pdata = raw["profiles"].get(target)
+        if pdata is None:
+            # Requested profile does not exist — fall back to active profile.
+            logger.debug("Profile '%s' not found; falling back to '%s'", target, active)
+            target = active
+            pdata = raw["profiles"].get(target, {})
+        scm_raw = pdata.get("scm", {}) if isinstance(pdata, dict) else {}
+        ssh_raw = pdata.get("ssh", {}) if isinstance(pdata, dict) else {}
+        cfg.default_folder = pdata.get("default_folder", "Shared") if isinstance(pdata, dict) else "Shared"
+    else:
+        # Legacy single-profile format.
+        target  = _DEFAULT_PROFILE
+        scm_raw = raw.get("scm", {})
+        ssh_raw = raw.get("ssh", {})
+        cfg.default_folder = raw.get("default_folder", "Shared")
 
-    # --- Overlay with config file (non-sensitive fields; legacy secret fallback) ---
-    # Prefer the new project-local path; fall back to the legacy platformdirs path
-    # for users who configured ARC before this change.
-    config_file_to_read = CONFIG_FILE
-    if not config_file_to_read.exists() and _LEGACY_CONFIG_FILE and _LEGACY_CONFIG_FILE.exists():
-        config_file_to_read = _LEGACY_CONFIG_FILE
-        logger.debug(
-            "Using legacy config path %s — run `arc auth login` to migrate to %s",
-            _LEGACY_CONFIG_FILE, CONFIG_FILE,
-        )
+    cfg.profile_name = target
 
-    if config_file_to_read.exists():
-        try:
-            raw = json.loads(config_file_to_read.read_text())
+    # --- Secrets from keychain (profile-scoped) ---
+    bearer_key   = _profile_key(_KEY_SCM_BEARER,   target)
+    secret_key   = _profile_key(_KEY_SCM_SECRET,   target)
+    ssh_pass_key = _profile_key(_KEY_SSH_PASSWORD,  target)
 
-            scm = raw.get("scm", {})
-            cfg.scm.client_id   = scm.get("client_id", "")
-            cfg.scm.tsg_id      = scm.get("tsg_id", "")
-            # Legacy plaintext secrets: migrate to keychain on next save.
-            # Only used if the keychain returned nothing.
-            if not cfg.scm.bearer_token:
-                cfg.scm.bearer_token  = scm.get("bearer_token", "")
-            if not cfg.scm.client_secret:
-                cfg.scm.client_secret = scm.get("client_secret", "")
+    cfg.scm.bearer_token  = _keychain_get(bearer_key)
+    cfg.scm.client_secret = _keychain_get(secret_key)
+    cfg.ssh.password      = _keychain_get(ssh_pass_key)
 
-            ssh = raw.get("ssh", {})
-            # Accept both "username" (current) and legacy "user" key.
-            cfg.ssh.user      = ssh.get("username", ssh.get("user", "admin"))
-            cfg.ssh.key_path  = ssh.get("key_path", "")
-            cfg.ssh.port      = int(ssh.get("port", 22))
-            if not cfg.ssh.password:
-                cfg.ssh.password = ssh.get("password", "")
+    # For the default profile also check the legacy (non-suffixed) keychain keys
+    # so users who authenticated before multi-profile existed keep working.
+    if target == _DEFAULT_PROFILE:
+        if not cfg.scm.bearer_token:
+            cfg.scm.bearer_token  = _keychain_get(_KEY_SCM_BEARER)
+        if not cfg.scm.client_secret:
+            cfg.scm.client_secret = _keychain_get(_KEY_SCM_SECRET)
+        if not cfg.ssh.password:
+            cfg.ssh.password      = _keychain_get(_KEY_SSH_PASSWORD)
 
-            cfg.default_folder = raw.get("default_folder", "Shared")
+    # --- Non-sensitive fields from config file ---
+    cfg.scm.client_id = scm_raw.get("client_id", "")
+    cfg.scm.tsg_id    = scm_raw.get("tsg_id", "")
 
-        except (OSError, json.JSONDecodeError, TypeError, ValueError) as exc:
-            # Invalid config must not block startup.  Commands requiring
-            # credentials will fail closed with a clear error.
-            logger.debug("Could not parse config file: %s", exc)
+    # Legacy plaintext secrets: used only when keychain returned nothing.
+    # Stripped from disk on the next save_config() call.
+    if not cfg.scm.bearer_token:
+        cfg.scm.bearer_token  = scm_raw.get("bearer_token", "")
+    if not cfg.scm.client_secret:
+        cfg.scm.client_secret = scm_raw.get("client_secret", "")
+
+    # SSH fields — accept both "username" (current) and legacy "user" key.
+    cfg.ssh.user     = ssh_raw.get("username", ssh_raw.get("user", "admin"))
+    cfg.ssh.key_path = ssh_raw.get("key_path", "")
+    cfg.ssh.port     = int(ssh_raw.get("port", 22))
+    if not cfg.ssh.password:
+        cfg.ssh.password = ssh_raw.get("password", "")
 
     # --- Environment variables always win ---
-    cfg.scm.bearer_token  = os.environ.get("SCM_BEARER_TOKEN", cfg.scm.bearer_token)
-    cfg.scm.client_id     = os.environ.get("SCM_CLIENT_ID",    cfg.scm.client_id)
+    cfg.scm.bearer_token  = os.environ.get("SCM_BEARER_TOKEN",  cfg.scm.bearer_token)
+    cfg.scm.client_id     = os.environ.get("SCM_CLIENT_ID",     cfg.scm.client_id)
     cfg.scm.client_secret = os.environ.get("SCM_CLIENT_SECRET", cfg.scm.client_secret)
     cfg.scm.tsg_id        = os.environ.get("SCM_TSG_ID",        cfg.scm.tsg_id)
-
-    cfg.ssh.user          = os.environ.get("ARC_SSH_USER", cfg.ssh.user)
-    cfg.ssh.key_path      = os.environ.get("ARC_SSH_KEY",  cfg.ssh.key_path)
-    cfg.ssh.password      = os.environ.get("ARC_SSH_PASS", cfg.ssh.password)
-
-    cfg.debug = os.environ.get("ARC_DEBUG", "0") == "1"
+    cfg.ssh.user          = os.environ.get("ARC_SSH_USER",       cfg.ssh.user)
+    cfg.ssh.key_path      = os.environ.get("ARC_SSH_KEY",        cfg.ssh.key_path)
+    cfg.ssh.password      = os.environ.get("ARC_SSH_PASS",       cfg.ssh.password)
+    cfg.debug             = os.environ.get("ARC_DEBUG", "0") == "1"
 
     return cfg
 
 
-def save_config(cfg: ArcConfig) -> None:
+def save_config(cfg: ArcConfig, profile: str | None = None) -> None:
     """Persist config: secrets to OS keychain, non-sensitive values to config.json.
 
-    The config file is always written with mode 0600 (owner read/write only).
+    *profile* overrides ``cfg.profile_name`` when supplied.  Defaults to
+    ``cfg.profile_name`` (set by ``load_config``), which falls back to
+    ``"default"`` if not set.
+
+    The config file is always written in the multi-profile format.  A legacy
+    single-profile file is migrated on the first save_config() call.
+
     Secrets are never written to disk.  If the OS keychain cannot store a
-    non-empty secret, non-sensitive config is still saved and ConfigSecurityError
-    is raised so callers can tell the user to use keychain or env vars.
+    non-empty secret, non-sensitive config is still saved and
+    ``ConfigSecurityError`` is raised.
     """
+    target = profile or cfg.profile_name or _DEFAULT_PROFILE
+
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     CONFIG_DIR.chmod(stat.S_IRWXU)
 
-    # Store secrets in the keychain.  Empty values delete existing entries.
+    # Store secrets in the keychain under profile-scoped keys.
     failed_secret_keys: list[str] = []
     for key, value in (
-        (_KEY_SCM_BEARER, cfg.scm.bearer_token),
-        (_KEY_SCM_SECRET, cfg.scm.client_secret),
-        (_KEY_SSH_PASSWORD, cfg.ssh.password),
+        (_profile_key(_KEY_SCM_BEARER,   target), cfg.scm.bearer_token),
+        (_profile_key(_KEY_SCM_SECRET,   target), cfg.scm.client_secret),
+        (_profile_key(_KEY_SSH_PASSWORD,  target), cfg.ssh.password),
     ):
         saved = _keychain_set(key, value)
         if value and not saved:
             failed_secret_keys.append(key)
 
-    # Build the on-disk payload.  Secrets are deliberately omitted even when
-    # keychain storage fails.  This also strips legacy plaintext secrets from
-    # config.json the next time save_config() runs.
-    scm_block: dict = {
-        "client_id": cfg.scm.client_id,
-        "tsg_id":    cfg.scm.tsg_id,
-    }
-
-    ssh_block: dict = {
-        "username": cfg.ssh.user,  # written as "username" to match the Palo Alto portal field name
-        "key_path": cfg.ssh.key_path,
-        "port":     cfg.ssh.port,
-    }
-
-    data = {
-        "scm":            scm_block,
-        "ssh":            ssh_block,
+    # Build the on-disk profile block.  Secrets deliberately omitted.
+    profile_data: dict = {
+        "scm": {
+            "client_id": cfg.scm.client_id,
+            "tsg_id":    cfg.scm.tsg_id,
+        },
+        "ssh": {
+            "username": cfg.ssh.user,
+            "key_path": cfg.ssh.key_path,
+            "port":     cfg.ssh.port,
+        },
         "default_folder": cfg.default_folder,
     }
 
-    flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
-    fd = os.open(CONFIG_FILE, flags, 0o600)
-    with os.fdopen(fd, "w", encoding="utf-8") as handle:
-        json.dump(data, handle, indent=2)
-        handle.write("\n")
-    CONFIG_FILE.chmod(stat.S_IRUSR | stat.S_IWUSR)
+    # Read existing config (to preserve other profiles), migrate if needed.
+    raw = _to_new_format(_read_config_file())
+    raw.setdefault("active_profile", target)
+    raw.setdefault("profiles", {})
+    raw["profiles"][target] = profile_data
+
+    _write_config_file(raw)
 
     if failed_secret_keys:
         failed = ", ".join(failed_secret_keys)
         raise ConfigSecurityError(
-            "OS keychain could not store ARC secret(s): "
-            f"{failed}. Secrets were not written to config.json. "
+            f"OS keychain could not store ARC secret(s): {failed}. "
+            "Secrets were not written to config.json. "
             "Use `arc auth login` on a machine with keychain access, or provide "
             "secrets through environment variables for this session."
         )
 
 
-def clear_keychain() -> None:
-    """Remove all ARC secrets from the OS keychain.
+def delete_profile(name: str) -> None:
+    """Remove a named profile from config.json and its keychain entries.
+
+    Raises ``ValueError`` when attempting to delete the ``default`` profile
+    or a profile that does not exist.
+    """
+    if name == _DEFAULT_PROFILE:
+        raise ValueError("Cannot delete the 'default' profile.")
+
+    raw = _to_new_format(_read_config_file())
+    if name not in raw.get("profiles", {}):
+        raise ValueError(f"Profile '{name}' does not exist.")
+
+    del raw["profiles"][name]
+
+    # If the deleted profile was active, fall back to default.
+    if raw.get("active_profile") == name:
+        raw["active_profile"] = _DEFAULT_PROFILE
+
+    _write_config_file(raw)
+
+    # Remove profile-scoped keychain entries.
+    for base in (_KEY_SCM_BEARER, _KEY_SCM_SECRET, _KEY_SSH_PASSWORD):
+        _keychain_delete(_profile_key(base, name))
+
+
+def clear_keychain(profile: str | None = None) -> None:
+    """Remove ARC secrets from the OS keychain.
+
+    When *profile* is supplied only that profile's secrets are removed.
+    When *profile* is None all known profile secrets are removed, including
+    the legacy non-suffixed keys used by the ``default`` profile.
 
     Called by ``arc auth clear``.  Does not touch the config file.
     """
-    for key in (_KEY_SCM_BEARER, _KEY_SCM_SECRET, _KEY_SSH_PASSWORD):
-        _keychain_delete(key)
-
+    if profile:
+        for base in (_KEY_SCM_BEARER, _KEY_SCM_SECRET, _KEY_SSH_PASSWORD):
+            _keychain_delete(_profile_key(base, profile))
+        # Also clear legacy keys for the default profile.
+        if profile == _DEFAULT_PROFILE:
+            for key in (_KEY_SCM_BEARER, _KEY_SCM_SECRET, _KEY_SSH_PASSWORD):
+                _keychain_delete(key)
+    else:
+        # Clear legacy keys (default profile, pre-multi-profile format).
+        for key in (_KEY_SCM_BEARER, _KEY_SCM_SECRET, _KEY_SSH_PASSWORD):
+            _keychain_delete(key)
+        # Clear profile-scoped keys for every known profile.
+        for p in list_profiles():
+            pname = p["name"]
+            if pname != _DEFAULT_PROFILE:
+                for base in (_KEY_SCM_BEARER, _KEY_SCM_SECRET, _KEY_SSH_PASSWORD):
+                    _keychain_delete(_profile_key(base, pname))

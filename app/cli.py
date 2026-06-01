@@ -18,7 +18,10 @@ from app.config import (
     CONFIG_FILE,
     ConfigSecurityError,
     clear_keychain,
+    delete_profile,
+    get_active_profile,
     keychain_available,
+    list_profiles,
     load_config,
     save_config,
 )
@@ -97,6 +100,7 @@ def auth_login(
     scm_tsg: Optional[str] = typer.Option(None, "--scm-tsg-id"),
     ssh_user: Optional[str] = typer.Option(None, "--ssh-user"),
     ssh_key: Optional[str] = typer.Option(None, "--ssh-key"),
+    profile: str = typer.Option("default", "--profile", "-p", help="Named credential profile to create or update."),
 ) -> None:
     """Interactively configure ARC credentials.
 
@@ -104,12 +108,17 @@ def auth_login(
     these to obtain a fresh OAuth token on every startup.  Secrets are stored
     in the OS keychain; non-sensitive values go to the config file.
 
+    Use --profile to create or update a named profile (e.g. --profile readwrite).
+    Switch between profiles inside the ARC shell with the `account` command.
+
     Press Enter to keep any value that is already stored.
     """
-    cfg = load_config()
+    cfg = load_config(profile=profile)
     kc = keychain_available()
 
     console.print("\n[bold cyan]ARC Credential Setup[/bold cyan]")
+    if profile != "default":
+        console.print(f"  Profile: [bold yellow]{profile}[/bold yellow]")
     console.print(
         "  Press [bold]Enter[/bold] to keep an existing value.\n"
         "  Secrets are shown as [dim]****[/dim] when already stored in the keychain.\n"
@@ -196,7 +205,7 @@ def auth_login(
     )
 
     try:
-        save_config(cfg)
+        save_config(cfg, profile=profile)
     except ConfigSecurityError as exc:
         console.print(f"\n[yellow]⚠[/yellow] {exc}")
         console.print(
@@ -206,8 +215,9 @@ def auth_login(
         raise typer.Exit(1) from exc
 
     if kc:
+        profile_label = f" (profile: [bold]{profile}[/bold])" if profile != "default" else ""
         console.print(
-            f"\n[green]✓[/green] Secrets saved to OS keychain\n"
+            f"\n[green]✓[/green] Secrets saved to OS keychain{profile_label}\n"
             f"[green]✓[/green] Config file: [bold]{CONFIG_FILE}[/bold]  [dim](mode 0600)[/dim]\n"
         )
     else:
@@ -216,21 +226,54 @@ def auth_login(
             "[dim](mode 0600)[/dim]\n"
         )
 
-    console.print(
-        "Run [bold]arc auth test[/bold] to verify your credentials work end-to-end."
-    )
+    if profile != "default":
+        console.print(
+            f"Switch to this profile in ARC with: [bold]account {profile}[/bold]\n"
+            "Run [bold]arc auth test[/bold] to verify your credentials work end-to-end."
+        )
+    else:
+        console.print(
+            "Run [bold]arc auth test[/bold] to verify your credentials work end-to-end."
+        )
 
 
 @auth_app.command("show")
-def auth_show() -> None:
-    """Display current configuration (credentials masked)."""
-    cfg = load_config()
+def auth_show(
+    profile: Optional[str] = typer.Option(None, "--profile", "-p", help="Show a specific named profile."),
+) -> None:
+    """Display current configuration (credentials masked).
+
+    Without --profile: lists all configured profiles then shows the active one
+    in detail.  With --profile <name>: shows only that profile.
+    """
     kc = keychain_available()
 
     def _mask(s: str) -> str:
         return ("*" * 8) if s else "[dim](not set)[/dim]"
 
-    console.print("\n[bold cyan]SCM[/bold cyan]")
+    profiles = list_profiles()
+    active_name = get_active_profile()
+
+    # Always print the profile list when multiple profiles exist.
+    if len(profiles) > 1 and not profile:
+        console.print("\n[bold cyan]Credential Profiles[/bold cyan]")
+        for p in profiles:
+            marker = " [green]◀ active[/green]" if p["active"] else ""
+            name_col = f"[bold]{p['name']}[/bold]" if p["active"] else p["name"]
+            client_id = p["client_id"] or "[dim](not set)[/dim]"
+            tsg_id = p["tsg_id"] or "[dim](not set)[/dim]"
+            console.print(f"  {name_col:<20}  client_id: {client_id}  tsg_id: {tsg_id}{marker}")
+        console.print(
+            f"\n[dim]Use [bold]arc auth show --profile <name>[/bold] to inspect a specific profile.[/dim]"
+        )
+
+    # Show detail for the requested or active profile.
+    target = profile or active_name
+    cfg = load_config(profile=target)
+
+    console.print(f"\n[bold cyan]Profile: {target}[/bold cyan]"
+                  + (" [green](active)[/green]" if target == active_name else ""))
+    console.print("[bold cyan]SCM[/bold cyan]")
     console.print(f"  bearer_token:  {_mask(cfg.scm.bearer_token)}")
     console.print(f"  client_id:     {cfg.scm.client_id or '[dim](not set)[/dim]'}")
     console.print(f"  client_secret: {_mask(cfg.scm.client_secret)}")
@@ -253,15 +296,23 @@ def auth_show() -> None:
 
 
 @auth_app.command("clear")
-def auth_clear() -> None:
-    """Remove all ARC secrets from the OS keychain.
+def auth_clear(
+    profile: Optional[str] = typer.Option(None, "--profile", "-p", help="Clear secrets for a specific profile only."),
+) -> None:
+    """Remove ARC secrets from the OS keychain.
+
+    Without --profile: removes secrets for all profiles.
+    With --profile <name>: removes only that profile's secrets.
 
     This does not delete the config file.  Non-sensitive values (client_id,
     tsg_id, SSH user/key/port) are preserved.  Run ``arc auth login`` to
     re-enter credentials afterward.
     """
-    clear_keychain()
-    console.print("[green]✓[/green] ARC secrets removed from OS keychain.")
+    clear_keychain(profile=profile)
+    if profile:
+        console.print(f"[green]✓[/green] Secrets for profile [bold]{profile}[/bold] removed from OS keychain.")
+    else:
+        console.print("[green]✓[/green] All ARC secrets removed from OS keychain.")
     console.print(
         f"  Config file [dim]{CONFIG_FILE}[/dim] unchanged  "
         "(run [bold]arc auth login[/bold] to re-enter credentials)"
@@ -273,8 +324,39 @@ def _short_err(err_str: str) -> str:
     return err_str.split("\n")[0]
 
 
+@auth_app.command("delete-profile")
+def auth_delete_profile(
+    name: str = typer.Argument(..., help="Profile name to delete (cannot delete 'default')."),
+) -> None:
+    """Delete a named credential profile from config.json and the OS keychain.
+
+    The ``default`` profile cannot be deleted.  The active profile cannot be
+    deleted while it is in use — switch to another profile first with
+    ``account <name>`` inside the ARC shell.
+    """
+    try:
+        active = get_active_profile()
+        if name == active:
+            console.print(
+                f"[red]Cannot delete the active profile '{name}'.[/red]\n"
+                "  Switch to a different profile first: "
+                "[bold]arc auth login --profile <other>[/bold] and use "
+                "[bold]account <other>[/bold] inside ARC."
+            )
+            raise typer.Exit(1)
+        delete_profile(name)
+        console.print(
+            f"[green]✓[/green] Profile [bold]{name}[/bold] removed from config.json and OS keychain."
+        )
+    except ValueError as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        raise typer.Exit(1) from exc
+
+
 @auth_app.command("test")
-def auth_test() -> None:
+def auth_test(
+    profile: Optional[str] = typer.Option(None, "--profile", "-p", help="Test a specific named profile."),
+) -> None:
     """Test connectivity using stored credentials.
 
     Checks (in order):
@@ -292,7 +374,12 @@ def auth_test() -> None:
     """
     import sys
 
-    cfg = load_config()
+    active_name = get_active_profile()
+    target = profile or active_name
+    if target != active_name:
+        console.print(f"\n[dim]Testing profile:[/dim] [bold]{target}[/bold]")
+
+    cfg = load_config(profile=target)
     all_ok = True
 
     # ── 1. Keychain ──────────────────────────────────────────────────────────

@@ -8,6 +8,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
+from rich.tree import Tree
 from rich import box
 
 
@@ -120,6 +121,118 @@ def format_devices(devices: list[dict]) -> Table:
         t.add_row(indicator, hostname, serial, model, sw_ver, ip, ha_state, uptime, folder)
 
     return t
+
+
+def format_folder_tree(folders: list[dict], devices: list[dict]) -> Tree:
+    """Render the SCM folder hierarchy as a tree, with devices shown in their folder.
+
+    Each folder node shows:
+      - The folder name (green)
+      - Connected device hostnames in that folder, with a count (if any)
+
+    Folder parent relationships come from each folder record's ``parent`` field
+    (a string — the parent folder's name).  Folders whose parent is absent or
+    not in the known folder list are treated as roots.
+
+    pan.dev: GET /config/setup/v1/folders  (carries 'parent' field)
+    pan.dev: GET /config/setup/v1/devices  (carries 'folder' field)
+    """
+    # Map folder name → list of device hostnames in that folder.
+    folder_devices: dict[str, list[str]] = {}
+    for d in devices:
+        fname    = d.get("folder") or "Shared"
+        hostname = d.get("hostname") or d.get("display_name") or d.get("name") or ""
+        if hostname:
+            folder_devices.setdefault(fname, []).append(hostname)
+
+    # Build parent → [children] mapping and a lookup dict.
+    children:       dict[str, list[str]] = {}
+    folder_by_name: dict[str, dict]      = {}
+    for f in folders:
+        fname  = f.get("name", "")
+        parent = f.get("parent", "") or ""
+        if not fname:
+            continue
+        folder_by_name[fname] = f
+        children.setdefault(parent, [])
+        if fname not in children[parent]:
+            children[parent].append(fname)
+
+    # Sort children lists for consistent, alphabetical display.
+    for key in children:
+        children[key].sort()
+
+    # Root folders: their declared parent is absent or not itself a known folder.
+    all_names = set(folder_by_name)
+    roots = sorted(
+        name for name, f in folder_by_name.items()
+        if not (f.get("parent") or "") or (f.get("parent") or "") not in all_names
+    )
+
+    tree = Tree("[bold cyan]Folder Structure[/bold cyan]", hide_root=True)
+
+    def _add_node(branch: Tree, folder_name: str) -> None:
+        devs      = folder_devices.get(folder_name, [])
+        dev_count = len(devs)
+        if devs:
+            dev_str = ", ".join(devs)
+            label   = (
+                f"[bold green]{folder_name}[/bold green]  "
+                f"[dim]{dev_count} device{'s' if dev_count != 1 else ''}:[/dim] "
+                f"[cyan]{dev_str}[/cyan]"
+            )
+        else:
+            label = f"[green]{folder_name}[/green]"
+
+        node = branch.add(label)
+        for child in children.get(folder_name, []):
+            _add_node(node, child)
+
+    for root in roots:
+        _add_node(tree, root)
+
+    return tree
+
+
+def _folder_flat_list(folders: list[dict]) -> list[tuple[int, str, str]]:
+    """Return a depth-ordered flat list of (depth, name, path) tuples.
+
+    Useful for numbered selection menus — preserves tree order so that
+    indented display matches the flat index numbers.
+    """
+    children:       dict[str, list[str]] = {}
+    folder_by_name: dict[str, dict]      = {}
+    for f in folders:
+        fname  = f.get("name", "")
+        parent = f.get("parent", "") or ""
+        if not fname:
+            continue
+        folder_by_name[fname] = f
+        children.setdefault(parent, [])
+        if fname not in children[parent]:
+            children[parent].append(fname)
+
+    for key in children:
+        children[key].sort()
+
+    all_names = set(folder_by_name)
+    roots = sorted(
+        name for name, f in folder_by_name.items()
+        if not (f.get("parent") or "") or (f.get("parent") or "") not in all_names
+    )
+
+    flat: list[tuple[int, str, str]] = []
+
+    def _flatten(fname: str, depth: int, path: str) -> None:
+        full_path = f"{path}/{fname}" if path else fname
+        flat.append((depth, fname, full_path))
+        for child in children.get(fname, []):
+            _flatten(child, depth + 1, full_path)
+
+    for root in roots:
+        _flatten(root, 0, "")
+
+    return flat
 
 
 def format_interfaces(interfaces: list[dict]) -> Table:

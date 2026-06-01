@@ -449,6 +449,18 @@ class SCMClient:
         except (httpx.HTTPError, ValueError, TypeError):
             return None
 
+    def create_folder(self, name: str, parent: str) -> dict:
+        """Create a new folder under the given parent folder.
+
+        pan.dev: POST /config/setup/v1/folders
+        Spec: openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml
+
+        Returns the created folder record.
+        Raises httpx.HTTPStatusError on API errors (e.g. 409 already exists,
+        403 permission denied).
+        """
+        return self._post_setup("/folders", json={"name": name, "parent": parent})
+
     # ------------------------------------------------------------------
     # Objects  (api.strata.paloaltonetworks.com/config/objects/v1)
     # pan.dev: https://pan.dev/scm/api/config/cloudngfw/objects/
