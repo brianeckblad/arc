@@ -331,12 +331,12 @@ class ArcShell:
             try:
                 self._scm = SCMClient(self._config.scm)
                 profile_label = self._config.profile_name
-                client_id     = self._config.scm.client_id or "(bearer token)"
                 tsg_id        = self._config.scm.tsg_id or "n/a"
                 console.print(
                     f"[green]✓[/green] SCM connected  "
-                    f"[dim](profile: {profile_label}  |  TSG: {tsg_id})[/dim]"
-                    f"  — Version: {__version__}"
+                    f"[dim]profile:[/dim] [bold]{profile_label}[/bold]  "
+                    f"[dim]|  TSG:[/dim] [cyan]{tsg_id}[/cyan]"
+                    f"  [dim]v{__version__}[/dim]"
                 )
             except Exception as exc:
                 console.print(f"[yellow]⚠[/yellow] SCM unavailable: {exc}")
@@ -1079,7 +1079,7 @@ class ArcShell:
             "  [dim](all API calls scoped to this folder — change with 'folder <name>')[/dim]"
         )
         active_tsg = self._state.tsg_id or "(root / config default)"
-        console.print(f"[bold cyan]TSG:[/bold cyan] {active_tsg}")
+        console.print(f"[bold cyan]TSG:[/bold cyan] [cyan]{active_tsg}[/cyan]")
 
         # Show active profile — always useful to see which account you are on.
         profile_name = self._config.profile_name
@@ -1550,7 +1550,8 @@ class ArcShell:
                 client_id    = new_cfg.scm.client_id or "(bearer token)"
                 console.print(
                     f"[green]✓[/green] Switched to profile [bold]{target}[/bold]  "
-                    f"[dim]({device_count} device(s) — {client_id}  TSG: {new_cfg.scm.tsg_id})[/dim]"
+                    f"[dim]|  TSG:[/dim] [cyan]{new_cfg.scm.tsg_id}[/cyan]  "
+                    f"[dim]{device_count} device(s)[/dim]"
                 )
                 if device_count == 0:
                     console.print(
