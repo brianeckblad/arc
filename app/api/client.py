@@ -306,7 +306,11 @@ class SCMClient:
         """
         try:
             data = self._get_setup("/folders")
-            names = [f.get("name", "") for f in data.get("data", []) if f.get("name")]
+            names = [
+                f.get("name", "")
+                for f in data.get("data", [])
+                if self._is_folder_record(f) and f.get("name")
+            ]
             return names if names else ["Shared", "Global"]
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code in (403, 404):
@@ -364,7 +368,7 @@ class SCMClient:
         """
         try:
             data = self._get_setup("/folders")
-            return data.get("data", [])
+            return [f for f in data.get("data", []) if self._is_folder_record(f)]
         except (httpx.HTTPError, ValueError, TypeError):
             return []
 
@@ -443,11 +447,25 @@ class SCMClient:
         try:
             data = self._get_setup("/folders")
             for f in data.get("data", []):
-                if f.get("name") == folder_name:
+                if self._is_folder_record(f) and f.get("name") == folder_name:
                     return f
             return None
         except (httpx.HTTPError, ValueError, TypeError):
             return None
+
+    @staticmethod
+    def _is_folder_record(record: dict) -> bool:
+        """Return True when a /folders entry is an actual folder/container record.
+
+        Some SCM tenants return managed-device entries in the /folders payload
+        (type: on-prem). Those are valid context targets for devices, but they
+        are not valid folder parents for folder-creation flows.
+        """
+        record_type = str(record.get("type") or "").lower()
+        if not record_type:
+            # Legacy/default entries without explicit type are treated as folders.
+            return True
+        return record_type == "container"
 
     def create_folder(self, name: str, parent: str) -> dict:
         """Create a new folder under the given parent folder.

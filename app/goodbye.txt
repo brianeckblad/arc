@@ -1,0 +1,14 @@
+## ARC goodbye lines (one random line shown on exit)
+Goodbye. Remember: it's always DNS.
+Goodbye. Seriously, it's always DNS.
+Goodbye. Layer 8 issue detected.
+Goodbye. Did you try no shutdown?
+Goodbye. Blame the ISP.
+Goodbye. That was definitely not our fault.
+Goodbye. Packet loss is a state of mind.
+Goodbye. This session has been rate-limited.
+Goodbye. QoS deprioritized you.
+Goodbye. No carrier detected.
+Goodbye. Routing table flushed (emotionally).
+Goodbye. Thanks for all the fish.
+

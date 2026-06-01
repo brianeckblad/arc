@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 # ---------------------------------------------------------------------------
-# ARC pre-commit hook — auto-bump version on every commit.
+# ARC pre-commit hook
+#
+# 1. Auto-bump version on every commit.
+# 2. Run smoke_test.py — blocks the commit if any check fails.
 #
 # Format: 0.1.<N>  where N = total commit count after this commit lands.
 #
-# Files updated:
+# Files updated by version bump:
 #   app/__init__.py  — runtime __version__ (read by the shell at startup)
 #   pyproject.toml   — package version (kept in sync for pip/uv installs)
 #
@@ -13,6 +16,20 @@
 # ---------------------------------------------------------------------------
 set -e
 
+# ---------------------------------------------------------------------------
+# Step 1 — smoke tests (alignment + imports + registry + types + formatter)
+# ---------------------------------------------------------------------------
+echo "[arc] running smoke tests…"
+python3 dev/smoke_test.py --quiet
+if [ $? -ne 0 ]; then
+    echo "[arc] ✗ smoke tests failed — commit blocked"
+    exit 1
+fi
+echo "[arc] ✓ smoke tests passed"
+
+# ---------------------------------------------------------------------------
+# Step 2 — version bump
+# ---------------------------------------------------------------------------
 COUNT=$(git rev-list --count HEAD 2>/dev/null || echo 0)
 NEXT=$((COUNT + 1))
 VERSION="0.1.${NEXT}"

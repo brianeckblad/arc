@@ -53,12 +53,11 @@ Short forms are the primary triggers. Longer natural-language forms still work.
 | `wipe` / `clear memory` / `start fresh` / `forget everything` | Truncate `SESSION.md` (keep the header template), confirm what was cleared. |
 | `arc` / `archive memory` | Move all session entries to `SESSION.archive.md`, then clear. |
 | `gitp` / `git push` / `commit and push` | Stage all changes (`git add -A`), commit with a generated message, push to `origin/main`, then print the server update command (see below). |
-| `ucp` / `update copilot instructions` / `update instructions` | Review what was just built or decided in this session and append or update the relevant rules, patterns, and architecture notes in `.github/copilot-instructions.md`. Confirm what was added/changed. |
-| `synca` / `sync agents` / `sync instructions` | Copy all rules, trigger phrases, and architecture notes from `.github/copilot-instructions.md` into `AGENTS.md` so both files are identical in content. Confirm what was updated. |
-| `evala` / `evaluate agents` / `evaluate instructions` | Evaluate AI instruction files for clean general vs app-specific separation. Move reusable practices to Part 1, app-only facts to Part 2, then run `synca`. |
+| `cpi` / `update cpi` / `update copilot instructions` / `update instructions` | Review what was built or decided and update both `.github/copilot-instructions.md` and `AGENTS.md` so they stay in sync. Confirm what changed in each file. |
+| `evala` / `evaluate agents` / `evaluate instructions` | Evaluate AI instruction files for clean general vs app-specific separation, then ensure `.github/copilot-instructions.md` and `AGENTS.md` are synced. |
 | `agi` / `read agent instructions` / `read copilot instructions` | Read `.github/copilot-instructions.md` and `AGENTS.md` in full, then confirm they have been loaded into context. |
 
-A short trigger (`ck`, `ctx`, `wipe`, `arc`, `gitp`, `ucp`, `synca`, `evala`, `agi`) is a command only when it is the
+A short trigger (`ck`, `ctx`, `wipe`, `arc`, `gitp`, `cpi`, `evala`, `agi`) is a command only when it is the
 entire user message. Inside a longer sentence, treat it as normal text.
 
 ### SESSION.md structure
@@ -108,15 +107,15 @@ When the user says `gitp` (or any natural-language equivalent):
 cd deployment && ansible-playbook playbooks/update.yml --vault-password-file ~/.vault_pass
 ```
 
-### `synca` — Sync AGENTS.md with Copilot Instructions
+### `cpi` — Update Copilot + Agent Instructions Together
 
-When the user says `synca` (or any natural-language equivalent):
+When the user says `cpi` / `update cpi` (or natural-language equivalent):
 
-1. Read `.github/copilot-instructions.md` (the source of truth).
-2. Read `AGENTS.md` to identify sections that are out of date or missing.
-3. Update `AGENTS.md` to match — trigger table, architecture notes, rules, and any new patterns added via `ucp`.
-4. Keep the `AGENTS.md` header (`# Agent Operational Guidelines`) and its opening note pointing back to this file.
-5. Confirm in chat what sections were updated.
+1. Read `.github/copilot-instructions.md` and `AGENTS.md`.
+2. Apply required instruction updates to `.github/copilot-instructions.md`.
+3. Apply the same updates to `AGENTS.md` so content stays aligned.
+4. Keep the `AGENTS.md` header (`# Agent Operational Guidelines`) and opening source-of-truth note intact.
+5. Confirm exactly what changed in each file.
 
 ### `evala` — Evaluate Agent Instructions for General/App Separation
 
@@ -129,8 +128,8 @@ When the user says `evala` (or any natural-language equivalent):
 3. Move generalizable practices into **Part 1 — General Workflow**.
 4. Move project-only facts into **Part 2 — App-specific**.
 5. Remove duplicates, stale rules, and contradictions while preserving useful project facts.
-6. Run `synca` afterward so `AGENTS.md` matches `.github/copilot-instructions.md`.
-7. Confirm what moved from app-specific → general, what moved from general → app-specific, and what was removed.
+6. Ensure `.github/copilot-instructions.md` and `AGENTS.md` end in sync after the move.
+7. Confirm what moved from app-specific → general, what moved from general → app-specific, what was removed, and that both files were synced.
 
 ### Proactively offer to checkpoint when
 
@@ -341,17 +340,37 @@ function closeAllModals() {
 - Start from clear requirements; if scope is ambiguous, propose small options before implementing.
 - Prefer small, focused edits that preserve existing behavior unless a change is requested.
 - Keep naming and structure consistent with the current codebase.
-- There is no smoke test — validate Python changes with `python3 -m py_compile` and JS changes with `node --check`.
+- **Always run `python dev/smoke_test.py` after any change to `app/`.** It covers syntax, imports, registry integrity, arg parser, config types, formatter, CLI banner alignment, inline-help alignment, and theme wiring in one pass.
 - Highlight risks, assumptions, and missing data explicitly instead of silently guessing.
 - Optimize for maintainability: straightforward code paths, minimal side effects, clear data ownership.
 
+### smoke_test.py — maintenance rules
+
+`smoke_test.py` lives at the project root and runs automatically in the pre-commit hook.
+
+| Trigger | Required action |
+|---------|----------------|
+| New command added to a `COMMANDS` dict | No change needed — registry tests auto-discover it |
+| New formatter function added | Add a minimal call in **section 6** of `dev/smoke_test.py` |
+| CLI banner lines changed (`_print_banner` in `shell.py`) | Update `_BANNER_LINES` in **section 7** of `dev/smoke_test.py` — the test will catch mismatches and print exactly what to change |
+| New module added under `app/` | No change needed — syntax and import tests auto-discover it |
+| New `SCMConfig` / `ArcConfig` field with invariant | Add a case in **section 5** of `dev/smoke_test.py` |
+| New theme key added to `ArcTheme` | Add a display label to `THEME_KEYS` in `app/theme.py`; add to **section 9** if there is an invariant |
+| Builtin command added/removed in `_print_shell_builtins` | Update `_BUILTIN_NAMES` in **section 8** of `dev/smoke_test.py` — the test will catch mismatches |
+
+The test is intentionally lightweight — no mocking, no network, no auth. It validates structure and wiring, not API behavior.
+
 ---
 
-## Senior Engineering Standards — Junior-Readable Code
+## Senior Engineering Standards — Senior Network/Firewall Engineering, Junior-Readable Code
 
 Write code the next developer can safely modify, even if they are new to the
 project. Senior-quality code is simple, explicit, tested, and boring in the best
 way.
+
+For ARC specifically, write as if the reviewer is a junior engineer learning
+network operations and firewall workflows. Keep implementation details concrete,
+and make control flow easy to map to operator intent.
 
 - **Clarity beats cleverness** — prefer obvious control flow over compressed tricks.
 - **Name by domain meaning** — use names that explain what a value represents, not its type (`listing_status`, not `data`).
@@ -362,6 +381,42 @@ way.
 - **Prefer boring dependencies** — choose stdlib or already-present libraries unless a new dependency clearly pays for itself.
 - **Leave the code easier to review** — small diffs, focused functions, no unrelated formatting churn.
 - **Teach through structure** — when code has a pattern, extract a helper or registry so junior devs can follow one example.
+- **Explain function intent briefly** — each non-trivial function should have 1-3 sentences describing purpose, inputs/outputs, and side effects.
+- **Document variable groups, not every variable** — when related state variables work together, add a short block-level note or table describing ownership and lifecycle.
+
+### Quick readability pattern for stateful code
+
+Use this lightweight table style when a function or module has multiple related
+state values:
+
+| Group | Owns | Meaning | Updated by |
+|---|---|---|---|
+| Pending action state | `pending_*` fields | Tracks current user-confirm flow | confirm/cancel handlers |
+| Device context | `device`, `folder`, `tsg_id` | Active execution scope for API/SSH | `cd`, `folder`, `tsg` commands |
+
+Keep entries short; this is a navigation aid, not full API documentation.
+
+### Mini example — function intent + grouped state note
+
+```python
+# BAD — no intent, unclear state ownership
+def run(ctx, args):
+    x = None
+    y = None
+    ...
+
+# GOOD — brief function intent + grouped state context
+def run(ctx: ExecutionContext, args: dict) -> None:
+    """Execute a folder-scoped action and print a user-facing status line.
+
+    Inputs: execution context and parsed command args.
+    Side effects: updates pending action state and writes to console output.
+    """
+    # Pending action state: owned by confirm/cancel flow in this command path.
+    pending_action = None
+    pending_target = None
+    ...
+```
 
 ### Definition of done for code changes
 
@@ -605,6 +660,8 @@ arc/
 ├── run.py                          ← dev entry point (python run.py)
 ├── config/
 │   └── config.example.json         ← credential template (copy to ~/.arc/config.json)
+├── dev/
+│   └── smoke_test.py               ← developer smoke suite (run: python dev/smoke_test.py)
 ├── docs/                           ← user-facing Markdown rendered by ARC help
 │   ├── README.md                   ← help overview
 │   ├── usage.md                    ← user workflows
@@ -613,10 +670,13 @@ arc/
 │   └── commands/                   ← one Markdown file per shell/registered command
 └── app/
     ├── __init__.py                 ← package version
+    ├── banner.txt                  ← startup banner (Rich markup; ## lines are comments)
     ├── cli.py                      ← typer app: arc / arc auth / arc scm / arc docs
+    ├── cli_theme.json              ← editable CLI colour roles (edited via `configure` + `cli color`)
     ├── config.py                   ← ArcConfig dataclasses + load_config() / save_config()
     ├── docs.py                     ← docs/ Markdown loader for `help <topic>` and browser opener
     ├── shell.py                    ← ArcShell REPL (prompt_toolkit)
+    ├── theme.py                    ← ArcTheme dataclass + load/save/reset helpers
     ├── api/
     │   └── client.py               ← SCMClient (REST only)
     ├── ssh/
@@ -756,8 +816,8 @@ COMMANDS: dict[str, CommandDef] = {
 3. Add `CommandDef` entry with explicit `scope=` to that module's `COMMANDS` dict.
 4. Add or update `docs/commands/<command-slug>.md` so `help <command>` works.
 5. Add renderer in `formatter.py` if needed; add dispatch case in `ArcShell._render()`.
-6. Validate: `python -m py_compile app/commands/registry.py app/shell.py app/docs.py`.
-7. Smoke-test: `printf 'help your new command\nyour new command\nexit\n' | arc`.
+6. Run `python smoke_test.py` — registry tests auto-pick up the new command; add a formatter call to section 6 if a new renderer was added.
+7. Smoke-test interactively: `printf 'help your new command\nyour new command\nexit\n' | arc`.
 
 ---
 
@@ -805,11 +865,45 @@ Handled directly in `ArcShell._dispatch()` before the registry is consulted:
 | `ls` / `devices` | List managed devices under the current folder and refresh the device cache. |
 | `pwd` | Print current device, SSH credential status, and active SCM folder. |
 | `folder <name>` | Set `ShellState.folder` (used by all SCM API calls). **Tab** after `folder ` lists available SCM folders. |
+| `configure` | Enter configure mode. Prompt changes to `#` (for example `arc:global #`). |
+| `cli` | Configure-mode CLI theme operations. `cli show`, `cli color <key> <style>`, `cli reset`. |
 | `?` / `help` | Print the full command reference. |
 | `help <topic>` | Render Markdown from `docs/` inside the CLI. |
 | `docs` | Open `docs/README.md` in the default browser. |
 | `clear` | Clear the terminal. |
 | `--remote` | Not listed as a shell command. It appears only as a completion suffix while typing a registered command and runs that one command remotely. |
+
+---
+
+### CLI Theme System
+
+ARC's colour roles are stored in `app/cli_theme.json` and loaded at shell startup into `ArcTheme` (defined in `app/theme.py`). Every colour value is a Rich markup style string (e.g. `"cyan"`, `"bold yellow"`, `"dim"`).
+
+**Theme keys:**
+
+| Key | Default | Controls |
+|-----|---------|----------|
+| `command_name` | `cyan` | Command names in `?` help output |
+| `section_header` | `bold yellow` | Section headers (GLOBAL / FOLDER / DEVICE / SHELL) |
+| `section_header_locked` | `dim bold` | DEVICE section header when no device is active |
+| `description` | *(empty — plain)* | Description text beside commands |
+| `description_dim` | `dim` | Dim/secondary text and context annotations |
+| `banner_logo` | `bold cyan` | Default style tag written into `app/banner.txt` |
+| `banner_subtitle` | `dim` | Default style tag for subtitle line in `app/banner.txt` |
+
+**Editing colours:**
+- **In-shell:** `configure` then `cli color <key> <style>` — saved immediately to `app/cli_theme.json`
+- **Direct file edit:** open `app/cli_theme.json` and change any value
+- **Reset:** `configure` then `cli reset` — restores all keys to defaults
+
+**`app/banner.txt`** is the single source of truth for the startup banner. It contains Rich markup tags directly (e.g. `[bold cyan]...[/bold cyan]`). Lines starting with `##` are comments stripped before printing. Add a blank line for spacing, a legal notice, or change the logo colour — all without touching Python code.
+
+**Rules for adding a new theme key:**
+1. Add the field to `ArcTheme` in `app/theme.py` with a default value.
+2. Add a display label to `THEME_KEYS` in `app/theme.py`.
+3. Use `self._styled(text, self._theme.<key>)` wherever the colour is applied in `shell.py`.
+4. Add a case in **section 9** of `dev/smoke_test.py` if there is an invariant to check.
+5. Run `python dev/smoke_test.py` to verify.
 
 ---
 
@@ -833,6 +927,13 @@ ARC has two distinct help modes:
 
 **`?` is always the quick inline reference — never show elaborate panels for bare `?`.**
 
+**Strict context-aware rule:** `?` must only list commands that are executable in the current context and mode.
+Do not show unavailable/locked commands in the inline list.
+
+**Progressive collapse rule:** prefix help must show only the next valid token(s), not a full dump of matching command strings.
+Examples: `show jobs ?` -> `all`, `id`; `show device ?` -> `<enter>`, `snippets`, `devices`.
+This applies to bare tiered `?` too: each tier should show top-level next tokens (for example `show`, `commit`) rather than full leaf command lines.
+
 The inline `?` output is organized in three tiers with plain section headers:
 
 | Tier | Label | Commands shown |
@@ -845,6 +946,13 @@ The inline `?` output is organized in three tiers with plain section headers:
 Footer line always shown: `<command> help  → docs  |  help all → full reference`
 
 `help all` bypasses tiers and shows the full unfiltered reference.
+
+Availability examples:
+- `scope="device"` commands appear only when a device is selected
+- `commit` appears only in configure mode
+- `folder create <name>` and `cli ...` appear only in configure mode
+- In configure mode, bare `?` shows configure workflow commands plus read-only `show ...` navigation stems
+- In configure mode, bare `?` shows only configure-relevant commands (for ARC this means configure workflow commands, not full read-only operational listings)
 
 #### Prompt reflects context tier
 
@@ -881,6 +989,20 @@ non-Shared folder that the operator explicitly navigated to.
 
 When adding any new built-in or registered command, explicitly decide its scope and enforce it. Do not add a command and leave scope as an afterthought.
 
+#### Configure mode owns all write/change operations
+
+ARC uses a Cisco-style configure mode for mutating operations.
+
+| Rule | Enforcement |
+|---|---|
+| Enter configure mode | `configure` switches prompt to `#` (`conf` resolves to `configure` via shorthand expansion) |
+| Write operations outside configure mode | Must be blocked with a clear message |
+| `folder create <name>` | Allowed only in configure mode |
+| `commit` | Allowed only in configure mode |
+| CLI theme writes (`cli color`, `cli reset`) | Allowed only in configure mode |
+
+Use `exit` to leave configure mode and return to the normal prompt.
+
 #### Tab completion is context-aware
 
 | User types | Tab shows |
@@ -894,6 +1016,23 @@ When adding any new built-in or registered command, explicitly decide its scope 
 | `show system info --` | `--remote` suffix for running that single command remotely |
 
 Device and folder caches are populated at startup when SCM is configured. Both caches refresh on `ls` / `devices`.
+
+#### Unambiguous shorthand (Cisco-style)
+
+ARC accepts token-prefix shorthand when (and only when) the prefix resolves to exactly one command.
+
+| User input | Result |
+|-----------|--------|
+| `e` | Runs `exit` (unique match) |
+| `q` | Runs `quit` (unique match) |
+| `sh sec pol` | Runs `show security policy` |
+| `d` | **No expansion** (ambiguous: `docs` vs `devices`) |
+
+Rules:
+- Expansion applies to shell built-ins and registered command keys.
+- Matching is token-wise prefix (`sh sec pol` → `show security policy`).
+- Ambiguous prefixes are never auto-expanded.
+- Tab completion remains available; shorthand-on-Enter is an additional convenience.
 
 #### Interactive SSH model
 

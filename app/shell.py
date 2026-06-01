@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import random
 import select
 import shutil
 import signal
@@ -11,6 +12,7 @@ import time
 import traceback
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Optional
 
 # termios / tty are Unix-only.  On Windows the interactive PTY session will
@@ -44,11 +46,65 @@ from app.commands.registry import (
 from app.config import ArcConfig, list_profiles, load_config, set_active_profile
 from app.docs import available_help_topics, open_docs_in_browser, render_help_topic
 from app.ssh.manager import SSHManager
+from app.theme import ArcTheme, THEME_KEYS, load_theme, reset_theme, save_theme
 from app.utils import formatter as fmt
 
 console = Console()
 
 HISTORY_FILE = os.path.join(platformdirs.user_data_dir("arc"), "history")
+GOODBYE_FILE = Path(__file__).parent / "goodbye.txt"
+
+# Width of the command column in all inline help output.
+# All sections (GLOBAL / FOLDER / DEVICE / SHELL) use the same value so
+# descriptions land on the same visual column regardless of indent level.
+# 4-space-indented tiers: 4 + _HELP_CMD_WIDTH = visual col 47
+# 2-space-indented (scoped / full ref): uses +2 → also visual col 47
+_HELP_CMD_WIDTH = 43
+
+# Shell built-ins accepted by the dispatcher/completer.
+_SHELL_BUILTINS: tuple[str, ...] = (
+    "cd", "remote", "connect", "docs",
+    "ls", "devices", "pwd",
+    "folder", "tsg", "account",
+    "configure", "cli",
+    "clear", "exit", "quit",
+    "help", "?",
+)
+
+
+def _expand_unambiguous_prefix(tokens: list[str], phrases: list[list[str]]) -> list[str]:
+    """Expand command-token prefixes when they resolve to exactly one phrase.
+
+    Example:
+        ["e"]            -> ["exit"]
+        ["sh", "sec", "pol"] -> ["show", "security", "policy"]
+
+    Rules:
+      - Match is token-wise prefix.
+      - Longest consumed-prefix length wins.
+      - Expansion occurs only when exactly one phrase matches.
+      - Ambiguous prefixes are left unchanged.
+    """
+    if not tokens:
+        return tokens
+
+    lowered = [t.lower() for t in tokens]
+    max_consumed = min(len(tokens), max((len(p) for p in phrases), default=0))
+
+    for consumed in range(max_consumed, 0, -1):
+        prefix = lowered[:consumed]
+        matches: list[list[str]] = []
+        for phrase in phrases:
+            if len(phrase) < consumed:
+                continue
+            if all(phrase[i].startswith(prefix[i]) for i in range(consumed)):
+                matches.append(phrase)
+
+        if len(matches) == 1:
+            expanded = matches[0] + tokens[consumed:]
+            return expanded
+
+    return tokens
 
 
 # ---------------------------------------------------------------------------
@@ -114,6 +170,27 @@ class ArcCompleter(Completer):
             for folder in self._shell._state.folders_cache:
                 if folder.lower().startswith(partial_arg.lower()):
                     yield Completion(folder, start_position=-len(partial_arg))
+            return
+
+        # ---- configure → mode-entry completion ----
+        if first == "configure" and has_arg_space:
+            for sub in ("t", "terminal"):
+                if sub.startswith(partial_arg.lower()):
+                    yield Completion(sub, start_position=-len(partial_arg))
+            return
+
+        # ---- cli → theme operations in configure mode ----
+        if first == "cli" and has_arg_space:
+            second = parts[1].lower() if len(parts) > 1 else ""
+            if len(parts) <= 2:
+                for sub in ("show", "color", "reset"):
+                    if sub.startswith(partial_arg.lower()):
+                        yield Completion(sub, start_position=-len(partial_arg))
+            elif second == "color" and len(parts) <= 3:
+                partial_key = parts[2] if len(parts) > 2 else ""
+                for key in THEME_KEYS:
+                    if key.startswith(partial_key.lower()):
+                        yield Completion(key, start_position=-len(partial_key))
             return
 
         # ---- account → profile name completion ----
@@ -220,16 +297,11 @@ class ArcCompleter(Completer):
         include_remote_suffix = " --" in text
         for name in sorted(self._all_commands(include_remote_suffix=include_remote_suffix)):
             if name.startswith(text):
-                yield Completion(name[len(text):], start_position=0)
+                # Show full candidates in the menu instead of suffix fragments.
+                yield Completion(name, start_position=-len(text))
 
     def _all_commands(self, include_remote_suffix: bool) -> list[str]:
-        builtins = [
-            "cd", "remote", "connect", "docs",
-            "ls", "devices", "pwd",
-            "folder", "tsg", "account",
-            "clear", "exit", "quit",
-            "help", "?",
-        ]
+        builtins = list(_SHELL_BUILTINS)
         commands = list(COMMANDS.keys())
         if not include_remote_suffix:
             return builtins + commands
@@ -280,6 +352,7 @@ def _make_key_bindings() -> KeyBindings:
 class ShellState:
     device: Optional[dict] = None
     folder: str = "Shared"
+    configure_mode: bool = False
     # Active TSG ID — overrides the value from ArcConfig when set.
     # Useful when a bearer token was issued at the root and the user needs
     # to work within a specific child TSG without re-authenticating.
@@ -309,6 +382,12 @@ class ArcShell:
         self._scm: Optional[SCMClient] = None
         self._ssh = SSHManager()
 
+        # Load CLI theme (colours for ? help, banner, etc.)
+        self._theme: ArcTheme = load_theme()
+
+        # Print banner before init so the logo appears above the SCM connection line.
+        self._print_banner()
+        self._print_startup_help()
         self._init_clients()
 
         # Prompt session
@@ -330,20 +409,36 @@ class ArcShell:
         if self._config.scm.is_configured:
             try:
                 self._scm = SCMClient(self._config.scm)
-                profile_label = self._config.profile_name
-                tsg_id        = self._config.scm.tsg_id or "n/a"
+                tsg_id = self._config.scm.tsg_id or "n/a"
+
+                # Derive a human-readable identity label:
+                #   1. client_id present → strip the @domain suffix (e.g. "pa-api-beckblad")
+                #   2. non-default named profile → use the profile name
+                #   3. default single profile with no client_id → omit the label entirely
+                client_id = self._config.scm.client_id
+                if client_id:
+                    identity = client_id.split("@")[0]
+                elif self._config.profile_name != "default":
+                    identity = self._config.profile_name
+                else:
+                    identity = None
+
+                identity_part = (
+                    f"  [dim]account:[/dim] [bold]{identity}[/bold]"
+                    if identity else ""
+                )
                 console.print(
-                    f"[green]✓[/green] SCM connected  "
-                    f"[dim]profile:[/dim] [bold]{profile_label}[/bold]  "
-                    f"[dim]|  TSG:[/dim] [cyan]{tsg_id}[/cyan]"
+                    f"[green]✓[/green] SCM connected"
+                    f"{identity_part}"
+                    f"  [dim]TSG:[/dim] [cyan]{tsg_id}[/cyan]"
                     f"  [dim]v{__version__}[/dim]"
                 )
             except Exception as exc:
-                console.print(f"[yellow]⚠[/yellow] SCM unavailable: {exc}")
+                console.print(f"[red]✗[/red] SCM not connected: {exc}")
 
         if not self._scm:
             console.print(
-                "[yellow]⚠  No API backend configured.[/yellow] "
+                "[red]✗[/red] [red]SCM not connected.[/red] "
                 "Commands will fail unless you use [bold]remote <device>[/bold] or "
                 "[bold]--remote[/bold] with SSH credentials, "
                 "or set SCM credentials and restart.\n"
@@ -369,14 +464,18 @@ class ArcShell:
         # Report what was actually loaded so users know their access level.
         parts: list[str] = []
         if self._state.devices_cache:
-            parts.append(f"{len(self._state.devices_cache)} device(s)")
-        if self._state.folders_cache and self._state.folders_cache != ["Shared", "Global"]:
-            parts.append(f"{len(self._state.folders_cache)} folder(s)")
+            device_count = len(self._state.devices_cache)
+            connected_count = sum(1 for d in self._state.devices_cache if d.get("is_connected") is True)
+            disconnected_count = sum(1 for d in self._state.devices_cache if d.get("is_connected") is False)
+            parts.append(
+                f"{device_count} device(s), ([green]{connected_count}[/green])[dim]connected[/dim], "
+                f"([red]{disconnected_count}[/red])[dim]disconnected[/dim]"
+            )
         if self._state.tsgs_cache:
-            parts.append(f"{len(self._state.tsgs_cache)} TSG(s)")
+            parts.append(f"({len(self._state.tsgs_cache)})[dim]TSG(s)[/dim]")
 
         if parts:
-            console.print(f"[dim]Loaded: {', '.join(parts)}[/dim]")
+            console.print(f"[dim]Loaded:[/dim] {', '.join(parts)}")
         else:
             console.print(
                 "[dim]API connected — device/folder list not available with this service "
@@ -404,6 +503,7 @@ class ArcShell:
         """
         folder    = self._state.folder or "Shared"
         at_shared = folder.lower() == "shared"
+        prompt_tail = " # " if self._state.configure_mode else " > "
 
         if self._state.device:
             name = self._state.device.get("hostname") or self._state.device.get("name") or "device"
@@ -413,14 +513,14 @@ class ArcShell:
                     f"<arc>arc</arc>"
                     f"<sep>:</sep><device>{name}</device>"
                     f"<sep>:</sep><ctx>device</ctx>"
-                    f"<arrow> > </arrow>"
+                    f"<arrow>{prompt_tail}</arrow>"
                 )
             # Device selected and in a specific folder — show both
             return HTML(
                 f"<arc>arc</arc>"
                 f"<sep>:</sep><device>{name}</device>"
                 f"<sep>:</sep><folder>{folder}</folder>"
-                f"<arrow> > </arrow>"
+                f"<arrow>{prompt_tail}</arrow>"
             )
 
         if at_shared:
@@ -428,14 +528,14 @@ class ArcShell:
             return HTML(
                 f"<arc>arc</arc>"
                 f"<sep>:</sep><ctx>global</ctx>"
-                f"<arrow> > </arrow>"
+                f"<arrow>{prompt_tail}</arrow>"
             )
 
         # No device but in a specific folder — folder context
         return HTML(
             f"<arc>arc</arc>"
             f"<sep>:</sep><folder>{folder}</folder>"
-            f"<arrow> > </arrow>"
+            f"<arrow>{prompt_tail}</arrow>"
         )
 
     # ------------------------------------------------------------------
@@ -443,7 +543,6 @@ class ArcShell:
     # ------------------------------------------------------------------
 
     def run(self) -> None:
-        self._print_banner()
         while True:
             try:
                 # Re-seed the prompt with any prefix saved by a '?' context-help lookup
@@ -484,6 +583,23 @@ class ArcShell:
         if not tokens:
             return False
 
+        # Cisco-style shorthand expansion:
+        #   e            -> exit
+        #   sh sec pol   -> show security policy
+        # Expansion occurs only when a prefix resolves to exactly one command.
+        phrases = [[b] for b in _SHELL_BUILTINS if b != "?"] + [k.split() for k in COMMANDS]
+
+        # Expand the command/topic portion before trailing "help".
+        if len(tokens) >= 2 and tokens[-1].lower() == "help":
+            tokens = _expand_unambiguous_prefix(tokens[:-1], phrases) + ["help"]
+
+        # Expand prefix before '?' context help trigger.
+        if "?" in tokens:
+            qidx = tokens.index("?")
+            tokens = _expand_unambiguous_prefix(tokens[:qidx], phrases) + tokens[qidx:]
+        else:
+            tokens = _expand_unambiguous_prefix(tokens, phrases)
+
         # "<command> help" — trailing 'help' opens the full docs page for that command.
         # This must be checked before any individual builtin dispatcher so that
         # e.g. "cd help" shows docs instead of treating "help" as a device name.
@@ -510,6 +626,10 @@ class ArcShell:
 
         # ---- exit / quit ----
         if cmd in ("exit", "quit"):
+            if self._state.configure_mode:
+                self._state.configure_mode = False
+                console.print("[cyan]Exited configure mode.[/cyan]")
+                return False
             return True
 
 
@@ -550,6 +670,14 @@ class ArcShell:
             self._cmd_account(tokens[1:])
             return False
 
+        if cmd == "configure":
+            self._cmd_configure(tokens[1:])
+            return False
+
+        if cmd == "cli":
+            self._cmd_cli(tokens[1:])
+            return False
+
         if cmd in ("help", "?"):
             rest = tokens[1:]
             if rest and rest[0].lower() == "all":
@@ -576,6 +704,11 @@ class ArcShell:
                 return False
             url = open_docs_in_browser()
             console.print(f"[green]Docs opened in browser:[/green] {url}")
+            return False
+
+        # Convenience alias: show folder / show folders
+        if cmd == "show" and len(tokens) > 1 and tokens[1].lower() in ("folder", "folders"):
+            self._cmd_folder([])
             return False
 
         # ---- Registry commands ----
@@ -1109,6 +1242,12 @@ class ArcShell:
         # Subcommand: folder create <name>
         if args and args[0].lower() == "create":
             folder_name = args[1] if len(args) > 1 else None
+            if not self._state.configure_mode:
+                console.print(
+                    "[yellow]Write operation blocked:[/yellow] folder creation requires configure mode.\n"
+                    "  Enter [bold]configure[/bold] first, then run [bold]folder create <name>[/bold]."
+                )
+                return
             self._cmd_folder_create(folder_name)
             return
 
@@ -1371,62 +1510,54 @@ class ArcShell:
         )
 
         if not has_client_creds:
-            # Bearer-token-only mode: record context change, clear stale
-            # device/folder state from the old TSG, then refresh caches.
+            # Bearer-token-only mode: we cannot mint a new token scoped to a
+            # different TSG. Keep a local context switch so operators can still
+            # organize state, but make it explicit that API visibility may not
+            # actually change until re-auth with client credentials.
             self._state.tsg_id = new_tsg
             self._state.device = None
             self._state.folder = self._config.default_folder
             self._state.devices_cache = []
             self._state.folders_cache = ["Shared", "Global"]
-            console.print(f"[dim]Refreshing caches for TSG {new_tsg}…[/dim]")
+            self._state.tsgs_cache = []
             self._refresh_devices(silent=True)
             self._refresh_folders(silent=True)
-            device_count = len(self._state.devices_cache)
+            self._refresh_tsgs(silent=True)
             console.print(
-                f"[cyan]TSG context set to:[/cyan] [bold]{new_tsg}[/bold]  "
-                f"({device_count} device(s) visible)\n"
-                "[dim]Bearer token used as-is — SCM enforces TSG-level access.[/dim]"
+                f"[yellow]⚠[/yellow] Set active TSG to [bold]{new_tsg}[/bold] in bearer-token mode.\n"
+                "  [dim]To fully re-scope API access, configure OAuth client credentials and restart ARC.[/dim]"
             )
-            if device_count == 0:
-                console.print(
-                    "[yellow]No devices visible in this TSG.[/yellow]  "
-                    "[dim]cd and device-scope commands unavailable here — "
-                    "use [bold]tsg <id>[/bold] to switch to a TSG with devices.[/dim]"
-                )
             return
 
-        # OAuth mode: re-authenticate with the new TSG scope.
-        console.print(f"[dim]Re-authenticating with TSG {new_tsg}…[/dim]")
-        # Clear stale context immediately so nothing from the old TSG leaks.
-        self._state.tsg_id = new_tsg
-        self._state.device = None
-        self._state.folder = self._config.default_folder
+        # OAuth client credentials available — perform a real token re-scope.
         try:
-            if self._scm:
-                self._scm.reauthenticate(new_tsg)
-            else:
-                import copy  # Deferred: avoids circular import
-                new_scm_cfg = copy.copy(self._config.scm)
-                new_scm_cfg.tsg_id = new_tsg
-                self._scm = SCMClient(new_scm_cfg)
+            if not self._scm:
+                self._scm = SCMClient(self._config.scm)
+            self._scm.reauthenticate(new_tsg)
 
-            # Refresh all caches for the new TSG context.
-            console.print(f"[dim]Refreshing device and folder lists for TSG {new_tsg}…[/dim]")
+            # Commit new context
+            self._state.tsg_id = new_tsg
+            self._state.device = None
+            self._state.folder = self._config.default_folder
+            self._state.devices_cache = []
+            self._state.folders_cache = ["Shared", "Global"]
+            self._state.tsgs_cache = []
+
+            # Refresh caches for the new tenant scope.
             self._refresh_devices(silent=True)
             self._refresh_folders(silent=True)
             self._refresh_tsgs(silent=True)
 
-            device_count = len(self._state.devices_cache)
             console.print(
-                f"[green]✓[/green] Switched to TSG [bold]{new_tsg}[/bold]  "
-                f"({device_count} device(s) visible)"
+                f"[green]✓[/green] Switched active TSG to [bold]{new_tsg}[/bold]  "
+                f"[dim]{len(self._state.devices_cache)} device(s), {len(self._state.folders_cache)} folder(s)[/dim]"
             )
-            if device_count == 0:
+            if not self._state.devices_cache:
                 console.print(
                     "[yellow]No devices visible in this TSG.[/yellow]  "
-                    "[dim]cd and device-scope commands unavailable here — "
-                    "use [bold]tsg <id>[/bold] to switch to a TSG with devices.[/dim]"
+                    "[dim]Use [bold]tsg[/bold] to list alternatives or verify account permissions.[/dim]"
                 )
+
         except Exception as exc:
             # Roll back fully on failure so context is consistent.
             self._state.tsg_id = previous_tsg
@@ -1576,6 +1707,90 @@ class ArcShell:
             )
 
     # ------------------------------------------------------------------
+    # Command: conf / configure
+    # ------------------------------------------------------------------
+
+    def _cmd_configure(self, args: list[str]) -> None:
+        """Enter configure mode (Cisco-style)."""
+        if args and args[0].lower() not in ("t", "terminal"):
+            console.print(
+                "[yellow]Usage:[/yellow] configure | conf | conf t\n"
+                "  Then use [bold]cli[/bold] for CLI theme operations in configure mode."
+            )
+            return
+
+        if self._state.configure_mode:
+            console.print("[dim]Already in configure mode.[/dim]")
+            return
+
+        # Enter from a predictable base context: arc:global #
+        self._state.configure_mode = True
+        self._state.device = None
+        self._state.folder = "Shared"
+        console.print(
+            "[green]Entered configure mode.  Write operations are enabled:[/green]"
+        )
+        console.print(
+            "[dim]  cli show  |  cli color <key> <style>  |  cli reset[/dim]"
+        )
+
+    def _cmd_cli(self, args: list[str]) -> None:
+        """Read/write CLI theme settings (configure mode only)."""
+        if not self._state.configure_mode:
+            console.print(
+                "[yellow]Write operation blocked:[/yellow] enter [bold]configure[/bold] mode first.\n"
+                "  Then use: [bold]cli show[/bold], [bold]cli color <key> <style>[/bold], [bold]cli reset[/bold]."
+            )
+            return
+
+        t = self._theme
+        sub = args[0].lower() if args else "show"
+
+        if sub == "show":
+            console.print()
+            console.print("  [bold]ARC CLI Theme[/bold]  [dim](app/cli_theme.json)[/dim]")
+            console.print()
+            for key, label in THEME_KEYS.items():
+                current = getattr(t, key)
+                display = self._styled(f"  {current or '(none)'}  ", current) if current else "[dim](none)[/dim]"
+                console.print(f"    [cyan]{key:<28}[/cyan] {display}  [dim]{label}[/dim]")
+            console.print()
+            console.print("  [dim]cli color <key> <style>  → change colour  |  cli reset  → defaults[/dim]")
+            console.print()
+            return
+
+        if sub == "color":
+            if len(args) < 2:
+                console.print(
+                    "[yellow]Usage:[/yellow] cli color <key> <style>\n"
+                    f"  Keys: {', '.join(THEME_KEYS)}"
+                )
+                return
+            key = args[1].lower()
+            if not hasattr(self._theme, key):
+                console.print(
+                    f"[yellow]Unknown theme key:[/yellow] {key!r}\n"
+                    f"  Valid keys: {', '.join(THEME_KEYS)}"
+                )
+                return
+            style = " ".join(args[2:])
+            setattr(self._theme, key, style)
+            save_theme(self._theme)
+            preview = self._styled(f"  {style or '(none)'}  ", style) if style else "[dim](none)[/dim]"
+            console.print(f"[green]✓[/green] {key} = {preview}  [dim](saved to app/cli_theme.json)[/dim]")
+            return
+
+        if sub == "reset":
+            self._theme = reset_theme()
+            console.print("[green]✓[/green] Theme reset to defaults  [dim](saved to app/cli_theme.json)[/dim]")
+            return
+
+        console.print(
+            f"[yellow]Unknown cli subcommand:[/yellow] {sub!r}\n"
+            "  Usage: cli show | cli color <key> <style> | cli reset"
+        )
+
+    # ------------------------------------------------------------------
     # Command: help
     # ------------------------------------------------------------------
 
@@ -1618,32 +1833,31 @@ class ArcShell:
         device_name = (
             (device.get("hostname") or device.get("name") or "device") if device else ""
         )
+        t = self._theme  # shorthand
 
         if prefix_tokens:
-            # Scoped listing: every registered command that begins with the prefix.
-            prefix = " ".join(prefix_tokens).lower()
-            matches = sorted(k for k in COMMANDS if k.startswith(prefix))
-            if matches:
+            options = self._collapsed_prefix_help_options(prefix_tokens)
+            if options:
                 console.print()
-                for k in matches:
-                    cmd_def = COMMANDS[k]
-                    ctx = self._context_annotation(k)
-                    console.print(
-                        f"  [cyan]{k:<45}[/cyan] {cmd_def.description}{ctx}"
-                    )
+                for token, desc in options:
+                    token_cell = self._styled(f"{token:<20}", t.command_name)
+                    if desc:
+                        console.print(f"  {token_cell} {desc}")
+                    else:
+                        console.print(f"  {token_cell}")
                 console.print()
                 console.print(
-                    "  [dim]Append [bold]help[/bold] to any command for full docs  "
-                    "— e.g. [bold]show address help[/bold][/dim]"
+                    f"  {self._styled('Use ? progressively: e.g. show jobs ? -> all | id', t.description_dim)}"
                 )
             else:
+                prefix = " ".join(prefix_tokens).lower()
                 _builtin_names = {
-                    "cd", "connect", "remote", "folder", "tsg",
+                    "cd", "connect", "remote", "folder", "tsg", "configure",
                     "ls", "devices", "pwd", "docs", "help", "clear", "exit", "quit",
                 }
                 if prefix in _builtin_names:
                     console.print(
-                        f"\n  [cyan]{prefix}[/cyan]  is a shell built-in.  "
+                        f"\n  {self._styled(prefix, t.command_name)}  is a shell built-in.  "
                         f"Type [bold]{prefix} help[/bold] for full docs.\n"
                     )
                 else:
@@ -1654,64 +1868,57 @@ class ArcShell:
             return
 
         # --- Bare ? or help — compact 3-tier listing ---
+        sh = t.section_header
+        dd = t.description_dim
+
         console.print()
 
-        # Tier 1: GLOBAL — always available
-        global_keys = sorted(k for k, c in COMMANDS.items() if c.scope == "global")
-        if global_keys:
-            console.print("  [bold yellow]GLOBAL[/bold yellow]  [dim]— always available[/dim]")
-            for k in global_keys:
-                c = COMMANDS[k]
-                console.print(f"    [cyan]{k:<43}[/cyan] {c.description}")
+        # Tier 1: GLOBAL — collapsed to concise stems (e.g. `show jobs`).
+        global_options = self._collapsed_tier_help_options(scope="global")
+        if global_options:
+            console.print(f"  {self._styled('GLOBAL', sh)}  {self._styled('— always available', dd)}")
+            for token, desc in global_options:
+                cmd_cell = self._styled(f"{token:<{_HELP_CMD_WIDTH}}", t.command_name)
+                desc_text = self._styled(desc, t.description) if (desc and t.description) else desc
+                console.print(f"    {cmd_cell} {desc_text}".rstrip())
 
-        # Tier 2: FOLDER — scoped to active folder
-        folder_keys = sorted(k for k, c in COMMANDS.items() if c.scope == "folder")
-        if folder_keys:
+        # Tier 2: FOLDER — collapsed to concise stems (e.g. `show address`).
+        folder_options = self._collapsed_tier_help_options(scope="folder")
+        if folder_options:
             if folder.lower() != "shared":
                 folder_label = (
-                    f"[bold yellow]FOLDER[/bold yellow]  [dim]— folder: {folder}[/dim]"
+                    f"{self._styled('FOLDER', sh)}  "
+                    f"{self._styled(f'— folder: {folder}', dd)}"
                 )
             else:
+                scope_hint = f"— folder: {folder}  (use 'folder <name>' to scope)"
                 folder_label = (
-                    f"[bold yellow]FOLDER[/bold yellow]  "
-                    f"[dim]— folder: {folder}  "
-                    f"(use 'folder <name>' to scope)[/dim]"
+                    f"{self._styled('FOLDER', sh)}  "
+                    f"{self._styled(scope_hint, dd)}"
                 )
             console.print(f"\n  {folder_label}")
-            for k in folder_keys:
-                c = COMMANDS[k]
-                ctx = self._context_annotation(k)
-                console.print(f"    [cyan]{k:<43}[/cyan] {c.description}{ctx}")
+            for token, desc in folder_options:
+                cmd_cell = self._styled(f"{token:<{_HELP_CMD_WIDTH}}", t.command_name)
+                desc_text = self._styled(desc, t.description) if (desc and t.description) else desc
+                console.print(f"    {cmd_cell} {desc_text}".rstrip())
 
-        # Tier 3: DEVICE — bright when a device is active, dim when locked
-        device_keys = sorted(k for k, c in COMMANDS.items() if c.scope == "device")
-        if device_keys:
-            if device:
-                console.print(
-                    f"\n  [bold yellow]DEVICE[/bold yellow]  "
-                    f"[dim]— device: {device_name}[/dim]"
-                )
-                for k in device_keys:
-                    c = COMMANDS[k]
-                    console.print(f"    [cyan]{k:<43}[/cyan] {c.description}")
-            else:
-                console.print(
-                    "\n  [dim bold]DEVICE[/dim bold]  "
-                    "[dim]— locked  "
-                    "(cd <device> to unlock | Tab after 'cd ' lists devices)[/dim]"
-                )
-                for k in device_keys:
-                    c = COMMANDS[k]
-                    console.print(f"    [dim]{k:<43}  {c.description}[/dim]")
+        # Tier 3: DEVICE — collapsed to concise stems.
+        device_options = self._collapsed_tier_help_options(scope="device")
+        if device_options:
+            console.print(
+                f"\n  {self._styled('DEVICE', sh)}  "
+                f"{self._styled(f'— device: {device_name}', dd)}"
+            )
+            for token, desc in device_options:
+                cmd_cell = self._styled(f"{token:<{_HELP_CMD_WIDTH}}", t.command_name)
+                desc_text = self._styled(desc, t.description) if (desc and t.description) else desc
+                console.print(f"    {cmd_cell} {desc_text}".rstrip())
 
         self._print_shell_builtins()
 
         console.print()
         console.print(
-            "  [dim]"
-            "<command> help  → full docs page  |  "
-            "help all        → complete reference"
-            "[/dim]"
+            f"  {self._styled('<command> help  → full docs page  |  help all        → complete reference', dd)}"
         )
         console.print()
 
@@ -1776,30 +1983,160 @@ class ArcShell:
                     else ""
                 )
                 ssh_note = " [dim](SSH)[/dim]" if cmd.ssh_command else ""
-                console.print(f"  [cyan]{k:<45}[/cyan] {cmd.description}{scope_tag}{ssh_note}")
+                console.print(f"  [cyan]{k:<{_HELP_CMD_WIDTH + 2}}[/cyan] {cmd.description}{scope_tag}{ssh_note}")
 
         self._print_shell_builtins()
         console.print()
 
     def _print_shell_builtins(self) -> None:
         """Print the shell built-in commands section (shared by inline and full help)."""
-        console.print("\n  [bold yellow]SHELL[/bold yellow]  [dim]— navigation & session[/dim]")
+        t = self._theme
+        console.print(
+            f"\n  {self._styled('SHELL', t.section_header)}  "
+            f"{self._styled('— navigation & session', t.description_dim)}"
+        )
         builtins = [
             ("cd <device>",           "Change Device in SCM  (Tab -> device list)"),
-            ("connect [device]",      "SSH to device — interactive session  (returns to ARC on exit)"),
+            ("connect <device>",      "SSH to device — interactive session  (returns to ARC on exit)"),
             ("remote <device>",       "SSH to named device — interactive session  (keyboard-interactive + 2FA)"),
             ("folder <name>",         "Set SCM Folder scope  (Tab -> folder list | folder .. -> Shared)"),
-            ("folder create <name>",  "Create a new folder  (interactive parent selection)"),
+            ("folder create <name>",  "Create a new folder  (configure mode required)"),
             ("tsg <id>",              "Set active TSG  (Tab -> configured TSG)"),
-            ("account [name]",        "List or switch credential profiles  (Tab -> profile names)"),
+            ("account <name>",        "List or switch credential profiles  (Tab -> profile names)"),
+            ("configure",             "Enter configure mode  (arc:global #)"),
+            ("cli <subcommand>",      "CLI theme operations in configure mode  (show | color | reset)"),
             ("ls",                    "List devices and refresh cache  (ls folder -> folder tree view)"),
             ("pwd",                   "Show device, folder, TSG, and active account"),
             ("docs",                  "Open docs in browser"),
             ("clear",                 "Clear the terminal screen"),
             ("exit / quit",           "Exit ARC"),
         ]
+        if self._state.configure_mode:
+            configure_only = {
+                "folder create <name>",
+                "cli <subcommand>",
+                "exit / quit",
+            }
+            builtins = [b for b in builtins if b[0] in configure_only]
         for name, desc in builtins:
-            console.print(f"    [cyan]{name:<43}[/cyan] {desc}")
+            # Configure-mode filtering keeps ? strictly context-aware.
+            if name == "folder create <name>" and not self._state.configure_mode:
+                continue
+            if name == "cli <subcommand>" and not self._state.configure_mode:
+                continue
+            if name == "configure" and self._state.configure_mode:
+                continue
+            cmd_cell = self._styled(f"{name:<{_HELP_CMD_WIDTH}}", t.command_name)
+            console.print(f"    {cmd_cell} {desc}")
+
+    def _is_command_available(self, key: str, cmd_def: CommandDef) -> bool:
+        """Return True when a registered command is executable in the current context."""
+        if cmd_def.scope == "device" and not self._state.device:
+            return False
+        if key == "commit" and not self._state.configure_mode:
+            return False
+        return True
+
+    @staticmethod
+    def _is_config_command(key: str, cmd_def: CommandDef) -> bool:
+        """Return True when a command should appear in configure-mode `?` help."""
+        del cmd_def
+        # Configure mode keeps write workflows and read-only show navigation.
+        return key == "commit" or key.startswith("show ")
+
+    def _collapsed_prefix_help_options(
+        self,
+        prefix_tokens: list[str],
+        scope: Optional[str] = None,
+    ) -> list[tuple[str, str]]:
+        """Return collapsed next-token help options for a command prefix.
+
+        This mirrors Cisco-style progressive help: users type a partial command
+        and `?` shows only the next valid token(s) rather than every full command.
+        """
+        prefix = [p.lower() for p in prefix_tokens]
+
+        option_map: dict[str, list[str]] = {}
+        exact_matches: list[str] = []
+
+        for key, cmd_def in COMMANDS.items():
+            if scope is not None and cmd_def.scope != scope:
+                continue
+            if not self._is_command_available(key, cmd_def):
+                continue
+            if self._state.configure_mode and not self._is_config_command(key, cmd_def):
+                continue
+
+            cmd_tokens = key.split()
+            if len(cmd_tokens) < len(prefix):
+                continue
+            if not all(cmd_tokens[i].startswith(prefix[i]) for i in range(len(prefix))):
+                continue
+
+            if len(cmd_tokens) == len(prefix):
+                # Exact/full command completion (allow Enter now).
+                if all(cmd_tokens[i] == prefix[i] for i in range(len(prefix))):
+                    exact_matches.append(key)
+                else:
+                    # Same token count but current token still ambiguous (e.g. device -> devices).
+                    token = cmd_tokens[-1]
+                    option_map.setdefault(token, []).append(key)
+                continue
+
+            next_token = cmd_tokens[len(prefix)]
+            option_map.setdefault(next_token, []).append(key)
+
+        options: list[tuple[str, str]] = []
+        if exact_matches:
+            desc = COMMANDS[exact_matches[0]].description if len(exact_matches) == 1 else "Complete command"
+            options.append(("<enter>", desc))
+
+        for token in sorted(option_map):
+            keys = option_map[token]
+            # Use command description when token maps cleanly to one leaf command.
+            desc = ""
+            if len(keys) == 1:
+                desc = COMMANDS[keys[0]].description
+            options.append((token, desc))
+
+        return options
+
+    def _collapsed_tier_help_options(self, scope: str) -> list[tuple[str, str]]:
+        """Return collapsed bare-tier help options for one scope.
+
+        For multi-token commands, show a two-token stem so bare `?` is concise
+        but still useful (e.g. `show jobs` instead of only `show`).
+        """
+        eligible: list[str] = []
+        for key, cmd_def in COMMANDS.items():
+            if cmd_def.scope != scope:
+                continue
+            if not self._is_command_available(key, cmd_def):
+                continue
+            if self._state.configure_mode and not self._is_config_command(key, cmd_def):
+                continue
+            eligible.append(key)
+
+        if not eligible:
+            return []
+
+        stem_map: dict[str, list[str]] = {}
+        for key in eligible:
+            tokens = key.split()
+            if len(tokens) >= 2:
+                stem = " ".join(tokens[:2])
+            else:
+                stem = tokens[0]
+            stem_map.setdefault(stem, []).append(key)
+
+        options: list[tuple[str, str]] = []
+        for stem in sorted(stem_map):
+            keys = stem_map[stem]
+            desc = ""
+            if len(keys) == 1 and keys[0] == stem:
+                desc = COMMANDS[keys[0]].description
+            options.append((stem, desc))
+        return options
 
     def _context_annotation(self, command_key: str) -> str:
         """Return a short inline context note for commands whose output depends on state.
@@ -1835,6 +2172,13 @@ class ArcShell:
     # ------------------------------------------------------------------
 
     def _execute_api(self, key: str, cmd_def: CommandDef, args: dict) -> None:
+        if key == "commit" and not self._state.configure_mode:
+            console.print(
+                f"[yellow]Write operation blocked:[/yellow] [bold]{key}[/bold] requires configure mode.\n"
+                "  Enter [bold]configure[/bold] first, then retry."
+            )
+            return
+
         ctx = self._make_context()
 
         # Enforce scope declared on the CommandDef before calling the handler.
@@ -2015,35 +2359,62 @@ class ArcShell:
     # Lifecycle
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _styled(text: str, style: str) -> str:
+        """Wrap *text* in a Rich markup tag for *style*.
+
+        Returns plain *text* when *style* is empty so that callers don't need
+        to special-case the no-style case themselves.
+        """
+        if not style:
+            return text
+        return f"[{style}]{text}[/{style}]"
+
     def _cleanup(self) -> None:
         self._ssh.close_all()
         if self._scm:
             self._scm.close()
-        console.print("\n[cyan]Goodbye.[/cyan]")
+        console.print(f"\n[cyan]{self._random_goodbye_message()}[/cyan]")
+
+    @staticmethod
+    def _random_goodbye_message() -> str:
+        """Return a random goodbye line from app/goodbye.txt.
+
+        Ignores blank lines and comment lines that start with '##'.
+        Falls back to a plain Goodbye when the file is missing or empty.
+        """
+        try:
+            raw = GOODBYE_FILE.read_text(encoding="utf-8")
+        except OSError:
+            return "Goodbye."
+
+        lines = [
+            line.strip()
+            for line in raw.splitlines()
+            if line.strip() and not line.strip().startswith("##")
+        ]
+        if not lines:
+            return "Goodbye."
+        return random.choice(lines)
 
     def _print_banner(self) -> None:
-        # Each letter is 8 chars wide; 5-space left indent centres on an 80-col terminal.
-        #
-        # A:            R:            C:
-        #  █████╗       ██████╗        ██████╗
-        # ██╔══██╗      ██╔══██╗      ██╔════╝
-        # ███████║      ███████║      ██║
-        # ██╔══██║      ██╔═══╝       ██║
-        # ██║  ██║      ██║  ██╗      ╚██████╗
-        # ╚═╝  ╚═╝      ╚═╝  ╚═╝       ╚═════╝
-        art = (
-            "\n"
-            "      \u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557\n"
-            "     \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2550\u255d\n"
-            "     \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2551\u2588\u2551     \n"
-            "     \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u255d \u2588\u2588\u2551     \n"
-            "     \u2588\u2588\u2551  \u2588\u2588\u2551\u2588\u2588\u2551  \u2588\u2588\u2557\u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2557\n"
-            "     \u255a\u2550\u255d  \u255a\u2550\u255d\u255a\u2550\u255d  \u255a\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u255d\n"
+        # banner.txt lives in app/ alongside the source code.
+        # It uses Rich markup tags for colour — edit it to change the logo,
+        # subtitle, or add a legal notice.  Lines starting with ## are comments.
+        # The theme's banner_logo / banner_subtitle keys are the DEFAULT styles
+        # written into a fresh banner.txt, but the file is the single source of
+        # truth — change colours there, not here.
+        _BANNER_FILE = Path(__file__).parent / "banner.txt"
+        try:
+            raw = _BANNER_FILE.read_text(encoding="utf-8")
+        except OSError:
+            raw = ""
+
+        content = "\n".join(
+            line for line in raw.splitlines() if not line.startswith("##")
         )
-        console.print()
-        console.print(f"[bold cyan]{art}[/bold cyan]")
-        console.print("  [dim]Assisted Remote Console  —  Palo Alto Networks SCM + PAN-OS[/dim]")
-        console.print()
+
+        console.print(content)
 
         # Show active profile when multiple profiles exist — so operators
         # always know which credential set is in use before touching anything.
@@ -2055,12 +2426,20 @@ class ArcShell:
                 f"[dim](use [bold]account <name>[/bold] to switch)[/dim]\n"
             )
 
+    def _print_startup_help(self) -> None:
+        """Print compact startup command hints shown after SCM connection status."""
+
+        # Alignment: 2-space indent, descriptions all start at visual col 28.
+        # Spaces after [/cyan] = 28 − 2 − len(visible command text):
+        #   cd <device>    11 → 15 sp   remote <device> 16 → 10 sp
+        #   connect         7 → 19 sp   folder <name>   13 → 13 sp
+        #   account <name> 14 → 12 sp   ?                1 → 25 sp
         console.print(
             "  [cyan]cd <device>[/cyan]               Change Device in SCM  [dim](Tab → device list)[/dim]\n"
             "  [cyan]remote <device>[/cyan]           SSH to device  [dim](keyboard-interactive + 2FA)[/dim]\n"
             "  [cyan]connect[/cyan]                   SSH to current device\n"
             "  [cyan]folder <name>[/cyan]             Set SCM Folder  [dim](Tab → folder list | always shown in prompt)[/dim]\n"
-            "  [cyan]account [name][/cyan]            List / switch credential profiles\n"
+            "  [cyan]account <name>[/cyan]            List / switch credential profiles\n"
             "  [cyan]?[/cyan]                         Context-aware help  [dim](or  help <topic>)[/dim]"
         )
         console.print()

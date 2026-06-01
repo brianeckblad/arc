@@ -1,0 +1,10 @@
+{
+  "command_name": "cyan",
+  "section_header": "bold yellow",
+  "section_header_locked": "dim bold",
+  "description": "",
+  "description_dim": "dim",
+  "banner_logo": "bold cyan",
+  "banner_subtitle": "dim"
+}
+
