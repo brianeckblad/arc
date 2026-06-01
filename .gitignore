@@ -18,6 +18,9 @@ docs/docs-bundle.js
 # Session memory (local only)
 SESSION.md
 
+# Local git hooks — set up from docs/dev-versioning.md, never committed
+.githooks/
+
 # Python
 __pycache__/
 *.py[cod]
