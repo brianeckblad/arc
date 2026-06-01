@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# ---------------------------------------------------------------------------
+# ARC pre-commit hook — auto-bump version on every commit.
+#
+# Format: 0.1.<N>  where N = total commit count after this commit lands.
+#
+# Files updated:
+#   app/__init__.py  — runtime __version__ (read by the shell at startup)
+#   pyproject.toml   — package version (kept in sync for pip/uv installs)
+#
+# Install once per clone:
+#   git config core.hooksPath .githooks
+# ---------------------------------------------------------------------------
+set -e
+
+COUNT=$(git rev-list --count HEAD 2>/dev/null || echo 0)
+NEXT=$((COUNT + 1))
+VERSION="0.1.${NEXT}"
+
+# Update app/__init__.py
+python3 - "$VERSION" << 'PYEOF'
+import re, sys
+path = "app/__init__.py"
+txt  = open(path).read()
+new  = re.sub(r'__version__\s*=\s*"[^"]+"', f'__version__ = "{sys.argv[1]}"', txt)
+open(path, "w").write(new)
+PYEOF
+
+# Update pyproject.toml (first version = line only, not dependency specs)
+python3 - "$VERSION" << 'PYEOF'
+import re, sys
+path = "pyproject.toml"
+txt  = open(path).read()
+# Match 'version = "..."' as a standalone line (not inside a dependency string)
+new  = re.sub(r'^version\s*=\s*"[^"]+"', f'version = "{sys.argv[1]}"', txt, count=1, flags=re.MULTILINE)
+open(path, "w").write(new)
+PYEOF
+
+git add app/__init__.py pyproject.toml
+echo "[arc] version bumped to ${VERSION}"
+

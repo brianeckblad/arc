@@ -33,6 +33,7 @@ from rich.console import Console
 from rich.panel import Panel
 import platformdirs
 from app.api.client import SCMClient
+from app import __version__
 from app.commands.registry import (
     COMMANDS,
     CATEGORIES,
@@ -335,6 +336,7 @@ class ArcShell:
                 console.print(
                     f"[green]✓[/green] SCM connected  "
                     f"[dim](profile: {profile_label}  |  TSG: {tsg_id})[/dim]"
+                    f"  — Version: {__version__}"
                 )
             except Exception as exc:
                 console.print(f"[yellow]⚠[/yellow] SCM unavailable: {exc}")
