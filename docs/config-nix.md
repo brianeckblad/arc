@@ -10,7 +10,7 @@ arc config generate
 ${EDITOR:-nano} ~/.config/arc/config.json
 
 # 3. Run the wizard — migrates secrets to Secret Service, writes safe values to disk
-arc auth login
+arc auth configure
 ```
 
 ## Install ARC
@@ -33,7 +33,7 @@ KWallet running, secrets are stored in the **Secret Service** (encrypted wallet)
 not as plaintext on disk:
 
 ```bash
-arc auth login
+arc auth configure
 ```
 
 ARC stores three entries under the service name `arc`:
@@ -101,7 +101,7 @@ arc auth clear   # remove all ARC entries from Secret Service
 If you are running ARC on a server or in a Docker container where no keychain
 daemon is running:
 
-1. `arc auth login` will warn you that the keychain is unavailable.
+1. `arc auth configure` will warn you that the keychain is unavailable.
 2. Use **environment variables** instead (see below).
 3. The config file is still written with mode `0600`, but secrets are not
    written there.
@@ -120,7 +120,7 @@ arc config generate --force  # overwrite an existing config file
 ```
 
 The generated file has `_note` fields explaining each section.
-Edit only non-secret `REPLACE_WITH_*` values, then run `arc auth login` to
+Edit only non-secret `REPLACE_WITH_*` values, then run `arc auth configure` to
 enter secrets securely and store them in Secret Service.
 
 ## Environment variables (temporary override)
@@ -192,7 +192,7 @@ Key authentication is more secure than a stored password:
 ssh-keygen -t ed25519 -f ~/.ssh/panos_key -C "arc-panos"
 
 # Register it in ARC
-arc auth login --ssh-key ~/.ssh/panos_key
+arc auth configure --ssh-key ~/.ssh/panos_key
 ```
 
 Ensure the key has correct permissions:

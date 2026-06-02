@@ -11,7 +11,7 @@ open "$(arc auth show 2>&1 | grep 'Config file:' | awk '{print $3}')"
 # or just: open ~/Library/Application\ Support/arc/config.json
 
 # 3. Run the wizard — migrates secrets to macOS Keychain, writes safe values to disk
-arc auth login
+arc auth configure
 ```
 
 ## Install ARC
@@ -32,7 +32,7 @@ Run the interactive wizard — secrets are written directly to **macOS Keychain*
 not to disk:
 
 ```bash
-arc auth login
+arc auth configure
 ```
 
 ARC stores three items in the keychain under the service name `arc`:
@@ -103,7 +103,7 @@ arc config generate --force  # overwrite an existing config file
 ```
 
 The generated file has `_note` fields explaining each section.
-Edit only non-secret `REPLACE_WITH_*` values, then run `arc auth login` to
+Edit only non-secret `REPLACE_WITH_*` values, then run `arc auth configure` to
 enter secrets securely and store them in the Keychain.
 
 ## Environment variables (temporary override)
@@ -111,7 +111,7 @@ enter secrets securely and store them in the Keychain.
 Environment variables override keychain and config values. Use them for a
 single terminal session or automation. Do **not** put long-lived secrets in
 `~/.zshrc` or `~/.zprofile`; those files are plaintext and often backed up or
-synced. Prefer Keychain via `arc auth login` for local development.
+synced. Prefer Keychain via `arc auth configure` for local development.
 
 ```bash
 # SCM — bearer token takes precedence over OAuth credentials
@@ -164,7 +164,7 @@ Use a key instead of a password — no Keychain entry needed and more secure:
 ssh-keygen -t ed25519 -f ~/.ssh/panos_key -C "arc-panos"
 
 # Set it in ARC
-arc auth login --ssh-key ~/.ssh/panos_key
+arc auth configure --ssh-key ~/.ssh/panos_key
 ```
 
 ## See Also

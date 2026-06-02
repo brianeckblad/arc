@@ -3,6 +3,66 @@
 <!-- Clear with: wipe | Clear and archive with: arc -->
 
 ## Current Work
+**Goal:** Relocate SCM API reference out of ideas/ into docs/scm-api + pull pan.dev guide docs
+**Branch:** main
+**Status:** done
+
+**Recent progress:**
+- Moved reference from `ideas/scm-ngfw/` → `docs/scm-api/` with `specs/` (OpenAPI yaml+md) and `guides/` (conceptual pan.dev docs) subdirs; removed old ideas folder
+- Extended `dev/update_scm_docs.py` to also pull 15 conceptual guide docs from `products/scm/docs/` (home, getstarted, access-tokens, service-accounts, roles, scope, platform-configuration, release-notes, …)
+- Updated `app/cli.py` `_build_docs_bundle()` to exclude `docs/scm-api/` from the browser bundle (developer/agent material, keeps portal light — 29 files excluded, 53 bundled)
+- Re-ran updater: 12 specs (objects 92, security 113, setup 47, network 246, operations 8, operations-config 10, device 71, identity 88, device-onboarding 21, auth 3, tenancy 7, iam 6) + 15 guides
+- Updated both instruction files: project-structure tree now shows docs/scm-api/{specs,guides}; gateway-map "Local reference set" + docsupdate steps now point to docs/scm-api/
+
+**Key decisions:**
+- API reference lives in `docs/scm-api/` (ships with app) not `ideas/` (scratch)
+- Split: `specs/` = OpenAPI endpoint refs, `guides/` = conceptual prose docs
+- Excluded from cliup browser bundle so the user docs portal stays light
+- `docs/scm-api/MANIFEST.md` remains the gateway-map source of truth
+
+**Files in play:**
+- `dev/update_scm_docs.py` — relocated output + guides download
+- `docs/scm-api/` — new reference set (specs/ + guides/ + index.md + MANIFEST.md)
+- `app/cli.py` — bundle exclusion
+- `.github/copilot-instructions.md` + `AGENTS.md` — paths + structure synced
+
+**Open questions / blockers:**
+- none; smoke 86/86, updater `--check` all current, instruction files in sync
+
+---
+
+## Current Work
+**Goal:** Pull fresh SCM NGFW API docs from pan.dev + add `docsupdate` agent trigger
+**Branch:** main
+**Status:** done
+
+**Recent progress:**
+- Renamed `arc auth login` → `arc auth configure` across code + docs; updated in-shell "SCM not connected" message to "Exit ARC and run arc auth configure"
+- Added `dev/update_scm_docs.py` — reproducible updater that pulls NGFW OpenAPI specs from pan.dev GitHub (raw .yaml + consolidated .md + index.md + MANIFEST.md under `ideas/scm-ngfw/`)
+- Ran the updater: refreshed 12 categories (objects 92, security 113, setup 47, network 246, operations 8, operations-config 10, device 71, identity 88, device-onboarding 21, auth 3, tenancy 7, iam 6 endpoints)
+- Removed orphaned cloudngfw/* and legacy device-onboarding files from the reference set
+- Added PyYAML to `[dev]` extras in pyproject.toml
+- Added `docsupdate` trigger to both `.github/copilot-instructions.md` and `AGENTS.md` (trigger table + dedicated procedure section)
+- Updated SCM Gateway Map: confirmed network spec name, added operations/device/identity/device-onboarding base URLs from MANIFEST.md
+
+**Key decisions:**
+- `ideas/scm-ngfw/MANIFEST.md` is the source of truth the agent gateway-map table mirrors
+- Updater uses stdlib urllib for raw download (always works); PyYAML only for markdown/manifest rendering
+- `SPECS` dict at top of `dev/update_scm_docs.py` pins dated spec filenames — update there when pan.dev renames
+
+**Files in play:**
+- `dev/update_scm_docs.py` — new updater (the `docsupdate` engine)
+- `ideas/scm-ngfw/` — refreshed reference set
+- `.github/copilot-instructions.md` + `AGENTS.md` — docsupdate trigger + gateway map
+- `app/cli.py`, `app/shell.py` — auth configure rename
+- `pyproject.toml` — pyyaml dev extra
+
+**Open questions / blockers:**
+- none; smoke 86/86, updater `--check` reports all specs current
+
+---
+
+## Current Work
 **Goal:** configure mode for all write/change operations + CPI/AGENTS trigger simplification
 **Branch:** main
 **Status:** done

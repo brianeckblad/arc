@@ -9,7 +9,7 @@ arc config generate
 notepad "$env:APPDATA\arc\config.json"
 
 # 3. Run the wizard — migrates secrets to Credential Manager, writes safe values to disk
-arc auth login
+arc auth configure
 ```
 
 ## Install ARC
@@ -34,7 +34,7 @@ Run the interactive wizard — secrets are written to **Windows Credential Manag
 not to disk as plaintext:
 
 ```powershell
-arc auth login
+arc auth configure
 ```
 
 ARC stores entries with target `arc/<item>` in Credential Manager:
@@ -104,7 +104,7 @@ arc config generate --force  # overwrite an existing config file
 ```
 
 The generated file has `_note` fields explaining each section.
-Edit only non-secret `REPLACE_WITH_*` values, then run `arc auth login` to
+Edit only non-secret `REPLACE_WITH_*` values, then run `arc auth configure` to
 enter secrets securely and store them in Credential Manager.
 
 ## Environment variables (temporary override)
@@ -167,7 +167,7 @@ Use a key instead of a password:
 ssh-keygen -t ed25519 -f "$env:USERPROFILE\.ssh\panos_key" -C "arc-panos"
 
 # Register it in ARC
-arc auth login --ssh-key "$env:USERPROFILE\.ssh\panos_key"
+arc auth configure --ssh-key "$env:USERPROFILE\.ssh\panos_key"
 ```
 
 ## See Also

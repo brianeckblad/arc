@@ -41,7 +41,7 @@ arc:fw-dallas-01 >
 
 ARC tries authentication methods in this order:
 1. SSH agent keys
-2. Configured key file (`arc auth login --ssh-key`)
+2. Configured key file (`arc auth configure --ssh-key`)
 3. Default key files (`~/.ssh/id_ed25519`, `id_rsa`, `id_ecdsa`)
 4. Keyboard-interactive (auto-fills stored password from keychain, surfaces 2FA prompts)
 5. Plain password fallback

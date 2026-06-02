@@ -7,7 +7,7 @@ ARC reads configuration from three sources in priority order (last wins):
 3. **Environment variables** — override everything; useful for temporary sessions and CI/CD
 
 ARC never writes secrets to `config.json`. If the OS keychain is unavailable,
-`arc auth login` saves only non-sensitive values and tells you to provide
+`arc auth configure` saves only non-sensitive values and tells you to provide
 secrets through environment variables for that session.
 
 > **Platform-specific setup guides:**
@@ -32,12 +32,12 @@ account. For the standard service account flow, leave `bearer_token` blank and s
 ## Credential setup
 
 ```bash
-arc auth login      # interactive wizard — stores secrets in OS keychain
+arc auth configure      # interactive wizard — stores secrets in OS keychain
 arc auth show       # display current config (secrets masked)
 arc auth clear      # remove ARC secrets from the OS keychain
 ```
 
-`arc auth login` automatically routes sensitive values to the OS keychain
+`arc auth configure` automatically routes sensitive values to the OS keychain
 (macOS Keychain, Linux Secret Service, or Windows Credential Manager) and
 writes only non-sensitive values to the config file.
 
@@ -80,7 +80,7 @@ values only. `arc auth show` warns when keychain access is unavailable.
 
 ## Migration from an existing plaintext config.json
 
-Run `arc auth login` once on a machine with keychain access. It reads your
+Run `arc auth configure` once on a machine with keychain access. It reads your
 current config file, migrates secrets to the keychain, and rewrites the file
 without them. If keychain access is unavailable, ARC removes secrets from the
 rewritten config but cannot persist them; provide them via environment variables
@@ -96,7 +96,7 @@ ARC reads configuration from three sources in priority order (last wins):
 3. **Environment variables** — override everything; useful for temporary sessions and CI/CD
 
 ARC never writes secrets to `config.json`. If the OS keychain is unavailable,
-`arc auth login` saves only non-sensitive values and tells you to provide
+`arc auth configure` saves only non-sensitive values and tells you to provide
 secrets through environment variables for that session.
 
 > **Platform-specific setup guides:**
@@ -107,12 +107,12 @@ secrets through environment variables for that session.
 ## Credential setup
 
 ```bash
-arc auth login      # interactive wizard — stores secrets in OS keychain
+arc auth configure      # interactive wizard — stores secrets in OS keychain
 arc auth show       # display current config (secrets masked)
 arc auth clear      # remove ARC secrets from the OS keychain
 ```
 
-`arc auth login` automatically routes sensitive values to the OS keychain
+`arc auth configure` automatically routes sensitive values to the OS keychain
 (macOS Keychain, Linux Secret Service, or Windows Credential Manager) and
 writes only non-sensitive values to the config file.
 
@@ -155,7 +155,7 @@ values only. `arc auth show` warns when keychain access is unavailable.
 
 ## Migration from an existing plaintext config.json
 
-Run `arc auth login` once on a machine with keychain access. It reads your
+Run `arc auth configure` once on a machine with keychain access. It reads your
 current config file, migrates secrets to the keychain, and rewrites the file
 without them. If keychain access is unavailable, ARC removes secrets from the
 rewritten config but cannot persist them; provide them via environment variables

@@ -442,7 +442,7 @@ class ArcShell:
                 "Commands will fail unless you use [bold]remote <device>[/bold] or "
                 "[bold]--remote[/bold] with SSH credentials, "
                 "or set SCM credentials and restart.\n"
-                "Run [bold]arc auth login[/bold] to configure."
+                "Exit ARC and run [bold]arc auth configure[/bold] to set up credentials."
             )
             return
 
@@ -943,7 +943,7 @@ class ArcShell:
                 "[yellow]⚠  No SSH credentials stored for ARC.[/yellow]\n"
                 "  Trying SSH agent and default key files — if those are absent\n"
                 "  you will be prompted during the keyboard-interactive exchange.\n"
-                "  Run [bold]arc auth login[/bold] to store credentials so they\n"
+                "  Run [bold]arc auth configure[/bold] to store credentials so they\n"
                 "  auto-fill next time, or see [bold]help config osx[/bold] / "
                 "[bold]help config win[/bold] / [bold]help config nix[/bold].\n"
             )
@@ -1586,7 +1586,7 @@ class ArcShell:
         making policy changes.
 
         Create profiles outside the shell with:
-          arc auth login --profile <name>
+          arc auth configure --profile <name>
 
         Usage:
           account               — list all profiles with active marker
@@ -1607,7 +1607,7 @@ class ArcShell:
                     f"  client_id : {client_id}\n"
                     f"  tsg_id    : {tsg_id}\n\n"
                     "[dim]Create additional profiles with: "
-                    "[bold]arc auth login --profile <name>[/bold][/dim]"
+                    "[bold]arc auth configure --profile <name>[/bold][/dim]"
                 )
                 return
 
@@ -1630,7 +1630,7 @@ class ArcShell:
             console.print(
                 f"[red]Profile '{target}' not found.[/red]\n"
                 f"  Available: [bold]{', '.join(profile_names)}[/bold]\n"
-                f"  Create it with: [bold]arc auth login --profile {target}[/bold]"
+                f"  Create it with: [bold]arc auth configure --profile {target}[/bold]"
             )
             return
 
@@ -1694,7 +1694,7 @@ class ArcShell:
                 console.print(
                     f"[yellow]⚠[/yellow] Switched to profile [bold]{target}[/bold] "
                     f"but SCM is not configured for this profile.\n"
-                    f"  Run [bold]arc auth login --profile {target}[/bold] to add credentials."
+                    f"  Run [bold]arc auth configure --profile {target}[/bold] to add credentials."
                 )
 
         except Exception as exc:

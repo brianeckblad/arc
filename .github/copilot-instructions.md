@@ -56,8 +56,9 @@ Short forms are the primary triggers. Longer natural-language forms still work.
 | `cpi` / `update cpi` / `update copilot instructions` / `update instructions` | Review what was built or decided and update both `.github/copilot-instructions.md` and `AGENTS.md` so they stay in sync. Confirm what changed in each file. |
 | `evala` / `evaluate agents` / `evaluate instructions` | Evaluate AI instruction files for clean general vs app-specific separation, then ensure `.github/copilot-instructions.md` and `AGENTS.md` are synced. |
 | `agi` / `read agent instructions` / `read copilot instructions` | Read `.github/copilot-instructions.md` and `AGENTS.md` in full, then confirm they have been loaded into context. |
+| `docsupdate` / `update docs` / `pull api docs` | Pull the latest provider API/reference specs from the upstream source and regenerate the project's local reference docs. For ARC this runs `python dev/update_scm_docs.py` (see the SCM Gateway Map section). Confirm which specs changed. |
 
-A short trigger (`ck`, `ctx`, `wipe`, `arc`, `gitp`, `cpi`, `evala`, `agi`) is a command only when it is the
+A short trigger (`ck`, `ctx`, `wipe`, `arc`, `gitp`, `cpi`, `evala`, `agi`, `docsupdate`) is a command only when it is the
 entire user message. Inside a longer sentence, treat it as normal text.
 
 ### SESSION.md structure
@@ -340,37 +341,18 @@ function closeAllModals() {
 - Start from clear requirements; if scope is ambiguous, propose small options before implementing.
 - Prefer small, focused edits that preserve existing behavior unless a change is requested.
 - Keep naming and structure consistent with the current codebase.
-- **Always run `python dev/smoke_test.py` after any change to `app/`.** It covers syntax, imports, registry integrity, arg parser, config types, formatter, CLI banner alignment, inline-help alignment, and theme wiring in one pass.
 - Highlight risks, assumptions, and missing data explicitly instead of silently guessing.
 - Optimize for maintainability: straightforward code paths, minimal side effects, clear data ownership.
 
-### smoke_test.py — maintenance rules
-
-`smoke_test.py` lives at the project root and runs automatically in the pre-commit hook.
-
-| Trigger | Required action |
-|---------|----------------|
-| New command added to a `COMMANDS` dict | No change needed — registry tests auto-discover it |
-| New formatter function added | Add a minimal call in **section 6** of `dev/smoke_test.py` |
-| CLI banner lines changed (`_print_banner` in `shell.py`) | Update `_BANNER_LINES` in **section 7** of `dev/smoke_test.py` — the test will catch mismatches and print exactly what to change |
-| New module added under `app/` | No change needed — syntax and import tests auto-discover it |
-| New `SCMConfig` / `ArcConfig` field with invariant | Add a case in **section 5** of `dev/smoke_test.py` |
-| New theme key added to `ArcTheme` | Add a display label to `THEME_KEYS` in `app/theme.py`; add to **section 9** if there is an invariant |
-| Builtin command added/removed in `_print_shell_builtins` | Update `_BUILTIN_NAMES` in **section 8** of `dev/smoke_test.py` — the test will catch mismatches |
-
-The test is intentionally lightweight — no mocking, no network, no auth. It validates structure and wiring, not API behavior.
 
 ---
 
-## Senior Engineering Standards — Senior Network/Firewall Engineering, Junior-Readable Code
+## Senior Engineering Standards — Senior-Quality Code, Junior-Readable
 
 Write code the next developer can safely modify, even if they are new to the
 project. Senior-quality code is simple, explicit, tested, and boring in the best
 way.
 
-For ARC specifically, write as if the reviewer is a junior engineer learning
-network operations and firewall workflows. Keep implementation details concrete,
-and make control flow easy to map to operator intent.
 
 - **Clarity beats cleverness** — prefer obvious control flow over compressed tricks.
 - **Name by domain meaning** — use names that explain what a value represents, not its type (`listing_status`, not `data`).
@@ -635,6 +617,34 @@ as implementations are added. Device-local execution is handled through SSH only
 
 ---
 
+### ARC Coding Workflow
+
+- Start from clear requirements; if scope is ambiguous, propose small options before implementing.
+- Prefer small, focused edits that preserve existing behavior unless a change is requested.
+- Keep naming and structure consistent with the current codebase.
+- **Always run `python dev/smoke_test.py` after any change to `app/`.** It covers syntax, imports, registry integrity, arg parser, config types, formatter, CLI banner alignment, inline-help alignment, and theme wiring in one pass.
+- Highlight risks, assumptions, and missing data explicitly instead of silently guessing.
+- Optimize for maintainability: straightforward code paths, minimal side effects, clear data ownership.
+- **Write as if the reviewer is a junior engineer learning network operations and firewall workflows.** Keep implementation details concrete, and make control flow easy to map to operator intent.
+
+#### smoke_test.py — maintenance rules
+
+`smoke_test.py` lives at `dev/` and runs automatically in the pre-commit hook.
+
+| Trigger | Required action |
+|---------|----------------|
+| New command added to a `COMMANDS` dict | No change needed — registry tests auto-discover it |
+| New formatter function added | Add a minimal call in **section 6** of `dev/smoke_test.py` |
+| CLI banner lines changed (`_print_banner` in `shell.py`) | Update `_BANNER_LINES` in **section 7** of `dev/smoke_test.py` — the test will catch mismatches and print exactly what to change |
+| New module added under `app/` | No change needed — syntax and import tests auto-discover it |
+| New `SCMConfig` / `ArcConfig` field with invariant | Add a case in **section 5** of `dev/smoke_test.py` |
+| New theme key added to `ArcTheme` | Add a display label to `THEME_KEYS` in `app/theme.py`; add to **section 9** if there is an invariant |
+| Builtin command added/removed in `_print_shell_builtins` | Update `_BUILTIN_NAMES` in **section 8** of `dev/smoke_test.py` — the test will catch mismatches |
+
+The test is intentionally lightweight — no mocking, no network, no auth. It validates structure and wiring, not API behavior.
+
+---
+
 ### Tech Stack
 
 | Layer | Technology |
@@ -667,7 +677,12 @@ arc/
 │   ├── usage.md                    ← user workflows
 │   ├── architecture.md             ← user-readable architecture
 │   ├── configuration.md            ← credential/configuration guide
-│   └── commands/                   ← one Markdown file per shell/registered command
+│   ├── commands/                   ← one Markdown file per shell/registered command
+│   └── scm-api/                    ← SCM NGFW reference (pulled by `docsupdate`; excluded from cliup bundle)
+│       ├── index.md                ← spec + guide index
+│       ├── MANIFEST.md             ← base URLs + sources (gateway-map source of truth)
+│       ├── specs/                  ← OpenAPI per-domain: <category>.yaml + <category>.md
+│       └── guides/                 ← conceptual pan.dev docs (auth, roles, scope, …)
 └── app/
     ├── __init__.py                 ← package version
     ├── banner.txt                  ← startup banner (Rich markup; ## lines are comments)
@@ -1082,16 +1097,32 @@ the correct endpoint in the pan.dev OpenAPI specs before implementing or
 changing any API call.  The pan.dev GitHub source for all specs is:
   `https://github.com/PaloAltoNetworks/pan.dev/tree/master/openapi-specs/scm/`
 
-SCM uses **four separate base URLs** — the same OAuth bearer token works on all
-of them.  The correct base URL for each resource category comes from the
-`servers[0].url` field in the relevant OpenAPI spec:
+**Local reference set:** ARC ships a mirror of the SCM NGFW docs under
+`docs/scm-api/` — `specs/<category>.yaml` (raw OpenAPI) + `specs/<category>.md`
+(consolidated endpoint listing), `guides/*.md` (conceptual pan.dev docs:
+getting started, access tokens, service accounts, roles, scope, platform
+configuration), plus `index.md` and a `MANIFEST.md` that records each spec's
+`servers[0].url` base URL and pull date.  Refresh it with the `docsupdate`
+trigger (`python dev/update_scm_docs.py`).  `MANIFEST.md` is the source of
+truth this gateway-map table mirrors — if they disagree, re-run `docsupdate`
+and update this table from the manifest.  This reference set is excluded from
+the `arc cliup` browser bundle (it is developer/agent material, not user help).
 
-| Category | Base URL | pan.dev spec |
+SCM gateways come from the `servers[0].url` field in each OpenAPI spec.  The
+same OAuth bearer token works on all of them.  Confirmed base URLs (from the
+last `docsupdate` pull):
+
+| Category | Base URL (`servers[0].url`) | pan.dev spec |
 |----------|----------|--------------|
 | **Objects** (addresses, address-groups, services, tags, EDLs, …) | `https://api.strata.paloaltonetworks.com/config/objects/v1` | `openapi-specs/scm/config/ngfw/objects/objects_v1.3_feb.yaml` |
 | **Security** (security-rules, url-categories, decryption, profiles, …) | `https://api.strata.paloaltonetworks.com/config/security/v1` | `openapi-specs/scm/config/ngfw/security/security-services-R2-2026.yaml` |
 | **Setup** (devices, folders, snippets, labels, jobs, commit/push, …) | `https://api.strata.paloaltonetworks.com/config/setup/v1` | `openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml` |
-| **Network** (interfaces, zones, routing, HA, …) | `https://api.strata.paloaltonetworks.com/config/network/v1` | `openapi-specs/scm/config/ngfw/network/` (verify exact file at pan.dev) |
+| **Network** (interfaces, zones, routing, HA, …) | `https://api.strata.paloaltonetworks.com/config/network/v1` | `openapi-specs/scm/config/ngfw/network/network-services-R2-2026.yaml` |
+| **Operations** (config jobs, push) | `https://api.strata.paloaltonetworks.com/config/operations/v1` | `openapi-specs/scm/config/ngfw/operations/config-operations-march.yaml` |
+| **Operations (R2)** (live operational ops) | `https://api.strata.paloaltonetworks.com/operations/v1` | `openapi-specs/scm/config/ngfw-operations/operations-R2-2026.yaml` |
+| **Device settings** | `https://api.strata.paloaltonetworks.com/config/device/v1` | `openapi-specs/scm/config/ngfw/device/device-settings_April.yaml` |
+| **Identity** | `https://api.strata.paloaltonetworks.com/config/identity/v1` | `openapi-specs/scm/config/ngfw/identity/identity-services-march.yaml` |
+| **Device onboarding** | `https://api.strata.paloaltonetworks.com/config/setup/device-onboarding/v1` | `openapi-specs/scm/config/ngfw/setup/device-onboarding/device-onboarding-updated.yaml` |
 | **IAM** (service accounts, access policies, roles) | `https://api.sase.paloaltonetworks.com` | `openapi-specs/scm/iam/ServiceAccounts.yaml` |
 | **Tenancy** (TSGs, tenant hierarchy) | `https://api.sase.paloaltonetworks.com` | `openapi-specs/scm/tenancy/TenantServiceGroup.yaml` |
 | **Authentication** (OAuth token endpoint) | `https://auth.apps.paloaltonetworks.com` | `openapi-specs/scm/auth/AuthService.yaml` |
@@ -1138,6 +1169,34 @@ GET  https://api.sase.paloaltonetworks.com/tenancy/v1/tenant_service_groups
 **Token scope:** Every OAuth token is scoped to a specific TSG (`scope=tsg_id:<id>`).
 Tokens scoped to a parent TSG can read data across child TSGs.
 Use `arc auth test` to verify which endpoints are accessible with the current credentials.
+
+---
+
+### `docsupdate` — Refresh the SCM API Reference from pan.dev
+
+When the user says `docsupdate` (or `update docs` / `pull api docs`):
+
+1. Run `python dev/update_scm_docs.py`. It downloads the current NGFW OpenAPI
+   specs (objects, security, setup, network, operations, device, identity,
+   device-onboarding) plus auth, tenancy, and IAM service-accounts, and the
+   conceptual SCM guide docs (getting started, access tokens, service accounts,
+   roles, scope, platform configuration, release notes) directly from the
+   pan.dev GitHub repo (`PaloAltoNetworks/pan.dev`, master).
+2. The script writes, under `docs/scm-api/`: `specs/<category>.yaml` +
+   `specs/<category>.md`, `guides/*.md`, `index.md`, and `MANIFEST.md`.
+   `docs/scm-api/` is excluded from the `arc cliup` browser bundle.
+3. Markdown/manifest generation needs PyYAML (a dev extra). If it is missing,
+   the script still saves raw specs + guides and prints the install hint
+   (`uv pip install -e '.[dev]'`).
+4. After a successful pull, compare `docs/scm-api/MANIFEST.md` against the
+   **SCM REST API — Gateway Map** table above. If a base URL or spec filename
+   changed, update that table (and `app/api/client.py` URL constants if a
+   gateway moved). Confirm to the user which specs changed.
+
+Helper flags: `python dev/update_scm_docs.py --list-remote` prints the live
+spec tree on pan.dev; `--check` reports drift without writing files. When
+pan.dev renames a dated spec file, update the matching entry in the `SPECS`
+dict at the top of `dev/update_scm_docs.py`.
 
 ---
 

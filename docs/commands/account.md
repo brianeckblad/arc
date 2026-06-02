@@ -34,7 +34,7 @@ Create or update a named profile from your shell (outside ARC):
 
 ```bash
 # Create a read-write profile
-arc auth login --profile readwrite
+arc auth configure --profile readwrite
 
 # Inspect a profile
 arc auth show --profile readwrite
@@ -73,8 +73,8 @@ arc:global > account default
 
 ```bash
 # One-time setup (outside ARC)
-arc auth login                         # configure default read-only account
-arc auth login --profile readwrite     # configure read-write account
+arc auth configure                         # configure default read-only account
+arc auth configure --profile readwrite     # configure read-write account
 
 # Inside ARC during a session
 arc:global > account                   # check which account is active

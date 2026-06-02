@@ -16,7 +16,7 @@ useful for CI/CD and short-lived overrides without touching stored values.
 
 Named profiles allow multiple SCM service accounts to coexist — e.g. a
 read-only account for day-to-day monitoring and a read-write account for
-policy changes.  Use ``arc auth login --profile <name>`` to create a profile
+policy changes.  Use ``arc auth configure --profile <name>`` to create a profile
 and ``account <name>`` in the ARC shell to switch between them.
 """
 
@@ -196,7 +196,7 @@ def _read_config_file() -> dict:
     if not config_file.exists() and _LEGACY_CONFIG_FILE and _LEGACY_CONFIG_FILE.exists():
         config_file = _LEGACY_CONFIG_FILE
         logger.debug(
-            "Using legacy config path %s — run `arc auth login` to migrate to %s",
+            "Using legacy config path %s — run `arc auth configure` to migrate to %s",
             _LEGACY_CONFIG_FILE, CONFIG_FILE,
         )
     if config_file.exists():
@@ -447,7 +447,7 @@ def save_config(cfg: ArcConfig, profile: str | None = None) -> None:
         raise ConfigSecurityError(
             f"OS keychain could not store ARC secret(s): {failed}. "
             "Secrets were not written to config.json. "
-            "Use `arc auth login` on a machine with keychain access, or provide "
+            "Use `arc auth configure` on a machine with keychain access, or provide "
             "secrets through environment variables for this session."
         )
 

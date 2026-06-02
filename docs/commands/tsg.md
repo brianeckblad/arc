@@ -53,7 +53,7 @@ To configure a default TSG that loads automatically when ARC starts, store it du
 initial setup:
 
 ```bash
-arc auth login
+arc auth configure
 # When prompted: enter your client_id, client_secret, and tsg_id
 ```
 

@@ -92,8 +92,8 @@ auth_app = typer.Typer(help="Manage ARC credentials.")
 app.add_typer(auth_app, name="auth")
 
 
-@auth_app.command("login")
-def auth_login(
+@auth_app.command("configure")
+def auth_configure(
     scm_bearer_token: Optional[str] = typer.Option(None, "--scm-bearer-token"),
     scm_client_id: Optional[str] = typer.Option(None, "--scm-client-id"),
     scm_secret: Optional[str] = typer.Option(None, "--scm-client-secret"),
@@ -305,7 +305,7 @@ def auth_clear(
     With --profile <name>: removes only that profile's secrets.
 
     This does not delete the config file.  Non-sensitive values (client_id,
-    tsg_id, SSH user/key/port) are preserved.  Run ``arc auth login`` to
+    tsg_id, SSH user/key/port) are preserved.  Run ``arc auth configure`` to
     re-enter credentials afterward.
     """
     clear_keychain(profile=profile)
@@ -315,7 +315,7 @@ def auth_clear(
         console.print("[green]✓[/green] All ARC secrets removed from OS keychain.")
     console.print(
         f"  Config file [dim]{CONFIG_FILE}[/dim] unchanged  "
-        "(run [bold]arc auth login[/bold] to re-enter credentials)"
+        "(run [bold]arc auth configure[/bold] to re-enter credentials)"
     )
 
 
@@ -340,7 +340,7 @@ def auth_delete_profile(
             console.print(
                 f"[red]Cannot delete the active profile '{name}'.[/red]\n"
                 "  Switch to a different profile first: "
-                "[bold]arc auth login --profile <other>[/bold] and use "
+                "[bold]arc auth configure --profile <other>[/bold] and use "
                 "[bold]account <other>[/bold] inside ARC."
             )
             raise typer.Exit(1)
@@ -414,7 +414,7 @@ def auth_test(
     else:
         console.print(
             "  [yellow]⚠[/yellow]  Config file not found — "
-            "run [bold]arc auth login[/bold] to create it"
+            "run [bold]arc auth configure[/bold] to create it"
         )
 
     # ── 3. SCM credentials present ───────────────────────────────────────────
@@ -422,7 +422,7 @@ def auth_test(
     if not cfg.scm.is_configured:
         console.print(
             "  [red]✗[/red]  SCM is not configured.  "
-            "Run [bold]arc auth login[/bold] and provide:\n"
+            "Run [bold]arc auth configure[/bold] and provide:\n"
             "    • client_id + client_secret + tsg_id  (recommended — service account flow)\n"
             "    • OR a pre-issued bearer token"
         )
@@ -442,7 +442,7 @@ def auth_test(
     else:
         console.print(
             "  [green]✓[/green] Bearer token present (no client credentials — token used directly)\n"
-            "  [yellow]⚠[/yellow]  Consider running [bold]arc auth login[/bold] to store "
+            "  [yellow]⚠[/yellow]  Consider running [bold]arc auth configure[/bold] to store "
             "client_id + client_secret + tsg_id for automatic token refresh."
         )
 
@@ -579,13 +579,13 @@ app.add_typer(config_app, name="config")
 # _note fields are ignored by load_config() — they document the file for humans.
 _CONFIG_TEMPLATE = {
     "_note": (
-        "ARC config — fill in non-secret REPLACE_WITH_* values, then run: arc auth login  "
+        "ARC config — fill in non-secret REPLACE_WITH_* values, then run: arc auth configure  "
         "(secrets are prompted securely and stored in the OS keychain)"
     ),
     "scm": {
         "_note": (
             "Use bearer_token OR OAuth. Do not put secrets in this file; leave bearer_token "
-            "and client_secret blank and enter them via arc auth login or env vars."
+            "and client_secret blank and enter them via arc auth configure or env vars."
         ),
         "bearer_token": "",
         "client_id":    "REPLACE_WITH_SCM_CLIENT_ID",
@@ -614,7 +614,7 @@ def config_generate(
 
     Creates the config directory if needed, writes template values, and sets
     file permissions to 0600 (owner read/write only).  Secrets are left blank
-    or as REPLACE_WITH_* placeholders — run ``arc auth login`` afterward to
+    or as REPLACE_WITH_* placeholders — run ``arc auth configure`` afterward to
     enter real values and migrate secrets to the OS keychain.
     """
     if CONFIG_FILE.exists() and not force:
@@ -638,7 +638,7 @@ def config_generate(
         "[bold]Next steps:[/bold]\n"
         f"  1. Edit the file and replace [cyan]REPLACE_WITH_*[/cyan] values:\n"
         f"       [dim]{CONFIG_FILE}[/dim]\n"
-        "  2. Run [bold]arc auth login[/bold] — migrates secrets to the OS keychain\n"
+        "  2. Run [bold]arc auth configure[/bold] — migrates secrets to the OS keychain\n"
         "  3. Run [bold]arc auth show[/bold]  — confirm everything is configured\n\n"
         "  See [bold]help config osx[/bold] / [bold]help config win[/bold] / "
         "[bold]help config nix[/bold] for platform-specific keychain CLI commands."
@@ -736,6 +736,11 @@ def _build_docs_bundle() -> int:
     pages: dict[str, str] = {}
     for md_path in sorted(DOCS_ROOT.rglob("*.md")):
         rel = md_path.relative_to(DOCS_ROOT).as_posix()
+        # The SCM API reference (docs/scm-api/) is developer/agent material —
+        # large OpenAPI endpoint listings pulled by `docsupdate`.  Keep it out
+        # of the user-facing browser bundle so the docs portal stays light.
+        if rel.startswith("scm-api/"):
+            continue
         pages[rel] = md_path.read_text(encoding="utf-8")
 
     js_entries = ",\n".join(
@@ -895,7 +900,7 @@ def scm_get(
     """Perform a raw GET request against the SCM API."""
     cfg = load_config()
     if not cfg.scm.is_configured:
-        console.print("[red]SCM is not configured.[/red] Run [bold]arc auth login[/bold].")
+        console.print("[red]SCM is not configured.[/red] Run [bold]arc auth configure[/bold].")
         raise typer.Exit(1)
 
     client = SCMClient(cfg.scm)

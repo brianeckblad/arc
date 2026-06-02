@@ -14,7 +14,7 @@ the 'arc' command is also available directly from the shell:
 
     arc
     arc --help
-    arc auth login
+    arc auth configure
     arc auth show
     arc scm get /sse/config/v1/addresses --folder Shared
 """
