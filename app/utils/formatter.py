@@ -58,14 +58,24 @@ def format_system_info(data: dict) -> Table:
     return _kv_table(cleaned, title="System Info")
 
 
-def format_devices(devices: list[dict]) -> Table:
-    """Render the SCM device list.
+def format_devices(devices: list[dict], folder: str = "Shared") -> Table:
+    """Render the SCM device list, scoped to ``folder``.
 
     Field names sourced from GET /config/setup/v1/devices (api.strata.paloaltonetworks.com).
+    The endpoint has no folder parameter; it returns every device visible to the
+    token's TSG scope regardless of which folder is currently active.
     Key fields: is_connected (bool), software_version, serial_number, ip_address,
                 ha_state, uptime, model, folder.
+
+    ``folder`` controls the table title:
+      "Shared" (root) → "All Managed Devices — TSG-wide (N)"
+      Any other value → "Devices in <folder> (N)"
     """
-    t = Table(box=box.ROUNDED, title=f"Managed Devices ({len(devices)})", header_style="bold cyan")
+    if folder and folder != "Shared":
+        title = f"Devices in {folder} ({len(devices)})"
+    else:
+        title = f"All Managed Devices — TSG-wide ({len(devices)})"
+    t = Table(box=box.ROUNDED, title=title, header_style="bold cyan")
     t.add_column("",          width=2, no_wrap=True)   # connected indicator
     t.add_column("Hostname",  style="bold", no_wrap=True)
     t.add_column("Serial",    no_wrap=True)
@@ -123,7 +133,11 @@ def format_devices(devices: list[dict]) -> Table:
     return t
 
 
-def format_folder_tree(folders: list[dict], devices: list[dict]) -> Tree:
+def format_folder_tree(
+    folders: list[dict],
+    devices: list[dict],
+    root_folder: str = "",
+) -> Tree:
     """Render the SCM folder hierarchy as a tree, with devices shown in their folder.
 
     Each folder node shows:
@@ -134,10 +148,15 @@ def format_folder_tree(folders: list[dict], devices: list[dict]) -> Tree:
     (a string — the parent folder's name).  Folders whose parent is absent or
     not in the known folder list are treated as roots.
 
+    ``root_folder`` — when provided, renders only the sub-tree rooted at that
+    folder instead of the full TSG-wide hierarchy.  The root folder itself
+    becomes the top-level tree node; all of its descendants are shown beneath
+    it.  Pass ``""`` (default) for the full tree.
+
     pan.dev: GET /config/setup/v1/folders  (carries 'parent' field)
     pan.dev: GET /config/setup/v1/devices  (carries 'folder' field)
     """
-    # Map folder name → list of device hostnames in that folder.
+    # Map folder name → list of device hostnames directly in that folder.
     folder_devices: dict[str, list[str]] = {}
     for d in devices:
         fname    = d.get("folder") or "Shared"
@@ -162,7 +181,38 @@ def format_folder_tree(folders: list[dict], devices: list[dict]) -> Tree:
     for key in children:
         children[key].sort()
 
-    # Root folders: their declared parent is absent or not itself a known folder.
+    def _folder_label(folder_name: str, bold: bool = False) -> str:
+        """Return a Rich-markup label for a folder node, including direct devices."""
+        devs      = folder_devices.get(folder_name, [])
+        dev_count = len(devs)
+        name_style = "bold green" if bold else "green"
+        if devs:
+            dev_str = ", ".join(devs)
+            return (
+                f"[{name_style}]{folder_name}[/{name_style}]  "
+                f"[dim]{dev_count} device{'s' if dev_count != 1 else ''}:[/dim] "
+                f"[cyan]{dev_str}[/cyan]"
+            )
+        return f"[{name_style}]{folder_name}[/{name_style}]"
+
+    def _add_node(branch: Tree, folder_name: str) -> None:
+        """Recursively add a folder and all its descendants to ``branch``."""
+        node = branch.add(_folder_label(folder_name))
+        for child in children.get(folder_name, []):
+            _add_node(node, child)
+
+    # ------------------------------------------------------------------
+    # Scoped mode: render only the sub-tree rooted at root_folder
+    # ------------------------------------------------------------------
+    if root_folder and root_folder in folder_by_name:
+        tree = Tree(_folder_label(root_folder, bold=True))
+        for child in children.get(root_folder, []):
+            _add_node(tree, child)
+        return tree
+
+    # ------------------------------------------------------------------
+    # Full mode: render the entire TSG-wide hierarchy
+    # ------------------------------------------------------------------
     all_names = set(folder_by_name)
     roots = sorted(
         name for name, f in folder_by_name.items()
@@ -170,24 +220,6 @@ def format_folder_tree(folders: list[dict], devices: list[dict]) -> Tree:
     )
 
     tree = Tree("[bold cyan]Folder Structure[/bold cyan]", hide_root=True)
-
-    def _add_node(branch: Tree, folder_name: str) -> None:
-        devs      = folder_devices.get(folder_name, [])
-        dev_count = len(devs)
-        if devs:
-            dev_str = ", ".join(devs)
-            label   = (
-                f"[bold green]{folder_name}[/bold green]  "
-                f"[dim]{dev_count} device{'s' if dev_count != 1 else ''}:[/dim] "
-                f"[cyan]{dev_str}[/cyan]"
-            )
-        else:
-            label = f"[green]{folder_name}[/green]"
-
-        node = branch.add(label)
-        for child in children.get(folder_name, []):
-            _add_node(node, child)
-
     for root in roots:
         _add_node(tree, root)
 

@@ -1074,55 +1074,117 @@ class ArcShell:
     def _cmd_devices(self, args: list[str] | None = None) -> None:
         """Context-aware ls/devices command.
 
-        At root (no device selected) → refresh and show the device list.
-        In device context (after cd <device>) → show that device's detail
-        and its attached snippets.
+        Behaviour depends on active context:
+
+        | Context                | What ls shows                                      |
+        |------------------------|----------------------------------------------------|
+        | No device, Shared      | All TSG-wide devices (flat table)                  |
+        | No device, named folder| Sub-folder tree rooted at that folder + devices    |
+        | Device selected (cd)   | Detail + snippets for current device               |
+        | ls folder              | Full TSG-wide folder hierarchy tree (always)       |
 
         Subcommands:
           ls folder  — show full folder hierarchy with devices in each folder
         """
-        # Subcommand: ls folder
+        # Subcommand: ls folder → always the full TSG-wide tree regardless of context.
         if args and args[0].lower() == "folder":
             self._cmd_ls_folder()
             return
 
-        if not self._state.device:
-            # Root context — show all devices
-            self._refresh_devices()
-            if not self._state.devices_cache:
-                console.print("[yellow]No devices found or API not configured.[/yellow]")
+        # ── Device context ─────────────────────────────────────────────────────────
+        if self._state.device:
+            # Device context — show detail + snippets for the current device
+            if not self._scm:
+                console.print("[yellow]SCM not configured — cannot fetch device detail.[/yellow]")
                 return
-            console.print(fmt.format_devices(self._state.devices_cache))
+            device   = self._state.device
+            hostname = device.get("hostname") or device.get("name") or ""
+            console.print(fmt.format_device_detail(device))
+
+            snippet_names: list[str] = device.get("snippets") or []
+            if not snippet_names:
+                console.print(f"[dim]No snippets attached to {hostname}.[/dim]")
+                return
+
+            all_snippets = self._scm.get_snippets()
+            by_name      = {s.get("name"): s for s in all_snippets}
+            enriched: list[dict] = []
+            for name in snippet_names:
+                s = by_name.get(name)
+                if s and s.get("id"):
+                    try:
+                        enriched.append(self._scm.get_snippet_detail(s["id"]))
+                    except Exception:
+                        enriched.append(s)
+                else:
+                    enriched.append({"name": name})
+            console.print(fmt.format_snippets(enriched, device_filter=hostname))
             return
 
-        # Device context — show detail + snippets for the current device
-        if not self._scm:
-            console.print("[yellow]SCM not configured — cannot fetch device detail.[/yellow]")
+        # ── No device context ──────────────────────────────────────────────────────
+        active_folder = self._state.folder  # "Shared" == root / global context
+
+        if active_folder and active_folder != "Shared":
+            # Named-folder context: render the sub-tree rooted at this folder so the
+            # user sees child folders and their devices, not just direct members.
+            # This mirrors what `ls folder` does but scoped to the active folder.
+            if not self._scm:
+                console.print("[yellow]SCM not configured — cannot fetch folder structure.[/yellow]")
+                return
+
+            console.print("[dim]Loading folder structure and devices…[/dim]", end="\r")
+            folders = self._scm.get_folders_full()
+            devices = self._scm.get_devices()
+            console.print(" " * 55, end="\r")
+
+            if not folders:
+                console.print("[yellow]No folders returned by the SCM API.[/yellow]")
+                return
+
+            # Build a children map so we can count all descendants and their devices.
+            children_map: dict[str, list[str]] = {}
+            for f in folders:
+                fname  = f.get("name", "")
+                parent = f.get("parent", "") or ""
+                if fname:
+                    children_map.setdefault(parent, [])
+                    if fname not in children_map[parent]:
+                        children_map[parent].append(fname)
+
+            def _descendant_folders(name: str) -> list[str]:
+                """Return all folder names reachable from ``name`` (including itself)."""
+                result = [name]
+                for child in children_map.get(name, []):
+                    result.extend(_descendant_folders(child))
+                return result
+
+            subtree_folders = set(_descendant_folders(active_folder))
+            subtree_devices = [d for d in devices if (d.get("folder") or "Shared") in subtree_folders]
+            subfolder_count = len(subtree_folders) - 1  # exclude the root folder itself
+
+            console.print(fmt.format_folder_tree(folders, devices, root_folder=active_folder))
+
+            notes = [f"{subfolder_count} sub-folder(s)", f"{len(subtree_devices)} device(s)"]
+            console.print(f"\n[dim]{', '.join(notes)} under {active_folder}[/dim]")
+            console.print(
+                "[dim]  ls folder → full TSG hierarchy  |  "
+                "folder Shared → return to root  |  "
+                "folder <name> → navigate to sub-folder  |  "
+                "cd <device> → set device context[/dim]"
+            )
             return
-        device = self._state.device
-        hostname = device.get("hostname") or device.get("name") or ""
-        console.print(fmt.format_device_detail(device))
 
-        # Fetch and display snippets attached to this device
-        snippet_names: list[str] = device.get("snippets") or []
-        if not snippet_names:
-            console.print(f"[dim]No snippets attached to {hostname}.[/dim]")
+        # ── Root / Shared context: flat table of all TSG-wide devices ──────────────
+        self._refresh_devices()
+        if not self._state.devices_cache:
+            console.print("[yellow]No devices found or API not configured.[/yellow]")
             return
-
-        all_snippets = self._scm.get_snippets()
-        by_name = {s.get("name"): s for s in all_snippets}
-        enriched: list[dict] = []
-        for name in snippet_names:
-            s = by_name.get(name)
-            if s and s.get("id"):
-                try:
-                    enriched.append(self._scm.get_snippet_detail(s["id"]))
-                except Exception:
-                    enriched.append(s)
-            else:
-                enriched.append({"name": name})
-
-        console.print(fmt.format_snippets(enriched, device_filter=hostname))
+        console.print(fmt.format_devices(self._state.devices_cache, folder="Shared"))
+        console.print(
+            "[dim]All devices across all folders.  "
+            "ls folder → folder hierarchy view  |  "
+            "cd <device> → set device context[/dim]"
+        )
 
     # ------------------------------------------------------------------
     # Command: ls folder
@@ -2431,15 +2493,14 @@ class ArcShell:
 
         # Alignment: 2-space indent, descriptions all start at visual col 28.
         # Spaces after [/cyan] = 28 − 2 − len(visible command text):
-        #   cd <device>    11 → 15 sp   remote <device> 16 → 10 sp
-        #   connect         7 → 19 sp   folder <name>   13 → 13 sp
-        #   account <name> 14 → 12 sp   ?                1 → 25 sp
+        #   cd <device>    11 → 15 sp   remote <device> 15 → 11 sp
+        #   folder <name>  13 → 13 sp   account <name>  14 → 12 sp
+        #   ?               1 → 25 sp
         console.print(
-            "  [cyan]cd <device>[/cyan]               Change Device in SCM  [dim](Tab → device list)[/dim]\n"
+            "  [cyan]cd <device>[/cyan]               Change to Device\n"
             "  [cyan]remote <device>[/cyan]           SSH to device  [dim](keyboard-interactive + 2FA)[/dim]\n"
-            "  [cyan]connect[/cyan]                   SSH to current device\n"
-            "  [cyan]folder <name>[/cyan]             Set SCM Folder  [dim](Tab → folder list | always shown in prompt)[/dim]\n"
+            "  [cyan]folder <name>[/cyan]             Change to Folder\n"
             "  [cyan]account <name>[/cyan]            List / switch credential profiles\n"
-            "  [cyan]?[/cyan]                         Context-aware help  [dim](or  help <topic>)[/dim]"
+            "  [cyan]?[/cyan]                         Context-Aware Help  [dim](or  help <topic>)[/dim]"
         )
         console.print()

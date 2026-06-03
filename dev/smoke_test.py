@@ -324,7 +324,6 @@ _BANNER_LINES: list[tuple[str, str]] = [
     # (visible_command_text,  expected_padding_spaces_after_[/cyan])
     ("cd <device>",     "               "),   # 11 chars → 15 sp → col 28
     ("remote <device>", "           "),        # 15 chars → 11 sp → col 28
-    ("connect",         "                   "), # 7 chars → 19 sp → col 28
     ("folder <name>",   "             "),       # 13 chars → 13 sp → col 28
     ("account <name>",  "            "),        # 14 chars → 12 sp → col 28
     ("?",               "                         "),  # 1 char → 25 sp → col 28

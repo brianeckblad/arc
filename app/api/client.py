@@ -276,19 +276,36 @@ class SCMClient:
     # pan.dev: https://pan.dev/scm/api/config/cloudngfw/setup/
     # ------------------------------------------------------------------
 
-    def get_devices(self, folder: str = "Shared") -> list[dict]:
-        """Return managed NGFW devices.
+    def get_devices(self) -> list[dict]:
+        """Return all managed NGFW devices, TSG-wide (no folder scope).
 
         pan.dev: GET /config/setup/v1/devices
         Spec: openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml
 
-        The folder param is accepted for interface compatibility; the endpoint
-        returns all visible devices regardless of folder.
+        The endpoint accepts no folder parameter — it returns all devices
+        visible to the token's TSG scope.  Default page limit is 200; this
+        method walks all pages (offset-based) so tenants with more than 200
+        devices are returned in full.
         Returns [] on 403 so callers can handle quietly.
         """
+        _PAGE_LIMIT = 200
+        all_devices: list[dict] = []
+        offset = 0
         try:
-            data = self._get_setup("/devices")
-            return data.get("data", [])
+            while True:
+                data = self._get_setup(
+                    "/devices",
+                    params={"limit": _PAGE_LIMIT, "offset": offset},
+                )
+                page = data.get("data", [])
+                all_devices.extend(page)
+
+                total = data.get("total", len(all_devices))
+                offset += len(page)
+                # Stop when we have all records or the page came back empty.
+                if not page or offset >= total:
+                    break
+            return all_devices
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code == 403:
                 return []
