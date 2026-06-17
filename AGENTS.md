@@ -7,6 +7,19 @@
 > which GitHub Copilot reads automatically at the start of every session.
 > Use `update cpi` to update this file and Copilot instructions together.
 
+## Quick Navigation
+
+| I need to... | Read this |
+|--------------|-----------|
+| Add a command | Command Registry Pattern + domain keyword ([network], [security], [objects], [setup], [operations]) |
+| Fix formatting output | `app/utils/formatter.py` + [formatter] keyword |
+| Update shell help/prompts | `app/shell.py` + [shell] keyword |
+| Add SCM API endpoint | SCM Gateway Map section + `app/api/client.py` + [scm-api] keyword |
+| Update docs | `docs/` + Documentation Strategy section |
+| Run validation | `python dev/smoke_test.py` |
+| Review coding standards | `docs/agent-patterns/` (python, javascript, security) |
+| Understand token optimization | ARC Domain Keywords + Token-Efficient Development Patterns sections |
+
 ---
 
 <!--
@@ -261,19 +274,9 @@ git commit -F /tmp/msg.txt && rm /tmp/msg.txt
 
 ## General Python Coding Standards
 
-- **Never `str(e)` in JSON responses** — use a safe error helper that sanitizes the client message and logs full detail server-side only.
-- **All imports at module level** — never inside functions, route handlers, or `except` blocks. Two allowed exceptions (both require a comment): `# Deferred: avoids circular import` and `# Deferred: requires app context`.
-- **Initialize before `try`** — any variable referenced in `except`/`finally` must be assigned before the `try` block, not inside it.
-- **Use Pythonic style** — follow PEP 8 and PEP 257. `snake_case` names, clear docstrings. Pragmatic exception: do not force line-length wrapping when the wrapped version is less readable; readability wins over strict character counts.
-- **Prefer named callables over inline `lambda`** — use `def` for any non-trivial logic.
-- **Use type hints where applicable** — annotate public functions/methods and complex return types.
-- **Format with `black` and sort imports with `isort`** — keep import order stable, but do not contort code solely to satisfy line length; extract a helper or named value when that improves readability.
-- **Catch specific exceptions first** — avoid broad `except Exception` unless you log and re-raise.
-- **No side effects at import time** — module import should define symbols only.
-- **No global mutable state** — avoid module-level mutable variables as implicit shared state; pass state explicitly or use a proper singleton.
-- **Use context managers** — use `with` for all resource management (files, locks, connections, DB sessions). Never manual cleanup.
-- **Fail fast, raise early** — validate inputs at boundaries and raise specific, descriptive exceptions immediately; don't let bad data propagate silently.
-- **Functions do one thing** — keep functions focused and short (≤50 lines is the guideline); extract helpers rather than growing a single function.
+See `docs/agent-patterns/python-standards.md` for detailed examples.
+
+**Key rules:** never `str(e)` in JSON responses; all imports at module level (except `# Deferred:` cases); initialize before `try`; use Pythonic style (PEP 8/257); prefer named callables over `lambda`; type hints on public functions; format with `black`/`isort`; catch specific exceptions first; no side effects at import; no global mutable state; use context managers (`with`); fail fast/raise early; functions do one thing (≤50 lines); meaningful names (avoid `data`, `temp`, `result`); prefer built-ins/stdlib; prefer comprehensions; pin dependencies; use virtual environments.
 - **Meaningful names** — avoid generic names like `data`, `temp`, `result`, `stuff`, `info`; name things by what they represent in the domain.
 - **Prefer built-ins and stdlib** — reach for `collections.Counter`, `collections.defaultdict`, `itertools.chain`, `functools` before writing equivalent loops.
 - **Prefer comprehensions** — use list/dict/set comprehensions over equivalent `for` loops that build a collection, when the result is readable.
@@ -284,60 +287,9 @@ git commit -F /tmp/msg.txt && rm /tmp/msg.txt
 
 ## General JavaScript Coding Standards
 
-### Modal / Pending-State Lifecycle
+See `docs/agent-patterns/javascript-standards.md` for detailed examples.
 
-Confirm flows that mutate pending state must follow a strict single-owner pattern.
-The **confirm function** owns the full lifecycle: snapshot → execute → clean up.
-Executors never read or reset `pending*` / `bulk*` state directly.
-
-```javascript
-// GOOD — single owner, try/finally guarantees cleanup even on error
-async function confirmDelete() {
-    const sku = pendingAction.sku;   // 1. Snapshot state before any async work
-    try {
-        await executeDelete(sku);    // executor takes values as args
-    } finally {
-        pendingAction = { type: null, sku: null };  // always runs
-    }
-}
-
-// Cancel path clears immediately — no async, no try/finally needed
-function cancelDelete() {
-    pendingAction = { type: null, sku: null };
-    closeModal();
-}
-
-// Executor accepts values as parameters — never reads/resets global state
-async function executeDelete(sku) { ... }
-```
-
-### Declare Related State Variables Together
-
-All variables that form a single logical state group must be declared in one
-contiguous block at the top of their scope. Do not scatter or redeclare.
-
-```javascript
-// GOOD — all related state in one block
-let currentAction   = null;
-let selectedItems   = [];
-let scheduleDays    = 0;
-```
-
-### Use Registry Arrays for Grouped DOM Operations
-
-When multiple modals (or other elements) must be hidden/reset together, define a
-constant array of their IDs and iterate — do not duplicate calls across functions.
-
-```javascript
-const MODAL_IDS = ['confirmModal', 'selectionModal', 'actionModal'];
-
-function closeAllModals() {
-    MODAL_IDS.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-    });
-}
-```
+**Key patterns:** modal/pending-state single-owner lifecycle (confirm owns snapshot → execute → cleanup); declare related state variables together; use registry arrays for grouped DOM operations.
 
 ---
 
@@ -417,115 +369,17 @@ def run(ctx: ExecutionContext, args: dict) -> None:
 
 ## General Secure Coding Baseline — All Apps
 
-Apply these rules to every app, CLI, worker, script, and service — not just web
-apps.
+See `docs/agent-patterns/security-checklist.md` for detailed examples.
 
-- **Threat-model before coding** — identify inputs, trust boundaries, secrets, filesystem/network access, and destructive actions.
-- **Validate at boundaries** — parse and validate external input before it reaches business logic.
-- **Authorize server-side** — never trust a client-provided user, role, path, tenant, or account identifier for authorization.
-- **Keep secrets out of code** — use environment variables or a secrets manager; never commit `.env`, tokens, private keys, or decrypted vault data.
-- **Sanitize logs** — never log credentials, tokens, cookies, passwords, MFA codes, private URLs, or full auth request bodies.
-- **Avoid dangerous primitives** — no `eval`, `exec`, unsafe deserialization, shell interpolation, or raw SQL/XML/HTML string concatenation with user input.
-- **Use safe subprocess calls** — pass argument lists with `shell=False`; never concatenate user input into commands.
-- **Use timeouts for I/O** — network calls, subprocesses, locks, and long operations need explicit timeouts where supported.
-- **Fail closed** — malformed state, missing authorization, expired sessions, and invalid config should deny access, not guess permissively.
-- **Prefer least privilege** — credentials, IAM roles, file permissions, and API tokens should have only the access required.
-- **Audit dependencies** — pin versions and check for known CVEs before deployment.
-- **Handle destructive actions carefully** — require explicit confirmation, scope operations narrowly, and log enough metadata to audit without exposing secrets.
+**Core rules:** threat-model before coding; validate at boundaries; authorize server-side; keep secrets out of code; sanitize logs; avoid dangerous primitives (`eval`, `exec`, shell interpolation); use safe subprocess calls (`shell=False`); use timeouts for I/O; fail closed; prefer least privilege; audit dependencies; handle destructive actions carefully.
 
 ---
 
 ## Web App Security — General Rules
 
-Apply these rules to any Flask / Python web application. They are language and
-framework patterns, not project-specific policy.
+See `docs/agent-patterns/security-checklist.md` for detailed examples and Flask/Python-specific patterns.
 
-### Error responses — never leak internals
-
-Never return a raw exception message to the client. Use a sanitized error helper
-that returns a generic message to the caller and logs the full detail server-side:
-
-```python
-# BAD
-return jsonify({'error': str(e)}), 500
-
-# GOOD
-logger.exception("operation failed")
-return jsonify({'error': safe_error_message(e)}), 500
-```
-
-### Logging — never log sensitive material
-
-Never log: auth tokens, API keys, session cookies, third-party OAuth tokens,
-passwords, MFA codes, QR payloads, AWS/cloud credentials, or full request bodies
-for authentication endpoints.
-
-### Authentication fundamentals
-
-- Never hardcode credentials, API keys, or secrets in source code or committed config files.
-- Read all secrets from environment variables or a secrets manager — never from git-tracked files.
-- `SECRET_KEY` / session secret must be unique per deployment; auto-randomize in dev, require from secrets store in prod.
-- Session cookies in production: `HttpOnly=True`, `Secure=True`, `SameSite=Lax`, explicit lifetime.
-- Authorization is always derived from the server-side session — never from a request parameter, body field, or header claiming identity.
-
-### TOTP / 2FA — implementation rules
-
-- TOTP enrollment **must require the current password**. A stolen active session alone must not enroll an attacker-controlled authenticator.
-- TOTP setup secrets are short-lived. Clear pending setup state after success or expiry; never log TOTP secrets, QR payloads, or one-time codes.
-- Implement a two-step login flow: password success → `totp_pending`; valid TOTP code → `logged_in=True`.
-- Pending TOTP sessions must expire quickly (≤5 minutes), validate that the user still has TOTP enabled, and be rate-limited separately from password attempts.
-- Session timestamps (created, last-activity, TOTP pending) must be coerced/validated before arithmetic so malformed or legacy sessions fail closed.
-
-### Input validation
-
-- Validate every incoming field: required, type, explicit length cap, numeric range, allow-list of values.
-- Cap string lengths server-side — never rely on browser/client-side validation.
-- Reject unknown or unexpected fields rather than silently ignoring them.
-- Output encoding: template auto-escaping must always be on; never use `| safe` on user-controlled data.
-
-### File uploads
-
-- Sanitize every client-supplied filename with `werkzeug.utils.secure_filename()` before using it in a path or storage key.
-- Validate file content server-side (e.g., `PIL.Image.open(stream).verify()` for images) — do not trust file extension or `Content-Type` header.
-- Allow-list extensions and MIME types; deny-lists are incomplete.
-- Generate the stored filename (UUID, hash, or app-defined key) — never reuse the user-supplied filename in storage.
-- Enforce server-side size caps; catch decompression-bomb errors and return 400.
-
-### Path safety
-
-- Never build filesystem paths by string concatenation with user input — use `pathlib.Path` or `os.path.join` + `secure_filename`, then resolve and confine:
-  ```python
-  base = Path(allowed_dir).resolve()
-  target = (base / secure_filename(user_input)).resolve()
-  if not target.is_relative_to(base):
-      abort(400)
-  ```
-- Reject `..`, absolute paths, and null bytes from any user-supplied path component.
-
-### Security response headers
-
-Emit these on every response in production. If a reverse proxy (Nginx) also sets
-them, set them in only one place — duplicate headers confuse browsers:
-
-| Header | Value |
-|--------|-------|
-| `X-Content-Type-Options` | `nosniff` |
-| `X-Frame-Options` | `DENY` |
-| `Referrer-Policy` | `strict-origin-when-cross-origin` |
-| `Content-Security-Policy` | `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'` |
-| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains; preload` (HTTPS only) |
-
-### Rate limiting & brute-force protection
-
-- Rate-limit login, registration, password-reset, and MFA verification endpoints separately from general API endpoints — they need tighter limits.
-- Auto-block IPs that hit repeated attack patterns; persist the block list so it survives app restarts.
-- Apply rate limiting at the reverse proxy layer (Nginx) and optionally also at the app layer for defense-in-depth.
-
-### Dependency & supply-chain security
-
-- Audit dependencies with `pip-audit` (Python) or `npm audit` (Node) before each deployment.
-- HIGH or CRITICAL CVE = deployment blocker; do not ship until resolved or explicitly accepted.
-- Do not add a new dependency without justification; prefer stdlib or already-present packages.
+**Quick reference:** never leak internals in errors; never log sensitive material; never hardcode secrets; session cookies must be HttpOnly/Secure/SameSite; TOTP enrollment requires password; validate all input (type, length, range); sanitize file uploads (`secure_filename()`); confine paths (`Path.resolve()` + `is_relative_to()`); emit security headers (CSP, HSTS, X-Frame-Options); rate-limit auth endpoints; audit dependencies before deployment.
 
 ---
 
@@ -730,6 +584,64 @@ Each module under `app/commands/` maps to one SCM API domain or operational grou
 `registry.py` is a **thin assembler only** — it imports each module's `COMMANDS` dict, merges them, builds `SORTED_COMMANDS` and `CATEGORIES`, and exposes `match_command()`. No handler logic goes in `registry.py`.
 
 **When adding a new SCM endpoint family**, create `app/commands/<domain>.py`, add the base URL constant and `_get_<domain>()` helper to `SCMClient`, and add the module to the merge block in `registry.py`. Nothing else needs to change.
+
+---
+
+### ARC Domain Keywords — For Scoped Agent Work
+
+When an agent needs to work on a specific domain or feature area, use these keywords in your prompt to scope the context efficiently:
+
+| Keyword | Scope | Key Files | Use When |
+|---------|-------|-----------|----------|
+| `network` | Network config commands | `app/commands/network.py`, `docs/scm-api/specs/network.md` | Adding/fixing interface, zone, routing, or HA commands |
+| `security` | Security policy commands | `app/commands/security.py`, `docs/scm-api/specs/security.md` | Working on security-rules, URL categories, profiles |
+| `objects` | Address/service objects | `app/commands/objects.py`, `docs/scm-api/specs/objects.md` | Adding address, service, tag, or EDL commands |
+| `setup` | Device/folder/snippet mgmt | `app/commands/setup.py`, `docs/scm-api/specs/setup.md` | Device inventory, folder ops, snippet management |
+| `operations` | Jobs, commit, live device | `app/commands/operations.py`, `docs/scm-api/specs/operations*.md` | Commit operations, job tracking, live device commands |
+| `formatter` | Output rendering | `app/utils/formatter.py` | Adding new table/panel renderers |
+| `shell` | REPL, help, completion | `app/shell.py`, `app/theme.py` | Shell UX, prompts, help system, theming |
+| `auth` | Authentication/credentials | `app/cli.py` (auth commands), `app/config.py` | Profile management, credential storage |
+| `scm-api` | SCM REST integration | `app/api/client.py`, `docs/scm-api/` | Adding new SCM API endpoints |
+
+**Usage pattern:**
+- "Add support for BGP peer listing [network]" → Agent reads network.py, network.md spec
+- "Fix security policy table rendering [formatter]" → Agent reads formatter.py only
+- "Add OAuth refresh [auth]" → Agent reads cli.py auth commands, config.py
+
+**Token savings:** Using a keyword prevents the agent from reading all 5 domain modules + full AGENTS.md when only 1-2 files are relevant.
+
+---
+
+### Token-Efficient Development Patterns
+
+When working on ARC as an agent, follow these patterns to minimize token usage:
+
+#### Read selectively using domain keywords
+- Use `[domain]` keywords (network, security, objects, setup, operations) to scope file reads
+- Read `docs/scm-api/specs/<domain>.md` for API reference instead of full OpenAPI YAML
+- Check `docs/commands/<command>.md` for existing command docs before exploring code
+
+#### Leverage existing infrastructure
+- **Command registry pattern:** Add commands by creating entries in domain module's `COMMANDS` dict
+- **No dispatcher changes needed:** Registry auto-merges; tab completion auto-picks up new commands  
+- **Argument parsing is automatic:** Use `KEYWORD_PARAMS` for named args, positional for the rest
+- **Don't reinvent formatters:** Check `formatter.py` for existing table/panel builders before writing new ones
+
+#### Reuse before creating
+- Before writing a new SCM API method, check if `app/api/client.py` already has a similar getter
+- Before adding a formatter, check if an existing one can be parameterized
+- Before writing table construction code, use existing table builder patterns
+
+#### Prefer targeted smoke tests
+- Run `python dev/smoke_test.py` after changes — it's fast and covers 86+ checks
+- Add a formatter call to section 6 if you added a new renderer
+- Add a builtin to `_BUILTIN_NAMES` if you added a shell command
+- Don't run full integration tests unless the change affects API calls
+
+#### Minimize doc reading for simple changes
+- For typo fixes, argument tweaks, or one-line changes: read only the target file
+- For new commands following existing patterns: read one example command in the same domain
+- For shell UX changes: read only the relevant section of `app/shell.py` (use line ranges)
 
 ---
 

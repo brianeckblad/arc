@@ -1,24 +1,4 @@
-"""Network commands — SCM /config/network/v1 endpoint group.
-
-Covers: ethernet interfaces, aggregate interfaces, loopback interfaces,
-security zones, static routes, virtual routers, HA configuration.
-
-pan.dev spec: openapi-specs/scm/config/ngfw/network/  (verify exact file at pan.dev)
-Base URL:     https://api.strata.paloaltonetworks.com/config/network/v1
-
-All commands read SCM-managed network configuration — the config that has
-been defined in snippets, folders, or at the device level in SCM and will be
-pushed to managed devices via 'commit'.
-
-Commands in this module:
-  show interface all                — all interfaces in active folder
-  show interface <name>             — single interface detail
-  show routing route                — static routes in active folder
-  show routing summary              — virtual routers / routing profiles
-  show zone                         — security zones in active folder
-  show high-availability all        — full HA configuration
-  show high-availability state      — HA state summary
-"""
+"""Network commands (interfaces, zones, routing, HA). See docs/commands/ and docs/scm-api/specs/network.md for details."""
 
 from __future__ import annotations
 

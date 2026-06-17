@@ -1,27 +1,4 @@
-"""Command registry — thin assembler that merges all domain-specific modules.
-
-ARC commands are organised into modules that mirror the SCM REST API URI
-structure from pan.dev (https://pan.dev/scm/api/):
-
-  Module                  SCM URI prefix / domain
-  ─────────────────────── ─────────────────────────────────────────────────
-  commands/setup.py       /config/setup/v1    devices, snippets, folders
-  commands/objects.py     /config/objects/v1  addresses, services, tags, EDLs
-  commands/security.py    /config/security/v1 security-rules, url-categories
-  commands/network.py     (SSH-only today)    interfaces, routing, zones, HA
-  commands/operations.py  (SSH-only today)    system, jobs, logs, ping, commit
-
-Adding a new command:
-  1. Pick the right module above (or create a new one for a new SCM domain).
-  2. Write a private _handler(ctx, args) function in that module.
-  3. Add a CommandDef entry to that module's COMMANDS dict.
-  4. Add/update docs/commands/<slug>.md for `help <command>`.
-  5. Add a renderer to formatter.py + dispatch entry in shell.py if needed.
-  6. Validate: python -m py_compile app/commands/registry.py app/shell.py
-
-This file imports nothing from the domain modules at import time except the
-COMMANDS dicts — no circular-import risk, no side effects.
-"""
+"""Command registry — merges domain modules. See AGENTS.md Command Registry Pattern section for details."""
 
 from __future__ import annotations
 
@@ -71,6 +48,15 @@ for _key, _cmd in COMMANDS.items():
 # Arg parser
 # ---------------------------------------------------------------------------
 
+# Keywords that legitimately consume the next token as a named value.
+# Add entries here when a new command needs ``keyword value`` syntax.
+KEYWORD_PARAMS: set[str] = {
+    "id", "name", "host", "source", "destination", "application",
+    "protocol", "destination-port", "description", "count",
+    "source-user", "category", "service", "to", "from",
+}
+
+
 def _parse_args(tokens: list[str]) -> dict:
     """Parse remainder tokens into a dict of named / positional args.
 
@@ -88,13 +74,6 @@ def _parse_args(tokens: list[str]) -> dict:
     The first positional also sets "id", "name", and "host" as shortcuts so
     handler code can use whichever is most semantically appropriate.
     """
-    # Keywords that legitimately consume the next token as a named value.
-    # Add entries here when a new command needs ``keyword value`` syntax.
-    KEYWORD_PARAMS = {
-        "id", "name", "host", "source", "destination", "application",
-        "protocol", "destination-port", "description", "count",
-        "source-user", "category", "service", "to", "from",
-    }
 
     result: dict = {}
     positional: list[str] = []

@@ -1,20 +1,4 @@
-"""Setup commands — SCM /config/setup/v1 endpoint group.
-
-Covers: devices, snippets, folders.
-pan.dev spec: openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml
-Base URL:     https://api.strata.paloaltonetworks.com/config/setup/v1
-
-Commands in this module:
-  show devices                      — list all SCM-managed devices
-  show device [<name>]              — detail for one device
-  show device <name> snippets       — snippets attached to a device
-  show snippets                     — list snippets scoped to current context
-                                      (device context → device's snippets)
-                                      (folder context → snippets attached to folder)
-                                      (root "Shared" → snippets with no folder filter)
-  show snippets global              — list ALL snippets regardless of context
-  show snippet <name>               — full detail for one snippet
-"""
+"""Setup commands (devices, snippets, folders). See docs/commands/ and docs/scm-api/specs/setup.md for details."""
 
 from __future__ import annotations
 

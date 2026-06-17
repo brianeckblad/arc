@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """ARC smoke test suite.
 
-Covers three concern areas:
-  1. Syntax       — py_compile every Python module under app/
-  2. Imports      — every module imports cleanly (no side-effect errors)
-  3. Registry     — COMMANDS dict is structurally valid (no lambdas, required fields, etc.)
-  4. Arg parser   — _parse_args() and match_command() return the right shapes
-  5. Config types — ArcConfig / SshConfig dataclasses default-construct correctly
-  6. Formatter    — key renderer functions accept sample data without raising
-  7. CLI banner   — every banner line lands descriptions at visual column 28
+Covers these concern areas:
+  1. Syntax            — py_compile every Python module under app/
+  2. Imports           — every module imports cleanly (no side-effect errors)
+  3. Registry          — COMMANDS dict is structurally valid (no lambdas, required fields, etc.)
+  4. Arg parser        — _parse_args() and match_command() return the right shapes
+  5. Token opts        — KEYWORD_PARAMS is module-level constant
+  6. Config types      — ArcConfig / SshConfig dataclasses default-construct correctly
+  7. Formatter         — key renderer functions accept sample data without raising
+  8. CLI banner        — every banner line lands descriptions at visual column 28
+  9. Inline help       — builtin names match actual implementation
+  10. Theme            — theme keys have display labels
 
 Run directly:
     python dev/smoke_test.py
@@ -18,9 +21,10 @@ Run from pre-commit hook:
 
 MAINTENANCE NOTE:
   • After any change to app/ modules → re-run to verify imports + registry.
-  • After any change to the CLI banner in app/shell.py → re-run section 7.
+  • After any change to the CLI banner in app/shell.py → re-run section 8.
   • After adding a new CommandDef → registry tests auto-pick it up; no edit needed.
-  • After adding a new formatter function → add a minimal call in section 6.
+  • After adding a new formatter function → add a minimal call in section 7.
+  • After token optimization code changes → verify section 5 passes.
 """
 
 from __future__ import annotations
@@ -220,11 +224,30 @@ def test_arg_parser() -> None:
 
 
 # ---------------------------------------------------------------------------
-# 5. Config types
+# 5. Token optimization checks
+# ---------------------------------------------------------------------------
+
+def test_token_optimizations() -> None:
+    section("5. Token optimization checks")
+
+    from app.commands import registry
+
+    # 5a — KEYWORD_PARAMS is a module-level constant (not recreated per call)
+    if hasattr(registry, 'KEYWORD_PARAMS'):
+        if isinstance(registry.KEYWORD_PARAMS, set):
+            ok("KEYWORD_PARAMS is module-level constant (set)")
+        else:
+            fail("KEYWORD_PARAMS exists but is not a set", f"type: {type(registry.KEYWORD_PARAMS)}")
+    else:
+        fail("KEYWORD_PARAMS not found at module level in registry.py")
+
+
+# ---------------------------------------------------------------------------
+# 6. Config types
 # ---------------------------------------------------------------------------
 
 def test_config() -> None:
-    section("5. Config types")
+    section("6. Config types")
 
     from app.config import ArcConfig, SSHConfig, SCMConfig
 
@@ -265,11 +288,11 @@ def test_config() -> None:
 
 
 # ---------------------------------------------------------------------------
-# 6. Formatter
+# 7. Formatter
 # ---------------------------------------------------------------------------
 
 def test_formatter() -> None:
-    section("6. Formatter")
+    section("7. Formatter")
 
     from app.utils import formatter
 
@@ -309,7 +332,7 @@ def test_formatter() -> None:
 
 
 # ---------------------------------------------------------------------------
-# 7. CLI banner alignment
+# 8. CLI banner alignment
 #    Descriptions in the startup banner must all start at visual column 28.
 #    (2 spaces indent + visible command text + padding spaces = 28)
 #
@@ -401,7 +424,7 @@ def test_banner_alignment() -> None:
 
 
 # ---------------------------------------------------------------------------
-# 8. Inline help alignment
+# 9. Inline help alignment
 #    All command names in every ? menu section must:
 #      a) contain no [markup] tags (Rich silently eats them, breaking alignment)
 #      b) fit within _HELP_CMD_WIDTH chars so descriptions align on the same column
@@ -525,7 +548,7 @@ def test_inline_help_alignment() -> None:
 
 
 # ---------------------------------------------------------------------------
-# 9. Theme system
+# 10. Theme system
 # ---------------------------------------------------------------------------
 
 def test_theme() -> None:
@@ -590,6 +613,7 @@ def main() -> int:
     test_imports()
     test_registry()
     test_arg_parser()
+    test_token_optimizations()
     test_config()
     test_formatter()
     test_banner_alignment()

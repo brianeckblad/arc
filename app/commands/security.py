@@ -1,14 +1,4 @@
-"""Security commands — SCM /config/security/v1 endpoint group.
-
-Covers: security-rules, URL categories, decryption profiles, DNS security profiles.
-pan.dev spec: openapi-specs/scm/config/ngfw/security/security-services-R2-2026.yaml
-Base URL:     https://api.strata.paloaltonetworks.com/config/security/v1
-
-Commands in this module:
-  show security policy              — list security rules (pre-rules) in active folder
-  show url-categories               — list custom URL categories
-  test security-policy-match        — test whether traffic matches a rule (SSH only)
-"""
+"""Security commands (security-rules, URL categories, policy-match). See docs/commands/ and docs/scm-api/specs/security.md for details."""
 
 from __future__ import annotations
 

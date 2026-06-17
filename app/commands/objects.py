@@ -1,16 +1,4 @@
-"""Objects commands — SCM /config/objects/v1 endpoint group.
-
-Covers: addresses, address-groups, services, tags, external-dynamic-lists (EDLs).
-pan.dev spec: openapi-specs/scm/config/ngfw/objects/objects_v1.3_feb.yaml
-Base URL:     https://api.strata.paloaltonetworks.com/config/objects/v1
-
-Commands in this module:
-  show address                      — list address objects in the active folder
-  show address-group                — list address groups
-  show service                      — list service objects
-  show tag                          — list tags
-  show external-dynamic-list        — list EDLs
-"""
+"""Objects commands (addresses, services, tags, EDLs). See docs/commands/ and docs/scm-api/specs/objects.md for details."""
 
 from __future__ import annotations
 

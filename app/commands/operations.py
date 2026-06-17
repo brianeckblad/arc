@@ -1,19 +1,4 @@
-"""Operations commands — system info, jobs, commit, and live-device operational commands.
-
-SCM-backed commands (API, no SSH required):
-  show system info                  — device record from SCM (model, SW version, serial, …)
-  show jobs all                     — all SCM jobs (TSG-wide)
-  show jobs id <id>                 — one job by ID
-  commit [description <text>]       — push candidate config to managed devices
-
-Live-device operational commands (SCM has no API for these — use --remote):
-  show system resources             — live CPU / memory  (use --remote)
-  show system disk-space            — live disk usage    (use --remote)
-  request system software check     — available SW updates (use --remote)
-  show log system                   — system log         (use --remote)
-  show log traffic                  — traffic log        (use --remote)
-  ping host <ip>                    — ping from device   (use --remote)
-"""
+"""Operations commands (jobs, commit, system info, logs). See docs/commands/ and docs/scm-api/specs/operations*.md for details."""
 
 from __future__ import annotations
 
