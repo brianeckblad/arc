@@ -147,6 +147,32 @@ notes: <anything you already know changed on pan.dev>
 
 ---
 
+## Debug Error → Files Reference
+
+When you see an error during development, this table points to the 1–2 most likely files.
+
+| Error symptom | Check these files | Why |
+|---|---|---|
+| `Unknown command: ...` | `app/commands/<module>.py` COMMANDS dict, `dev/CODE_MAP.md` | Command not registered, or typo in shell dispatcher |
+| `AttributeError: no attribute 'get_X'` | `app/api/client.py`, `docs/scm-api/specs/<category>.md` | API method missing or endpoint signature changed |
+| `TypeError: api_handler() takes ... arguments` | `app/commands/<module>.py` handler signature, `app/commands/base.py` ExecutionContext | Handler param mismatch with dispatcher call |
+| `KeyError` / `'NoneType' object is not subscriptable` | Command handler logic, `docs/scm-api/specs/<category>.md` schema | API response key missing; check endpoint docs |
+| `KeyboardInterrupt` during SSH | `app/ssh/manager.py` paramiko session, `dev/CODE_MAP.md` (`_cmd_connect` range) | SSH timeout or ctrl-C during interactive mode |
+| Tab completion returns empty | `app/shell.py` completer (use `dev/CODE_MAP.md` for `_cmd_cd`/`_cmd_folder`), `dev/smoke_test.py` section 8 | Cache not populated or completer not wired |
+| `feature_flag='...' not recognized` | `app/features.py` FeatureFlags dataclass | Feature flag name not in FeatureFlags or typo |
+| Theme colour not showing | `app/cli_theme.json`, `app/theme.py` THEME_KEYS, `dev/smoke_test.py` section 10 | Theme key not in THEME_KEYS or JSON has bad value |
+| Inline help `?` shows wrong list | `app/shell_catalog.py` SHELL_HELP_ROWS, `dev/smoke_test.py` section 9 | Builtin help entry missing or command not registered in right scope |
+| `render='unknown'` error | `docs/RENDER_CATALOG.md`, `app/utils/formatter.py`, `app/shell.py _render()` | Render key not in catalog; add formatter function + dispatch case |
+
+**General debug flow:**
+1. Run the failing command and note exact error text
+2. Look up error in this table → identifies 1–2 files
+3. Read those files (use `dev/CODE_MAP.md` for line ranges on large files)
+4. Run `python dev/smoke_test.py --file <filename>` to catch wiring issues
+5. Reproduce the command to verify fix
+
+---
+
 ## Add a Registered Command — 5 Steps
 
 ```python
