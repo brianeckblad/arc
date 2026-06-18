@@ -31,8 +31,6 @@ SHELL_TOPICS = {
     "connect":  "commands/connect.md",
     "exit":     "commands/exit.md",
     "quit":     "commands/exit.md",
-    "ls":       "commands/ls.md",
-    "devices":  "commands/ls.md",
     "pwd":      "commands/pwd.md",
     "folder":   "commands/folder.md",
     "clear":    "commands/clear.md",
@@ -47,6 +45,7 @@ GENERAL_TOPICS = {
     "architecture":     "architecture.md",
     "configuration":    "configuration.md",
     "config":           "configuration.md",
+    # Platform-specific config help — DO NOT REMOVE (user-facing help topics)
     "config osx":       "config-osx.md",
     "config mac":       "config-osx.md",
     "config win":       "config-win.md",

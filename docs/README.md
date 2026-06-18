@@ -11,6 +11,13 @@ SCM environments with interactive SSH access to managed PAN-OS devices.
 - `help show system info` opens the command detail page for `show system info`.
 - `help remote` explains the interactive SSH session model.
 
+## Configuration help
+
+- `help config` — general configuration overview
+- `help config osx` — macOS-specific setup (Keychain, Touch ID)
+- `help config win` — Windows setup (Credential Manager)
+- `help config nix` — Linux setup (Secret Service, headless/CI)
+
 ## Core workflows
 
 1. Set the SCM folder with `folder <name>`.

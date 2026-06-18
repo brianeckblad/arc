@@ -29,6 +29,10 @@ Inside ARC, run:
 
 ```text
 help usage
+help configuration
+help config osx         # macOS-specific setup
+help config win         # Windows-specific setup
+help config nix         # Linux-specific setup
 help commands
 help show system info
 help remote
