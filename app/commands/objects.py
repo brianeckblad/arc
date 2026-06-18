@@ -239,3 +239,272 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
 COMMANDS.update(_EXTRA_COMMANDS)
 
 
+# ---------------------------------------------------------------------------
+# Write handlers — configure mode, all POST/DELETE via SCM API
+# ---------------------------------------------------------------------------
+
+def _set_address(ctx: ExecutionContext, args: dict) -> Any:
+    """Create an address object in the active SCM folder.
+
+    Usage:
+      set address <name> ip-netmask <value>   e.g.  10.1.0.0/24
+      set address <name> ip-range <value>     e.g.  10.1.0.1-10.1.0.10
+      set address <name> fqdn <value>         e.g.  *.example.com
+      set address <name> ip-wildcard <value>  e.g.  10.1.0.0/255.0.255.0
+
+    pan.dev: POST /config/objects/v1/addresses
+    """
+    scm  = require_scm(ctx)
+    name = (args.get("name") or "").strip()
+    pos  = args.get("_positional", [])
+
+    if not name:
+        raise ValueError("Usage: set address <name> ip-netmask|fqdn|ip-range|ip-wildcard <value>")
+
+    # Address type comes from the remaining positional tokens: <type> <value>
+    # Handled by the dispatcher: set address myobj ip-netmask 10.0.0.0/8
+    # After matching "set address", args["name"] = first positional = name
+    # remaining positionals contain [type, value]
+    addr_type = pos[1].lower() if len(pos) > 1 else ""
+    addr_val  = pos[2] if len(pos) > 2 else ""
+
+    _TYPE_MAP = {
+        "ip-netmask": "ip_netmask",
+        "ip-range":   "ip_range",
+        "fqdn":       "fqdn",
+        "ip-wildcard": "ip_wildcard",
+    }
+    if addr_type not in _TYPE_MAP:
+        raise ValueError(
+            f"Unknown address type {addr_type!r}.  "
+            "Use: ip-netmask | ip-range | fqdn | ip-wildcard"
+        )
+    if not addr_val:
+        raise ValueError(f"Missing value for address type {addr_type}")
+
+    payload = {
+        "name":   name,
+        "folder": ctx.folder,
+        _TYPE_MAP[addr_type]: addr_val,
+    }
+    result = scm.create_address(payload)
+    return f"[green]✓[/green] Address [bold]{name}[/bold] created  (id: {result.get('id', '?')})"
+
+
+def _delete_address(ctx: ExecutionContext, args: dict) -> Any:
+    """Delete an address object by name from the active SCM folder.
+
+    Usage: delete address <name>
+    pan.dev: DELETE /config/objects/v1/addresses/{id}
+    """
+    scm  = require_scm(ctx)
+    name = (args.get("name") or "").strip()
+    if not name:
+        raise ValueError("Usage: delete address <name>")
+    items = scm.get_addresses(folder=ctx.folder)
+    obj_id = scm._find_id_by_name(items, name)
+    if not obj_id:
+        raise ValueError(f"Address '{name}' not found in folder '{ctx.folder}'")
+    scm.delete_address(obj_id)
+    return f"[green]✓[/green] Address [bold]{name}[/bold] deleted."
+
+
+def _set_service(ctx: ExecutionContext, args: dict) -> Any:
+    """Create a service object.
+
+    Usage:
+      set service <name> tcp port <n|range>    e.g.  set service HTTP tcp port 80
+      set service <name> udp port <n|range>    e.g.  set service DNS udp port 53
+
+    pan.dev: POST /config/objects/v1/services
+    """
+    scm  = require_scm(ctx)
+    pos  = args.get("_positional", [])
+    name = pos[0] if pos else (args.get("name") or "")
+    proto = pos[1].lower() if len(pos) > 1 else ""
+    port  = pos[3] if len(pos) > 3 else (args.get("port") or "")
+
+    if not name or proto not in ("tcp", "udp") or not port:
+        raise ValueError(
+            "Usage: set service <name> tcp|udp port <n|range>\n"
+            "  e.g. set service HTTP tcp port 80\n"
+            "       set service DNS  udp port 53"
+        )
+    payload = {
+        "name":   name,
+        "folder": ctx.folder,
+        "protocol": {proto: {"port": str(port)}},
+    }
+    result = scm.create_service(payload)
+    return f"[green]✓[/green] Service [bold]{name}[/bold] ({proto}/{port}) created  (id: {result.get('id', '?')})"
+
+
+def _delete_service(ctx: ExecutionContext, args: dict) -> Any:
+    """Delete a service object by name.
+
+    Usage: delete service <name>
+    """
+    scm  = require_scm(ctx)
+    name = (args.get("name") or "").strip()
+    if not name:
+        raise ValueError("Usage: delete service <name>")
+    items  = scm.get_services(folder=ctx.folder)
+    obj_id = scm._find_id_by_name(items, name)
+    if not obj_id:
+        raise ValueError(f"Service '{name}' not found in folder '{ctx.folder}'")
+    scm.delete_service(obj_id)
+    return f"[green]✓[/green] Service [bold]{name}[/bold] deleted."
+
+
+def _set_tag(ctx: ExecutionContext, args: dict) -> Any:
+    """Create a tag.
+
+    Usage: set tag <name> [color <color>]
+      e.g. set tag Production
+           set tag Production color red
+    pan.dev: POST /config/objects/v1/tags
+    """
+    scm  = require_scm(ctx)
+    pos  = args.get("_positional", [])
+    name = pos[0] if pos else (args.get("name") or "")
+    if not name:
+        raise ValueError("Usage: set tag <name> [color <color>]")
+    payload: dict = {"name": name, "folder": ctx.folder}
+    color = args.get("color") or (pos[2] if len(pos) > 2 and pos[1].lower() == "color" else "")
+    if color:
+        payload["color"] = color
+    result = scm.create_tag(payload)
+    return f"[green]✓[/green] Tag [bold]{name}[/bold] created  (id: {result.get('id', '?')})"
+
+
+def _delete_tag(ctx: ExecutionContext, args: dict) -> Any:
+    """Delete a tag by name.  Usage: delete tag <name>"""
+    scm  = require_scm(ctx)
+    name = (args.get("name") or "").strip()
+    if not name:
+        raise ValueError("Usage: delete tag <name>")
+    items  = scm.get_tags(folder=ctx.folder)
+    obj_id = scm._find_id_by_name(items, name)
+    if not obj_id:
+        raise ValueError(f"Tag '{name}' not found in folder '{ctx.folder}'")
+    scm.delete_tag(obj_id)
+    return f"[green]✓[/green] Tag [bold]{name}[/bold] deleted."
+
+
+def _set_address_group(ctx: ExecutionContext, args: dict) -> Any:
+    """Create a static address group.
+
+    Usage: set address-group <name> static <member1> [<member2> ...]
+      e.g. set address-group DMZ-Servers static web-server db-server
+    pan.dev: POST /config/objects/v1/address-groups
+    """
+    scm = require_scm(ctx)
+    pos = args.get("_positional", [])
+    name = pos[0] if pos else (args.get("name") or "")
+    if not name:
+        raise ValueError("Usage: set address-group <name> static <member1> [<member2> ...]")
+    # Members: everything after "static"
+    try:
+        static_idx = [p.lower() for p in pos].index("static")
+        members = pos[static_idx + 1:]
+    except ValueError:
+        members = []
+    if not members:
+        raise ValueError("At least one member is required: set address-group <name> static <member>")
+    payload = {"name": name, "folder": ctx.folder, "static": members}
+    result  = scm.create_address_group(payload)
+    return f"[green]✓[/green] Address group [bold]{name}[/bold] created  (id: {result.get('id', '?')})"
+
+
+def _delete_address_group(ctx: ExecutionContext, args: dict) -> Any:
+    """Delete an address group.  Usage: delete address-group <name>"""
+    scm  = require_scm(ctx)
+    name = (args.get("name") or "").strip()
+    if not name:
+        raise ValueError("Usage: delete address-group <name>")
+    items  = scm.get_address_groups(folder=ctx.folder)
+    obj_id = scm._find_id_by_name(items, name)
+    if not obj_id:
+        raise ValueError(f"Address group '{name}' not found in folder '{ctx.folder}'")
+    scm.delete_address_group(obj_id)
+    return f"[green]✓[/green] Address group [bold]{name}[/bold] deleted."
+
+
+_WRITE_COMMANDS: dict[str, CommandDef] = {
+    "set address": CommandDef(
+        description="Create an address object — set address <name> ip-netmask|fqdn|ip-range <value>",
+        category="objects",
+        scope="folder",
+        api_handler=_set_address,
+        ssh_command=None,
+        render="raw",
+        feature_flag="create_address",
+    ),
+    "delete address": CommandDef(
+        description="Delete an address object — delete address <name>",
+        category="objects",
+        scope="folder",
+        api_handler=_delete_address,
+        ssh_command=None,
+        render="raw",
+        feature_flag="delete_objects",
+    ),
+    "set address-group": CommandDef(
+        description="Create a static address group — set address-group <name> static <member1> ...",
+        category="objects",
+        scope="folder",
+        api_handler=_set_address_group,
+        ssh_command=None,
+        render="raw",
+        feature_flag="create_address_group",
+    ),
+    "delete address-group": CommandDef(
+        description="Delete an address group — delete address-group <name>",
+        category="objects",
+        scope="folder",
+        api_handler=_delete_address_group,
+        ssh_command=None,
+        render="raw",
+        feature_flag="delete_objects",
+    ),
+    "set service": CommandDef(
+        description="Create a service object — set service <name> tcp|udp port <n>",
+        category="objects",
+        scope="folder",
+        api_handler=_set_service,
+        ssh_command=None,
+        render="raw",
+        feature_flag="create_service",
+    ),
+    "delete service": CommandDef(
+        description="Delete a service object — delete service <name>",
+        category="objects",
+        scope="folder",
+        api_handler=_delete_service,
+        ssh_command=None,
+        render="raw",
+        feature_flag="delete_objects",
+    ),
+    "set tag": CommandDef(
+        description="Create a tag — set tag <name> [color <color>]",
+        category="objects",
+        scope="folder",
+        api_handler=_set_tag,
+        ssh_command=None,
+        render="raw",
+        feature_flag="create_tag",
+    ),
+    "delete tag": CommandDef(
+        description="Delete a tag — delete tag <name>",
+        category="objects",
+        scope="folder",
+        api_handler=_delete_tag,
+        ssh_command=None,
+        render="raw",
+        feature_flag="delete_objects",
+    ),
+}
+
+COMMANDS.update(_WRITE_COMMANDS)
+
+

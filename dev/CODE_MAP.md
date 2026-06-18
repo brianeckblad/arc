@@ -9,7 +9,7 @@
   files. Files under app/ with >= 300 lines are mapped.
 -->
 
-## `app/shell.py`  (2596 lines)
+## `app/shell.py`  (2645 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -20,52 +20,162 @@ class ArcCompleter                       139-325        Context-aware tab comple
   ._all_commands()                       319-325        
 _make_key_bindings()                     342-364        Return key bindings for the ARC shell.
 class ShellState                         368-380        
-class ArcShell                           383-2595       Main interactive REPL.
+class ArcShell                           383-2644       Main interactive REPL.
   .__init__()                            386-422        
   ._init_clients()                       428-509        
   ._prompt()                             515-559        Build the prompt string reflecting the active context tier.
   .run()                                 565-588        
-  ._dispatch()                           594-754        Process one input line.  Returns True when the user wants to exit ARC.
-  ._cmd_cd()                             760-814        Unified context navigation — device or folder.
-  ._cmd_cd_device()                      816-867        Switch the active SCM/API device context to *target*.
-  ._find_device()                        869-885        Find a device in the cache by hostname, serial, name, or IP.
-  ._refresh_devices()                    887-903        Fetch managed devices and populate the cache used by tab completion an
-  ._refresh_folders()                    905-915        Fetch SCM folder names and populate the cache used by 'folder' tab com
-  ._refresh_tsgs()                       917-932        Fetch TSG entries from SCM IAM and populate the cache used by 'tsg' ta
-  ._cmd_connect()                        938-1032       Connect to a device via SSH and hand the terminal over to the remote s
-  ._run_interactive_shell()              1038-1131      Hand the terminal over to *channel* for a fully interactive SSH sessio
-  ._cmd_pwd()                            1140-1184      Show current device context, active SCM folder, TSG, and SSH credentia
-  ._cmd_folder()                         1190-1280      Set or display the active SCM folder context.
-  ._cmd_folder_create()                  1286-1406      Interactive folder creation: prompt for a parent, confirm, and POST to
-  ._cmd_tsg()                            1414-1535      Switch the active Tenant Services Group (TSG) context.
-  ._cmd_account()                        1541-1668      List or switch named credential profiles.
-  ._cmd_configure()                      1674-1694      Enter configure mode (Cisco-style).
-  ._cmd_cli()                            1696-1750      Read/write CLI theme settings (configure mode only).
-  ._cmd_feature()                        1756-1843      Show, enable, or disable feature flags at runtime.
-  ._cmd_set()                            1849-1906      Create or modify SCM configuration objects (configure mode only).
-  ._cmd_set_folder()                     1908-1962      Create an SCM folder via the set command.
-  ._cmd_help()                           1968-1987      Print the command reference.
-  ._cmd_help_inline()                    1989-2058      Cisco-style compact inline help — one line per command, no panels.
-  ._cmd_help_docs()                      2060-2094      Show the full documentation page for a command or topic.
-  ._cmd_help_full()                      2096-2124      Print the full command reference regardless of context.
-  ._print_shell_builtins()               2126-2139      Print the shell built-in commands section (shared by inline and full h
-  ._is_command_available()               2141-2150      Return True when a registered command is executable in the current con
-  ._is_config_command()                  2153-2157      Return True when a command should appear in configure-mode `?` help.
-  ._root_verb_options()                  2159-2185      Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
-  ._collapsed_prefix_help_options()      2187-2242      Return collapsed next-token help options for a command prefix.
-  ._collapsed_tier_help_options()        2244-2279      Return collapsed bare-tier help options for one scope.
-  ._context_annotation()                 2281-2302      Return a short inline context note for commands whose output depends o
-  ._print_context_hint_for()             2304-2308      Print a one-line context note below an exact-match docs result.
-  ._execute_api()                        2314-2355      
-  ._execute_remote()                     2361-2402      
-  ._resolve_ssh_command()                2404-2411      Return the concrete SSH command string for a registered command.
-  ._render()                             2417-2493      
-  ._make_context()                       2499-2507      
-  ._styled()                             2514-2522      Wrap *text* in a Rich markup tag for *style*.
-  ._cleanup()                            2524-2528      
-  ._random_goodbye_message()             2531-2549      Return a random goodbye line from app/goodbye.txt.
-  ._print_banner()                       2551-2578      
-  ._print_startup_help()                 2580-2595      Print compact startup command hints shown after SCM connection status.
+  ._dispatch()                           594-794        Process one input line.  Returns True when the user wants to exit ARC.
+  ._cmd_cd()                             800-854        Unified context navigation — device or folder.
+  ._cmd_cd_device()                      856-907        Switch the active SCM/API device context to *target*.
+  ._find_device()                        909-925        Find a device in the cache by hostname, serial, name, or IP.
+  ._refresh_devices()                    927-943        Fetch managed devices and populate the cache used by tab completion an
+  ._refresh_folders()                    945-955        Fetch SCM folder names and populate the cache used by 'folder' tab com
+  ._refresh_tsgs()                       957-972        Fetch TSG entries from SCM IAM and populate the cache used by 'tsg' ta
+  ._cmd_connect()                        978-1072       Connect to a device via SSH and hand the terminal over to the remote s
+  ._run_interactive_shell()              1078-1171      Hand the terminal over to *channel* for a fully interactive SSH sessio
+  ._cmd_pwd()                            1180-1224      Show current device context, active SCM folder, TSG, and SSH credentia
+  ._cmd_folder()                         1230-1320      Set or display the active SCM folder context.
+  ._cmd_folder_create()                  1326-1446      Interactive folder creation: prompt for a parent, confirm, and POST to
+  ._cmd_tsg()                            1454-1575      Switch the active Tenant Services Group (TSG) context.
+  ._cmd_account()                        1581-1708      List or switch named credential profiles.
+  ._cmd_configure()                      1714-1734      Enter configure mode (Cisco-style).
+  ._cmd_cli()                            1736-1790      Read/write CLI theme settings (configure mode only).
+  ._cmd_feature()                        1796-1883      Show, enable, or disable feature flags at runtime.
+  ._cmd_set()                            1889-1946      Create or modify SCM configuration objects (configure mode only).
+  ._cmd_set_folder()                     1948-2002      Create an SCM folder via the set command.
+  ._cmd_help()                           2008-2027      Print the command reference.
+  ._cmd_help_inline()                    2029-2098      Cisco-style compact inline help — one line per command, no panels.
+  ._cmd_help_docs()                      2100-2134      Show the full documentation page for a command or topic.
+  ._cmd_help_full()                      2136-2164      Print the full command reference regardless of context.
+  ._print_shell_builtins()               2166-2179      Print the shell built-in commands section (shared by inline and full h
+  ._is_command_available()               2181-2190      Return True when a registered command is executable in the current con
+  ._is_config_command()                  2193-2197      Return True when a command should appear in configure-mode `?` help.
+  ._root_verb_options()                  2199-2226      Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
+  ._collapsed_prefix_help_options()      2228-2283      Return collapsed next-token help options for a command prefix.
+  ._collapsed_tier_help_options()        2285-2320      Return collapsed bare-tier help options for one scope.
+  ._context_annotation()                 2322-2343      Return a short inline context note for commands whose output depends o
+  ._print_context_hint_for()             2345-2349      Print a one-line context note below an exact-match docs result.
+  ._execute_api()                        2355-2404      
+  ._execute_remote()                     2410-2451      
+  ._resolve_ssh_command()                2453-2460      Return the concrete SSH command string for a registered command.
+  ._render()                             2466-2542      
+  ._make_context()                       2548-2556      
+  ._styled()                             2563-2571      Wrap *text* in a Rich markup tag for *style*.
+  ._cleanup()                            2573-2577      
+  ._random_goodbye_message()             2580-2598      Return a random goodbye line from app/goodbye.txt.
+  ._print_banner()                       2600-2627      
+  ._print_startup_help()                 2629-2644      Print compact startup command hints shown after SCM connection status.
+
+## `app/api/client.py`  (1117 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+class SCMError                           45-46          Raised when SCM authentication or API requests fail.
+class SCMClient                          49-1116        Strata Cloud Manager (SCM) REST API client.
+  .__init__()                            82-99          
+  ._authenticate()                       101-125        Obtain an OAuth token via the client-credentials flow.
+  ._headers()                            127-128        
+  .get()                                 134-142        GET against the IAM/sase gateway (api.sase.paloaltonetworks.com).
+  .post()                                144-152        POST against the IAM/sase gateway.
+  ._get_objects()                        154-162        GET from api.strata.paloaltonetworks.com/config/objects/v1.
+  ._post_objects()                       164-172        POST to api.strata.paloaltonetworks.com/config/objects/v1.
+  ._delete_objects()                     174-182        DELETE from api.strata.paloaltonetworks.com/config/objects/v1.
+  ._post_security()                      184-193        POST to api.strata.paloaltonetworks.com/config/security/v1.
+  ._delete_security()                    195-203        DELETE from api.strata.paloaltonetworks.com/config/security/v1.
+  ._post_network()                       205-214        POST to api.strata.paloaltonetworks.com/config/network/v1.
+  ._delete_network()                     216-224        DELETE from api.strata.paloaltonetworks.com/config/network/v1.
+  ._get_security()                       226-234        GET from api.strata.paloaltonetworks.com/config/security/v1.
+  ._get_setup()                          236-244        GET from api.strata.paloaltonetworks.com/config/setup/v1.
+  ._post_setup()                         246-254        POST to api.strata.paloaltonetworks.com/config/setup/v1.
+  ._get_network()                        256-267        GET from api.strata.paloaltonetworks.com/config/network/v1.
+  .get_setup()                           270-272        Public alias for _get_setup — kept for backward compatibility.
+  .reauthenticate()                      278-294        Obtain a fresh OAuth token scoped to a different TSG.
+  .get_tenants()                         301-337        Return child TSG entries.
+  .get_devices()                         344-379        Return all managed NGFW devices, TSG-wide (no folder scope).
+  .get_folders()                         381-402        Return folder names for tab completion.
+  .get_jobs()                            404-420        Return all SCM jobs (TSG-wide, no folder scope).
+  .get_job()                             422-437        Return a single SCM job by ID (TSG-wide, no folder scope).
+  .get_folders_full()                    439-455        Return full folder records including their snippet lists.
+  .get_snippets()                        457-467        Return all SCM snippets.
+  .get_snippet_detail()                  469-474        Return full detail for one snippet including attached folders.
+  .get_snippet_objects()                 476-521        Fetch all configured objects/rules scoped to a snippet.
+  .get_folder_detail()                   523-536        Return the folder record whose name matches folder_name.
+  ._is_folder_record()                   539-550        Return True when a /folders entry is an actual folder/container record
+  .create_folder()                       552-562        Create a new folder under the given parent folder.
+  .get_addresses()                       570-573        pan.dev: GET /config/objects/v1/addresses
+  .get_address_groups()                  575-578        pan.dev: GET /config/objects/v1/address-groups
+  .get_services()                        580-583        pan.dev: GET /config/objects/v1/services
+  .get_tags()                            585-588        pan.dev: GET /config/objects/v1/tags
+  .get_external_dynamic_lists()          590-593        pan.dev: GET /config/objects/v1/external-dynamic-lists
+  .create_address()                      600-602        POST /config/objects/v1/addresses.  payload must include folder + name
+  .delete_address()                      604-606        DELETE /config/objects/v1/addresses/{id}
+  .create_address_group()                608-610        POST /config/objects/v1/address-groups.
+  .delete_address_group()                612-614        DELETE /config/objects/v1/address-groups/{id}
+  .create_service()                      616-618        POST /config/objects/v1/services.
+  .delete_service()                      620-622        DELETE /config/objects/v1/services/{id}
+  .create_service_group()                624-626        POST /config/objects/v1/service-groups.
+  .delete_service_group()                628-630        DELETE /config/objects/v1/service-groups/{id}
+  .create_tag()                          632-634        POST /config/objects/v1/tags.
+  .delete_tag()                          636-638        DELETE /config/objects/v1/tags/{id}
+  .create_external_dynamic_list()        640-642        POST /config/objects/v1/external-dynamic-lists.
+  .delete_external_dynamic_list()        644-646        DELETE /config/objects/v1/external-dynamic-lists/{id}
+  .create_security_rule()                652-654        POST /config/security/v1/security-rules?position=<position>
+  .delete_security_rule()                656-658        DELETE /config/security/v1/security-rules/{id}
+  .create_url_category()                 660-662        POST /config/security/v1/url-categories
+  .delete_url_category()                 664-666        DELETE /config/security/v1/url-categories/{id}
+  .create_nat_rule()                     668-670        POST /config/network/v1/nat-rules
+  .delete_nat_rule()                     672-674        DELETE /config/network/v1/nat-rules/{id}
+  ._find_id_by_name()                    677-682        Return the id of the first item whose 'name' field matches *name*.  No
+  .get_security_policy()                 690-696        pan.dev: GET /config/security/v1/security-rules
+  .get_url_categories()                  698-701        pan.dev: GET /config/security/v1/url-categories
+  .get_dns_security_profiles()           703-706        pan.dev: GET /config/security/v1/dns-security-profiles
+  .get_decryption_rules()                709-712        pan.dev: GET /config/security/v1/decryption-rules
+  .get_dos_protection_rules()            714-717        pan.dev: GET /config/security/v1/dos-protection-rules
+  .get_dos_protection_profiles()         719-722        pan.dev: GET /config/security/v1/dos-protection-profiles
+  .get_app_override_rules()              724-727        pan.dev: GET /config/security/v1/app-override-rules
+  .get_decryption_profiles()             729-732        pan.dev: GET /config/security/v1/decryption-profiles
+  .get_profile_groups()                  734-737        pan.dev: GET /config/security/v1/profile-groups
+  .get_anti_spyware_profiles()           739-742        pan.dev: GET /config/security/v1/anti-spyware-profiles
+  .get_vulnerability_protection_profiles() 744-747        pan.dev: GET /config/security/v1/vulnerability-protection-profiles
+  .get_wildfire_profiles()               749-752        pan.dev: GET /config/security/v1/wildfire-anti-virus-profiles
+  .get_url_admin_override()              754-757        pan.dev: GET /config/security/v1/url-admin-override
+  .get_service_groups()                  763-766        pan.dev: GET /config/objects/v1/service-groups
+  .get_application_groups()              768-771        pan.dev: GET /config/objects/v1/application-groups
+  .get_application_filters()             773-776        pan.dev: GET /config/objects/v1/application-filters
+  .get_schedules()                       778-781        pan.dev: GET /config/objects/v1/schedules
+  .get_regions()                         783-786        pan.dev: GET /config/objects/v1/regions  (global — no folder filter)
+  .get_hip_objects()                     788-791        pan.dev: GET /config/objects/v1/hip-objects
+  .get_hip_profiles()                    793-796        pan.dev: GET /config/objects/v1/hip-profiles
+  .get_log_forwarding_profiles()         798-801        pan.dev: GET /config/objects/v1/log-forwarding-profiles
+  .get_nat_rules()                       807-813        pan.dev: GET /config/network/v1/nat-rules
+  .get_pbf_rules()                       815-821        pan.dev: GET /config/network/v1/pbf-rules
+  .get_ike_gateways()                    823-829        pan.dev: GET /config/network/v1/ike-gateways
+  .get_ipsec_tunnels()                   831-837        pan.dev: GET /config/network/v1/ipsec-tunnels
+  .get_bgp_routing_profiles()            839-845        pan.dev: GET /config/network/v1/bgp-address-family-profiles
+  .get_dns_proxies()                     847-853        pan.dev: GET /config/network/v1/dns-proxies
+  .get_qos_profiles()                    855-861        pan.dev: GET /config/network/v1/qos-profiles
+  .get_sdwan_rules()                     863-869        pan.dev: GET /config/network/v1/sdwan-rules
+  .get_tunnel_interfaces()               871-877        pan.dev: GET /config/network/v1/tunnel-interfaces
+  .get_vlan_interfaces()                 879-885        pan.dev: GET /config/network/v1/vlan-interfaces
+  ._get_identity()                       892-900        GET from api.strata.paloaltonetworks.com/config/identity/v1.
+  .get_authentication_profiles()         902-908        pan.dev: GET /config/identity/v1/authentication-profiles
+  .get_authentication_rules()            910-916        pan.dev: GET /config/identity/v1/authentication-rules
+  .get_certificate_profiles()            918-924        pan.dev: GET /config/identity/v1/certificate-profiles
+  .get_local_users()                     926-932        pan.dev: GET /config/identity/v1/local-users
+  .get_local_user_groups()               934-940        pan.dev: GET /config/identity/v1/local-user-groups
+  .get_radius_server_profiles()          942-948        pan.dev: GET /config/identity/v1/radius-server-profiles
+  .get_tls_service_profiles()            950-956        pan.dev: GET /config/identity/v1/tls-service-profiles
+  .get_mfa_servers()                     958-964        pan.dev: GET /config/identity/v1/mfa-servers
+  .get_interfaces()                      972-986        Return ethernet interfaces configured in the active folder.
+  .get_aggregate_interfaces()            988-1001       Return aggregate (AE) interfaces configured in the active folder.
+  .get_loopback_interfaces()             1003-1016      Return loopback interfaces configured in the active folder.
+  .get_zones()                           1018-1032      Return security zones configured in the active folder.
+  .get_static_routes()                   1034-1048      Return static routes configured in the active folder.
+  .get_routing_profiles()                1050-1064      Return routing profiles / virtual routers in the active folder.
+  .get_ha_config()                       1066-1086      Return HA configuration in the active folder.
+  .push_config()                         1093-1113      Push the candidate configuration to managed devices.
+  .close()                               1115-1116      
 
 ## `app/cli.py`  (1011 lines)
 
@@ -89,91 +199,6 @@ _do_cliup()                              896-937        Core cliup logic — cre
 cliup()                                  941-973        Sync docs with the registry and rebuild the offline docs bundle.
 scm_get()                                985-997        Perform a raw GET request against the SCM API.
 run()                                    1004-1005      
-
-## `app/api/client.py`  (966 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class SCMError                           45-46          Raised when SCM authentication or API requests fail.
-class SCMClient                          49-965         Strata Cloud Manager (SCM) REST API client.
-  .__init__()                            82-99          
-  ._authenticate()                       101-125        Obtain an OAuth token via the client-credentials flow.
-  ._headers()                            127-128        
-  .get()                                 134-142        GET against the IAM/sase gateway (api.sase.paloaltonetworks.com).
-  .post()                                144-152        POST against the IAM/sase gateway.
-  ._get_objects()                        154-162        GET from api.strata.paloaltonetworks.com/config/objects/v1.
-  ._get_security()                       164-172        GET from api.strata.paloaltonetworks.com/config/security/v1.
-  ._get_setup()                          174-182        GET from api.strata.paloaltonetworks.com/config/setup/v1.
-  ._post_setup()                         184-192        POST to api.strata.paloaltonetworks.com/config/setup/v1.
-  ._get_network()                        194-205        GET from api.strata.paloaltonetworks.com/config/network/v1.
-  .get_setup()                           208-210        Public alias for _get_setup — kept for backward compatibility.
-  .reauthenticate()                      216-232        Obtain a fresh OAuth token scoped to a different TSG.
-  .get_tenants()                         239-275        Return child TSG entries.
-  .get_devices()                         282-317        Return all managed NGFW devices, TSG-wide (no folder scope).
-  .get_folders()                         319-340        Return folder names for tab completion.
-  .get_jobs()                            342-358        Return all SCM jobs (TSG-wide, no folder scope).
-  .get_job()                             360-375        Return a single SCM job by ID (TSG-wide, no folder scope).
-  .get_folders_full()                    377-393        Return full folder records including their snippet lists.
-  .get_snippets()                        395-405        Return all SCM snippets.
-  .get_snippet_detail()                  407-412        Return full detail for one snippet including attached folders.
-  .get_snippet_objects()                 414-459        Fetch all configured objects/rules scoped to a snippet.
-  .get_folder_detail()                   461-474        Return the folder record whose name matches folder_name.
-  ._is_folder_record()                   477-488        Return True when a /folders entry is an actual folder/container record
-  .create_folder()                       490-500        Create a new folder under the given parent folder.
-  .get_addresses()                       508-511        pan.dev: GET /config/objects/v1/addresses
-  .get_address_groups()                  513-516        pan.dev: GET /config/objects/v1/address-groups
-  .get_services()                        518-521        pan.dev: GET /config/objects/v1/services
-  .get_tags()                            523-526        pan.dev: GET /config/objects/v1/tags
-  .get_external_dynamic_lists()          528-531        pan.dev: GET /config/objects/v1/external-dynamic-lists
-  .get_security_policy()                 539-545        pan.dev: GET /config/security/v1/security-rules
-  .get_url_categories()                  547-550        pan.dev: GET /config/security/v1/url-categories
-  .get_dns_security_profiles()           552-555        pan.dev: GET /config/security/v1/dns-security-profiles
-  .get_decryption_rules()                558-561        pan.dev: GET /config/security/v1/decryption-rules
-  .get_dos_protection_rules()            563-566        pan.dev: GET /config/security/v1/dos-protection-rules
-  .get_dos_protection_profiles()         568-571        pan.dev: GET /config/security/v1/dos-protection-profiles
-  .get_app_override_rules()              573-576        pan.dev: GET /config/security/v1/app-override-rules
-  .get_decryption_profiles()             578-581        pan.dev: GET /config/security/v1/decryption-profiles
-  .get_profile_groups()                  583-586        pan.dev: GET /config/security/v1/profile-groups
-  .get_anti_spyware_profiles()           588-591        pan.dev: GET /config/security/v1/anti-spyware-profiles
-  .get_vulnerability_protection_profiles() 593-596        pan.dev: GET /config/security/v1/vulnerability-protection-profiles
-  .get_wildfire_profiles()               598-601        pan.dev: GET /config/security/v1/wildfire-anti-virus-profiles
-  .get_url_admin_override()              603-606        pan.dev: GET /config/security/v1/url-admin-override
-  .get_service_groups()                  612-615        pan.dev: GET /config/objects/v1/service-groups
-  .get_application_groups()              617-620        pan.dev: GET /config/objects/v1/application-groups
-  .get_application_filters()             622-625        pan.dev: GET /config/objects/v1/application-filters
-  .get_schedules()                       627-630        pan.dev: GET /config/objects/v1/schedules
-  .get_regions()                         632-635        pan.dev: GET /config/objects/v1/regions  (global — no folder filter)
-  .get_hip_objects()                     637-640        pan.dev: GET /config/objects/v1/hip-objects
-  .get_hip_profiles()                    642-645        pan.dev: GET /config/objects/v1/hip-profiles
-  .get_log_forwarding_profiles()         647-650        pan.dev: GET /config/objects/v1/log-forwarding-profiles
-  .get_nat_rules()                       656-662        pan.dev: GET /config/network/v1/nat-rules
-  .get_pbf_rules()                       664-670        pan.dev: GET /config/network/v1/pbf-rules
-  .get_ike_gateways()                    672-678        pan.dev: GET /config/network/v1/ike-gateways
-  .get_ipsec_tunnels()                   680-686        pan.dev: GET /config/network/v1/ipsec-tunnels
-  .get_bgp_routing_profiles()            688-694        pan.dev: GET /config/network/v1/bgp-address-family-profiles
-  .get_dns_proxies()                     696-702        pan.dev: GET /config/network/v1/dns-proxies
-  .get_qos_profiles()                    704-710        pan.dev: GET /config/network/v1/qos-profiles
-  .get_sdwan_rules()                     712-718        pan.dev: GET /config/network/v1/sdwan-rules
-  .get_tunnel_interfaces()               720-726        pan.dev: GET /config/network/v1/tunnel-interfaces
-  .get_vlan_interfaces()                 728-734        pan.dev: GET /config/network/v1/vlan-interfaces
-  ._get_identity()                       741-749        GET from api.strata.paloaltonetworks.com/config/identity/v1.
-  .get_authentication_profiles()         751-757        pan.dev: GET /config/identity/v1/authentication-profiles
-  .get_authentication_rules()            759-765        pan.dev: GET /config/identity/v1/authentication-rules
-  .get_certificate_profiles()            767-773        pan.dev: GET /config/identity/v1/certificate-profiles
-  .get_local_users()                     775-781        pan.dev: GET /config/identity/v1/local-users
-  .get_local_user_groups()               783-789        pan.dev: GET /config/identity/v1/local-user-groups
-  .get_radius_server_profiles()          791-797        pan.dev: GET /config/identity/v1/radius-server-profiles
-  .get_tls_service_profiles()            799-805        pan.dev: GET /config/identity/v1/tls-service-profiles
-  .get_mfa_servers()                     807-813        pan.dev: GET /config/identity/v1/mfa-servers
-  .get_interfaces()                      821-835        Return ethernet interfaces configured in the active folder.
-  .get_aggregate_interfaces()            837-850        Return aggregate (AE) interfaces configured in the active folder.
-  .get_loopback_interfaces()             852-865        Return loopback interfaces configured in the active folder.
-  .get_zones()                           867-881        Return security zones configured in the active folder.
-  .get_static_routes()                   883-897        Return static routes configured in the active folder.
-  .get_routing_profiles()                899-913        Return routing profiles / virtual routers in the active folder.
-  .get_ha_config()                       915-935        Return HA configuration in the active folder.
-  .push_config()                         942-962        Push the candidate configuration to managed devices.
-  .close()                               964-965        
 
 ## `app/utils/formatter.py`  (906 lines)
 
@@ -269,6 +294,53 @@ _test_nat_policy_match()                 334-342        Test NAT policy match �
 _ssh_test_nat()                          345-353        
 _test_url()                              356-363        Test URL categorization — use --remote.  PAN-OS: test url <url>
 _ssh_test_url()                          366-368        
+
+## `app/commands/objects.py`  (511 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+_show_address()                          14-20          List address objects in the active SCM folder.
+_show_address_group()                    23-29          List address groups in the active SCM folder.
+_show_service()                          32-38          List service objects in the active SCM folder.
+_show_tag()                              41-47          List tags in the active SCM folder.
+_show_external_dynamic_list()            50-56          List external dynamic lists (EDLs) in the active SCM folder.
+_show_service_groups()                   116-119        pan.dev: GET /config/objects/v1/service-groups?folder=<folder>
+_show_application_groups()               122-125        pan.dev: GET /config/objects/v1/application-groups?folder=<folder>
+_show_application_filters()              128-131        pan.dev: GET /config/objects/v1/application-filters?folder=<folder>
+_show_schedules()                        134-137        pan.dev: GET /config/objects/v1/schedules?folder=<folder>
+_show_regions()                          140-143        pan.dev: GET /config/objects/v1/regions  (global — no folder filter)
+_show_hip_objects()                      146-149        pan.dev: GET /config/objects/v1/hip-objects?folder=<folder>
+_show_hip_profiles()                     152-155        pan.dev: GET /config/objects/v1/hip-profiles?folder=<folder>
+_show_log_forwarding_profiles()          158-161        pan.dev: GET /config/objects/v1/log-forwarding-profiles?folder=<folder
+_set_address()                           246-291        Create an address object in the active SCM folder.
+_delete_address()                        294-309        Delete an address object by name from the active SCM folder.
+_set_service()                           312-339        Create a service object.
+_delete_service()                        342-356        Delete a service object by name.
+_set_tag()                               359-377        Create a tag.
+_delete_tag()                            380-391        Delete a tag by name.  Usage: delete tag <name>
+_set_address_group()                     394-416        Create a static address group.
+_delete_address_group()                  419-430        Delete an address group.  Usage: delete address-group <name>
+
+## `app/commands/security.py`  (347 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+_show_security_policy()                  26-32          List security rules (pre-position) in the active SCM folder.
+_show_url_categories()                   35-41          List custom URL categories in the active SCM folder.
+_pending_test_security_policy_match()    44-50          
+_ssh_test_spm()                          57-66          
+_show_decryption_rules()                 112-115        pan.dev: GET /config/security/v1/decryption-rules?folder=<folder>
+_show_decryption_profiles()              118-121        pan.dev: GET /config/security/v1/decryption-profiles?folder=<folder>
+_show_dos_protection_rules()             124-127        pan.dev: GET /config/security/v1/dos-protection-rules?folder=<folder>
+_show_dos_protection_profiles()          130-133        pan.dev: GET /config/security/v1/dos-protection-profiles?folder=<folde
+_show_app_override_rules()               136-139        pan.dev: GET /config/security/v1/app-override-rules?folder=<folder>
+_show_profile_groups()                   142-145        pan.dev: GET /config/security/v1/profile-groups?folder=<folder>
+_show_anti_spyware_profiles()            148-151        pan.dev: GET /config/security/v1/anti-spyware-profiles?folder=<folder>
+_show_vulnerability_profiles()           154-157        pan.dev: GET /config/security/v1/vulnerability-protection-profiles?fol
+_show_wildfire_profiles()                160-163        pan.dev: GET /config/security/v1/wildfire-anti-virus-profiles?folder=<
+_delete_security_rule()                  257-272        Delete a security rule by name.
+_set_url_category()                      275-297        Create a custom URL category.
+_delete_url_category()                   300-311        Delete a URL category.  Usage: delete url-category <name>
 
 ## `app/commands/setup.py`  (343 lines)
 

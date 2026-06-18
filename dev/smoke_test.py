@@ -601,7 +601,8 @@ def test_inline_help_alignment() -> None:
         (["q"], ["quit"]),
         (["sh", "sec", "pol"], ["show", "security", "policy"]),
         # 'd' now expands unambiguously to 'docs' (devices builtin removed).
-        (["d"], ["docs"]),
+        # 'd' is ambiguous (docs vs delete) since 'delete' was added as a builtin — stays unexpanded
+        (["d"], ["d"]),
     ]
     for raw, expected in cases:
         got = _expand_unambiguous_prefix(raw, phrases)

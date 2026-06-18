@@ -161,6 +161,68 @@ class SCMClient:
         resp.raise_for_status()
         return resp.json()
 
+    def _post_objects(self, path: str, json: Any = None) -> Any:
+        """POST to api.strata.paloaltonetworks.com/config/objects/v1."""
+        resp = self._http.post(
+            f"{self.OBJECTS_URL}{path}",
+            headers=self._headers(),
+            json=json,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+    def _delete_objects(self, path: str, params: Optional[dict] = None) -> Any:
+        """DELETE from api.strata.paloaltonetworks.com/config/objects/v1."""
+        resp = self._http.delete(
+            f"{self.OBJECTS_URL}{path}",
+            headers=self._headers(),
+            params=params,
+        )
+        resp.raise_for_status()
+        return resp.json() if resp.content else {}
+
+    def _post_security(self, path: str, json: Any = None, params: Optional[dict] = None) -> Any:
+        """POST to api.strata.paloaltonetworks.com/config/security/v1."""
+        resp = self._http.post(
+            f"{self.SECURITY_URL}{path}",
+            headers=self._headers(),
+            json=json,
+            params=params,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+    def _delete_security(self, path: str, params: Optional[dict] = None) -> Any:
+        """DELETE from api.strata.paloaltonetworks.com/config/security/v1."""
+        resp = self._http.delete(
+            f"{self.SECURITY_URL}{path}",
+            headers=self._headers(),
+            params=params,
+        )
+        resp.raise_for_status()
+        return resp.json() if resp.content else {}
+
+    def _post_network(self, path: str, json: Any = None, params: Optional[dict] = None) -> Any:
+        """POST to api.strata.paloaltonetworks.com/config/network/v1."""
+        resp = self._http.post(
+            f"{self.NETWORK_URL}{path}",
+            headers=self._headers(),
+            json=json,
+            params=params,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+    def _delete_network(self, path: str, params: Optional[dict] = None) -> Any:
+        """DELETE from api.strata.paloaltonetworks.com/config/network/v1."""
+        resp = self._http.delete(
+            f"{self.NETWORK_URL}{path}",
+            headers=self._headers(),
+            params=params,
+        )
+        resp.raise_for_status()
+        return resp.json() if resp.content else {}
+
     def _get_security(self, path: str, params: Optional[dict] = None) -> Any:
         """GET from api.strata.paloaltonetworks.com/config/security/v1."""
         resp = self._http.get(
@@ -529,6 +591,95 @@ class SCMClient:
         """pan.dev: GET /config/objects/v1/external-dynamic-lists"""
         data = self._get_objects("/external-dynamic-lists", params={"folder": folder})
         return data.get("data", [])
+
+    # ------------------------------------------------------------------
+    # Objects — CREATE / DELETE
+    # pan.dev: POST /config/objects/v1/<resource>  |  DELETE /config/objects/v1/<resource>/{id}
+    # ------------------------------------------------------------------
+
+    def create_address(self, payload: dict) -> dict:
+        """POST /config/objects/v1/addresses.  payload must include folder + name + one address type."""
+        return self._post_objects("/addresses", json=payload)
+
+    def delete_address(self, address_id: str) -> dict:
+        """DELETE /config/objects/v1/addresses/{id}"""
+        return self._delete_objects(f"/addresses/{address_id}")
+
+    def create_address_group(self, payload: dict) -> dict:
+        """POST /config/objects/v1/address-groups."""
+        return self._post_objects("/address-groups", json=payload)
+
+    def delete_address_group(self, group_id: str) -> dict:
+        """DELETE /config/objects/v1/address-groups/{id}"""
+        return self._delete_objects(f"/address-groups/{group_id}")
+
+    def create_service(self, payload: dict) -> dict:
+        """POST /config/objects/v1/services."""
+        return self._post_objects("/services", json=payload)
+
+    def delete_service(self, service_id: str) -> dict:
+        """DELETE /config/objects/v1/services/{id}"""
+        return self._delete_objects(f"/services/{service_id}")
+
+    def create_service_group(self, payload: dict) -> dict:
+        """POST /config/objects/v1/service-groups."""
+        return self._post_objects("/service-groups", json=payload)
+
+    def delete_service_group(self, group_id: str) -> dict:
+        """DELETE /config/objects/v1/service-groups/{id}"""
+        return self._delete_objects(f"/service-groups/{group_id}")
+
+    def create_tag(self, payload: dict) -> dict:
+        """POST /config/objects/v1/tags."""
+        return self._post_objects("/tags", json=payload)
+
+    def delete_tag(self, tag_id: str) -> dict:
+        """DELETE /config/objects/v1/tags/{id}"""
+        return self._delete_objects(f"/tags/{tag_id}")
+
+    def create_external_dynamic_list(self, payload: dict) -> dict:
+        """POST /config/objects/v1/external-dynamic-lists."""
+        return self._post_objects("/external-dynamic-lists", json=payload)
+
+    def delete_external_dynamic_list(self, edl_id: str) -> dict:
+        """DELETE /config/objects/v1/external-dynamic-lists/{id}"""
+        return self._delete_objects(f"/external-dynamic-lists/{edl_id}")
+
+    # ------------------------------------------------------------------
+    # Security — CREATE / DELETE
+    # ------------------------------------------------------------------
+
+    def create_security_rule(self, payload: dict, position: str = "pre") -> dict:
+        """POST /config/security/v1/security-rules?position=<position>"""
+        return self._post_security("/security-rules", json=payload, params={"position": position})
+
+    def delete_security_rule(self, rule_id: str) -> dict:
+        """DELETE /config/security/v1/security-rules/{id}"""
+        return self._delete_security(f"/security-rules/{rule_id}")
+
+    def create_url_category(self, payload: dict) -> dict:
+        """POST /config/security/v1/url-categories"""
+        return self._post_security("/url-categories", json=payload)
+
+    def delete_url_category(self, cat_id: str) -> dict:
+        """DELETE /config/security/v1/url-categories/{id}"""
+        return self._delete_security(f"/url-categories/{cat_id}")
+
+    def create_nat_rule(self, payload: dict) -> dict:
+        """POST /config/network/v1/nat-rules"""
+        return self._post_network("/nat-rules", json=payload)
+
+    def delete_nat_rule(self, rule_id: str) -> dict:
+        """DELETE /config/network/v1/nat-rules/{id}"""
+        return self._delete_network(f"/nat-rules/{rule_id}")
+
+    # Helper: find an object by name in a list response, return its id
+    def _find_id_by_name(self, items: list[dict], name: str) -> Optional[str]:
+        """Return the id of the first item whose 'name' field matches *name*.  None if not found."""
+        for item in items:
+            if item.get("name", "").lower() == name.lower():
+                return item.get("id")
+        return None
 
     # ------------------------------------------------------------------
     # Security  (api.strata.paloaltonetworks.com/config/security/v1)

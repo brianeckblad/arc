@@ -633,11 +633,13 @@ class ArcShell:
             question_idx = tokens.index("?")
             prefix_tokens = tokens[:question_idx]
             if prefix_tokens:
-                # Special case: `set ?` or `set <sub> ?` in configure mode
-                # → route to _cmd_set which knows about set sub-commands.
+                # Special case: `set ?` / `delete ?` in configure mode → show write ops.
                 if prefix_tokens[0].lower() == "set" and self._state.configure_mode:
                     self._cmd_set(prefix_tokens[1:] + ["?"])
                     return False
+                if prefix_tokens[0].lower() == "delete" and self._state.configure_mode:
+                    # Trigger delete ? display via the dispatch block
+                    return self._dispatch("delete ?")
                 self._pending_default = " ".join(prefix_tokens) + " "
                 self._cmd_help_inline(prefix_tokens)
                 return False
@@ -700,8 +702,46 @@ class ArcShell:
             self._cmd_feature(tokens[1:])
             return False
 
-        if cmd == "set":
-            self._cmd_set(tokens[1:])
+        if cmd in ("set", "delete"):
+            # `delete ?` — show deletable object types
+            if cmd == "delete" and len(tokens) >= 2 and tokens[1] == "?":
+                t = self._theme
+                dd = t.description_dim
+                delete_cmds = [
+                    (k, v.description) for k, v in COMMANDS.items()
+                    if k.startswith("delete ") and self._is_command_available(k, v)
+                ]
+                console.print()
+                console.print(f"  [bold yellow]delete — Remove configuration objects[/bold yellow]  [dim](configure mode)[/dim]")
+                console.print()
+                if delete_cmds:
+                    for k, desc in sorted(delete_cmds):
+                        cmd_cell = self._styled(f"{k:<50}", t.command_name)
+                        console.print(f"    {cmd_cell} {self._styled(desc, dd)}")
+                else:
+                    console.print("  [dim]No delete commands enabled.  Enable via features.json.[/dim]")
+                console.print()
+                return False
+
+            # Check the registry first — set address, delete service, etc.
+            # are registered CommandDef entries that route through _execute_api.
+            # Only fall through to the shell builtin for: set ?, set folder, bare set.
+            if len(tokens) >= 2 and tokens[1].lower() not in ("?", "folder"):
+                key, cmd_def, cmd_args = match_command(tokens)
+                if key is not None:
+                    if remote:
+                        self._execute_remote(key, cmd_def, cmd_args)
+                    else:
+                        self._execute_api(key, cmd_def, cmd_args)
+                    return False
+            if cmd == "set":
+                self._cmd_set(tokens[1:])
+                return False
+            # delete with no registry match → friendly error
+            console.print(
+                f"[yellow]Unknown delete target:[/yellow] [bold]{' '.join(tokens[1:])}[/bold]\n"
+                "  Type [bold]delete ?[/bold] to see deletable object types."
+            )
             return False
 
         if cmd in ("help", "?"):
@@ -2173,9 +2213,10 @@ class ArcShell:
             verb = key.split()[0]
             verb_counts[verb] = verb_counts.get(verb, 0) + 1
 
-        # In configure mode, always show 'set' as the primary write verb.
+        # In configure mode, always show 'set' and 'delete' as primary write verbs.
         if self._state.configure_mode:
             verb_counts.setdefault("set", 1)
+            verb_counts.setdefault("delete", 1)
 
         options: list[tuple[str, str]] = []
         for verb in sorted(verb_counts):
@@ -2324,6 +2365,14 @@ class ArcShell:
             return
 
         if key == "commit" and not self._state.configure_mode:
+            console.print(
+                f"[yellow]Write operation blocked:[/yellow] [bold]{key}[/bold] requires configure mode.\n"
+                "  Enter [bold]configure[/bold] first, then retry."
+            )
+            return
+
+        # All set/delete registered commands are write operations — block outside configure mode.
+        if (key.startswith("set ") or key.startswith("delete ")) and not self._state.configure_mode:
             console.print(
                 f"[yellow]Write operation blocked:[/yellow] [bold]{key}[/bold] requires configure mode.\n"
                 "  Enter [bold]configure[/bold] first, then retry."

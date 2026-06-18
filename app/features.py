@@ -102,6 +102,35 @@ class FeatureFlags:
     commit:                     bool = True    # commit (configure mode)
 
     # =========================================================================
+    # WRITE OPERATIONS — configure mode required, default False.
+    # These gate `set` (create/modify) and `delete` commands.
+    # Enable individually via config/features.json.
+    #
+    # Naming: create_<resource>  /  delete_<resource>
+    #   True  = command visible and executable in configure mode
+    #   False = command hidden; running it prints "feature not enabled"
+    # =========================================================================
+
+    # ── Objects — create/delete ───────────────────────────────────────────────
+    create_address:         bool = False   # set address <name> ip-netmask/fqdn/ip-range <value>
+    create_address_group:   bool = False   # set address-group <name> static <members>
+    create_service:         bool = False   # set service <name> tcp/udp port <n>
+    create_service_group:   bool = False   # set service-group <name> members <list>
+    create_tag:             bool = False   # set tag <name> [color <color>]
+    create_edl:             bool = False   # set external-dynamic-list <name> type <t> url <u>
+    delete_objects:         bool = False   # delete address/service/tag/address-group/etc.
+
+    # ── Security — create/delete ─────────────────────────────────────────────
+    create_security_rule:   bool = False   # set security-rule <name> ... (requires many params)
+    create_nat_rule:        bool = False   # set nat-rule <name> source/dest/translated
+    create_url_category:    bool = False   # set url-category <name> type <t> list <urls>
+    delete_security:        bool = False   # delete security-rule/nat-rule/url-category
+
+    # ── Network — create/delete ──────────────────────────────────────────────
+    create_zone:            bool = False   # set zone <name> [type layer3]
+    delete_network:         bool = False   # delete zone/interface/route/etc.
+
+    # =========================================================================
     # UNIMPLEMENTED / IN-DEVELOPMENT — default False.
     # Enable locally via config/features.json when working on a command.
     # =========================================================================

@@ -30,6 +30,10 @@ verb_groups:
     description: "Create or modify configuration"
     hint: "configure mode only — type 'set ?' for sub-commands"
 
+  delete:
+    description: "Remove configuration objects"
+    hint: "configure mode only — type 'delete ?' for types"
+
   commit:
     description: "Push candidate config to managed devices"
     hint: ""

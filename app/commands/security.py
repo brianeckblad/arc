@@ -250,3 +250,97 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
 COMMANDS.update(_EXTRA_COMMANDS)
 
 
+# ---------------------------------------------------------------------------
+# Write handlers — security config (configure mode)
+# ---------------------------------------------------------------------------
+
+def _delete_security_rule(ctx: ExecutionContext, args: dict) -> Any:
+    """Delete a security rule by name.
+
+    Usage: delete security-rule <name>
+    pan.dev: DELETE /config/security/v1/security-rules/{id}
+    """
+    scm  = require_scm(ctx)
+    name = (args.get("name") or "").strip()
+    if not name:
+        raise ValueError("Usage: delete security-rule <name>")
+    rules  = scm.get_security_policy(folder=ctx.folder)
+    obj_id = scm._find_id_by_name(rules, name)
+    if not obj_id:
+        raise ValueError(f"Security rule '{name}' not found in folder '{ctx.folder}'")
+    scm.delete_security_rule(obj_id)
+    return f"[green]✓[/green] Security rule [bold]{name}[/bold] deleted."
+
+
+def _set_url_category(ctx: ExecutionContext, args: dict) -> Any:
+    """Create a custom URL category.
+
+    Usage: set url-category <name> type url-list list <url1> [<url2> ...]
+           set url-category <name> type category-match list <cat1>
+    pan.dev: POST /config/security/v1/url-categories
+    """
+    scm = require_scm(ctx)
+    pos = args.get("_positional", [])
+    name = pos[0] if pos else (args.get("name") or "")
+    if not name:
+        raise ValueError("Usage: set url-category <name> type url-list list <url1> [<url2> ...]")
+    cat_type = args.get("type", "url-list")
+    try:
+        list_idx = [p.lower() for p in pos].index("list")
+        entries = pos[list_idx + 1:]
+    except ValueError:
+        entries = []
+    if not entries:
+        raise ValueError("At least one URL/category entry required after 'list'")
+    payload = {"name": name, "folder": ctx.folder, "type": cat_type, "list": entries}
+    result  = scm.create_url_category(payload)
+    return f"[green]✓[/green] URL category [bold]{name}[/bold] created  (id: {result.get('id', '?')})"
+
+
+def _delete_url_category(ctx: ExecutionContext, args: dict) -> Any:
+    """Delete a URL category.  Usage: delete url-category <name>"""
+    scm  = require_scm(ctx)
+    name = (args.get("name") or "").strip()
+    if not name:
+        raise ValueError("Usage: delete url-category <name>")
+    cats   = scm.get_url_categories(folder=ctx.folder)
+    obj_id = scm._find_id_by_name(cats, name)
+    if not obj_id:
+        raise ValueError(f"URL category '{name}' not found in folder '{ctx.folder}'")
+    scm.delete_url_category(obj_id)
+    return f"[green]✓[/green] URL category [bold]{name}[/bold] deleted."
+
+
+_WRITE_COMMANDS: dict[str, CommandDef] = {
+    "delete security-rule": CommandDef(
+        description="Delete a security rule — delete security-rule <name>",
+        category="security",
+        scope="folder",
+        api_handler=_delete_security_rule,
+        ssh_command=None,
+        render="raw",
+        feature_flag="delete_security",
+    ),
+    "set url-category": CommandDef(
+        description="Create a custom URL category — set url-category <name> type url-list list <url1>",
+        category="security",
+        scope="folder",
+        api_handler=_set_url_category,
+        ssh_command=None,
+        render="raw",
+        feature_flag="create_url_category",
+    ),
+    "delete url-category": CommandDef(
+        description="Delete a URL category — delete url-category <name>",
+        category="security",
+        scope="folder",
+        api_handler=_delete_url_category,
+        ssh_command=None,
+        render="raw",
+        feature_flag="delete_security",
+    ),
+}
+
+COMMANDS.update(_WRITE_COMMANDS)
+
+
