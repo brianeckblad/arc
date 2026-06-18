@@ -704,22 +704,29 @@ class ArcShell:
             question_idx = tokens.index("?")
             prefix_tokens = tokens[:question_idx]
             if prefix_tokens:
-                # Special case: `set ?` / `delete ?` / `update ?` in configure mode.
+                # Always restore the prompt prefix after displaying ? help so the operator
+                # can continue typing without re-entering what they had.
+                # For sub-command variants (feature enable ?, set address ?) restore
+                # the immediate parent prefix (e.g. "feature enable " or "set ").
+                self._pending_default = " ".join(prefix_tokens) + " "
+
+                # Special case: `set ?` / `set <sub> ?` in configure mode.
                 if prefix_tokens[0].lower() == "set" and self._state.configure_mode:
                     self._cmd_set(prefix_tokens[1:] + ["?"])
                     return False
+                # Special case: `delete ?` in configure mode.
                 if prefix_tokens[0].lower() == "delete" and self._state.configure_mode:
                     self._cmd_show_write_help("delete")
                     return False
+                # Special case: `update ?` in configure mode.
                 if prefix_tokens[0].lower() == "update" and self._state.configure_mode:
                     self._cmd_show_write_help("update")
                     return False
                 # Special case: `feature ?` / `feature enable ?` / `feature disable ?`
-                # → route to _cmd_feature so it can list available flags.
                 if prefix_tokens[0].lower() == "feature":
                     self._cmd_feature(prefix_tokens[1:] + ["?"])
                     return False
-                self._pending_default = " ".join(prefix_tokens) + " "
+                # General case: prefix help for registered commands.
                 self._cmd_help_inline(prefix_tokens)
                 return False
             # Fall through so the bare "?" branch below fires
