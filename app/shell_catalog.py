@@ -29,7 +29,7 @@ class ShellBuiltinHelp:
 # Add the runtime behavior in `ArcShell._dispatch()` and `_cmd_*` methods.
 SHELL_BUILTINS: tuple[str, ...] = (
     "cd", "remote", "connect", "docs",
-    "ls", "devices", "pwd",
+    "pwd",
     "folder", "tsg", "account",
     "configure", "cli",
     "clear", "exit", "quit",
@@ -50,7 +50,6 @@ SHELL_HELP_ROWS: tuple[ShellBuiltinHelp, ...] = (
     ShellBuiltinHelp("account <name>",       "List or switch credential profiles  (Tab -> profile names)"),
     ShellBuiltinHelp("configure",            "Enter configure mode  (arc:global #)", hide_in_configure=True),
     ShellBuiltinHelp("cli <subcommand>",     "CLI theme operations in configure mode  (show | color | reset)", configure_only=True),
-    ShellBuiltinHelp("ls",                   "List devices and refresh cache  (ls folder -> folder tree view)"),
     ShellBuiltinHelp("pwd",                  "Show device, folder, TSG, and active account"),
     ShellBuiltinHelp("docs",                 "Open docs in browser"),
     ShellBuiltinHelp("clear",                "Clear the terminal screen"),

@@ -495,6 +495,9 @@ without reading this full file.
 | Start here | Then read if needed |
 |-----------|-------------------|
 | `README.dev.md` — keyword dictionary, file ownership, add-command steps, debug patterns, smoke section map | `AGENTS.md` — full spec, security rules, SCM gateway map |
+| **`docs/COMMAND_PATTERNS.md`** — 5 minimal working patterns (saves reading 300+ line modules) | `app/commands/<module>.py` — full implementation for that domain |
+| **`docs/RENDER_CATALOG.md`** — all render= keys + formatters (saves reading formatter.py) | `app/utils/formatter.py` — specific renderer implementation |
+| **`docs/COMMANDDEF_REFERENCE.md`** — CommandDef field reference (saves reading base.py) | `app/commands/base.py` — full definitions |
 | `dev/API_INDEX.md` — compact endpoint table (all specs) | `docs/scm-api/specs/<cat>.md` — full spec for one category |
 | `dev/CODE_MAP.md` — method line ranges for large files | the one large file, read only that range |
 
@@ -509,6 +512,9 @@ Apply these rules on every edit to keep agent context costs low as the codebase 
 - Use `read_file` with `offset` + `limit` to read only the relevant section of large files
 - **Never read `app/shell.py` (or any 300+ line file) whole.** Look up the method's exact line range in `dev/CODE_MAP.md`, then read only that range
 - For shell builtin names/help rows, read `app/shell_catalog.py` before reading `app/shell.py`
+- For command patterns, read `docs/COMMAND_PATTERNS.md` (saves reading existing 300+ line modules)
+- For available render types, read `docs/RENDER_CATALOG.md` (saves reading formatter.py)
+- For CommandDef fields, read `docs/COMMANDDEF_REFERENCE.md` (saves reading base.py)
 - `dev/API_INDEX.md` replaces reading any spec file for endpoint lookups
 
 **Never hand-maintain line numbers:**
@@ -589,7 +595,7 @@ The debug error table in `README.dev.md` maps error text to the 1–2 relevant f
 | New module added under `app/` | No change needed — syntax and import tests auto-discover it |
 | New `SCMConfig` / `ArcConfig` field with invariant | Add a case in **section 5** of `dev/smoke_test.py` |
 | New theme key added to `ArcTheme` | Add a display label to `THEME_KEYS` in `app/theme.py`; add to **section 9** if there is an invariant |
-| Builtin command added/removed/renamed | Edit `app/shell_catalog.py` first; smoke section 8 validates catalog wiring |
+| Builtin command added/removed/renamed | Edit `app/shell_catalog.py` first; then grep `app/shell.py` for dispatch/completer/hint-string refs; delete `docs/commands/<name>.md`; smoke section 8 validates catalog wiring. Full checklist in `README.dev.md`. |
 | Any 300+ line file's methods moved/renamed | `dev/CODE_MAP.md` auto-checked by **section 10**; run `python dev/gen_code_map.py` (pre-commit also auto-refreshes) |
 
 **Targeted run flags** (saves time and tokens during development):
@@ -717,7 +723,7 @@ When an agent needs to work on a specific domain or feature area, use these keyw
 | `security` | Security policy commands | `app/commands/security.py`, `docs/scm-api/specs/security.md` | Working on security-rules, URL categories, profiles |
 | `objects` | Address/service objects | `app/commands/objects.py`, `docs/scm-api/specs/objects.md` | Adding address, service, tag, or EDL commands |
 | `setup` | Device/folder/snippet mgmt | `app/commands/setup.py`, `docs/scm-api/specs/setup.md` | Device inventory, folder ops, snippet management |
-c| `operations` | Jobs, commit, live device | `app/commands/operations.py`, `docs/scm-api/specs/ngfw-operations.md` (live ops R2) + `ngfw-config-operations.md` (config jobs/push) | Commit operations, job tracking, live device commands |
+| `operations` | Jobs, commit, live device | `app/commands/operations.py`, `docs/scm-api/specs/ngfw-operations.md` (live ops R2) + `ngfw-config-operations.md` (config jobs/push) | Commit operations, job tracking, live device commands |
 | `formatter` | Output rendering | `app/utils/formatter.py` | Adding new table/panel renderers |
 | `shell` | REPL, help, completion | `app/shell.py`, `app/theme.py` | Shell UX, prompts, help system, theming |
 | `auth` | Authentication/credentials | `app/cli.py` (auth commands), `app/config.py` | Profile management, credential storage |

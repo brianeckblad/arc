@@ -16,10 +16,13 @@ string to touch, not the whole CLI, so context (and tokens) stay minimal.
 Read in order, stopping as soon as you have enough context:
 
 1. **This file** — recipes, file ownership, keyword vocabulary
-2. `dev/API_INDEX.md` — compact SCM endpoint table (all specs, ~300 lines)
-3. `dev/CODE_MAP.md` — exact line range of every method in large files
-4. The one small file named by the keyword/recipe below
-5. `AGENTS.md` — only for full policy/security/architecture context
+2. `docs/RENDER_CATALOG.md` — all available render= keys (saves reading formatter.py)
+3. `docs/COMMAND_PATTERNS.md` — copy a minimal working example pattern
+4. `docs/COMMANDDEF_REFERENCE.md` — CommandDef field table (saves reading base.py)
+5. `dev/API_INDEX.md` — compact SCM endpoint table (all specs, ~300 lines)
+6. `dev/CODE_MAP.md` — exact line range of every method in large files
+7. The one small file named by the keyword/recipe below
+8. `AGENTS.md` — only for full policy/security/architecture context
 
 **Never read `app/shell.py` (or any 300+ line file) whole.** Look up the method
 in `dev/CODE_MAP.md`, then `read_file(offset, limit)` for just that range.
@@ -33,6 +36,9 @@ without scanning the whole codebase. One word replaces a paragraph.
 
 | Trigger word | Means | Agent action (no full-repo read) |
 |---|---|---|
+| `render` | available render types | Read `docs/RENDER_CATALOG.md` — all render= keys with examples (saves reading formatter.py) |
+| `patterns` | command pattern examples | Read `docs/COMMAND_PATTERNS.md` — copy one of 5 minimal patterns (saves reading existing commands) |
+| `commanddef` | CommandDef fields | Read `docs/COMMANDDEF_REFERENCE.md` — all fields in one table (saves reading base.py) |
 | `map` | use the code map | Read `dev/CODE_MAP.md`, then read only the listed line range |
 | `index` | use the API index | Read `dev/API_INDEX.md` for the endpoint, skip spec files |
 | `string <file>` | work only in this small file | Edit only the named string file; don't open `shell.py` whole |
@@ -109,13 +115,13 @@ notes: <anything you already know changed on pan.dev>
 
 | Say this | Agent reads first | Usually edits | Validation |
 |---|---|---|---|
-| `add scm command` | `dev/API_INDEX.md`, target `app/commands/<module>.py` | command module + `app/api/client.py` if method missing + docs page | `python dev/smoke_test.py --only 1,2,3` |
-| `add feature-flagged command` | `app/features.py`, `dev/API_INDEX.md` | `app/features.py`, command module | `python dev/smoke_test.py --file app/features.py` then `--only 1,2,3` |
-| `add device command` | `app/commands/operations.py`, `dev/API_INDEX.md` SSH column | `operations.py`, docs page | `python dev/smoke_test.py --only 1,2,3` |
+| `add scm command` | `docs/COMMAND_PATTERNS.md` (pattern 1), `dev/API_INDEX.md` for resource | command module + `app/api/client.py` if method missing + docs page | `python dev/smoke_test.py --only 1,2,3` |
+| `add feature-flagged command` | `app/features.py`, `docs/COMMAND_PATTERNS.md` | `app/features.py`, command module | `python dev/smoke_test.py --file app/features.py` then `--only 1,2,3` |
+| `add device command` | `docs/COMMAND_PATTERNS.md` (pattern 4), `dev/API_INDEX.md` SSH column | `operations.py`, docs page | `python dev/smoke_test.py --only 1,2,3` |
 | `add shell builtin` | `app/shell_catalog.py`, `dev/CODE_MAP.md` | `shell_catalog.py`, one `_cmd_*`, `_dispatch()` | `python dev/smoke_test.py --file app/shell_catalog.py` |
 | `change help text` | `app/shell_catalog.py` for SHELL help, command module for registered commands | small catalog/module only | `python dev/smoke_test.py --only 8` |
 | `change prompt/banner` | `dev/CODE_MAP.md` (`_print_banner`/`_prompt`), `app/banner.txt` | banner/theme files | `python dev/smoke_test.py --only 7,9` |
-| `change renderer` | `app/utils/formatter.py`, `dev/CODE_MAP.md` (`_render`) | formatter + `_render` dispatch | `python dev/smoke_test.py --file app/utils/formatter.py` |
+| `change renderer` | `docs/RENDER_CATALOG.md` (find matching render= key), then `app/utils/formatter.py` | formatter + `_render` dispatch | `python dev/smoke_test.py --file app/utils/formatter.py` |
 | `debug API 4xx` | `app/api/client.py`, `dev/API_INDEX.md` | client method or handler params | targeted smoke + reproduce command |
 | `debug tab completion` | `dev/CODE_MAP.md` (`ArcCompleter.get_completions`) | completer only | `python dev/smoke_test.py --file app/shell.py` |
 | `debug feature hidden` | `app/features.py`, command `feature_flag=` | feature flag default/local config | `python dev/smoke_test.py --file app/features.py` |
@@ -188,6 +194,33 @@ COMMANDS: dict[str, CommandDef] = {
 5. Add a tab-completion case in `ArcCompleter` if the command takes structured args
 
 **Smoke after:** `python dev/smoke_test.py --file app/shell_catalog.py`
+
+## Remove a Shell Builtin — Checklist
+
+Run each grep, act on every hit, then smoke test once at the end.
+
+```bash
+# 1. Remove from catalog (builtin name + help row)
+#    Edit app/shell_catalog.py — SHELL_BUILTINS tuple + SHELL_HELP_ROWS
+
+# 2. Remove dispatch branch in shell.py
+grep -n '"<name>"' app/shell.py        # find the elif in _dispatch()
+
+# 3. Remove completer case in shell.py
+grep -n "first == \"<name>\"" app/shell.py
+
+# 4. Remove/update ALL hint strings that mention the command
+grep -rn '\b<name>\b' app/shell.py docs/commands/
+
+# 5. Remove the docs page (no auto-delete)
+rm -f docs/commands/<name>.md
+
+# 6. Update smoke test shorthand if the command affected ambiguity
+grep -n "<name>" dev/smoke_test.py
+
+# 7. Validate
+python dev/smoke_test.py --file app/shell_catalog.py
+```
 
 ---
 
