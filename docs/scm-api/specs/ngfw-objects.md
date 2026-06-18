@@ -1,10 +1,10 @@
 # Objects
 
 **Version:** 2.0.0  
-**Source:** `openapi-specs/scm/config/ngfw/objects/objects_v1.3_feb.yaml`  
+**Source:** `openapi-specs/scm/config/ngfw/objects/objects-june.yaml`  
 **Base URL:** `https://api.strata.paloaltonetworks.com/config/objects/v1`  
-**Endpoints:** 92  
-**GitHub:** https://github.com/PaloAltoNetworks/pan.dev/blob/master/openapi-specs/scm/config/ngfw/objects/objects_v1.3_feb.yaml
+**Endpoints:** 105  
+**GitHub:** https://github.com/PaloAltoNetworks/pan.dev/blob/master/openapi-specs/scm/config/ngfw/objects/objects-june.yaml
 
 ---
 
@@ -43,6 +43,55 @@
 **Summary:** Delete an address  
 **Operation ID:** `DeleteAddressesByID`  
 **Tags:** Addresses  
+**Response codes:** 200, 400, 401, 403, 404, 409, default
+
+### `GET /advanced-device-objects`
+
+**Summary:** List advanced device objects  
+**Operation ID:** `ListAdvancedDeviceObjects`  
+**Tags:** Advanced Device Objects  
+**Response codes:** 200, 400, 401, 403, 404, default
+
+### `POST /advanced-device-objects`
+
+**Summary:** Create an advanced device object  
+**Operation ID:** `CreateAdvancedDeviceObjects`  
+**Tags:** Advanced Device Objects  
+**Response codes:** 201, 400, 401, 403, 409, default
+
+### `PUT /advanced-device-objects`
+
+**Summary:** Update an advanced device object by path  
+**Operation ID:** `UpdateAdvancedDeviceObjectsByPath`  
+**Tags:** Advanced Device Objects  
+**Response codes:** 200, 400, 401, 403, 404, 409, default
+
+### `DELETE /advanced-device-objects`
+
+**Summary:** Delete advanced device objects by names  
+**Operation ID:** `DeleteAdvancedDeviceObjectsByNames`  
+**Tags:** Advanced Device Objects  
+**Response codes:** 200, 400, 401, 403, 404, 409, default
+
+### `GET /advanced-device-objects/{id}`
+
+**Summary:** Get an advanced device object  
+**Operation ID:** `GetAdvancedDeviceObjectsByID`  
+**Tags:** Advanced Device Objects  
+**Response codes:** 200, 400, 401, 403, 404, default
+
+### `PUT /advanced-device-objects/{id}`
+
+**Summary:** Update an advanced device object  
+**Operation ID:** `UpdateAdvancedDeviceObjectsByID`  
+**Tags:** Advanced Device Objects  
+**Response codes:** 200, 400, 401, 403, 404, 409, default
+
+### `DELETE /advanced-device-objects/{id}`
+
+**Summary:** Delete an advanced device object  
+**Operation ID:** `DeleteAdvancedDeviceObjectsByID`  
+**Tags:** Advanced Device Objects  
 **Response codes:** 200, 400, 401, 403, 404, 409, default
 
 ### `GET /address-groups`
@@ -211,6 +260,48 @@
 **Summary:** Delete an Auto-Tag action  
 **Operation ID:** `DeleteAuto-TagActions`  
 **Tags:** Auto-Tag Actions  
+**Response codes:** 200, 400, 401, 403, 404, 409, default
+
+### `GET /device-context-segments`
+
+**Summary:** List device context segments  
+**Operation ID:** `ListDeviceContextSegments`  
+**Tags:** Device Context Segments  
+**Response codes:** 200, 400, 401, 403, 404, default
+
+### `POST /device-context-segments`
+
+**Summary:** Create a device context segment  
+**Operation ID:** `CreateDeviceContextSegment`  
+**Tags:** Device Context Segments  
+**Response codes:** 201, 400, 401, 403, 409, default
+
+### `DELETE /device-context-segments`
+
+**Summary:** Delete device context segments by name  
+**Operation ID:** `DeleteDeviceContextSegmentsByName`  
+**Tags:** Device Context Segments  
+**Response codes:** 200, 400, 401, 403, 404, 409, default
+
+### `GET /device-context-segments/{id}`
+
+**Summary:** Get a device context segment  
+**Operation ID:** `GetDeviceContextSegmentByID`  
+**Tags:** Device Context Segments  
+**Response codes:** 200, 400, 401, 403, 404, default
+
+### `PUT /device-context-segments/{id}`
+
+**Summary:** Update a device context segment  
+**Operation ID:** `UpdateDeviceContextSegmentByID`  
+**Tags:** Device Context Segments  
+**Response codes:** 200, 400, 401, 403, 404, 409, default
+
+### `DELETE /device-context-segments/{id}`
+
+**Summary:** Delete a device context segment  
+**Operation ID:** `DeleteDeviceContextSegmentByID`  
+**Tags:** Device Context Segments  
 **Response codes:** 200, 400, 401, 403, 404, 409, default
 
 ### `GET /dynamic-user-groups`

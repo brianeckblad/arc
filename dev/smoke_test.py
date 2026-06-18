@@ -1,23 +1,37 @@
 #!/usr/bin/env python3
 """ARC smoke test suite.
 
-Covers these concern areas:
-  1. Syntax            — py_compile every Python module under app/
-  2. Imports           — every module imports cleanly (no side-effect errors)
-  3. Registry          — COMMANDS dict is structurally valid (no lambdas, required fields, etc.)
-  4. Arg parser        — _parse_args() and match_command() return the right shapes
-  5. Token opts        — KEYWORD_PARAMS is module-level constant
-  6. Config types      — ArcConfig / SshConfig dataclasses default-construct correctly
-  7. Formatter         — key renderer functions accept sample data without raising
-  8. CLI banner        — every banner line lands descriptions at visual column 28
-  9. Inline help       — builtin names match actual implementation
-  10. Theme            — theme keys have display labels
+Covers eleven concern areas:
+  1. Syntax       — py_compile every Python module under app/
+  2. Imports      — every module imports cleanly (no side-effect errors)
+  3. Registry     — COMMANDS dict is structurally valid (no lambdas, required fields, etc.)
+  4. Arg parser   — _parse_args() and match_command() return the right shapes
+  5. Token opts   — KEYWORD_PARAMS is a module-level constant in registry.py
+  6. Config types — ArcConfig / SCMConfig + FeatureFlags default-construct correctly
+  7. Formatter    — key renderer functions accept sample data without raising
+  8. CLI banner   — every banner line lands descriptions at visual column 28
+  9. Inline help  — builtin names in sync via shell_catalog; no markup; width fit
+ 10. Theme system — ArcTheme fields, THEME_KEYS, load_theme(), file locations
+ 11. Code map     — dev/CODE_MAP.md is current (no line-range drift in large files)
 
 Run directly:
     python dev/smoke_test.py
 
+Run targeted sections (saves tokens + time when editing one area):
+    python dev/smoke_test.py --only 1,2,3     # syntax + imports + registry
+    python dev/smoke_test.py --only 3         # registry only (fastest after adding a command)
+    python dev/smoke_test.py --file app/commands/network.py   # auto-selects sections
+
 Run from pre-commit hook:
     python dev/smoke_test.py --quiet   (exit 0 = OK, exit 1 = failure)
+
+File → section mapping for --file:
+    commands/*.py          → 1,2,3
+    utils/formatter.py     → 1,2,6
+    shell.py               → 1,2,7,8
+    theme.py / *.json      → 1,2,9
+    config.py              → 1,2,5
+    any .py                → 1,2
 
 MAINTENANCE NOTE:
   • After any change to app/ modules → re-run to verify imports + registry.
@@ -33,6 +47,7 @@ import importlib
 import py_compile
 import re
 import sys
+import time
 import traceback
 from pathlib import Path
 from typing import Any
@@ -70,6 +85,70 @@ def section(title: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# --only / --file argument parsing
+# ---------------------------------------------------------------------------
+
+def _parse_cli_args() -> tuple[set[int], bool]:
+    """Return (sections_to_run, quiet_mode).
+
+    --only 1,2,3  → run only sections 1, 2, 3
+    --file path   → auto-select sections based on which area the file belongs to
+    --quiet       → suppress per-check output; used by pre-commit hook
+    """
+    args = sys.argv[1:]
+    quiet = "--quiet" in args
+    all_sections = set(range(1, 12))
+
+    if "--only" in args:
+        idx = args.index("--only")
+        try:
+            raw = args[idx + 1]
+            sections = {int(s.strip()) for s in raw.split(",")}
+            return sections, quiet
+        except (IndexError, ValueError):
+            print("Usage: --only 1,2,3", file=sys.stderr)
+            sys.exit(2)
+
+    if "--file" in args:
+        idx = args.index("--file")
+        try:
+            path_str = args[idx + 1]
+        except IndexError:
+            print("Usage: --file app/commands/network.py", file=sys.stderr)
+            sys.exit(2)
+        path = Path(path_str)
+        name = path.name
+        parts = path.parts
+
+        # Map file patterns to relevant section sets.
+        # Always include 1 (syntax) and 2 (imports) for any Python file.
+        # Section 11 (code-map drift) is added for files large enough to be mapped.
+        base = {1, 2}
+        # Files mapped in dev/CODE_MAP.md trigger the drift check too.
+        _mapped_large_files = {
+            "shell.py", "cli.py", "formatter.py", "client.py",
+            "config.py", "setup.py", "manager.py",
+        }
+        map_check = {11} if name in _mapped_large_files else set()
+        if "commands" in parts and name.endswith(".py"):
+            return base | {3} | map_check, quiet
+        if name == "formatter.py":
+            return base | {7} | map_check, quiet
+        if name in ("shell.py", "shell_catalog.py"):
+            return base | {8, 9} | map_check, quiet
+        if name in ("theme.py", "cli_theme.json"):
+            return base | {10}, quiet
+        if name in ("config.py", "features.py"):
+            return base | {6} | map_check, quiet
+        if name == "registry.py":
+            return base | {3, 4, 5}, quiet
+        # Default: syntax + imports for any other .py
+        return base | map_check, quiet
+
+    return all_sections, quiet
+
+
+# ---------------------------------------------------------------------------
 # 1. Syntax — py_compile every .py under app/
 # ---------------------------------------------------------------------------
 
@@ -96,6 +175,7 @@ def test_imports() -> None:
     modules = [
         "app",
         "app.config",
+        "app.features",
         "app.commands.base",
         "app.commands.setup",
         "app.commands.objects",
@@ -104,6 +184,7 @@ def test_imports() -> None:
         "app.commands.operations",
         "app.commands.registry",
         "app.api.client",
+        "app.shell_catalog",
         "app.ssh.manager",
         "app.utils.formatter",
         "app.theme",
@@ -280,11 +361,43 @@ def test_config() -> None:
     else:
         fail("SCMConfig with OAuth creds should be is_configured")
 
-    # 5e — profile_name defaults to 'default'
+    # 6e — profile_name defaults to 'default'
     if cfg.profile_name == "default":
         ok("ArcConfig.profile_name defaults to 'default'")
     else:
         fail(f"ArcConfig.profile_name expected 'default', got {cfg.profile_name!r}")
+
+    # 6f — FeatureFlags constructs and load_features() returns FeatureFlags
+    from app.features import FeatureFlags, load_features, is_enabled
+    try:
+        flags = FeatureFlags()
+        ok("FeatureFlags() constructs with defaults")
+    except Exception as exc:
+        fail("FeatureFlags() construction failed", str(exc))
+        return
+
+    try:
+        loaded = load_features()
+        if isinstance(loaded, FeatureFlags):
+            ok("load_features() returns FeatureFlags instance")
+        else:
+            fail(f"load_features() returned unexpected type: {type(loaded)}")
+    except Exception as exc:
+        fail("load_features() raised", str(exc))
+
+    # 6g — is_enabled: empty flag name always True
+    if is_enabled(flags, ""):
+        ok("is_enabled(flags, '') → True (no flag = always enabled)")
+    else:
+        fail("is_enabled(flags, '') should be True for empty flag name")
+
+    # 6h — CommandDef.feature_flag field exists
+    from app.commands.base import CommandDef
+    cd = CommandDef(description="test", category="test", scope="folder")
+    if hasattr(cd, "feature_flag") and cd.feature_flag == "":
+        ok("CommandDef.feature_flag defaults to ''")
+    else:
+        fail("CommandDef.feature_flag missing or non-empty default")
 
 
 # ---------------------------------------------------------------------------
@@ -363,7 +476,7 @@ _BANNER_PATTERN = re.compile(
 
 
 def test_banner_alignment() -> None:
-    section("7. CLI banner alignment  (descriptions at visual col 28)")
+    section("8. CLI banner alignment  (descriptions at visual col 28)")
 
     shell_src = (APP / "shell.py").read_text(encoding="utf-8")
 
@@ -430,33 +543,14 @@ def test_banner_alignment() -> None:
 #      b) fit within _HELP_CMD_WIDTH chars so descriptions align on the same column
 #
 #    The builtins list in _print_shell_builtins() is checked by extracting it
-#    directly from the shell source so this test catches every future edit.
+#    from app/shell_catalog.py so builtin metadata stays in a tiny agent-friendly file.
 # ---------------------------------------------------------------------------
-
-# Builtin command names as they appear in _print_shell_builtins().
-# UPDATE this list whenever builtins are added, removed, or renamed.
-_BUILTIN_NAMES: list[str] = [
-    "cd <device>",
-    "connect <device>",
-    "remote <device>",
-    "folder <name>",
-    "folder create <name>",
-    "tsg <id>",
-    "account <name>",
-    "configure",
-    "cli <subcommand>",
-    "ls",
-    "pwd",
-    "docs",
-    "clear",
-    "exit / quit",
-]
 
 _MARKUP_RE = re.compile(r'\[[a-zA-Z/_][^\]]*\]')
 
 
 def test_inline_help_alignment() -> None:
-    section("8. Inline help alignment")
+    section("9. Inline help alignment")
 
     # Read _HELP_CMD_WIDTH from shell.py
     shell_src = (APP / "shell.py").read_text(encoding="utf-8")
@@ -470,6 +564,7 @@ def test_inline_help_alignment() -> None:
     # 8a — Registered command keys: no markup, fit in field
     from app.commands.registry import COMMANDS
     from app.shell import _SHELL_BUILTINS, _expand_unambiguous_prefix
+    from app.shell_catalog import SHELL_BUILTINS, shell_help_names, shell_help_rows
     markup_keys = [k for k in COMMANDS if _MARKUP_RE.search(k)]
     if markup_keys:
         fail(f"Registered commands contain [markup] in key (breaks alignment): {markup_keys}")
@@ -484,14 +579,15 @@ def test_inline_help_alignment() -> None:
         ok(f"All registered command keys fit within {cmd_width} chars")
 
     # 8b — Builtin names: no markup, fit in field
-    markup_builtins = [n for n in _BUILTIN_NAMES if _MARKUP_RE.search(n)]
+    builtin_names = shell_help_names()
+    markup_builtins = [n for n in builtin_names if _MARKUP_RE.search(n)]
     if markup_builtins:
         for n in markup_builtins:
             fail(f"Builtin name contains [markup] (breaks alignment): {n!r}")
     else:
-        ok(f"No [markup] tags in any of the {len(_BUILTIN_NAMES)} builtin names")
+        ok(f"No [markup] tags in any of the {len(builtin_names)} builtin names")
 
-    oversized_builtins = [n for n in _BUILTIN_NAMES if len(n) > cmd_width]
+    oversized_builtins = [n for n in builtin_names if len(n) > cmd_width]
     if oversized_builtins:
         for n in oversized_builtins:
             fail(f"Builtin name too wide ({len(n)} > {cmd_width}): {n!r}")
@@ -514,37 +610,19 @@ def test_inline_help_alignment() -> None:
         else:
             fail(f"shorthand expansion mismatch for {raw!r}", f"expected {expected!r}, got {got!r}")
 
-    # 8c — Verify _BUILTIN_NAMES is in sync with shell.py source
-    # Extract builtin names line-by-line from _print_shell_builtins block.
-    in_block = False
-    live_names: list[str] = []
-    for line in shell_src.splitlines():
-        if "_print_shell_builtins" in line and "def " in line:
-            in_block = True
-        if in_block:
-            m2 = re.match(r'\s+\("([^"]+)"', line)
-            if m2:
-                live_names.append(m2.group(1))
-            # Stop at the closing ] of the builtins list
-            if live_names and line.strip() == "]":
-                break
-
-    if not live_names:
-        fail("Could not locate builtins list in shell.py — check _print_shell_builtins")
-        return
-
-    if live_names == _BUILTIN_NAMES:
-        ok(f"_BUILTIN_NAMES in sync with shell.py ({len(live_names)} entries)")
+    # 9c — Verify shell.py is wired to shell_catalog source of truth.
+    if tuple(_SHELL_BUILTINS) == tuple(SHELL_BUILTINS):
+        ok(f"_SHELL_BUILTINS wired to shell_catalog ({len(SHELL_BUILTINS)} entries)")
     else:
-        in_ref_not_live = [n for n in _BUILTIN_NAMES if n not in live_names]
-        in_live_not_ref = [n for n in live_names if n not in _BUILTIN_NAMES]
-        if in_ref_not_live:
-            fail(f"_BUILTIN_NAMES has entries not in shell.py: {in_ref_not_live}")
-        if in_live_not_ref:
-            fail(
-                f"shell.py builtins not in _BUILTIN_NAMES (update smoke_test.py): "
-                f"{in_live_not_ref}"
-            )
+        fail("_SHELL_BUILTINS differs from shell_catalog.SHELL_BUILTINS")
+
+    # 9d — Configure-mode split is intentional: configure shows only mutation helpers.
+    normal_rows = shell_help_rows(configure_mode=False)
+    config_rows = shell_help_rows(configure_mode=True)
+    if normal_rows and config_rows:
+        ok(f"shell_help_rows() returns normal={len(normal_rows)} config={len(config_rows)} rows")
+    else:
+        fail("shell_help_rows() returned empty normal or configure-mode list")
 
 
 # ---------------------------------------------------------------------------
@@ -552,7 +630,7 @@ def test_inline_help_alignment() -> None:
 # ---------------------------------------------------------------------------
 
 def test_theme() -> None:
-    section("9. Theme system")
+    section("10. Theme system")
 
     from app.theme import ArcTheme, THEME_KEYS, load_theme
 
@@ -600,36 +678,114 @@ def test_theme() -> None:
 
 
 # ---------------------------------------------------------------------------
+# 10. Code map freshness
+#     dev/CODE_MAP.md is generated by dev/gen_code_map.py and gives agents the
+#     exact line range of every method in large files. If it drifts, agents read
+#     the wrong lines. This check fails when the map is stale so it cannot rot.
+# ---------------------------------------------------------------------------
+
+def test_code_map() -> None:
+    section("11. Code map freshness")
+
+    gen = ROOT / "dev" / "gen_code_map.py"
+    code_map = ROOT / "dev" / "CODE_MAP.md"
+
+    if not gen.exists():
+        fail("dev/gen_code_map.py is missing")
+        return
+    ok("dev/gen_code_map.py exists")
+
+    if not code_map.exists():
+        fail("dev/CODE_MAP.md is missing — run: python dev/gen_code_map.py")
+        return
+    ok("dev/CODE_MAP.md exists")
+
+    # Re-run the generator's --check mode in-process to detect drift.
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("gen_code_map", gen)
+    if spec is None or spec.loader is None:
+        fail("Could not load dev/gen_code_map.py for drift check")
+        return
+    module = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(module)
+        fresh = module._build_map()
+        current = code_map.read_text(encoding="utf-8")
+        if fresh == current:
+            ok("dev/CODE_MAP.md is current (no drift)")
+        else:
+            fail(
+                "dev/CODE_MAP.md is STALE",
+                "Run: python dev/gen_code_map.py  (large file line ranges changed)",
+            )
+    except Exception as exc:
+        fail("Code map drift check raised", str(exc))
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
+# Maps section number to (function, short label)
+_SECTION_MAP = [
+    (1, test_syntax,               "Syntax"),
+    (2, test_imports,              "Imports"),
+    (3, test_registry,             "Registry"),
+    (4, test_arg_parser,           "Arg parser"),
+    (5, test_token_optimizations,  "Token optimizations"),
+    (6, test_config,               "Config types"),
+    (7, test_formatter,            "Formatter"),
+    (8, test_banner_alignment,     "Banner alignment"),
+    (9, test_inline_help_alignment,"Inline help alignment"),
+    (10, test_theme,               "Theme"),
+    (11, test_code_map,            "Code map freshness"),
+]
+
+
 def main() -> int:
-    quiet = "--quiet" in sys.argv
+    active_sections, quiet = _parse_cli_args()
+
+    skipped = sorted(n for n, _, _ in _SECTION_MAP if n not in active_sections)
+    running = sorted(n for n, _, _ in _SECTION_MAP if n in active_sections)
 
     print("ARC smoke test")
     print("=" * 40)
+    if skipped:
+        labels = ", ".join(
+            f"{n}={label}" for n, _, label in _SECTION_MAP if n in skipped
+        )
+        print(f"{SKIP}  Skipping sections: {labels}")
+    if len(running) < len(_SECTION_MAP):
+        labels = ", ".join(
+            f"{n}={label}" for n, _, label in _SECTION_MAP if n in active_sections
+        )
+        print(f"   Running sections: {labels}")
 
-    test_syntax()
-    test_imports()
-    test_registry()
-    test_arg_parser()
-    test_token_optimizations()
-    test_config()
-    test_formatter()
-    test_banner_alignment()
-    test_inline_help_alignment()
-    test_theme()
+    t_start = time.monotonic()
+
+    for num, fn, label in _SECTION_MAP:
+        if num not in active_sections:
+            continue
+        t0 = time.monotonic()
+        fn()
+        elapsed = time.monotonic() - t0
+        if not quiet and elapsed > 0.5:
+            print(f"   [{elapsed:.1f}s]")
+
+    total_elapsed = time.monotonic() - t_start
 
     print()
     print("=" * 40)
     total = _passes + len(_failures)
     if _failures:
-        print(f"FAILED  {len(_failures)}/{total} checks failed\n")
+        print(f"FAILED  {len(_failures)}/{total} checks failed  ({total_elapsed:.1f}s)\n")
         for f in _failures:
             print(f"  {FAIL}  {f}")
         return 1
     else:
-        print(f"ALL OK  {_passes}/{total} checks passed")
+        print(f"ALL OK  {_passes}/{total} checks passed  ({total_elapsed:.1f}s)")
+        if skipped:
+            print(f"        ({len(skipped)} section(s) skipped — run without --only to verify all)")
         return 0
 
 

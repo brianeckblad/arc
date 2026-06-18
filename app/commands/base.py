@@ -61,16 +61,20 @@ class CommandDef:
     """Descriptor for a single ARC command entry.
 
     Fields:
-        description: One-line description shown in help output.
-        category:    Grouping key used in help (e.g. 'setup', 'objects', 'security').
-        scope:       Context requirement — 'folder' (default), 'device', or 'global'.
-                     See CommandScope above.
-        api_handler: Called when the command runs in API (SCM) mode.
-                     Signature: (ctx: ExecutionContext, args: dict) -> Any
-        ssh_command: Static string or callable that returns the PAN-OS SSH command.
-                     Callable signature: (args: dict) -> str
-                     None means API-only (config / SCM object commands).
-        render:      Key into ArcShell._render() dispatch table.
+        description:  One-line description shown in help output.
+        category:     Grouping key used in help (e.g. 'setup', 'objects', 'security').
+        scope:        Context requirement — 'folder' (default), 'device', or 'global'.
+                      See CommandScope above.
+        api_handler:  Called when the command runs in API (SCM) mode.
+                      Signature: (ctx: ExecutionContext, args: dict) -> Any
+        ssh_command:  Static string or callable that returns the PAN-OS SSH command.
+                      Callable signature: (args: dict) -> str
+                      None means API-only (config / SCM object commands).
+        render:       Key into ArcShell._render() dispatch table.
+        feature_flag: Name of a FeatureFlags field that gates this command.
+                      Empty string (default) means always enabled.
+                      When the flag is False the command is hidden from ? and blocked.
+                      Example: feature_flag='nat_rules'
     """
 
     description: str
@@ -79,6 +83,7 @@ class CommandDef:
     api_handler: Optional[Callable] = None
     ssh_command: str | Callable[[dict], str] | None = None
     render: str = ""
+    feature_flag: str = ""   # gate behind app/features.py FeatureFlags field
 
 
 # ---------------------------------------------------------------------------

@@ -1,4 +1,26 @@
-"""Interactive REPL shell for ARC — Assisted Remote Console."""
+"""Interactive REPL shell for ARC — Assisted Remote Console.
+
+# ============================================================================
+# SHELL.PY — the shell spine (prompt loop, dispatch, execution, rendering)
+# ============================================================================
+#
+# AGENT READ STRATEGY — do NOT read this whole file.
+#   `dev/CODE_MAP.md` has the exact, always-current line range of every method
+#   here. Read that map, then read_file(offset=START, limit=END-START+1) for the
+#   one method you need. Regenerate the map with: python dev/gen_code_map.py
+#   (smoke_test.py section 10 fails if the map is stale.)
+#
+# SMALL "STRINGS" attached to this spine (edit these first when relevant):
+#   app/shell_catalog.py  — builtin command names + SHELL `?` help rows
+#   app/features.py       — feature flags that gate commands
+#   app/theme.py          — colour roles for `?` help and prompt
+#   app/commands/*.py     — registered command handlers + CommandDefs
+#
+# FEATURE FLAGS:
+#   CommandDef.feature_flag = 'flag_name' gates a command behind app/features.py.
+#   _is_command_available() enforces flags in `?` help; _execute_api() at runtime.
+# ============================================================================
+"""
 
 from __future__ import annotations
 
@@ -45,6 +67,8 @@ from app.commands.registry import (
 )
 from app.config import ArcConfig, list_profiles, load_config, set_active_profile
 from app.docs import available_help_topics, open_docs_in_browser, render_help_topic
+from app.features import FeatureFlags, is_enabled, load_features
+from app.shell_catalog import SHELL_BUILTINS, shell_help_rows
 from app.ssh.manager import SSHManager
 from app.theme import ArcTheme, THEME_KEYS, load_theme, reset_theme, save_theme
 from app.utils import formatter as fmt
@@ -62,14 +86,8 @@ GOODBYE_FILE = Path(__file__).parent / "goodbye.txt"
 _HELP_CMD_WIDTH = 43
 
 # Shell built-ins accepted by the dispatcher/completer.
-_SHELL_BUILTINS: tuple[str, ...] = (
-    "cd", "remote", "connect", "docs",
-    "ls", "devices", "pwd",
-    "folder", "tsg", "account",
-    "configure", "cli",
-    "clear", "exit", "quit",
-    "help", "?",
-)
+# Metadata lives in app/shell_catalog.py so agents can edit a tiny file first.
+_SHELL_BUILTINS: tuple[str, ...] = SHELL_BUILTINS
 
 
 def _expand_unambiguous_prefix(tokens: list[str], phrases: list[list[str]]) -> list[str]:
@@ -377,6 +395,10 @@ class ArcShell:
         # Prefix to restore in the next prompt after a '?' context-help lookup.
         # e.g. "show ?" prints help then re-seeds the prompt with "show ".
         self._pending_default: str = ""
+
+        # Feature flags — loaded once at startup; apply to all command dispatch.
+        # Edit config/features.json or set ARC_FEATURE_<NAME>=1 env vars to enable.
+        self._features: FeatureFlags = load_features()
 
         # Build clients
         self._scm: Optional[SCMClient] = None
@@ -2057,37 +2079,9 @@ class ArcShell:
             f"\n  {self._styled('SHELL', t.section_header)}  "
             f"{self._styled('— navigation & session', t.description_dim)}"
         )
-        builtins = [
-            ("cd <device>",           "Change Device in SCM  (Tab -> device list)"),
-            ("connect <device>",      "SSH to device — interactive session  (returns to ARC on exit)"),
-            ("remote <device>",       "SSH to named device — interactive session  (keyboard-interactive + 2FA)"),
-            ("folder <name>",         "Set SCM Folder scope  (Tab -> folder list | folder .. -> Shared)"),
-            ("folder create <name>",  "Create a new folder  (configure mode required)"),
-            ("tsg <id>",              "Set active TSG  (Tab -> configured TSG)"),
-            ("account <name>",        "List or switch credential profiles  (Tab -> profile names)"),
-            ("configure",             "Enter configure mode  (arc:global #)"),
-            ("cli <subcommand>",      "CLI theme operations in configure mode  (show | color | reset)"),
-            ("ls",                    "List devices and refresh cache  (ls folder -> folder tree view)"),
-            ("pwd",                   "Show device, folder, TSG, and active account"),
-            ("docs",                  "Open docs in browser"),
-            ("clear",                 "Clear the terminal screen"),
-            ("exit / quit",           "Exit ARC"),
-        ]
-        if self._state.configure_mode:
-            configure_only = {
-                "folder create <name>",
-                "cli <subcommand>",
-                "exit / quit",
-            }
-            builtins = [b for b in builtins if b[0] in configure_only]
-        for name, desc in builtins:
-            # Configure-mode filtering keeps ? strictly context-aware.
-            if name == "folder create <name>" and not self._state.configure_mode:
-                continue
-            if name == "cli <subcommand>" and not self._state.configure_mode:
-                continue
-            if name == "configure" and self._state.configure_mode:
-                continue
+        for row in shell_help_rows(self._state.configure_mode):
+            name = row.name
+            desc = row.description
             cmd_cell = self._styled(f"{name:<{_HELP_CMD_WIDTH}}", t.command_name)
             console.print(f"    {cmd_cell} {desc}")
 
@@ -2096,6 +2090,9 @@ class ArcShell:
         if cmd_def.scope == "device" and not self._state.device:
             return False
         if key == "commit" and not self._state.configure_mode:
+            return False
+        # Feature-flagged commands are hidden when the flag is off.
+        if not is_enabled(self._features, cmd_def.feature_flag):
             return False
         return True
 
@@ -2234,6 +2231,17 @@ class ArcShell:
     # ------------------------------------------------------------------
 
     def _execute_api(self, key: str, cmd_def: CommandDef, args: dict) -> None:
+        # Feature flag check — block before any other validation.
+        if not is_enabled(self._features, cmd_def.feature_flag):
+            flag = cmd_def.feature_flag
+            console.print(
+                f"[yellow]Feature not enabled:[/yellow] [bold]{key}[/bold]\n"
+                f"  Flag [bold]{flag}[/bold] is currently off.\n"
+                f"  To enable: add [bold]{{\"{flag}\": true}}[/bold] to [bold]config/features.json[/bold]\n"
+                f"  or set env var [bold]ARC_FEATURE_{flag.upper()}=1[/bold]"
+            )
+            return
+
         if key == "commit" and not self._state.configure_mode:
             console.print(
                 f"[yellow]Write operation blocked:[/yellow] [bold]{key}[/bold] requires configure mode.\n"

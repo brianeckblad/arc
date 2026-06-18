@@ -17,6 +17,25 @@
 set -e
 
 # ---------------------------------------------------------------------------
+# Step 0 — regenerate the code map so dev/CODE_MAP.md never drifts.
+#   This keeps the line-range navigation file (read by AI agents) accurate.
+# ---------------------------------------------------------------------------
+echo "[arc] refreshing dev/CODE_MAP.md…"
+python3 dev/gen_code_map.py >/dev/null 2>&1 || true
+git add dev/CODE_MAP.md 2>/dev/null || true
+
+# ---------------------------------------------------------------------------
+# Step 0.5 — offline self-test of the docs engine (no network).
+#   Validates path-discovery + endpoint-diff logic in update_scm_docs.py.
+# ---------------------------------------------------------------------------
+echo "[arc] docs engine self-test…"
+python3 dev/update_scm_docs.py --self-test >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "[arc] ✗ docs engine self-test failed — commit blocked"
+    exit 1
+fi
+
+# ---------------------------------------------------------------------------
 # Step 1 — smoke tests (alignment + imports + registry + types + formatter)
 # ---------------------------------------------------------------------------
 echo "[arc] running smoke tests…"

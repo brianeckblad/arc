@@ -3,53 +3,45 @@
 <!-- Clear with: wipe | Clear and archive with: arc -->
 
 ## Current Work
-**Goal:** Token optimization — reduce token usage for AI agents working on ARC
+**Goal:** Self-healing docs puller (auto-discover moved pan.dev files) + docs-agent mode
 **Branch:** main
-**Status:** done (phase 1 — documentation optimizations complete)
+**Status:** done
 
 **Recent progress:**
-- Moved KEYWORD_PARAMS to module-level constant in registry.py (saves 100-200 tokens/session)
-- Compressed all command module docstrings from 13-24 lines to 1-2 lines with docs references (saves 200-400 tokens at startup)
-- Created docs/agent-patterns/ directory with extracted coding standards examples
-- Added domain keywords table to AGENTS.md (network, security, objects, setup, operations, formatter, shell, auth, scm-api)
-- Added token-efficient development patterns section to AGENTS.md
-- Added quick navigation table at top of AGENTS.md
-- Compressed verbose examples in AGENTS.md by referencing agent-patterns docs
-- Reduced AGENTS.md from 1230 to 1144 lines (86-line reduction, ~7% smaller)
-- Synced all changes to .github/copilot-instructions.md
-- Updated smoke_test.py with token optimization validation check
-- All 85 smoke tests passing
+- Externalized source paths into `dev/scm_sources.json` (editable + auto-updated registry: specs, spec_domains, guides, settings, relocations log).
+- Rewrote `dev/update_scm_docs.py`: loads registry; full GitHub tree fetch; on 404 auto-discovers the moved file by domain+filename similarity (`discover_path`), updates the registry, records the relocation, retries; mirrors ALL guides under products/scm/docs (auto-slugged new docs); endpoint-signature diff → `docs/scm-api/CHANGES.md`; `--no-mirror`, `--self-test`, `--check` flags.
+- Added offline `--self-test` (11 checks) covering discovery, diff, slug, mirror, changes report — all pass, no network.
+- LIVE-VALIDATED the real problem the user hit: pan.dev renamed `objects_v1.3_feb.yaml` → `objects-june.yaml`. The tool auto-discovered it (105 endpoints), self-healed `scm_sources.json`, recorded the relocation, and CHANGES.md listed 13 new endpoints (advanced-device-objects, device-context-segments).
+- Created `dev/DOCS_AGENT.md` — docs-agent mode playbook (pull+self-heal, read CHANGES, update only affected `client.py`/command code).
+- Pre-commit now runs `update_scm_docs.py --self-test` (offline) before smoke so the engine stays correct.
+- Updated AGENTS.md (docsupdate section rewritten, trigger table, project tree: scm_sources.json + DOCS_AGENT.md + CHANGES.md, gateway-map objects path → objects-june.yaml, local-reference-set note), QUICK.md (Docs Agent Mode section), README.dev.md (docs trigger words + keyword row + request template).
 
 **Key decisions:**
-- Focused on high-impact, low-effort optimizations first (module docstrings, domain keywords)
-- Deferred complex code refactoring (help caching, generic table builder) for follow-up
-- Domain keywords enable agents to read 1-2 files instead of 5-8 for scoped work
-- agent-patterns/ docs keep general standards out of AGENTS.md while staying accessible
+- Source paths are data (`dev/scm_sources.json`), not code — "file not found" self-heals via tree discovery instead of failing.
+- CHANGES.md is the contract between the docs pull and the code-update step: Removed endpoints = code to fix, Added = new features.
+- mirror_all_guides defaults True so every pan.dev doc is pulled; `--no-mirror` for curated-only.
+- discovery_min_score 0.55 (tunable in registry settings).
 
-**Files changed:**
-- app/commands/registry.py — KEYWORD_PARAMS now module-level
-- app/commands/*.py (6 files) — compressed docstrings
-- docs/agent-patterns/ — new directory with python-standards.md, javascript-standards.md, security-checklist.md
-- AGENTS.md — domain keywords table, token-efficient patterns, quick nav, compressed examples
-- .github/copilot-instructions.md — synced from AGENTS.md
-- dev/smoke_test.py — added token optimization check, renumbered sections
+**Files in play:**
+- `dev/update_scm_docs.py` — rewritten engine (self-test 11/11)
+- `dev/scm_sources.json` — new registry (auto-updated objects path)
+- `dev/DOCS_AGENT.md` — new playbook
+- `docs/scm-api/CHANGES.md` — generated change report
+- `.githooks/pre-commit` — Step 0.5 docs self-test
+- `AGENTS.md`, `QUICK.md`, `README.dev.md` — docs-agent mode wired in
 
-**Estimated token savings achieved:**
-- KEYWORD_PARAMS constant: 100-200 tokens/session
-- Compressed docstrings: 200-400 tokens/startup
-- Domain keywords: 1000-2000 tokens for scoped tasks (prevents reading all 5 domain modules)
-- Extracted examples: 300-500 tokens/startup
-- **Total: 1600-3100 tokens per session**
-
-**Next steps (deferred for follow-up):**
-- Cache help structures in shell.py (500-800 token savings, more complex)
-- Create generic table builder in formatter.py (300-500 token savings, requires refactoring 10+ functions)
+**Validation:**
+- `python dev/update_scm_docs.py --self-test` → 11/11
+- `python dev/update_scm_docs.py --check` → detects objects relocation
+- `python dev/update_scm_docs.py` → full pull, self-heal applied, CHANGES.md + API_INDEX regenerated
+- `python dev/smoke_test.py` → 96/96
+- py_compile OK on dev scripts; PyYAML confirmed in [dev] extras
 
 **Open questions / blockers:**
-- none; all validation passing, ready to commit
+- none
 
 ---
 
 ## Checkpoints
 
-<!-- Previous checkpoints below -->
+<!-- Full dated entries appended here by `ck` / auto-checkpoint -->

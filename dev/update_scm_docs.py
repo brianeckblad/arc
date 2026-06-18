@@ -6,114 +6,184 @@ authoritative Palo Alto Networks Strata Cloud Manager (SCM) documentation for
 the **NGFW Configuration** components directly from the public pan.dev GitHub
 repository, then regenerates ARC's local reference set under ``docs/scm-api/``.
 
-Two kinds of content are pulled:
+Everything pan.dev documents at https://pan.dev/scm/docs/home/ is mirrored:
 
 * **OpenAPI specs** (``docs/scm-api/specs/``) — one per NGFW config domain.
   For each: ``<category>.yaml`` (raw spec) and ``<category>.md`` (a consolidated,
-  terminal-friendly endpoint listing: method + path, summary, operation id,
-  tags, response codes).
-* **Guide docs** (``docs/scm-api/guides/``) — the conceptual SCM documentation
-  from https://pan.dev/scm/docs/ (getting started, access tokens, service
-  accounts, roles, scope, platform configuration, …) copied as-is.
+  terminal-friendly endpoint listing).
+* **Guide docs** (``docs/scm-api/guides/``) — every conceptual SCM doc under
+  ``products/scm/docs/``.  Curated names stay stable; any new doc pan.dev adds
+  is auto-discovered and mirrored with a slugged name.
 
-It also writes:
+Resilience (pan.dev renames files often):
+
+* The list of source paths lives in an editable registry, **dev/scm_sources.json**,
+  not hard-coded here.  Edit that file when you know a new path.
+* When a path 404s, the tool searches the live pan.dev GitHub tree for the most
+  likely replacement (by domain + filename similarity), updates the registry
+  with the new path, records the move under ``relocations``, and retries.  So a
+  weekly/monthly rename self-heals instead of failing with "file not found".
+
+Change tracking (for the docs-agent code-update workflow):
+
+* Before overwriting specs, the previous endpoint set is captured.  After the
+  pull, ``docs/scm-api/CHANGES.md`` reports added/removed endpoints per domain so
+  an agent can update affected ARC API calls.  See ``dev/DOCS_AGENT.md``.
+
+Also writes:
 
 * ``docs/scm-api/index.md``    — index of specs + guides with the pull date.
-* ``docs/scm-api/MANIFEST.md`` — source URL, version, and ``servers[0].url``
-  base URL for every spec.  This is the source of truth the agent gateway map
-  mirrors.
+* ``docs/scm-api/MANIFEST.md`` — source URL + ``servers[0].url`` per spec.
 
 Design notes (read before editing):
 
-* Raw downloads use only the Python standard library (``urllib``) so the
-  archive always refreshes even if optional parsing tools are missing.
-* Markdown/manifest generation needs PyYAML.  Install dev extras first:
-  ``uv pip install -e '.[dev]'`` (or ``pip install pyyaml``).  If PyYAML is
-  missing, raw specs + guides are still saved and the script prints a hint.
-* Spec file names on pan.dev carry dated suffixes (e.g.
-  ``security-services-R2-2026.yaml``).  ``SPECS`` below pins the current file
-  for each category — update an entry when pan.dev publishes a renamed spec.
-  Run with ``--list-remote`` to see the live spec tree.
+* Raw downloads use only the Python standard library (``urllib``).
+* Markdown/manifest/diff generation needs PyYAML (dev extra):
+  ``uv pip install -e '.[dev]'``.  Without it, raw specs + guides still save.
 
 Usage::
 
-    python dev/update_scm_docs.py               # refresh specs + guides
-    python dev/update_scm_docs.py --list-remote  # print live SCM spec paths
-    python dev/update_scm_docs.py --check        # report drift, write nothing
+    python dev/update_scm_docs.py                # refresh specs + guides (+ self-heal)
+    python dev/update_scm_docs.py --check         # report drift/relocations, write nothing
+    python dev/update_scm_docs.py --list-remote   # print live SCM spec paths
+    python dev/update_scm_docs.py --no-mirror     # curated guides only (skip "pull all")
+    python dev/update_scm_docs.py --self-test     # offline tests for discovery + diff
 """
 
 from __future__ import annotations
 
 import argparse
 import datetime as _dt
+import difflib
 import json
+import subprocess
 import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 # ── Constants ────────────────────────────────────────────────────────────────
 
-REPO = "PaloAltoNetworks/pan.dev"
-RAW_BASE = f"https://raw.githubusercontent.com/{REPO}/master"
-TREE_API = f"https://api.github.com/repos/{REPO}/git/trees/master?recursive=1"
-SPEC_PREFIX = "openapi-specs/scm/"
+DEV_DIR = Path(__file__).resolve().parent
+ROOT = DEV_DIR.parent
+SOURCES_FILE = DEV_DIR / "scm_sources.json"
+
 HTTP_TIMEOUT = 30  # seconds — every network call is bounded
+HTTP_METHODS = ("get", "post", "put", "patch", "delete", "head", "options")
 
 # Output layout: ARC's local SCM reference set lives in docs/ so it ships with
-# the app (not in a scratch folder).  specs/ holds OpenAPI references; guides/
-# holds the conceptual pan.dev docs.
-OUTPUT_DIR = Path(__file__).resolve().parent.parent / "docs" / "scm-api"
+# the app.  specs/ holds OpenAPI references; guides/ holds conceptual pan.dev docs.
+OUTPUT_DIR = ROOT / "docs" / "scm-api"
 SPECS_DIR = OUTPUT_DIR / "specs"
 GUIDES_DIR = OUTPUT_DIR / "guides"
+CHANGES_FILE = OUTPUT_DIR / "CHANGES.md"
 
-# Category → pan.dev spec path (relative to the repo root).
-#
-# These are the NGFW configuration domains ARC speaks to.  Each maps one ARC
-# command module to one SCM API domain (see the command-module layout in the
-# agent instructions).  Update a value here when pan.dev renames a spec file;
-# `--list-remote` prints the current tree to copy from.
-SPECS: dict[str, str] = {
-    "ngfw-objects": "openapi-specs/scm/config/ngfw/objects/objects_v1.3_feb.yaml",
-    "ngfw-security": "openapi-specs/scm/config/ngfw/security/security-services-R2-2026.yaml",
-    "ngfw-setup": "openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml",
-    "ngfw-network": "openapi-specs/scm/config/ngfw/network/network-services-R2-2026.yaml",
-    "ngfw-operations": "openapi-specs/scm/config/ngfw/operations/config-operations-march.yaml",
-    "ngfw-operations-config": "openapi-specs/scm/config/ngfw-operations/operations-R2-2026.yaml",
-    "ngfw-device": "openapi-specs/scm/config/ngfw/device/device-settings_April.yaml",
-    "ngfw-identity": "openapi-specs/scm/config/ngfw/identity/identity-services-march.yaml",
-    "ngfw-device-onboarding": (
-        "openapi-specs/scm/config/ngfw/setup/device-onboarding/device-onboarding-updated.yaml"
-    ),
-    # Supporting gateways ARC also calls (auth, tenancy, service accounts).
-    "auth": "openapi-specs/scm/auth/AuthService.yaml",
-    "tenancy": "openapi-specs/scm/tenancy/TenantServiceGroup.yaml",
-    "iam-service-accounts": "openapi-specs/scm/iam/ServiceAccounts.yaml",
+# Built-in defaults used to seed dev/scm_sources.json on first run if it is
+# missing.  After that, the JSON file is the source of truth (and is auto-updated
+# when pan.dev relocates a file).
+DEFAULT_SOURCES: dict[str, Any] = {
+    "repo": "PaloAltoNetworks/pan.dev",
+    "branch": "master",
+    "settings": {
+        "specs_root": "openapi-specs/scm",
+        "guides_root": "products/scm/docs",
+        "mirror_all_guides": True,
+        "discovery_min_score": 0.55,
+    },
+    "specs": {
+        "ngfw-objects": "openapi-specs/scm/config/ngfw/objects/objects_v1.3_feb.yaml",
+        "ngfw-security": "openapi-specs/scm/config/ngfw/security/security-services-R2-2026.yaml",
+        "ngfw-setup": "openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml",
+        "ngfw-network": "openapi-specs/scm/config/ngfw/network/network-services-R2-2026.yaml",
+        "ngfw-operations": "openapi-specs/scm/config/ngfw/operations/config-operations-march.yaml",
+        "ngfw-operations-config": "openapi-specs/scm/config/ngfw-operations/operations-R2-2026.yaml",
+        "ngfw-device": "openapi-specs/scm/config/ngfw/device/device-settings_April.yaml",
+        "ngfw-identity": "openapi-specs/scm/config/ngfw/identity/identity-services-march.yaml",
+        "ngfw-device-onboarding": "openapi-specs/scm/config/ngfw/setup/device-onboarding/device-onboarding-updated.yaml",
+        "auth": "openapi-specs/scm/auth/AuthService.yaml",
+        "tenancy": "openapi-specs/scm/tenancy/TenantServiceGroup.yaml",
+        "iam-service-accounts": "openapi-specs/scm/iam/ServiceAccounts.yaml",
+    },
+    "spec_domains": {
+        "ngfw-objects": "objects",
+        "ngfw-security": "security",
+        "ngfw-setup": "setup",
+        "ngfw-network": "network",
+        "ngfw-operations": "operations",
+        "ngfw-operations-config": "ngfw-operations",
+        "ngfw-device": "device",
+        "ngfw-identity": "identity",
+        "ngfw-device-onboarding": "device-onboarding",
+        "auth": "auth",
+        "tenancy": "tenancy",
+        "iam-service-accounts": "iam",
+    },
+    "guides": {
+        "home": "products/scm/docs/home.md",
+        "getstarted": "products/scm/docs/getstarted.md",
+        "api-call": "products/scm/docs/api-call.md",
+        "api-best-practices": "products/scm/docs/api-best-practices.md",
+        "access-tokens": "products/scm/docs/access-tokens.md",
+        "scope": "products/scm/docs/scope.md",
+        "service-accounts": "products/scm/docs/service-accounts.md",
+        "user-accounts": "products/scm/docs/user-accounts.md",
+        "roles-overview": "products/scm/docs/roles-overview.md",
+        "roles-assign": "products/scm/docs/roles-assign.md",
+        "all-roles": "products/scm/docs/all-roles.md",
+        "tenant-service-groups": "products/scm/docs/tenant-service-groups.md",
+        "platform-configuration": "products/scm/docs/configuration/platform-configuration.md",
+        "release-notes": "products/scm/docs/release-notes/release-notes.md",
+        "changelog": "products/scm/docs/release-notes/changelog.md",
+    },
+    "relocations": [],
 }
 
-# Guide name → pan.dev conceptual doc path (relative to the repo root).
-# These are the prose docs behind https://pan.dev/scm/docs/ — the "NGFW
-# Configuration components of SCM" overview, auth, roles, and platform setup.
-GUIDES: dict[str, str] = {
-    "home": "products/scm/docs/home.md",
-    "getstarted": "products/scm/docs/getstarted.md",
-    "api-call": "products/scm/docs/api-call.md",
-    "api-best-practices": "products/scm/docs/api-best-practices.md",
-    "access-tokens": "products/scm/docs/access-tokens.md",
-    "scope": "products/scm/docs/scope.md",
-    "service-accounts": "products/scm/docs/service-accounts.md",
-    "user-accounts": "products/scm/docs/user-accounts.md",
-    "roles-overview": "products/scm/docs/roles-overview.md",
-    "roles-assign": "products/scm/docs/roles-assign.md",
-    "all-roles": "products/scm/docs/all-roles.md",
-    "tenant-service-groups": "products/scm/docs/tenant-service-groups.md",
-    "platform-configuration": "products/scm/docs/configuration/platform-configuration.md",
-    "release-notes": "products/scm/docs/release-notes/release-notes.md",
-    "changelog": "products/scm/docs/release-notes/changelog.md",
-}
 
-HTTP_METHODS = ("get", "post", "put", "patch", "delete", "head", "options")
+# ── Source registry (dev/scm_sources.json) ───────────────────────────────────
+
+
+def load_sources() -> dict[str, Any]:
+    """Return the source registry, seeding dev/scm_sources.json if it is missing.
+
+    The JSON file is the editable, auto-updated source of truth.  Any keys it
+    omits fall back to DEFAULT_SOURCES so an older/partial file still works.
+    """
+    if not SOURCES_FILE.exists():
+        save_sources(json.loads(json.dumps(DEFAULT_SOURCES)))
+        return json.loads(json.dumps(DEFAULT_SOURCES))
+
+    try:
+        data = json.loads(SOURCES_FILE.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        print(f"  ⚠ could not read {SOURCES_FILE.name} ({exc}); using built-in defaults")
+        return json.loads(json.dumps(DEFAULT_SOURCES))
+
+    # Backfill any missing top-level keys from defaults.
+    for key, default in DEFAULT_SOURCES.items():
+        data.setdefault(key, default)
+    data.setdefault("settings", {})
+    for key, default in DEFAULT_SOURCES["settings"].items():
+        data["settings"].setdefault(key, default)
+    return data
+
+
+def save_sources(sources: dict[str, Any]) -> None:
+    """Persist the source registry back to dev/scm_sources.json."""
+    sources.setdefault(
+        "_comment",
+        "Editable registry of SCM doc sources for dev/update_scm_docs.py. "
+        "Auto-updated when pan.dev moves files (see 'relocations').",
+    )
+    SOURCES_FILE.write_text(json.dumps(sources, indent=2) + "\n", encoding="utf-8")
+
+
+def _raw_base(sources: dict[str, Any]) -> str:
+    return f"https://raw.githubusercontent.com/{sources['repo']}/{sources['branch']}"
+
+
+def _tree_api(sources: dict[str, Any]) -> str:
+    return f"https://api.github.com/repos/{sources['repo']}/git/trees/{sources['branch']}?recursive=1"
 
 
 # ── Network helpers ──────────────────────────────────────────────────────────
@@ -130,15 +200,131 @@ def _fetch_bytes(url: str) -> bytes:
         return response.read()
 
 
-def list_remote_specs() -> list[str]:
+# Cache the full repo tree so we only fetch it once per run.
+_TREE_CACHE: dict[str, list[str]] = {}
+
+
+def fetch_tree(sources: dict[str, Any]) -> list[str]:
+    """Return every file path in the pan.dev repo tree (cached, best-effort).
+
+    Returns an empty list if the GitHub tree API is unreachable or rate-limited
+    so callers degrade gracefully (discovery is skipped, downloads still try).
+    """
+    cache_key = f"{sources['repo']}@{sources['branch']}"
+    if cache_key in _TREE_CACHE:
+        return _TREE_CACHE[cache_key]
+    try:
+        tree = json.loads(_fetch_bytes(_tree_api(sources)).decode("utf-8"))
+        paths = [item["path"] for item in tree.get("tree", []) if item.get("type") == "blob"]
+    except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError) as exc:
+        print(f"  ⚠ could not fetch repo tree for discovery: {exc}")
+        paths = []
+    _TREE_CACHE[cache_key] = paths
+    return paths
+
+
+def list_remote_specs(sources: dict[str, Any]) -> list[str]:
     """Return every SCM OpenAPI spec path currently published on pan.dev."""
-    tree = json.loads(_fetch_bytes(TREE_API).decode("utf-8"))
+    specs_root = sources["settings"]["specs_root"]
     return sorted(
-        item["path"]
-        for item in tree.get("tree", [])
-        if item["path"].startswith(SPEC_PREFIX)
-        and (item["path"].endswith(".yaml") or item["path"].endswith(".json"))
+        p for p in fetch_tree(sources)
+        if p.startswith(specs_root + "/") and (p.endswith(".yaml") or p.endswith(".json"))
     )
+
+
+# ── Auto-discovery of relocated files ────────────────────────────────────────
+
+
+def discover_path(
+    old_path: str,
+    tree: list[str],
+    root: str,
+    ext: str,
+    domain_hint: Optional[str],
+    min_score: float,
+) -> Optional[str]:
+    """Find the most likely current location of a moved file in *tree*.
+
+    Scoring blends filename similarity with directory/domain hints:
+      - SequenceMatcher ratio on the basename (primary signal)
+      - +0.40 when the *domain_hint* folder appears in the candidate path
+      - +0.20 when the candidate shares the original parent directory
+    Returns the best candidate at or above *min_score*, else ``None``.
+    """
+    if not tree:
+        return None
+
+    old_base = old_path.rsplit("/", 1)[-1]
+    old_parent = old_path.rsplit("/", 1)[0] if "/" in old_path else ""
+
+    candidates = [p for p in tree if p.startswith(root + "/") and p.endswith(ext)]
+    best: Optional[str] = None
+    best_score = 0.0
+    for cand in candidates:
+        cand_base = cand.rsplit("/", 1)[-1]
+        score = difflib.SequenceMatcher(None, old_base, cand_base).ratio()
+        if domain_hint and f"/{domain_hint}/" in f"/{cand}":
+            score += 0.40
+        if old_parent and cand.rsplit("/", 1)[0] == old_parent:
+            score += 0.20
+        if score > best_score:
+            best_score, best = score, cand
+
+    return best if best_score >= min_score else None
+
+
+def _record_relocation(sources: dict[str, Any], kind: str, key: str, old: str, new: str, when: str) -> None:
+    """Append a relocation record so history is auditable in scm_sources.json."""
+    sources.setdefault("relocations", []).append(
+        {"kind": kind, "key": key, "from": old, "to": new, "date": when}
+    )
+
+
+def _fetch_with_discovery(
+    sources: dict[str, Any],
+    kind: str,
+    key: str,
+    path: str,
+    domain_hint: Optional[str],
+    root: str,
+    ext: str,
+    pulled_on: str,
+    relocated: list[str],
+) -> tuple[Optional[bytes], str]:
+    """Fetch *path*; on 404 try to discover its new location and retry.
+
+    Returns ``(raw_bytes_or_None, effective_path)``.  When a relocation is
+    found, the registry dict (and *relocated* log) are updated in place; the
+    caller persists the registry after the run.
+    """
+    url = f"{_raw_base(sources)}/{path}"
+    try:
+        return _fetch_bytes(url), path
+    except urllib.error.HTTPError as exc:
+        if exc.code != 404:
+            raise
+    except urllib.error.URLError:
+        raise
+
+    # 404 — attempt rediscovery against the live tree.
+    min_score = float(sources["settings"].get("discovery_min_score", 0.55))
+    tree = fetch_tree(sources)
+    new_path = discover_path(path, tree, root, ext, domain_hint, min_score)
+    if not new_path or new_path == path:
+        return None, path
+
+    print(f"    > relocation: {path}\n                  ->  {new_path}")
+    try:
+        raw = _fetch_bytes(f"{_raw_base(sources)}/{new_path}")
+    except (urllib.error.URLError, urllib.error.HTTPError) as exc:
+        print(f"    ✗ discovered path also failed: {exc}")
+        return None, path
+
+    # Update the registry in place.
+    sources[kind][key] = new_path
+    _record_relocation(sources, kind, key, path, new_path, pulled_on)
+    relocated.append(f"{kind}:{key}  {path} -> {new_path}")
+    return raw, new_path
 
 
 # ── Spec → markdown rendering ────────────────────────────────────────────────
@@ -159,12 +345,22 @@ def _spec_base_url(spec: dict[str, Any]) -> str:
     return ""
 
 
-def _render_markdown(category: str, spec_path: str, spec: dict[str, Any]) -> tuple[str, int]:
+def _endpoint_signatures(spec: dict[str, Any]) -> set[str]:
+    """Return the set of ``METHOD /path`` signatures defined in a spec."""
+    sigs: set[str] = set()
+    for path, operations in (spec.get("paths") or {}).items():
+        if not isinstance(operations, dict):
+            continue
+        for method, operation in operations.items():
+            if method.lower() in HTTP_METHODS and isinstance(operation, dict):
+                sigs.add(f"{method.upper()} {path}")
+    return sigs
+
+
+def _render_markdown(category: str, spec_path: str, spec: dict[str, Any], repo: str) -> tuple[str, int]:
     """Render a consolidated endpoint listing for one spec.
 
-    Returns ``(markdown_text, endpoint_count)``.  The format mirrors the
-    existing ARC reference pages: a header block followed by one section per
-    HTTP operation with summary, operation id, tags, and response codes.
+    Returns ``(markdown_text, endpoint_count)``.
     """
     info = spec.get("info") or {}
     title = str(info.get("title") or category).strip()
@@ -178,10 +374,9 @@ def _render_markdown(category: str, spec_path: str, spec: dict[str, Any]) -> tup
         f"**Source:** `{spec_path}`  ",
         f"**Base URL:** `{_spec_base_url(spec) or 'n/a'}`  ",
     ]
-    # Placeholder endpoint count line — replaced once we know the total.
     count_line_index = len(lines)
     lines.append("**Endpoints:** 0  ")
-    lines.append(f"**GitHub:** https://github.com/{REPO}/blob/master/{spec_path}")
+    lines.append(f"**GitHub:** https://github.com/{repo}/blob/master/{spec_path}")
     lines.extend(["", "---", "", "## Endpoints", ""])
 
     endpoint_count = 0
@@ -213,10 +408,66 @@ def _render_markdown(category: str, spec_path: str, spec: dict[str, Any]) -> tup
     return "\n".join(lines).rstrip() + "\n", endpoint_count
 
 
+# ── Change report (CHANGES.md) ───────────────────────────────────────────────
+
+
+def _build_changes_markdown(
+    changes: dict[str, tuple[set[str], set[str]]],
+    relocated: list[str],
+    pulled_on: str,
+) -> tuple[str, bool]:
+    """Build CHANGES.md content from per-category (added, removed) signature sets.
+
+    Returns ``(markdown, had_changes)``.
+    """
+    lines = [
+        "# SCM API Change Report",
+        "",
+        f"> Generated by `dev/update_scm_docs.py` on {pulled_on}.",
+        "> Read by the docs-agent (see `dev/DOCS_AGENT.md`) to update affected ARC API calls.",
+        "",
+    ]
+
+    had_changes = False
+
+    if relocated:
+        had_changes = True
+        lines.extend(["## Relocated source files", ""])
+        for item in relocated:
+            lines.append(f"- {item}")
+        lines.append("")
+
+    any_endpoint_change = any(added or removed for added, removed in changes.values())
+    if any_endpoint_change:
+        had_changes = True
+        lines.extend(["## Endpoint changes by domain", ""])
+        for category in sorted(changes):
+            added, removed = changes[category]
+            if not added and not removed:
+                continue
+            lines.append(f"### `{category}`")
+            lines.append("")
+            if added:
+                lines.append(f"**Added ({len(added)}):**")
+                for sig in sorted(added):
+                    lines.append(f"- `{sig}`")
+                lines.append("")
+            if removed:
+                lines.append(f"**Removed ({len(removed)}):**  <- check ARC handlers/`client.py` for these")
+                for sig in sorted(removed):
+                    lines.append(f"- `{sig}`")
+                lines.append("")
+
+    if not had_changes:
+        lines.extend(["No endpoint or source-location changes since the last pull.", ""])
+
+    return "\n".join(lines).rstrip() + "\n", had_changes
+
+
 # ── Index + manifest ─────────────────────────────────────────────────────────
 
 
-def _write_index(counts: dict[str, int], guides_pulled: list[str], pulled_on: str) -> None:
+def _write_index(sources: dict[str, Any], counts: dict[str, int], guides_pulled: list[str], pulled_on: str) -> None:
     """Write ``index.md`` listing every spec and guide with the pull date."""
     lines = [
         "# SCM NGFW API Reference",
@@ -228,6 +479,8 @@ def _write_index(counts: dict[str, int], guides_pulled: list[str], pulled_on: st
         "This reference set ships with ARC but is excluded from the browsable",
         "docs portal (`arc cliup` bundle) because it is developer/agent material.",
         "",
+        "See [`CHANGES.md`](CHANGES.md) for what changed in the last pull.",
+        "",
         "---",
         "",
         "## API specs (`specs/`)",
@@ -236,19 +489,18 @@ def _write_index(counts: dict[str, int], guides_pulled: list[str], pulled_on: st
         "[`MANIFEST.md`](MANIFEST.md) for each spec's base URL.",
         "",
     ]
-    for category in SPECS:
+    for category in sources["specs"]:
         count = counts.get(category)
         suffix = f" — {count} endpoints" if count is not None else " — (raw only)"
         lines.append(f"- **[specs/{category}.md](specs/{category}.md)**{suffix}")
     lines.extend(["", "## Guides (`guides/`)", "", "Conceptual SCM documentation from pan.dev.", ""])
-    for guide in GUIDES:
-        marker = "" if guide in guides_pulled else " — (unavailable)"
-        lines.append(f"- **[guides/{guide}.md](guides/{guide}.md)**{marker}")
+    for guide in sorted(guides_pulled):
+        lines.append(f"- **[guides/{guide}.md](guides/{guide}.md)**")
     lines.append("")
     (OUTPUT_DIR / "index.md").write_text("\n".join(lines), encoding="utf-8")
 
 
-def _write_manifest(base_urls: dict[str, str], pulled_on: str) -> None:
+def _write_manifest(sources: dict[str, Any], base_urls: dict[str, str], pulled_on: str) -> None:
     """Write ``MANIFEST.md`` — source URL + base URL for every spec.
 
     This is the source of truth the agent-instruction gateway map mirrors.
@@ -256,54 +508,115 @@ def _write_manifest(base_urls: dict[str, str], pulled_on: str) -> None:
     lines = [
         "# SCM API Manifest",
         "",
-        f"Pulled on {pulled_on} from `{REPO}` (master).",
+        f"Pulled on {pulled_on} from `{sources['repo']}` ({sources['branch']}).",
         "",
         "| Category | Base URL (`servers[0].url`) | Spec |",
         "|----------|------------------------------|------|",
     ]
-    for category, spec_path in SPECS.items():
+    for category, spec_path in sources["specs"].items():
         base = base_urls.get(category, "n/a")
         lines.append(f"| `{category}` | `{base or 'n/a'}` | `{spec_path}` |")
     lines.append("")
     (OUTPUT_DIR / "MANIFEST.md").write_text("\n".join(lines), encoding="utf-8")
 
 
+# ── Guide discovery ──────────────────────────────────────────────────────────
+
+
+def _slug_for_guide(path: str, guides_root: str) -> str:
+    """Turn a guide path into a stable file-name slug.
+
+    ``products/scm/docs/configuration/platform-configuration.md``
+        -> ``configuration__platform-configuration``
+    """
+    rel = path[len(guides_root) + 1:] if path.startswith(guides_root + "/") else path
+    if rel.endswith(".md"):
+        rel = rel[:-3]
+    return rel.replace("/", "__")
+
+
+def discover_all_guides(sources: dict[str, Any], already: set[str]) -> dict[str, str]:
+    """Return {slug: path} for every guide doc not already covered.
+
+    Mirrors *all* markdown under the guides root so new pan.dev docs appear
+    automatically.  Skips paths already pulled by curated names.
+    """
+    guides_root = sources["settings"]["guides_root"]
+    extra: dict[str, str] = {}
+    for path in fetch_tree(sources):
+        if not path.startswith(guides_root + "/") or not path.endswith(".md"):
+            continue
+        if path in already:
+            continue
+        extra[_slug_for_guide(path, guides_root)] = path
+    return extra
+
+
 # ── Orchestration ────────────────────────────────────────────────────────────
 
 
-def _download_guides(check_only: bool, failures: list[str]) -> list[str]:
-    """Download the conceptual pan.dev guide docs.  Returns names pulled OK."""
-    pulled: list[str] = []
-    for name, doc_path in GUIDES.items():
-        url = f"{RAW_BASE}/{doc_path}"
-        print(f"  ↓ guide:{name:<22} {doc_path}")
+def _capture_old_signatures(sources: dict[str, Any], can_render: bool) -> dict[str, set[str]]:
+    """Parse existing local specs to capture endpoint signatures before overwrite."""
+    old: dict[str, set[str]] = {}
+    if not can_render:
+        return old
+    for category in sources["specs"]:
+        existing = SPECS_DIR / f"{category}.yaml"
+        if not existing.exists():
+            old[category] = set()
+            continue
         try:
-            raw = _fetch_bytes(url)
-        except (urllib.error.URLError, urllib.error.HTTPError) as exc:
-            failures.append(f"guide {name}: {exc}")
-            print(f"    ✗ download failed: {exc}")
+            old[category] = _endpoint_signatures(_load_yaml(existing.read_bytes()))
+        except Exception:  # noqa: BLE001 — a malformed old file just means "no baseline"
+            old[category] = set()
+    return old
+
+
+def _download_guides(
+    sources: dict[str, Any],
+    guide_map: dict[str, str],
+    check_only: bool,
+    failures: list[str],
+    relocated: list[str],
+    pulled_on: str,
+) -> list[str]:
+    """Download guide docs (curated + discovered).  Returns names pulled OK."""
+    pulled_names: list[str] = []
+
+    for name, doc_path in guide_map.items():
+        print(f"  ↓ guide:{name:<28} {doc_path}")
+        raw, _eff_path = _fetch_with_discovery(
+            sources, "guides", name, doc_path,
+            domain_hint=None, root=sources["settings"]["guides_root"], ext=".md",
+            pulled_on=pulled_on, relocated=relocated,
+        )
+        if raw is None:
+            failures.append(f"guide {name}: not found (even after discovery)")
+            print("    ✗ not found")
             continue
         if check_only:
             existing = GUIDES_DIR / f"{name}.md"
             status = "changed" if (not existing.exists() or existing.read_bytes() != raw) else "current"
             print(f"    • {status}")
-            pulled.append(name)
+            pulled_names.append(name)
             continue
         (GUIDES_DIR / f"{name}.md").write_bytes(raw)
-        pulled.append(name)
-    return pulled
+        pulled_names.append(name)
+    return pulled_names
 
 
-def update(check_only: bool = False) -> int:
+def update(check_only: bool = False, mirror_all: Optional[bool] = None) -> int:
     """Download specs + guides and regenerate the reference set.  Returns exit code."""
     for directory in (OUTPUT_DIR, SPECS_DIR, GUIDES_DIR):
         directory.mkdir(parents=True, exist_ok=True)
     pulled_on = _dt.date.today().isoformat()
 
-    # Detect PyYAML up front so we can warn but still archive the raw specs.
+    sources = load_sources()
+    if mirror_all is None:
+        mirror_all = bool(sources["settings"].get("mirror_all_guides", True))
+
     try:
         import yaml  # noqa: F401  (presence check only)
-
         can_render = True
     except ModuleNotFoundError:
         can_render = False
@@ -311,32 +624,37 @@ def update(check_only: bool = False) -> int:
     counts: dict[str, int] = {}
     base_urls: dict[str, str] = {}
     failures: list[str] = []
+    relocated: list[str] = []
+    specs_root = sources["settings"]["specs_root"]
 
-    for category, spec_path in SPECS.items():
-        url = f"{RAW_BASE}/{spec_path}"
+    # Capture the previous endpoint sets so we can diff after the pull.
+    old_signatures = _capture_old_signatures(sources, can_render)
+    new_signatures: dict[str, set[str]] = {}
+
+    for category, spec_path in list(sources["specs"].items()):
+        domain_hint = sources.get("spec_domains", {}).get(category)
         print(f"  ↓ spec:{category:<23} {spec_path}")
-        try:
-            raw = _fetch_bytes(url)
-        except (urllib.error.URLError, urllib.error.HTTPError) as exc:
-            failures.append(f"{category}: {exc}")
-            print(f"    ✗ download failed: {exc}")
+        raw, eff_path = _fetch_with_discovery(
+            sources, "specs", category, spec_path,
+            domain_hint=domain_hint, root=specs_root, ext=".yaml",
+            pulled_on=pulled_on, relocated=relocated,
+        )
+        if raw is None:
+            failures.append(f"{category}: not found (even after discovery)")
+            print("    ✗ not found")
             continue
 
-        if check_only:
-            existing = SPECS_DIR / f"{category}.yaml"
-            status = "changed" if (not existing.exists() or existing.read_bytes() != raw) else "current"
-            print(f"    • {status}")
-            continue
-
-        (SPECS_DIR / f"{category}.yaml").write_bytes(raw)
+        if not check_only:
+            (SPECS_DIR / f"{category}.yaml").write_bytes(raw)
 
         if not can_render:
             continue
-
         try:
             spec = _load_yaml(raw)
-            markdown, count = _render_markdown(category, spec_path, spec)
-            (SPECS_DIR / f"{category}.md").write_text(markdown, encoding="utf-8")
+            new_signatures[category] = _endpoint_signatures(spec)
+            markdown, count = _render_markdown(category, eff_path, spec, sources["repo"])
+            if not check_only:
+                (SPECS_DIR / f"{category}.md").write_text(markdown, encoding="utf-8")
             counts[category] = count
             base_urls[category] = _spec_base_url(spec)
             print(f"    ✓ {count} endpoints")
@@ -344,19 +662,52 @@ def update(check_only: bool = False) -> int:
             failures.append(f"{category}: render error: {exc}")
             print(f"    ✗ render failed: {exc}")
 
-    guides_pulled = _download_guides(check_only, failures)
+    # Guides: curated set first, then mirror everything else under the root.
+    guide_map = dict(sources["guides"])
+    if mirror_all:
+        extra = discover_all_guides(sources, already=set(sources["guides"].values()))
+        if extra:
+            print(f"  + {len(extra)} additional guide doc(s) discovered under {sources['settings']['guides_root']}/")
+        guide_map.update(extra)
+
+    guides_pulled = _download_guides(
+        sources, guide_map, check_only, failures, relocated, pulled_on
+    )
+
+    # Build the change report from old vs new endpoint signatures.
+    changes: dict[str, tuple[set[str], set[str]]] = {}
+    for category in new_signatures:
+        old = old_signatures.get(category, set())
+        new = new_signatures[category]
+        changes[category] = (new - old, old - new)
+    changes_md, had_changes = _build_changes_markdown(changes, relocated, pulled_on)
 
     if check_only:
+        print("\n  ── check summary ──")
+        if relocated:
+            print("  Relocations detected (run without --check to apply):")
+            for item in relocated:
+                print(f"    - {item}")
+        if had_changes:
+            print("  Endpoint or location changes detected.")
+        else:
+            print("  No changes detected.")
         return 1 if failures else 0
 
+    # Persist relocations back to the registry so future runs use new paths.
+    if relocated:
+        save_sources(sources)
+        print(f"\n  ✓ {len(relocated)} relocation(s) saved to {SOURCES_FILE.name}")
+
     if can_render and counts:
-        _write_index(counts, guides_pulled, pulled_on)
-        _write_manifest(base_urls, pulled_on)
-        print(f"\n  ✓ index.md and MANIFEST.md written ({pulled_on})")
+        _write_index(sources, counts, guides_pulled, pulled_on)
+        _write_manifest(sources, base_urls, pulled_on)
+        CHANGES_FILE.write_text(changes_md, encoding="utf-8")
+        print(f"\n  ✓ index.md, MANIFEST.md, CHANGES.md written ({pulled_on})")
     elif not can_render:
         print(
             "\n  ⚠ PyYAML not installed — raw .yaml specs + guides saved, but"
-            "\n    markdown/index were not regenerated. Install dev extras and re-run:"
+            "\n    markdown/index/changes were not regenerated. Install dev extras:"
             "\n      uv pip install -e '.[dev]'   (or: pip install pyyaml)"
         )
 
@@ -367,7 +718,100 @@ def update(check_only: bool = False) -> int:
         return 1
 
     print(f"\n  Reference set updated under {OUTPUT_DIR}")
+    if had_changes:
+        print("  ⚠ Changes detected — see docs/scm-api/CHANGES.md (docs-agent: update affected API calls).")
     return 0
+
+
+# ── Offline self-test (no network) ───────────────────────────────────────────
+
+
+def _self_test() -> int:
+    """Exercise discovery + diff logic offline so the engine stays trustworthy."""
+    passed = 0
+    failed = 0
+
+    def check(name: str, cond: bool) -> None:
+        nonlocal passed, failed
+        if cond:
+            passed += 1
+            print(f"  ✓ {name}")
+        else:
+            failed += 1
+            print(f"  ✗ {name}")
+
+    # Synthetic tree mimicking a pan.dev rename (date suffix changed).
+    tree = [
+        "openapi-specs/scm/config/ngfw/network/network-services-R3-2026.yaml",
+        "openapi-specs/scm/config/ngfw/security/security-services-R3-2026.yaml",
+        "openapi-specs/scm/config/ngfw/objects/objects_v1.4_aug.yaml",
+        "products/scm/docs/home.md",
+        "products/scm/docs/getstarted.md",
+        "products/scm/docs/new-guide.md",
+        "products/scm/docs/configuration/platform-configuration.md",
+    ]
+
+    # 1. Relocated network spec is found via domain + filename similarity.
+    found = discover_path(
+        "openapi-specs/scm/config/ngfw/network/network-services-R2-2026.yaml",
+        tree, "openapi-specs/scm", ".yaml", "network", 0.55,
+    )
+    check("discover_path finds renamed network spec",
+          found == "openapi-specs/scm/config/ngfw/network/network-services-R3-2026.yaml")
+
+    # 2. Objects spec with a very different name still matches via domain hint.
+    found_obj = discover_path(
+        "openapi-specs/scm/config/ngfw/objects/objects_v1.3_feb.yaml",
+        tree, "openapi-specs/scm", ".yaml", "objects", 0.55,
+    )
+    check("discover_path finds renamed objects spec via domain hint",
+          found_obj == "openapi-specs/scm/config/ngfw/objects/objects_v1.4_aug.yaml")
+
+    # 3. A path with no plausible match returns None.
+    none_match = discover_path(
+        "openapi-specs/scm/config/ngfw/zzz/does-not-exist.yaml",
+        tree, "openapi-specs/scm", ".yaml", "zzz", 0.95,
+    )
+    check("discover_path returns None when nothing matches", none_match is None)
+
+    # 4. Empty tree -> None (degrade gracefully when GitHub is unreachable).
+    check("discover_path returns None on empty tree",
+          discover_path("a/b.yaml", [], "a", ".yaml", None, 0.5) is None)
+
+    # 5. Endpoint signature diff detects add + remove.
+    old_spec = {"paths": {"/a": {"get": {}}, "/b": {"get": {}}}}
+    new_spec = {"paths": {"/a": {"get": {}}, "/c": {"post": {}}}}
+    old_sigs = _endpoint_signatures(old_spec)
+    new_sigs = _endpoint_signatures(new_spec)
+    check("signature diff detects added endpoint", (new_sigs - old_sigs) == {"POST /c"})
+    check("signature diff detects removed endpoint", (old_sigs - new_sigs) == {"GET /b"})
+
+    # 6. Guide slug builder handles nested paths.
+    slug = _slug_for_guide("products/scm/docs/configuration/platform-configuration.md", "products/scm/docs")
+    check("guide slug flattens nested path", slug == "configuration__platform-configuration")
+
+    # 7. discover_all_guides surfaces a brand-new doc not in the curated set.
+    sources = json.loads(json.dumps(DEFAULT_SOURCES))
+    _TREE_CACHE[f"{sources['repo']}@{sources['branch']}"] = tree
+    extra = discover_all_guides(sources, already=set(sources["guides"].values()))
+    check("discover_all_guides surfaces new doc", "new-guide" in extra)
+    _TREE_CACHE.clear()
+
+    # 8. CHANGES.md reports relocations + endpoint changes.
+    md, had = _build_changes_markdown(
+        {"ngfw-network": ({"POST /c"}, {"GET /b"})},
+        ["specs:ngfw-network  old.yaml -> new.yaml"],
+        "2026-06-17",
+    )
+    check("changes md flags had_changes", had is True)
+    check("changes md lists added endpoint", "`POST /c`" in md)
+    check("changes md lists removed endpoint", "`GET /b`" in md)
+
+    print(f"\n  self-test: {passed} passed, {failed} failed")
+    return 0 if failed == 0 else 1
+
+
+# ── CLI ──────────────────────────────────────────────────────────────────────
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -380,13 +824,26 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--check",
         action="store_true",
-        help="Report which local specs/guides differ from pan.dev without writing files.",
+        help="Report drift/relocations/endpoint changes without writing files.",
+    )
+    parser.add_argument(
+        "--no-mirror",
+        action="store_true",
+        help="Pull only the curated guide set (skip mirroring every doc under the guides root).",
+    )
+    parser.add_argument(
+        "--self-test",
+        action="store_true",
+        help="Run offline tests for discovery + diff logic (no network) and exit.",
     )
     args = parser.parse_args(argv)
 
+    if args.self_test:
+        return _self_test()
+
     if args.list_remote:
         try:
-            for path in list_remote_specs():
+            for path in list_remote_specs(load_sources()):
                 print(path)
         except (urllib.error.URLError, urllib.error.HTTPError) as exc:
             print(f"Failed to list remote specs: {exc}", file=sys.stderr)
@@ -394,7 +851,21 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     print("Updating SCM NGFW API reference from pan.dev…\n")
-    return update(check_only=args.check)
+    mirror_all = False if args.no_mirror else None
+    result = update(check_only=args.check, mirror_all=mirror_all)
+
+    # After a successful update, regenerate the compact API index.
+    if result == 0 and not args.check:
+        print("\nRegenerating compact API index (dev/API_INDEX.md)…")
+        try:
+            subprocess.run(
+                [sys.executable, str(DEV_DIR / "gen_api_index.py")],
+                check=True,
+            )
+        except (subprocess.CalledProcessError, OSError) as exc:
+            print(f"[warn] API index regeneration failed: {exc}", file=sys.stderr)
+
+    return result
 
 
 if __name__ == "__main__":

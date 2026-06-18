@@ -1,0 +1,65 @@
+{
+  "_comment": "Editable registry of SCM doc sources for dev/update_scm_docs.py. This file is auto-updated when pan.dev moves/renames files (see 'relocations'). Edit 'specs' or 'guides' by hand when you know the new path; the tool will also self-heal via tree discovery.",
+  "repo": "PaloAltoNetworks/pan.dev",
+  "branch": "master",
+  "settings": {
+    "specs_root": "openapi-specs/scm",
+    "guides_root": "products/scm/docs",
+    "mirror_all_guides": true,
+    "discovery_min_score": 0.55
+  },
+  "specs": {
+    "ngfw-objects": "openapi-specs/scm/config/ngfw/objects/objects-june.yaml",
+    "ngfw-security": "openapi-specs/scm/config/ngfw/security/security-services-R2-2026.yaml",
+    "ngfw-setup": "openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml",
+    "ngfw-network": "openapi-specs/scm/config/ngfw/network/network-services-R2-2026.yaml",
+    "ngfw-operations": "openapi-specs/scm/config/ngfw/operations/config-operations-march.yaml",
+    "ngfw-operations-config": "openapi-specs/scm/config/ngfw-operations/operations-R2-2026.yaml",
+    "ngfw-device": "openapi-specs/scm/config/ngfw/device/device-settings_April.yaml",
+    "ngfw-identity": "openapi-specs/scm/config/ngfw/identity/identity-services-march.yaml",
+    "ngfw-device-onboarding": "openapi-specs/scm/config/ngfw/setup/device-onboarding/device-onboarding-updated.yaml",
+    "auth": "openapi-specs/scm/auth/AuthService.yaml",
+    "tenancy": "openapi-specs/scm/tenancy/TenantServiceGroup.yaml",
+    "iam-service-accounts": "openapi-specs/scm/iam/ServiceAccounts.yaml"
+  },
+  "spec_domains": {
+    "ngfw-objects": "objects",
+    "ngfw-security": "security",
+    "ngfw-setup": "setup",
+    "ngfw-network": "network",
+    "ngfw-operations": "operations",
+    "ngfw-operations-config": "ngfw-operations",
+    "ngfw-device": "device",
+    "ngfw-identity": "identity",
+    "ngfw-device-onboarding": "device-onboarding",
+    "auth": "auth",
+    "tenancy": "tenancy",
+    "iam-service-accounts": "iam"
+  },
+  "guides": {
+    "home": "products/scm/docs/home.md",
+    "getstarted": "products/scm/docs/getstarted.md",
+    "api-call": "products/scm/docs/api-call.md",
+    "api-best-practices": "products/scm/docs/api-best-practices.md",
+    "access-tokens": "products/scm/docs/access-tokens.md",
+    "scope": "products/scm/docs/scope.md",
+    "service-accounts": "products/scm/docs/service-accounts.md",
+    "user-accounts": "products/scm/docs/user-accounts.md",
+    "roles-overview": "products/scm/docs/roles-overview.md",
+    "roles-assign": "products/scm/docs/roles-assign.md",
+    "all-roles": "products/scm/docs/all-roles.md",
+    "tenant-service-groups": "products/scm/docs/tenant-service-groups.md",
+    "platform-configuration": "products/scm/docs/configuration/platform-configuration.md",
+    "release-notes": "products/scm/docs/release-notes/release-notes.md",
+    "changelog": "products/scm/docs/release-notes/changelog.md"
+  },
+  "relocations": [
+    {
+      "kind": "specs",
+      "key": "ngfw-objects",
+      "from": "openapi-specs/scm/config/ngfw/objects/objects_v1.3_feb.yaml",
+      "to": "openapi-specs/scm/config/ngfw/objects/objects-june.yaml",
+      "date": "2026-06-17"
+    }
+  ]
+}

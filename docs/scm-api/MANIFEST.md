@@ -1,10 +1,10 @@
 # SCM API Manifest
 
-Pulled on 2026-06-01 from `PaloAltoNetworks/pan.dev` (master).
+Pulled on 2026-06-18 from `PaloAltoNetworks/pan.dev` (master).
 
 | Category | Base URL (`servers[0].url`) | Spec |
 |----------|------------------------------|------|
-| `ngfw-objects` | `https://api.strata.paloaltonetworks.com/config/objects/v1` | `openapi-specs/scm/config/ngfw/objects/objects_v1.3_feb.yaml` |
+| `ngfw-objects` | `https://api.strata.paloaltonetworks.com/config/objects/v1` | `openapi-specs/scm/config/ngfw/objects/objects-june.yaml` |
 | `ngfw-security` | `https://api.strata.paloaltonetworks.com/config/security/v1` | `openapi-specs/scm/config/ngfw/security/security-services-R2-2026.yaml` |
 | `ngfw-setup` | `https://api.strata.paloaltonetworks.com/config/setup/v1` | `openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml` |
 | `ngfw-network` | `https://api.strata.paloaltonetworks.com/config/network/v1` | `openapi-specs/scm/config/ngfw/network/network-services-R2-2026.yaml` |
