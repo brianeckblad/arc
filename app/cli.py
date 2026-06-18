@@ -274,19 +274,30 @@ def auth_show(
     console.print(f"\n[bold cyan]Profile: {target}[/bold cyan]"
                   + (" [green](active)[/green]" if target == active_name else ""))
     console.print("[bold cyan]SCM[/bold cyan]")
-    console.print(f"  bearer_token:  {_mask(cfg.scm.bearer_token)}")
-    console.print(f"  client_id:     {cfg.scm.client_id or '[dim](not set)[/dim]'}")
-    console.print(f"  client_secret: {_mask(cfg.scm.client_secret)}")
-    console.print(f"  tsg_id:        {cfg.scm.tsg_id or '[dim](not set)[/dim]'}")
+    console.print(f"  bearer_token:  {_mask(cfg.scm.bearer_token)}  [dim](keychain: arc.bearer.token)[/dim]")
+    console.print(f"  client_id:     {cfg.scm.client_id or '[dim](not set)[/dim]'}  [dim](config.json)[/dim]")
+    console.print(f"  client_secret: {_mask(cfg.scm.client_secret)}  [dim](keychain: arc.bearer.password)[/dim]")
+    console.print(f"  tsg_id:        {cfg.scm.tsg_id or '[dim](not set)[/dim]'}  [dim](config.json)[/dim]")
 
     console.print("\n[bold cyan]SSH[/bold cyan]")
-    console.print(f"  user:    {cfg.ssh.user}")
-    console.print(f"  key:     {cfg.ssh.key_path or '[dim](not set)[/dim]'}")
-    console.print(f"  port:    {cfg.ssh.port}")
+    console.print(f"  user:    {cfg.ssh.user}  [dim](keychain: arc.shell.username)[/dim]")
+    console.print(f"  key:     {cfg.ssh.key_path or '[dim](not set)[/dim]'}  [dim](config.json)[/dim]")
+    console.print(f"  port:    {cfg.ssh.port}  [dim](config.json)[/dim]")
+    console.print(f"  password: {_mask(cfg.ssh.password)}  [dim](keychain: arc.shell.password)[/dim]")
 
     console.print(f"\n[bold cyan]Config file:[/bold cyan] {CONFIG_FILE}")
     if kc:
         console.print("[bold cyan]Keychain:[/bold cyan] [green]available[/green]  (secrets stored in OS keychain)")
+        console.print(
+            "\n[bold cyan]Keychain entries[/bold cyan]  [dim](macOS: open Keychain Access → search 'arc')[/dim]"
+        )
+        console.print("  Service: [bold]arc[/bold]")
+        sfx = f".{target}" if target != "default" else ""
+        console.print(f"  [dim]{'Account':<35}  Stores[/dim]")
+        console.print(f"  [cyan]{'arc.bearer.token' + sfx:<35}[/cyan]  SCM pre-issued bearer token")
+        console.print(f"  [cyan]{'arc.bearer.password' + sfx:<35}[/cyan]  SCM OAuth client secret")
+        console.print(f"  [cyan]{'arc.shell.username' + sfx:<35}[/cyan]  SSH username for device connections")
+        console.print(f"  [cyan]{'arc.shell.password' + sfx:<35}[/cyan]  SSH password for device connections")
     else:
         console.print(
             "[bold cyan]Keychain:[/bold cyan] [yellow]unavailable[/yellow]  "
@@ -322,6 +333,84 @@ def auth_clear(
 def _short_err(err_str: str) -> str:
     """Return the first line of an error string — avoids huge httpx tracebacks in test output."""
     return err_str.split("\n")[0]
+
+
+@auth_app.command("migrate")
+def auth_migrate(
+    dry_run: bool = typer.Option(False, "--dry-run", help="Show what would be migrated without writing."),
+) -> None:
+    """Migrate old keychain entries to the new arc.* naming scheme.
+
+    ARC 1.x stored credentials under names like ``scm.bearer_token``.
+    The current version uses ``arc.bearer.token``, ``arc.bearer.password``,
+    ``arc.shell.username``, and ``arc.shell.password``.
+
+    This command reads the old entries, writes them under the new names,
+    and clears the old entries.  Run it once after upgrading from an older
+    ARC version.  It is safe to run multiple times.
+    """
+    from app.config import (
+        _KEYCHAIN_SERVICE, _LEGACY_KEY_SCM_BEARER, _LEGACY_KEY_SCM_SECRET,
+        _LEGACY_KEY_SSH_PASSWORD, _KEY_SCM_BEARER, _KEY_SCM_SECRET,
+        _KEY_SSH_PASSWORD, _keychain_get, _keychain_set, _keychain_delete,
+        list_profiles,
+    )
+
+    profiles = list_profiles()
+    migrated: list[str] = []
+    skipped: list[str] = []
+
+    for p in profiles:
+        pname = p["name"]
+        suffix = f".{pname}" if pname != "default" else ""
+
+        legacy_map = {
+            _LEGACY_KEY_SCM_BEARER:   _KEY_SCM_BEARER,
+            _LEGACY_KEY_SCM_SECRET:   _KEY_SCM_SECRET,
+            _LEGACY_KEY_SSH_PASSWORD: _KEY_SSH_PASSWORD,
+        }
+
+        for old_key, new_key in legacy_map.items():
+            old_full = f"{old_key}{suffix}"
+            new_full = f"{new_key}{suffix}"
+            value = _keychain_get(old_full)
+            if not value:
+                continue
+            if not dry_run:
+                _keychain_set(new_full, value)
+                _keychain_delete(old_full)
+                migrated.append(f"{old_full} → {new_full}")
+            else:
+                migrated.append(f"[dry-run] {old_full} → {new_full}")
+
+    if not dry_run:
+        # Also clear the bare (non-suffixed) legacy keys.
+        for key in (_LEGACY_KEY_SCM_BEARER, _LEGACY_KEY_SCM_SECRET, _LEGACY_KEY_SSH_PASSWORD):
+            val = _keychain_get(key)
+            if val:
+                new_key = {
+                    _LEGACY_KEY_SCM_BEARER:   _KEY_SCM_BEARER,
+                    _LEGACY_KEY_SCM_SECRET:   _KEY_SCM_SECRET,
+                    _LEGACY_KEY_SSH_PASSWORD: _KEY_SSH_PASSWORD,
+                }[key]
+                _keychain_set(new_key, val)
+                _keychain_delete(key)
+                migrated.append(f"{key} → {new_key}")
+
+    if migrated:
+        console.print(f"\n[green]✓[/green] Migrated {len(migrated)} keychain entry/entries:")
+        for m in migrated:
+            console.print(f"  {m}")
+        if dry_run:
+            console.print("\n[dim](dry-run — run without --dry-run to apply)[/dim]")
+        else:
+            console.print(
+                "\n[dim]Old entries cleared.  "
+                "Run [bold]arc auth show[/bold] to verify the new entries.[/dim]"
+            )
+    else:
+        console.print("[green]✓[/green] Nothing to migrate — credentials are already using the new naming scheme.")
+        console.print(f"  [dim]Looking for: {_KEY_SCM_BEARER}, {_KEY_SCM_SECRET}, {_KEY_SSH_PASSWORD}[/dim]")
 
 
 @auth_app.command("delete-profile")

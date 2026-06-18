@@ -1,4 +1,4 @@
-rc # Configuration — macOS
+ rc # Configuration — macOS
 
 ## Quick start
 
@@ -8,8 +8,7 @@ arc config generate
 
 # 2. Edit the file — replace non-secret REPLACE_WITH_* placeholders
 open "$(arc auth show 2>&1 | grep 'Config file:' | awk '{print $3}')"
-# or just: open ~/Library/Application\ Support/arc/config.json
-
+i 
 # 3. Run the wizard — migrates secrets to macOS Keychain, writes safe values to disk
 arc auth configure
 ```
@@ -35,16 +34,37 @@ not to disk:
 arc auth configure
 ```
 
-ARC stores three items in the keychain under the service name `arc`:
+ARC stores four items in the keychain under the service name `arc`:
 
-| Keychain item | What it holds |
-|---------------|---------------|
-| `scm.bearer_token` | SCM bearer token |
-| `scm.client_secret` | SCM OAuth client secret |
-| `ssh.password` | SSH password (if used) |
+| Keychain Account field | What it holds |
+|------------------------|---------------|
+| `arc.bearer.token`    | SCM pre-issued bearer token |
+| `arc.bearer.password` | SCM OAuth client secret (generates bearer tokens) |
+| `arc.shell.username`  | SSH username for device connections |
+| `arc.shell.password`  | SSH password for device connections |
 
-Non-sensitive values (`client_id`, `tsg_id`, SSH user/key/port) are written to
-`~/Library/Application Support/arc/config.json` with mode `0600`.
+Non-sensitive values (`client_id`, `tsg_id`, SSH key path, port) are written to
+the ARC config file with mode `0600`.
+
+In **macOS Keychain Access** (`⌘ Space` → "Keychain Access"), search for `arc` to see all four entries.
+Each entry shows:
+- **Name**: `arc` (the service)
+- **Account**: `arc.bearer.token`, `arc.bearer.password`, etc.
+- **Password**: the secret (click "Show password" to reveal)
+
+Run `arc auth show` to see all four keychain key names alongside the current values (masked).
+
+### Migrate from older ARC versions
+
+If you configured ARC before 2026-06, your credentials are stored under old key names
+(`scm.bearer_token`, `scm.client_secret`, `ssh.password`).  Migrate in one command:
+
+```bash
+arc auth migrate          # read old entries → write new ones → clear old ones
+arc auth migrate --dry-run # preview only, no changes
+```
+
+After migrating, verify with `arc auth show`.
 
 ### Manage Keychain entries with the `security` CLI
 
@@ -53,23 +73,26 @@ without opening the graphical Keychain Access app.
 
 ```bash
 # --- Add / update entries manually ---
-security add-generic-password -U -s arc -a scm.bearer_token  -w "YOUR_BEARER_TOKEN"
-security add-generic-password -U -s arc -a scm.client_secret -w "YOUR_CLIENT_SECRET"
-security add-generic-password -U -s arc -a ssh.password      -w "YOUR_SSH_PASSWORD"
+security add-generic-password -U -s arc -a arc.bearer.token    -w "YOUR_BEARER_TOKEN"
+security add-generic-password -U -s arc -a arc.bearer.password -w "YOUR_CLIENT_SECRET"
+security add-generic-password -U -s arc -a arc.shell.username  -w "admin"
+security add-generic-password -U -s arc -a arc.shell.password  -w "YOUR_SSH_PASSWORD"
 # -U = update if the entry already exists
 
 # --- Read (print) a stored value ---
-security find-generic-password -s arc -a scm.bearer_token  -w
-security find-generic-password -s arc -a scm.client_secret -w
-security find-generic-password -s arc -a ssh.password      -w
+security find-generic-password -s arc -a arc.bearer.token    -w
+security find-generic-password -s arc -a arc.bearer.password -w
+security find-generic-password -s arc -a arc.shell.username  -w
+security find-generic-password -s arc -a arc.shell.password  -w
 
-# --- Show full metadata (no -w = print the entry, not the secret) ---
-security find-generic-password -s arc -a scm.bearer_token
+# --- Show full metadata (no -w = prints the entry, not the secret) ---
+security find-generic-password -s arc -a arc.bearer.token
 
 # --- Delete entries ---
-security delete-generic-password -s arc -a scm.bearer_token
-security delete-generic-password -s arc -a scm.client_secret
-security delete-generic-password -s arc -a ssh.password
+security delete-generic-password -s arc -a arc.bearer.token
+security delete-generic-password -s arc -a arc.bearer.password
+security delete-generic-password -s arc -a arc.shell.username
+security delete-generic-password -s arc -a arc.shell.password
 
 # --- List all items for service "arc" ---
 security find-generic-password -s arc
@@ -82,7 +105,7 @@ security find-generic-password -s arc
 ### Verify what is stored
 
 ```bash
-arc auth show    # display current config (secrets masked, keychain status shown)
+arc auth show    # display current config (secrets masked, keychain entries listed)
 arc auth clear   # remove all ARC entries from Keychain
 ```
 
@@ -142,7 +165,7 @@ source ~/.zshrc
 ## Config file location
 
 ```
-~/Library/Application Support/arc/config.json    (non-sensitive values, mode 0600)
+<arc_project>/config/<your_username>/config.json    (non-sensitive values, mode 0600)
 ```
 
 Run `arc auth show` to see the exact path on your system.

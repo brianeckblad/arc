@@ -60,11 +60,30 @@ except ImportError:
 # as this profile; its keychain keys use the historic non-suffixed format.
 _DEFAULT_PROFILE = "default"
 
-# Keychain service name and per-credential base keys.
-_KEYCHAIN_SERVICE  = "arc"
-_KEY_SCM_BEARER    = "scm.bearer_token"
-_KEY_SCM_SECRET    = "scm.client_secret"
-_KEY_SSH_PASSWORD  = "ssh.password"
+# Keychain service name — all ARC entries group under this in macOS Keychain Access.
+_KEYCHAIN_SERVICE = "arc"
+
+# ---------------------------------------------------------------------------
+# Keychain key names — these are the "Account" field in macOS Keychain Access.
+# Naming convention: arc.<domain>.<role>
+#   arc.bearer.token    — SCM pre-issued bearer token
+#   arc.bearer.password — SCM OAuth client secret (used to generate bearer tokens)
+#   arc.shell.username  — SSH username for device connections
+#   arc.shell.password  — SSH password for device connections
+#
+# Profile-scoped variants append .<profile>:  arc.bearer.token.readwrite
+# ---------------------------------------------------------------------------
+_KEY_SCM_BEARER    = "arc.bearer.token"
+_KEY_SCM_SECRET    = "arc.bearer.password"
+_KEY_SSH_USER      = "arc.shell.username"
+_KEY_SSH_PASSWORD  = "arc.shell.password"
+
+# Legacy key names (used by older ARC versions — read during migration, cleared on save).
+# Never write to these; only read them as fallback when the new keys are empty.
+_LEGACY_KEY_SCM_BEARER   = "scm.bearer_token"
+_LEGACY_KEY_SCM_SECRET   = "scm.client_secret"
+_LEGACY_KEY_SSH_PASSWORD = "ssh.password"
+# ssh.user was never in the keychain before — no legacy key needed.
 
 
 def _profile_key(base: str, profile: str) -> str:
@@ -161,14 +180,21 @@ class SCMConfig:
 class SSHConfig:
     """SSH connection defaults.
 
-    ``password`` (if used) is stored in the OS keychain.
-    All other fields are non-sensitive and stored in config.json.
+    ``password`` and ``user`` are stored in the OS keychain when available.
+    ``key_path`` and ``port`` are non-sensitive and stored in config.json.
+
+    Keychain keys (macOS Keychain Account field):
+      arc.shell.username  — SSH username (e.g. admin)
+      arc.shell.password  — SSH password
     """
 
     user: str = "admin"
     key_path: str = ""
     password: str = ""
     port: int = 22
+    # Internal: username loaded from keychain; merged into `user` by load_config().
+    # Not persisted directly — load_config() sets this before resolving `user`.
+    user_from_keychain: str = ""
 
 
 @dataclass
@@ -340,24 +366,35 @@ def load_config(profile: str | None = None) -> ArcConfig:
 
     cfg.profile_name = target
 
-    # --- Secrets from keychain (profile-scoped) ---
+    # --- Secrets from keychain (profile-scoped new key names) ---
     bearer_key   = _profile_key(_KEY_SCM_BEARER,   target)
     secret_key   = _profile_key(_KEY_SCM_SECRET,   target)
-    ssh_pass_key = _profile_key(_KEY_SSH_PASSWORD,  target)
+    ssh_user_key = _profile_key(_KEY_SSH_USER,     target)
+    ssh_pass_key = _profile_key(_KEY_SSH_PASSWORD, target)
 
     cfg.scm.bearer_token  = _keychain_get(bearer_key)
     cfg.scm.client_secret = _keychain_get(secret_key)
+    cfg.ssh.user_from_keychain = _keychain_get(ssh_user_key)  # may be empty
     cfg.ssh.password      = _keychain_get(ssh_pass_key)
 
-    # For the default profile also check the legacy (non-suffixed) keychain keys
-    # so users who authenticated before multi-profile existed keep working.
+    # --- Legacy key migration (read old keys when new keys are empty) ---
+    # This lets users who configured ARC before the rename keep working.
+    # The next save_config() call will write the new keys and clear the old ones.
     if target == _DEFAULT_PROFILE:
         if not cfg.scm.bearer_token:
-            cfg.scm.bearer_token  = _keychain_get(_KEY_SCM_BEARER)
+            cfg.scm.bearer_token  = _keychain_get(_LEGACY_KEY_SCM_BEARER)
         if not cfg.scm.client_secret:
-            cfg.scm.client_secret = _keychain_get(_KEY_SCM_SECRET)
+            cfg.scm.client_secret = _keychain_get(_LEGACY_KEY_SCM_SECRET)
         if not cfg.ssh.password:
-            cfg.ssh.password      = _keychain_get(_KEY_SSH_PASSWORD)
+            cfg.ssh.password      = _keychain_get(_LEGACY_KEY_SSH_PASSWORD)
+
+    # Legacy profile-scoped keys (old format used suffixed variants of old names)
+    if not cfg.scm.bearer_token:
+        cfg.scm.bearer_token  = _keychain_get(_profile_key(_LEGACY_KEY_SCM_BEARER,   target))
+    if not cfg.scm.client_secret:
+        cfg.scm.client_secret = _keychain_get(_profile_key(_LEGACY_KEY_SCM_SECRET,   target))
+    if not cfg.ssh.password:
+        cfg.ssh.password      = _keychain_get(_profile_key(_LEGACY_KEY_SSH_PASSWORD, target))
 
     # --- Non-sensitive fields from config file ---
     cfg.scm.client_id = scm_raw.get("client_id", "")
@@ -370,8 +407,13 @@ def load_config(profile: str | None = None) -> ArcConfig:
     if not cfg.scm.client_secret:
         cfg.scm.client_secret = scm_raw.get("client_secret", "")
 
-    # SSH fields — accept both "username" (current) and legacy "user" key.
-    cfg.ssh.user     = ssh_raw.get("username", ssh_raw.get("user", "admin"))
+    # SSH fields — keychain takes priority over config.json for username.
+    # cfg.ssh.user_from_keychain was set above from the keychain.
+    # Fall back to config.json "username" / legacy "user" key.
+    cfg.ssh.user = (
+        cfg.ssh.user_from_keychain
+        or ssh_raw.get("username", ssh_raw.get("user", "admin"))
+    )
     cfg.ssh.key_path = ssh_raw.get("key_path", "")
     cfg.ssh.port     = int(ssh_raw.get("port", 22))
     if not cfg.ssh.password:
@@ -409,25 +451,37 @@ def save_config(cfg: ArcConfig, profile: str | None = None) -> None:
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     CONFIG_DIR.chmod(stat.S_IRWXU)
 
-    # Store secrets in the keychain under profile-scoped keys.
+    # Store secrets in the keychain under the new profile-scoped key names.
+    # arc.bearer.token / arc.bearer.password / arc.shell.username / arc.shell.password
     failed_secret_keys: list[str] = []
     for key, value in (
         (_profile_key(_KEY_SCM_BEARER,   target), cfg.scm.bearer_token),
         (_profile_key(_KEY_SCM_SECRET,   target), cfg.scm.client_secret),
-        (_profile_key(_KEY_SSH_PASSWORD,  target), cfg.ssh.password),
+        (_profile_key(_KEY_SSH_USER,     target), cfg.ssh.user),
+        (_profile_key(_KEY_SSH_PASSWORD, target), cfg.ssh.password),
     ):
         saved = _keychain_set(key, value)
         if value and not saved:
             failed_secret_keys.append(key)
 
-    # Build the on-disk profile block.  Secrets deliberately omitted.
+    # Migrate: clear legacy key names so they don't linger in the keychain.
+    # Only clear legacy keys for the default profile (they were only ever
+    # written for the default profile under the old scheme).
+    if target == _DEFAULT_PROFILE:
+        for legacy_key in (_LEGACY_KEY_SCM_BEARER, _LEGACY_KEY_SCM_SECRET, _LEGACY_KEY_SSH_PASSWORD):
+            _keychain_delete(legacy_key)
+
+    # Build the on-disk profile block.
+    # Secrets (bearer_token, client_secret, password) are in keychain — not on disk.
+    # SSH user is now also in keychain, but we keep a copy in config.json as fallback
+    # for systems without a keychain (headless/CI) and for readability.
     profile_data: dict = {
         "scm": {
             "client_id": cfg.scm.client_id,
             "tsg_id":    cfg.scm.tsg_id,
         },
         "ssh": {
-            "username": cfg.ssh.user,
+            "username": cfg.ssh.user,   # kept for headless fallback; keychain is primary
             "key_path": cfg.ssh.key_path,
             "port":     cfg.ssh.port,
         },
@@ -473,8 +527,11 @@ def delete_profile(name: str) -> None:
 
     _write_config_file(raw)
 
-    # Remove profile-scoped keychain entries.
-    for base in (_KEY_SCM_BEARER, _KEY_SCM_SECRET, _KEY_SSH_PASSWORD):
+    # Remove profile-scoped keychain entries (new and legacy key names).
+    for base in (_KEY_SCM_BEARER, _KEY_SCM_SECRET, _KEY_SSH_USER, _KEY_SSH_PASSWORD):
+        _keychain_delete(_profile_key(base, name))
+    # Also clear any legacy-format keys for this profile.
+    for base in (_LEGACY_KEY_SCM_BEARER, _LEGACY_KEY_SCM_SECRET, _LEGACY_KEY_SSH_PASSWORD):
         _keychain_delete(_profile_key(base, name))
 
 
@@ -483,24 +540,28 @@ def clear_keychain(profile: str | None = None) -> None:
 
     When *profile* is supplied only that profile's secrets are removed.
     When *profile* is None all known profile secrets are removed, including
-    the legacy non-suffixed keys used by the ``default`` profile.
+    legacy keys from older ARC versions.
 
     Called by ``arc auth clear``.  Does not touch the config file.
+
+    Clears both current key names (arc.bearer.token etc.) and legacy names
+    (scm.bearer_token etc.) so the keychain is fully cleaned either way.
     """
+    _ALL_CURRENT_KEYS = (_KEY_SCM_BEARER, _KEY_SCM_SECRET, _KEY_SSH_USER, _KEY_SSH_PASSWORD)
+    _ALL_LEGACY_KEYS  = (_LEGACY_KEY_SCM_BEARER, _LEGACY_KEY_SCM_SECRET, _LEGACY_KEY_SSH_PASSWORD)
+
     if profile:
-        for base in (_KEY_SCM_BEARER, _KEY_SCM_SECRET, _KEY_SSH_PASSWORD):
+        for base in _ALL_CURRENT_KEYS:
             _keychain_delete(_profile_key(base, profile))
-        # Also clear legacy keys for the default profile.
         if profile == _DEFAULT_PROFILE:
-            for key in (_KEY_SCM_BEARER, _KEY_SCM_SECRET, _KEY_SSH_PASSWORD):
+            for key in _ALL_LEGACY_KEYS:
                 _keychain_delete(key)
     else:
-        # Clear legacy keys (default profile, pre-multi-profile format).
-        for key in (_KEY_SCM_BEARER, _KEY_SCM_SECRET, _KEY_SSH_PASSWORD):
+        # Clear legacy keys (default profile, pre-rename format).
+        for key in _ALL_LEGACY_KEYS:
             _keychain_delete(key)
-        # Clear profile-scoped keys for every known profile.
+        # Clear all profile-scoped current keys.
         for p in list_profiles():
             pname = p["name"]
-            if pname != _DEFAULT_PROFILE:
-                for base in (_KEY_SCM_BEARER, _KEY_SCM_SECRET, _KEY_SSH_PASSWORD):
-                    _keychain_delete(_profile_key(base, pname))
+            for base in _ALL_CURRENT_KEYS:
+                _keychain_delete(_profile_key(base, pname))

@@ -67,27 +67,28 @@ class ArcShell                           383-2564       Main interactive REPL.
   ._print_banner()                       2520-2547      
   ._print_startup_help()                 2549-2564      Print compact startup command hints shown after SCM connection status.
 
-## `app/cli.py`  (922 lines)
+## `app/cli.py`  (1011 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 main()                                   55-75          Launch the ARC interactive shell.
 open_docs()                              79-84          Open ARC documentation in the default browser (fully offline, no serve
 auth_configure()                         96-237         Interactively configure ARC credentials.
-auth_show()                              241-295        Display current configuration (credentials masked).
-auth_clear()                             299-319        Remove ARC secrets from the OS keychain.
-_short_err()                             322-324        Return the first line of an error string — avoids huge httpx traceback
-auth_delete_profile()                    328-353        Delete a named credential profile from config.json and the OS keychain
-auth_test()                              357-568        Test connectivity using stored credentials.
-config_generate()                        610-645        Generate a starter config.json with annotated placeholders and mode 06
-_ensure_vendor_files()                   703-723        Download vendor JS/CSS to docs/vendor/ if not already present.
-_build_docs_bundle()                     726-756        Embed all docs/*.md files into docs/docs-bundle.js.
-_build_stub()                            759-789        Build a Markdown stub for a new command doc.
-_regenerate_index()                      792-804        Rewrite docs/commands/index.md from the live COMMANDS registry.
-_do_cliup()                              807-848        Core cliup logic — create missing command stubs, regenerate index, reb
-cliup()                                  852-884        Sync docs with the registry and rebuild the offline docs bundle.
-scm_get()                                896-908        Perform a raw GET request against the SCM API.
-run()                                    915-916        
+auth_show()                              241-306        Display current configuration (credentials masked).
+auth_clear()                             310-330        Remove ARC secrets from the OS keychain.
+_short_err()                             333-335        Return the first line of an error string — avoids huge httpx traceback
+auth_migrate()                           339-413        Migrate old keychain entries to the new arc.* naming scheme.
+auth_delete_profile()                    417-442        Delete a named credential profile from config.json and the OS keychain
+auth_test()                              446-657        Test connectivity using stored credentials.
+config_generate()                        699-734        Generate a starter config.json with annotated placeholders and mode 06
+_ensure_vendor_files()                   792-812        Download vendor JS/CSS to docs/vendor/ if not already present.
+_build_docs_bundle()                     815-845        Embed all docs/*.md files into docs/docs-bundle.js.
+_build_stub()                            848-878        Build a Markdown stub for a new command doc.
+_regenerate_index()                      881-893        Rewrite docs/commands/index.md from the live COMMANDS registry.
+_do_cliup()                              896-937        Core cliup logic — create missing command stubs, regenerate index, reb
+cliup()                                  941-973        Sync docs with the registry and rebuild the offline docs bundle.
+scm_get()                                985-997        Perform a raw GET request against the SCM API.
+run()                                    1004-1005      
 
 ## `app/utils/formatter.py`  (906 lines)
 
@@ -175,30 +176,30 @@ class SCMClient                          49-704         Strata Cloud Manager (SC
   .push_config()                         681-701        Push the candidate configuration to managed devices.
   .close()                               703-704        
 
-## `app/config.py`  (507 lines)
+## `app/config.py`  (568 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_profile_key()                           70-79          Return a profile-scoped keychain key.
-class ConfigSecurityError                82-83          Raised when ARC refuses to persist secrets insecurely.
-_keychain_get()                          90-97          Return a credential from the OS keychain, or '' if absent / unavailabl
-_keychain_set()                          100-113        Store *value* in the OS keychain.  Returns True on success.
-_keychain_delete()                       116-123        Remove a credential from the keychain.  Silently ignores missing entri
-keychain_available()                     126-132        Return True when the OS keychain can be read/written.
-class SCMConfig                          140-157        SCM API credentials.
-  .is_configured()                       156-157        
-class SSHConfig                          161-171        SSH connection defaults.
-class ArcConfig                          175-182        
-_read_config_file()                      189-207        Read the raw config.json from disk and return it as a dict.
-_write_config_file()                     210-219        Atomically write *raw* to CONFIG_FILE with mode 0600.
-_to_new_format()                         222-248        Migrate a legacy single-profile config dict to the multi-profile forma
-list_profiles()                          255-287        Return metadata for every configured profile.
-get_active_profile()                     290-292        Return the name of the currently active profile (default: ``"default"`
-set_active_profile()                     295-303        Persist *name* as the active profile without touching credential data.
-load_config()                            310-390        Load config for the named *profile* (or the active profile when None).
-save_config()                            393-452        Persist config: secrets to OS keychain, non-sensitive values to config
-delete_profile()                         455-478        Remove a named profile from config.json and its keychain entries.
-clear_keychain()                         481-506        Remove ARC secrets from the OS keychain.
+_profile_key()                           89-98          Return a profile-scoped keychain key.
+class ConfigSecurityError                101-102        Raised when ARC refuses to persist secrets insecurely.
+_keychain_get()                          109-116        Return a credential from the OS keychain, or '' if absent / unavailabl
+_keychain_set()                          119-132        Store *value* in the OS keychain.  Returns True on success.
+_keychain_delete()                       135-142        Remove a credential from the keychain.  Silently ignores missing entri
+keychain_available()                     145-151        Return True when the OS keychain can be read/written.
+class SCMConfig                          159-176        SCM API credentials.
+  .is_configured()                       175-176        
+class SSHConfig                          180-197        SSH connection defaults.
+class ArcConfig                          201-208        
+_read_config_file()                      215-233        Read the raw config.json from disk and return it as a dict.
+_write_config_file()                     236-245        Atomically write *raw* to CONFIG_FILE with mode 0600.
+_to_new_format()                         248-274        Migrate a legacy single-profile config dict to the multi-profile forma
+list_profiles()                          281-313        Return metadata for every configured profile.
+get_active_profile()                     316-318        Return the name of the currently active profile (default: ``"default"`
+set_active_profile()                     321-329        Persist *name* as the active profile without touching credential data.
+load_config()                            336-432        Load config for the named *profile* (or the active profile when None).
+save_config()                            435-506        Persist config: secrets to OS keychain, non-sensitive values to config
+delete_profile()                         509-535        Remove a named profile from config.json and its keychain entries.
+clear_keychain()                         538-567        Remove ARC secrets from the OS keychain.
 
 ## `app/commands/setup.py`  (337 lines)
 
