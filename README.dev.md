@@ -312,6 +312,12 @@ read_file("app/shell.py", offset=1450, limit=121)
 
 Regenerate after editing any 300+ line file: `python dev/gen_code_map.py`
 
+The **pre-commit hook** (`.git/hooks/pre-commit`) auto-regenerates `CODE_MAP.md`
+whenever any `app/*.py` file is staged.  Install it once after cloning:
+```bash
+bash dev/install_hooks.sh
+```
+
 Future extraction order if `shell.py` keeps growing (one string at a time,
 validate with `python dev/smoke_test.py --file app/shell.py` after each):
 

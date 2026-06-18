@@ -22,6 +22,7 @@ The user says any of: `docsupdate`, `update docs`, `pull api docs`,
 ```bash
 python dev/update_scm_docs.py --check    # report drift/relocations, write nothing
 python dev/update_scm_docs.py            # apply: download, self-heal moves, write CHANGES.md
+                                         # → also auto-regenerates dev/API_INDEX.md afterward
 ```
 
 - Source paths live in `dev/scm_sources.json` (editable registry).
