@@ -5,18 +5,22 @@ Use `help <command>` to open detailed docs for a command.
 - `commit` — Push candidate config to managed devices — commit [description <text>]
 - `delete address` — Delete an address object — delete address <name>
 - `delete address-group` — Delete an address group — delete address-group <name>
+- `delete external-dynamic-list` — Delete an EDL — delete external-dynamic-list <name>
 - `delete security-rule` — Delete a security rule — delete security-rule <name>
 - `delete service` — Delete a service object — delete service <name>
+- `delete service-group` — Delete a service group — delete service-group <name>
 - `delete tag` — Delete a tag — delete tag <name>
 - `delete url-category` — Delete a URL category — delete url-category <name>
 - `ping host` — Ping a host from the device — ping host <ip>  (use --remote)
 - `request system reboot` — Reboot a managed device — use --remote  (CAUTION: device will restart)
 - `request system shutdown` — Shut down a managed device — use --remote  (CAUTION: device will go offline)
 - `request system software check` — Check available software updates — use --remote for live data
-- `set address` — Create an address object — set address <name> ip-netmask|fqdn|ip-range <value>
-- `set address-group` — Create a static address group — set address-group <name> static <member1> ...
-- `set service` — Create a service object — set service <name> tcp|udp port <n>
-- `set tag` — Create a tag — set tag <name> [color <color>]
+- `set address` — Create address — set address <name> ip-netmask|ip-range|ip-wildcard|fqdn <value>
+- `set address-group` — Create address group — set address-group <name> static <m1> [m2] | dynamic filter '<expr>'
+- `set external-dynamic-list` — Create EDL — set external-dynamic-list <name> type ip|domain|url url <fetch-url>
+- `set service` — Create service — set service <name> tcp|udp port <n> [source-port <n>]
+- `set service-group` — Create service group — set service-group <name> members <svc1> [svc2 ...]
+- `set tag` — Create tag — set tag <name> [color red|green|blue|...] [comments <text>]
 - `set url-category` — Create a custom URL category — set url-category <name> type url-list list <url1>
 - `show address` — Show address objects in the active folder
 - `show address-group` — Show address groups in the active folder

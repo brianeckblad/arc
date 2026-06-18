@@ -57,6 +57,9 @@ GENERAL_TOPICS = {
     "config linux":     "config-nix.md",
     "config generate":  "config-generate.md",
     "commands":         "commands/index.md",
+    # API reference — complete mapping of API resources to ARC commands
+    "api-reference":    "commands/api-reference.md",
+    "api":              "commands/api-reference.md",
 }
 
 

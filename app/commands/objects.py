@@ -240,7 +240,8 @@ COMMANDS.update(_EXTRA_COMMANDS)
 
 
 # ---------------------------------------------------------------------------
-# Write handlers — configure mode, all POST/DELETE via SCM AP#
+# Write handlers — configure mode, all POST/DELETE via SCM API
+#
 # Argument parsing convention:
 #   positional[0]  = object name
 #   positional[1]  = subtype keyword (ip-netmask, tcp, static, ...)

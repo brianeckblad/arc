@@ -238,7 +238,7 @@ format_raw()                             877-878
 format_dict()                            881-882        
 _flatten()                               889-904        Recursively flatten a nested dict into dot-separated key/value pairs.
 
-## `app/commands/objects.py`  (870 lines)
+## `app/commands/objects.py`  (871 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -255,19 +255,19 @@ _show_regions()                          140-143        pan.dev: GET /config/obj
 _show_hip_objects()                      146-149        pan.dev: GET /config/objects/v1/hip-objects?folder=<folder>
 _show_hip_profiles()                     152-155        pan.dev: GET /config/objects/v1/hip-profiles?folder=<folder>
 _show_log_forwarding_profiles()          158-161        pan.dev: GET /config/objects/v1/log-forwarding-profiles?folder=<folder
-_parse_kv_tail()                         269-276        Parse positional[start:] as alternating key/value pairs.
-_set_address()                           279-346        Create an address object in the active SCM folder.
-_delete_address()                        349-360        Delete an address object.  Usage: delete address <name>
-_set_address_group()                     363-427        Create a static or dynamic address group in the active folder.
-_delete_address_group()                  430-441        Delete an address group.  Usage: delete address-group <name>
-_set_service()                           444-514        Create a TCP or UDP service object in the active folder.
-_delete_service()                        517-528        Delete a service object.  Usage: delete service <name>
-_set_service_group()                     531-577        Create a service group (named collection of service objects).
-_delete_service_group()                  580-591        Delete a service group.  Usage: delete service-group <name>
-_set_tag()                               594-645        Create a tag in the active folder.
-_delete_tag()                            648-659        Delete a tag.  Usage: delete tag <name>
-_set_external_dynamic_list()             662-740        Create an External Dynamic List (EDL) in the active folder.
-_delete_external_dynamic_list()          743-754        Delete an EDL.  Usage: delete external-dynamic-list <name>
+_parse_kv_tail()                         270-277        Parse positional[start:] as alternating key/value pairs.
+_set_address()                           280-347        Create an address object in the active SCM folder.
+_delete_address()                        350-361        Delete an address object.  Usage: delete address <name>
+_set_address_group()                     364-428        Create a static or dynamic address group in the active folder.
+_delete_address_group()                  431-442        Delete an address group.  Usage: delete address-group <name>
+_set_service()                           445-515        Create a TCP or UDP service object in the active folder.
+_delete_service()                        518-529        Delete a service object.  Usage: delete service <name>
+_set_service_group()                     532-578        Create a service group (named collection of service objects).
+_delete_service_group()                  581-592        Delete a service group.  Usage: delete service-group <name>
+_set_tag()                               595-646        Create a tag in the active folder.
+_delete_tag()                            649-660        Delete a tag.  Usage: delete tag <name>
+_set_external_dynamic_list()             663-741        Create an External Dynamic List (EDL) in the active folder.
+_delete_external_dynamic_list()          744-755        Delete an EDL.  Usage: delete external-dynamic-list <name>
 
 ## `app/config.py`  (568 lines)
 
