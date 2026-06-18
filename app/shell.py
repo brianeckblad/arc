@@ -1775,13 +1775,44 @@ class ArcShell:
             return
 
         if sub == "show":
+            from app.commands.registry import COMMANDS as _CMDS
+            from dataclasses import asdict
+
             flag_dict = asdict(self._features)
+
+            # Build a reverse map: flag_name → [command strings that use it]
+            flag_to_cmds: dict[str, list[str]] = {}
+            for cmd_key, cmd_def in _CMDS.items():
+                if cmd_def.feature_flag:
+                    flag_to_cmds.setdefault(cmd_def.feature_flag, []).append(cmd_key)
+
+            t = self._theme
             console.print()
-            console.print(f"  [bold yellow]Feature Flags[/bold yellow]  [dim]— session state (edit config/features.json to persist)[/dim]")
-            console.print()
-            for flag, enabled in sorted(flag_dict.items()):
-                status  = "[green]  enabled[/green]" if enabled else "[red] disabled[/red]"
-                console.print(f"    {flag:<30} {status}")
+            console.print(
+                f"  [bold yellow]Feature Flags[/bold yellow]  "
+                f"[dim]— session state (edit config/features.json to persist)[/dim]"
+            )
+
+            # Separate shipped (True by default) from unimplemented (False by default)
+            from app.features import FeatureFlags as _FF
+            defaults = asdict(_FF())
+            shipped   = {k: v for k, v in flag_dict.items() if defaults[k]}
+            unimpl    = {k: v for k, v in flag_dict.items() if not defaults[k]}
+
+            console.print(f"\n  [bold cyan]Shipped commands[/bold cyan]  [dim](default: enabled)[/dim]")
+            for flag in sorted(shipped):
+                enabled = shipped[flag]
+                status  = "[green]  on[/green]" if enabled else "[red] off[/red]"
+                cmds    = ", ".join(sorted(flag_to_cmds.get(flag, []))) or "—"
+                console.print(f"    {flag:<35} {status}  [dim]{cmds}[/dim]")
+
+            console.print(f"\n  [bold cyan]Unimplemented / in-development[/bold cyan]  [dim](default: disabled)[/dim]")
+            for flag in sorted(unimpl):
+                enabled = unimpl[flag]
+                status  = "[green]  on[/green]" if enabled else "[red] off[/red]"
+                cmds    = ", ".join(sorted(flag_to_cmds.get(flag, []))) or "—"
+                console.print(f"    {flag:<35} {status}  [dim]{cmds}[/dim]")
+
             console.print()
             console.print("  [dim]  feature enable <flag>  |  feature disable <flag>  |  feature help[/dim]")
             console.print()

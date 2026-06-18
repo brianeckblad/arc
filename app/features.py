@@ -44,37 +44,69 @@ _FEATURES_EXAMPLE = _PROJECT_ROOT / "config" / "features.example.json"
 class FeatureFlags:
     """Every flag here gates one or more CommandDef entries.
 
-    Default=True   → shipped, on for everyone
+    Default=True   → shipped and on for all users
     Default=False  → in development; enable locally via config/features.json
 
-    Object families already shipped (no flag — always enabled):
+    Object families already shipped and their address subtypes:
 
     ADDRESS OBJECTS:
-      show address               → all types: ip-netmask, ip-range, ip-wildcard, fqdn
-      show address-group         → static groups and dynamic (tag-based) groups
+      show_address / show_address_group
       Subtypes: ip-netmask (10.1.0.0/24), ip-range (10.1.0.1-10.1.0.10),
                 ip-wildcard (10.1.0.0/255.0.255.0), fqdn (*.example.com)
 
     SERVICE OBJECTS:
-      show service               → tcp/udp port-based services
+      show_service
       Subtypes: tcp, udp, application-default, any-port, port-range
 
-    TAGS:
-      show tag                   → all tags (used for dynamic address groups)
-
-    EDLs:
-      show external-dynamic-list → ip, domain, url, imsi, imei types
-
-    Use `help features` inside ARC for the full flag reference with enabled/disabled status.
+    Use `help features` or `feature show` inside ARC for the full flag reference.
     """
 
-    # ── Implemented & shipped (always on) ──────────────────────────────
-    # Core show commands — addresses, services, zones, routes, etc.
-    # These have no flag (feature_flag="" on CommandDef) so they can never
-    # be accidentally disabled.
+    # =========================================================================
+    # SHIPPED COMMANDS — default True (on for all users).
+    # Set to False in config/features.json to hide a command from the CLI.
+    # =========================================================================
 
-    # ── Network ─────────────────────────────────────────────────────────
-    # Set to True when the SCM command is implemented and tested.
+    # ── Objects ─────────────────────────────────────────────────────────────
+    show_address:               bool = True    # show address
+    show_address_group:         bool = True    # show address-group
+    show_service:               bool = True    # show service
+    show_tag:                   bool = True    # show tag
+    show_external_dynamic_list: bool = True    # show external-dynamic-list
+
+    # ── Security ─────────────────────────────────────────────────────────────
+    show_security_policy:       bool = True    # show security policy
+    show_url_categories:        bool = True    # show url-categories
+    test_security_policy_match: bool = True    # test security-policy-match
+
+    # ── Network ──────────────────────────────────────────────────────────────
+    show_interface:             bool = True    # show interface / show interface all
+    show_zone:                  bool = True    # show zone
+    show_routing:               bool = True    # show routing route / routing summary
+    show_high_availability:     bool = True    # show high-availability all / state
+
+    # ── Setup / Inventory ────────────────────────────────────────────────────
+    show_devices:               bool = True    # show devices / show device / show device snippets
+    show_snippets:              bool = True    # show snippets / show snippet / show snippets global
+    show_jobs:                  bool = True    # show jobs all / show jobs id
+
+    # ── Operations (live device — SSH / --remote) ────────────────────────────
+    show_system_info:           bool = True    # show system info
+    show_system_resources:      bool = True    # show system resources
+    show_system_disk_space:     bool = True    # show system disk-space
+    show_log_system:            bool = True    # show log system
+    show_log_traffic:           bool = True    # show log traffic
+    ping:                       bool = True    # ping host
+    request_system_software:    bool = True    # request system software check
+
+    # ── Config operations ────────────────────────────────────────────────────
+    commit:                     bool = True    # commit (configure mode)
+
+    # =========================================================================
+    # UNIMPLEMENTED / IN-DEVELOPMENT — default False.
+    # Enable locally via config/features.json when working on a command.
+    # =========================================================================
+
+    # ── Network (unimplemented) ───────────────────────────────────────────────
     nat_rules:           bool = False   # show nat-rules / create / delete
     ipsec_vpn:           bool = False   # show ipsec-tunnels, ike-gateways
     bgp_routing:         bool = False   # show bgp peers, bgp profiles
@@ -86,28 +118,28 @@ class FeatureFlags:
     logical_routers:     bool = False   # show logical-routers
     vpn_auto:            bool = False   # show auto-vpn-clusters
 
-    # ── Security ────────────────────────────────────────────────────────
+    # ── Security (unimplemented) ──────────────────────────────────────────────
     decryption_policy:   bool = False   # show decryption-rules / profiles
     dos_protection:      bool = False   # show dos-protection-rules / profiles
     app_override:        bool = False   # show app-override-rules
     profile_groups:      bool = False   # show profile-groups
     url_admin_override:  bool = False   # show url-admin-override
 
-    # ── Identity ────────────────────────────────────────────────────────
+    # ── Identity (unimplemented) ──────────────────────────────────────────────
     authentication:      bool = False   # show authentication-profiles / rules
     certificates:        bool = False   # show certificates / cert-profiles
     local_users:         bool = False   # show local-users / user-groups
 
-    # ── Objects ─────────────────────────────────────────────────────────
+    # ── Objects (unimplemented) ───────────────────────────────────────────────
     app_groups:          bool = False   # show application-groups / filters
+    service_groups:      bool = False   # show service-groups
     schedules:           bool = False   # show schedules
     regions:             bool = False   # show regions
 
-    # ── Device Settings ─────────────────────────────────────────────────
+    # ── Device Settings (unimplemented) ──────────────────────────────────────
     device_settings:     bool = False   # show general-settings / mgmt-interface
-    ha_config:           bool = True    # show high-availability (already shipped)
 
-    # ── Operations ──────────────────────────────────────────────────────
+    # ── Operations (unimplemented) ────────────────────────────────────────────
     onboarding:          bool = False   # device onboarding APIs
 
 

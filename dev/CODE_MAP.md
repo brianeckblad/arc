@@ -9,7 +9,7 @@
   files. Files under app/ with >= 300 lines are mapped.
 -->
 
-## `app/shell.py`  (2565 lines)
+## `app/shell.py`  (2596 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -20,7 +20,7 @@ class ArcCompleter                       139-325        Context-aware tab comple
   ._all_commands()                       319-325        
 _make_key_bindings()                     342-364        Return key bindings for the ARC shell.
 class ShellState                         368-380        
-class ArcShell                           383-2564       Main interactive REPL.
+class ArcShell                           383-2595       Main interactive REPL.
   .__init__()                            386-422        
   ._init_clients()                       428-509        
   ._prompt()                             515-559        Build the prompt string reflecting the active context tier.
@@ -41,31 +41,31 @@ class ArcShell                           383-2564       Main interactive REPL.
   ._cmd_account()                        1541-1668      List or switch named credential profiles.
   ._cmd_configure()                      1674-1694      Enter configure mode (Cisco-style).
   ._cmd_cli()                            1696-1750      Read/write CLI theme settings (configure mode only).
-  ._cmd_feature()                        1756-1812      Show, enable, or disable feature flags at runtime.
-  ._cmd_set()                            1818-1875      Create or modify SCM configuration objects (configure mode only).
-  ._cmd_set_folder()                     1877-1931      Create an SCM folder via the set command.
-  ._cmd_help()                           1937-1956      Print the command reference.
-  ._cmd_help_inline()                    1958-2027      Cisco-style compact inline help — one line per command, no panels.
-  ._cmd_help_docs()                      2029-2063      Show the full documentation page for a command or topic.
-  ._cmd_help_full()                      2065-2093      Print the full command reference regardless of context.
-  ._print_shell_builtins()               2095-2108      Print the shell built-in commands section (shared by inline and full h
-  ._is_command_available()               2110-2119      Return True when a registered command is executable in the current con
-  ._is_config_command()                  2122-2126      Return True when a command should appear in configure-mode `?` help.
-  ._root_verb_options()                  2128-2154      Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
-  ._collapsed_prefix_help_options()      2156-2211      Return collapsed next-token help options for a command prefix.
-  ._collapsed_tier_help_options()        2213-2248      Return collapsed bare-tier help options for one scope.
-  ._context_annotation()                 2250-2271      Return a short inline context note for commands whose output depends o
-  ._print_context_hint_for()             2273-2277      Print a one-line context note below an exact-match docs result.
-  ._execute_api()                        2283-2324      
-  ._execute_remote()                     2330-2371      
-  ._resolve_ssh_command()                2373-2380      Return the concrete SSH command string for a registered command.
-  ._render()                             2386-2462      
-  ._make_context()                       2468-2476      
-  ._styled()                             2483-2491      Wrap *text* in a Rich markup tag for *style*.
-  ._cleanup()                            2493-2497      
-  ._random_goodbye_message()             2500-2518      Return a random goodbye line from app/goodbye.txt.
-  ._print_banner()                       2520-2547      
-  ._print_startup_help()                 2549-2564      Print compact startup command hints shown after SCM connection status.
+  ._cmd_feature()                        1756-1843      Show, enable, or disable feature flags at runtime.
+  ._cmd_set()                            1849-1906      Create or modify SCM configuration objects (configure mode only).
+  ._cmd_set_folder()                     1908-1962      Create an SCM folder via the set command.
+  ._cmd_help()                           1968-1987      Print the command reference.
+  ._cmd_help_inline()                    1989-2058      Cisco-style compact inline help — one line per command, no panels.
+  ._cmd_help_docs()                      2060-2094      Show the full documentation page for a command or topic.
+  ._cmd_help_full()                      2096-2124      Print the full command reference regardless of context.
+  ._print_shell_builtins()               2126-2139      Print the shell built-in commands section (shared by inline and full h
+  ._is_command_available()               2141-2150      Return True when a registered command is executable in the current con
+  ._is_config_command()                  2153-2157      Return True when a command should appear in configure-mode `?` help.
+  ._root_verb_options()                  2159-2185      Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
+  ._collapsed_prefix_help_options()      2187-2242      Return collapsed next-token help options for a command prefix.
+  ._collapsed_tier_help_options()        2244-2279      Return collapsed bare-tier help options for one scope.
+  ._context_annotation()                 2281-2302      Return a short inline context note for commands whose output depends o
+  ._print_context_hint_for()             2304-2308      Print a one-line context note below an exact-match docs result.
+  ._execute_api()                        2314-2355      
+  ._execute_remote()                     2361-2402      
+  ._resolve_ssh_command()                2404-2411      Return the concrete SSH command string for a registered command.
+  ._render()                             2417-2493      
+  ._make_context()                       2499-2507      
+  ._styled()                             2514-2522      Wrap *text* in a Rich markup tag for *style*.
+  ._cleanup()                            2524-2528      
+  ._random_goodbye_message()             2531-2549      Return a random goodbye line from app/goodbye.txt.
+  ._print_banner()                       2551-2578      
+  ._print_startup_help()                 2580-2595      Print compact startup command hints shown after SCM connection status.
 
 ## `app/cli.py`  (1011 lines)
 
@@ -201,7 +201,7 @@ save_config()                            435-506        Persist config: secrets 
 delete_profile()                         509-535        Remove a named profile from config.json and its keychain entries.
 clear_keychain()                         538-567        Remove ARC secrets from the OS keychain.
 
-## `app/commands/setup.py`  (337 lines)
+## `app/commands/setup.py`  (343 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────

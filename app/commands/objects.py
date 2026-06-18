@@ -68,6 +68,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_address,
         ssh_command=None,
         render="address_objects",
+        feature_flag="show_address",
     ),
     "show address-group": CommandDef(
         description="Show address groups in the active folder",
@@ -76,6 +77,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_address_group,
         ssh_command=None,
         render="address_groups",
+        feature_flag="show_address_group",
     ),
     "show service": CommandDef(
         description="Show service objects in the active folder",
@@ -84,6 +86,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_service,
         ssh_command=None,
         render="services",
+        feature_flag="show_service",
     ),
     "show tag": CommandDef(
         description="Show tags in the active folder",
@@ -92,6 +95,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_tag,
         ssh_command=None,
         render="tags",
+        feature_flag="show_tag",
     ),
     "show external-dynamic-list": CommandDef(
         description="Show external dynamic lists (EDLs) in the active folder",
@@ -100,6 +104,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_external_dynamic_list,
         ssh_command=None,
         render="edl_list",
+        feature_flag="show_external_dynamic_list",
     ),
 }
 

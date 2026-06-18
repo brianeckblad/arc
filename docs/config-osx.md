@@ -8,7 +8,7 @@ arc config generate
 
 # 2. Edit the file — replace non-secret REPLACE_WITH_* placeholders
 open "$(arc auth show 2>&1 | grep 'Config file:' | awk '{print $3}')"
-i 
+
 # 3. Run the wizard — migrates secrets to macOS Keychain, writes safe values to disk
 arc auth configure
 ```

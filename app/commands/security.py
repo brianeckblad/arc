@@ -71,6 +71,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_security_policy,
         ssh_command=None,
         render="security_policy",
+        feature_flag="show_security_policy",
     ),
     "show url-categories": CommandDef(
         description="Show custom URL categories in the active folder",
@@ -79,6 +80,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_url_categories,
         ssh_command=None,
         render="url_categories",
+        feature_flag="show_url_categories",
     ),
     "test security-policy-match": CommandDef(
         description=(
@@ -91,6 +93,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_pending_test_security_policy_match,
         ssh_command=_ssh_test_spm,
         render="raw",
+        feature_flag="test_security_policy_match",
     ),
 }
 

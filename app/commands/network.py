@@ -136,6 +136,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_interface_all,
         ssh_command="show interface all",
         render="interfaces",
+        feature_flag="show_interface",
     ),
     "show interface": CommandDef(
         description="Show a specific interface — show interface <name>",
@@ -144,6 +145,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_interface,
         ssh_command=_ssh_interface,
         render="interfaces",
+        feature_flag="show_interface",
     ),
     "show routing route": CommandDef(
         description="Show static routes in the active folder",
@@ -152,6 +154,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_routing_route,
         ssh_command="show routing route",
         render="routes",
+        feature_flag="show_routing",
     ),
     "show routing summary": CommandDef(
         description="Show virtual routers / routing profiles in the active folder",
@@ -160,6 +163,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_routing_summary,
         ssh_command="show routing summary",
         render="dict",
+        feature_flag="show_routing",
     ),
     "show zone": CommandDef(
         description="Show security zones in the active folder",
@@ -168,6 +172,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_zone,
         ssh_command="show zone",
         render="zones",
+        feature_flag="show_zone",
     ),
     "show high-availability all": CommandDef(
         description="Show full HA configuration from the active folder",
@@ -176,6 +181,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_ha_all,
         ssh_command="show high-availability all",
         render="ha",
+        feature_flag="show_high_availability",
     ),
     "show high-availability state": CommandDef(
         description="Show HA state summary from the active folder",
@@ -184,5 +190,6 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_ha_state,
         ssh_command="show high-availability state",
         render="ha",
+        feature_flag="show_high_availability",
     ),
 }

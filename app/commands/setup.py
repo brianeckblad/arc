@@ -289,6 +289,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_devices,
         ssh_command=None,
         render="devices",
+        feature_flag="show_devices",
     ),
     "show device snippets": CommandDef(
         description="Show snippets attached to a device — show device <hostname> snippets",
@@ -297,6 +298,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_device_snippets,
         ssh_command=None,
         render="device_snippets",
+        feature_flag="show_devices",
     ),
     "show device": CommandDef(
         description="Show detail for a device — show device <hostname>  (or 'show device' when cd'd in)",
@@ -305,6 +307,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_device_detail,
         ssh_command=None,
         render="device_detail",
+        feature_flag="show_devices",
     ),
     "show snippets global": CommandDef(
         description="List ALL snippets regardless of device or folder context",
@@ -313,6 +316,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_snippets_global,
         ssh_command=None,
         render="snippets_scoped",
+        feature_flag="show_snippets",
     ),
     "show snippets": CommandDef(
         description=(
@@ -324,6 +328,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_snippets,
         ssh_command=None,
         render="snippets_scoped",
+        feature_flag="show_snippets",
     ),
     "show snippet": CommandDef(
         description="Show full detail for a snippet — show snippet <name>",
@@ -332,5 +337,6 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_snippet_detail,
         ssh_command=None,
         render="snippet_detail",
+        feature_flag="show_snippets",
     ),
 }

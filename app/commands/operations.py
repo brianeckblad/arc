@@ -148,6 +148,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_system_info,
         ssh_command="show system info",
         render="device_detail",
+        feature_flag="show_system_info",
     ),
     "show system resources": CommandDef(
         description="Show live CPU / memory — use --remote for live device data",
@@ -156,6 +157,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_pending_show_system_resources,
         ssh_command="show system resources",
         render="raw",
+        feature_flag="show_system_resources",
     ),
     "show system disk-space": CommandDef(
         description="Show live disk usage — use --remote for live device data",
@@ -164,6 +166,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_pending_show_system_disk_space,
         ssh_command="show system disk-space",
         render="raw",
+        feature_flag="show_system_disk_space",
     ),
     "request system software check": CommandDef(
         description="Check available software updates — use --remote for live data",
@@ -172,6 +175,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_pending_request_software_check,
         ssh_command="request system software check",
         render="raw",
+        feature_flag="request_system_software",
     ),
     "show jobs all": CommandDef(
         description="Show all SCM jobs (TSG-wide)",
@@ -180,6 +184,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_jobs_all,
         ssh_command="show jobs all",
         render="jobs",
+        feature_flag="show_jobs",
     ),
     "show jobs id": CommandDef(
         description="Show a specific job by ID — show jobs id <n>",
@@ -188,6 +193,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_show_jobs_id,
         ssh_command=_ssh_jobs_id,
         render="jobs",
+        feature_flag="show_jobs",
     ),
     "show log system": CommandDef(
         description="Show live system log — use --remote for live device data",
@@ -196,6 +202,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_pending_show_log_system,
         ssh_command="show log system",
         render="raw",
+        feature_flag="show_log_system",
     ),
     "show log traffic": CommandDef(
         description="Show live traffic log — use --remote for live device data",
@@ -204,6 +211,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_pending_show_log_traffic,
         ssh_command="show log traffic",
         render="raw",
+        feature_flag="show_log_traffic",
     ),
     "ping host": CommandDef(
         description="Ping a host from the device — ping host <ip>  (use --remote)",
@@ -212,6 +220,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_pending_ping,
         ssh_command=_ssh_ping,
         render="raw",
+        feature_flag="ping",
     ),
     "commit": CommandDef(
         description="Push candidate config to managed devices — commit [description <text>]",
@@ -220,6 +229,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_commit,
         ssh_command=_ssh_commit,
         render="jobs",
+        feature_flag="commit",
     ),
 }
 
