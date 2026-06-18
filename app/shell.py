@@ -188,6 +188,31 @@ class ArcCompleter(Completer):
                     yield Completion(folder, start_position=-len(partial_arg))
             return
 
+        # ---- feature → subcommand + flag name completion ----
+        if first == "feature" and has_arg_space:
+            second = parts[1].lower() if len(parts) > 1 else ""
+            if len(parts) <= 2:
+                # Complete subcommands: show, enable, disable, help
+                for sub in ("show", "enable", "disable", "help"):
+                    if sub.startswith(partial_arg.lower()):
+                        yield Completion(sub, start_position=-len(partial_arg))
+            elif second in ("enable", "disable") and len(parts) <= 3:
+                # Complete feature flag names from features.py
+                from dataclasses import asdict
+                flag_dict = asdict(self._shell._features)
+                partial_flag = parts[2] if len(parts) > 2 else ""
+                for flag, enabled in sorted(flag_dict.items()):
+                    if flag.startswith(partial_flag.lower()):
+                        # Only suggest flags that make sense for this subcommand
+                        if second == "enable" and not enabled:
+                            meta = "currently OFF"
+                        elif second == "disable" and enabled:
+                            meta = "currently ON"
+                        else:
+                            meta = "on" if enabled else "off"
+                        yield Completion(flag, start_position=-len(partial_flag), display_meta=meta)
+            return
+
         # ---- configure → mode-entry completion ----
         if first == "configure" and has_arg_space:
             for sub in ("t", "terminal"):
@@ -633,7 +658,7 @@ class ArcShell:
             question_idx = tokens.index("?")
             prefix_tokens = tokens[:question_idx]
             if prefix_tokens:
-                # Special case: `set ?` / `delete ?` in configure mode → show write ops.
+                # Special case: `set ?` / `delete ?` / `update ?` in configure mode.
                 if prefix_tokens[0].lower() == "set" and self._state.configure_mode:
                     self._cmd_set(prefix_tokens[1:] + ["?"])
                     return False
@@ -642,6 +667,11 @@ class ArcShell:
                     return False
                 if prefix_tokens[0].lower() == "update" and self._state.configure_mode:
                     self._cmd_show_write_help("update")
+                    return False
+                # Special case: `feature ?` / `feature enable ?` / `feature disable ?`
+                # → route to _cmd_feature so it can list available flags.
+                if prefix_tokens[0].lower() == "feature":
+                    self._cmd_feature(prefix_tokens[1:] + ["?"])
                     return False
                 self._pending_default = " ".join(prefix_tokens) + " "
                 self._cmd_help_inline(prefix_tokens)
@@ -1792,9 +1822,12 @@ class ArcShell:
         """Show, enable, or disable feature flags at runtime.
 
         Subcommands:
-          feature show                 — list all flags and their current state
+          feature show                 — list all flags grouped by shipped/unimplemented
           feature enable <flag>        — turn a flag on for this session
           feature disable <flag>       — turn a flag off for this session
+          feature ?                    — show this usage summary
+          feature enable ?             — list all flags that are currently disabled
+          feature disable ?            — list all flags that are currently enabled
 
         Changes take effect immediately but are session-only unless you edit
         config/features.json.  Use 'feature help' for the full docs page.
@@ -1802,6 +1835,67 @@ class ArcShell:
         from dataclasses import asdict
 
         sub = args[0].lower() if args else "show"
+
+        # ── ? suffix handling ─────────────────────────────────────────────────
+        # `feature ?`          → show subcommand usage
+        # `feature enable ?`   → list flags currently OFF (candidates to enable)
+        # `feature disable ?`  → list flags currently ON (candidates to disable)
+        if sub == "?":
+            t = self._theme
+            console.print()
+            console.print(f"  [bold yellow]feature[/bold yellow]  [dim]— feature flag management[/dim]")
+            console.print()
+            console.print(f"  [cyan]feature show[/cyan]           List all flags with current on/off status")
+            console.print(f"  [cyan]feature enable <flag>[/cyan]  Turn a flag on for this session")
+            console.print(f"  [cyan]feature disable <flag>[/cyan] Turn a flag off for this session")
+            console.print(f"  [cyan]feature help[/cyan]           Open full feature flag documentation")
+            console.print()
+            console.print(f"  [dim]feature enable ?   → list flags that are OFF (can be enabled)[/dim]")
+            console.print(f"  [dim]feature disable ?  → list flags that are ON  (can be disabled)[/dim]")
+            console.print(f"  [dim]feature show       → full list with shipped/unimplemented grouping[/dim]")
+            console.print()
+            return
+
+        if sub in ("enable", "disable") and len(args) >= 2 and args[1] == "?":
+            flag_dict = asdict(self._features)
+            from app.features import FeatureFlags as _FF
+            defaults = asdict(_FF())
+            from app.commands.registry import COMMANDS as _CMDS
+            flag_to_cmds: dict[str, list[str]] = {}
+            for cmd_key, cmd_def in _CMDS.items():
+                if cmd_def.feature_flag:
+                    flag_to_cmds.setdefault(cmd_def.feature_flag, []).append(cmd_key)
+            t = self._theme
+            console.print()
+            if sub == "enable":
+                candidates = {k: v for k, v in flag_dict.items() if not v}
+                console.print(f"  [bold yellow]feature enable <flag>[/bold yellow]  [dim]— flags currently OFF (disabled)[/dim]")
+                console.print(f"  [dim]  Run:  feature enable <flag>  to turn one on for this session[/dim]")
+                console.print(f"  [dim]  Persist: add to config/features.json[/dim]")
+            else:
+                candidates = {k: v for k, v in flag_dict.items() if v}
+                console.print(f"  [bold yellow]feature disable <flag>[/bold yellow]  [dim]— flags currently ON (enabled)[/dim]")
+            console.print()
+            if not candidates:
+                console.print(f"  [dim]No flags are currently {'disabled' if sub == 'enable' else 'enabled'}.[/dim]")
+            else:
+                # Group by shipped vs unimplemented
+                shipped_off   = {k for k, v in candidates.items() if defaults.get(k, False)}
+                unimpl_off    = {k for k in candidates if k not in shipped_off}
+                if shipped_off:
+                    console.print(f"  [cyan]Shipped commands[/cyan]  [dim](default: on)[/dim]")
+                    for flag in sorted(shipped_off):
+                        cmds = ", ".join(sorted(flag_to_cmds.get(flag, []))) or "—"
+                        console.print(f"    [bold]{flag:<35}[/bold]  [dim]{cmds}[/dim]")
+                if unimpl_off:
+                    console.print(f"  [cyan]Unimplemented / development[/cyan]  [dim](default: off)[/dim]")
+                    for flag in sorted(unimpl_off):
+                        cmds = ", ".join(sorted(flag_to_cmds.get(flag, []))) or "—"
+                        console.print(f"    [bold]{flag:<35}[/bold]  [dim]{cmds}[/dim]")
+            console.print()
+            console.print(f"  [dim]feature enable <flag>  |  feature disable <flag>  |  feature show[/dim]")
+            console.print()
+            return
 
         if sub == "help":
             from app.docs import render_help_topic as _rht
@@ -1855,7 +1949,9 @@ class ArcShell:
 
         if sub in ("enable", "disable"):
             if len(args) < 2:
+                # No flag name given — show what's available
                 console.print(f"[yellow]Usage:[/yellow] feature {sub} <flag_name>")
+                console.print(f"  Tip: [bold]feature {sub} ?[/bold]  lists all flags that can be {sub}d")
                 return
             flag_name = args[1].lower()
             from dataclasses import asdict
@@ -1863,7 +1959,8 @@ class ArcShell:
                 all_flags = sorted(asdict(self._features).keys())
                 console.print(
                     f"[red]Unknown feature flag:[/red] {flag_name!r}\n"
-                    f"  Available flags: {', '.join(all_flags)}"
+                    f"  Run [bold]feature enable ?[/bold] to see all available flags.\n"
+                    f"  All flags: {', '.join(all_flags)}"
                 )
                 return
             new_val = (sub == "enable")

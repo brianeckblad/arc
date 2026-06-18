@@ -9,64 +9,64 @@
   files. Files under app/ with >= 300 lines are mapped.
 -->
 
-## `app/shell.py`  (2665 lines)
+## `app/shell.py`  (2762 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _expand_unambiguous_prefix()             100-132        Expand command-token prefixes when they resolve to exactly one phrase.
-class ArcCompleter                       139-325        Context-aware tab completer.
+class ArcCompleter                       139-350        Context-aware tab completer.
   .__init__()                            148-149        
-  .get_completions()                     151-317        
-  ._all_commands()                       319-325        
-_make_key_bindings()                     342-364        Return key bindings for the ARC shell.
-class ShellState                         368-380        
-class ArcShell                           383-2664       Main interactive REPL.
-  .__init__()                            386-422        
-  ._init_clients()                       428-509        
-  ._prompt()                             515-559        Build the prompt string reflecting the active context tier.
-  .run()                                 565-588        
-  ._dispatch()                           594-789        Process one input line.  Returns True when the user wants to exit ARC.
-  ._cmd_cd()                             795-849        Unified context navigation — device or folder.
-  ._cmd_cd_device()                      851-902        Switch the active SCM/API device context to *target*.
-  ._find_device()                        904-920        Find a device in the cache by hostname, serial, name, or IP.
-  ._refresh_devices()                    922-938        Fetch managed devices and populate the cache used by tab completion an
-  ._refresh_folders()                    940-950        Fetch SCM folder names and populate the cache used by 'folder' tab com
-  ._refresh_tsgs()                       952-967        Fetch TSG entries from SCM IAM and populate the cache used by 'tsg' ta
-  ._cmd_connect()                        973-1067       Connect to a device via SSH and hand the terminal over to the remote s
-  ._run_interactive_shell()              1073-1166      Hand the terminal over to *channel* for a fully interactive SSH sessio
-  ._cmd_pwd()                            1175-1219      Show current device context, active SCM folder, TSG, and SSH credentia
-  ._cmd_folder()                         1225-1315      Set or display the active SCM folder context.
-  ._cmd_folder_create()                  1321-1441      Interactive folder creation: prompt for a parent, confirm, and POST to
-  ._cmd_tsg()                            1449-1570      Switch the active Tenant Services Group (TSG) context.
-  ._cmd_account()                        1576-1703      List or switch named credential profiles.
-  ._cmd_configure()                      1709-1729      Enter configure mode (Cisco-style).
-  ._cmd_cli()                            1731-1785      Read/write CLI theme settings (configure mode only).
-  ._cmd_feature()                        1791-1878      Show, enable, or disable feature flags at runtime.
-  ._cmd_set()                            1884-1941      Create or modify SCM configuration objects (configure mode only).
-  ._cmd_set_folder()                     1943-1997      Create an SCM folder via the set command.
-  ._cmd_help()                           2003-2022      Print the command reference.
-  ._cmd_help_inline()                    2024-2093      Cisco-style compact inline help — one line per command, no panels.
-  ._cmd_help_docs()                      2095-2129      Show the full documentation page for a command or topic.
-  ._cmd_help_full()                      2131-2159      Print the full command reference regardless of context.
-  ._cmd_show_write_help()                2161-2183      Show available delete/update commands in configure mode.
-  ._print_shell_builtins()               2185-2198      Print the shell built-in commands section (shared by inline and full h
-  ._is_command_available()               2200-2209      Return True when a registered command is executable in the current con
-  ._is_config_command()                  2212-2216      Return True when a command should appear in configure-mode `?` help.
-  ._root_verb_options()                  2218-2246      Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
-  ._collapsed_prefix_help_options()      2248-2303      Return collapsed next-token help options for a command prefix.
-  ._collapsed_tier_help_options()        2305-2340      Return collapsed bare-tier help options for one scope.
-  ._context_annotation()                 2342-2363      Return a short inline context note for commands whose output depends o
-  ._print_context_hint_for()             2365-2369      Print a one-line context note below an exact-match docs result.
-  ._execute_api()                        2375-2424      
-  ._execute_remote()                     2430-2471      
-  ._resolve_ssh_command()                2473-2480      Return the concrete SSH command string for a registered command.
-  ._render()                             2486-2562      
-  ._make_context()                       2568-2576      
-  ._styled()                             2583-2591      Wrap *text* in a Rich markup tag for *style*.
-  ._cleanup()                            2593-2597      
-  ._random_goodbye_message()             2600-2618      Return a random goodbye line from app/goodbye.txt.
-  ._print_banner()                       2620-2647      
-  ._print_startup_help()                 2649-2664      Print compact startup command hints shown after SCM connection status.
+  .get_completions()                     151-342        
+  ._all_commands()                       344-350        
+_make_key_bindings()                     367-389        Return key bindings for the ARC shell.
+class ShellState                         393-405        
+class ArcShell                           408-2761       Main interactive REPL.
+  .__init__()                            411-447        
+  ._init_clients()                       453-534        
+  ._prompt()                             540-584        Build the prompt string reflecting the active context tier.
+  .run()                                 590-613        
+  ._dispatch()                           619-819        Process one input line.  Returns True when the user wants to exit ARC.
+  ._cmd_cd()                             825-879        Unified context navigation — device or folder.
+  ._cmd_cd_device()                      881-932        Switch the active SCM/API device context to *target*.
+  ._find_device()                        934-950        Find a device in the cache by hostname, serial, name, or IP.
+  ._refresh_devices()                    952-968        Fetch managed devices and populate the cache used by tab completion an
+  ._refresh_folders()                    970-980        Fetch SCM folder names and populate the cache used by 'folder' tab com
+  ._refresh_tsgs()                       982-997        Fetch TSG entries from SCM IAM and populate the cache used by 'tsg' ta
+  ._cmd_connect()                        1003-1097      Connect to a device via SSH and hand the terminal over to the remote s
+  ._run_interactive_shell()              1103-1196      Hand the terminal over to *channel* for a fully interactive SSH sessio
+  ._cmd_pwd()                            1205-1249      Show current device context, active SCM folder, TSG, and SSH credentia
+  ._cmd_folder()                         1255-1345      Set or display the active SCM folder context.
+  ._cmd_folder_create()                  1351-1471      Interactive folder creation: prompt for a parent, confirm, and POST to
+  ._cmd_tsg()                            1479-1600      Switch the active Tenant Services Group (TSG) context.
+  ._cmd_account()                        1606-1733      List or switch named credential profiles.
+  ._cmd_configure()                      1739-1759      Enter configure mode (Cisco-style).
+  ._cmd_cli()                            1761-1815      Read/write CLI theme settings (configure mode only).
+  ._cmd_feature()                        1821-1975      Show, enable, or disable feature flags at runtime.
+  ._cmd_set()                            1981-2038      Create or modify SCM configuration objects (configure mode only).
+  ._cmd_set_folder()                     2040-2094      Create an SCM folder via the set command.
+  ._cmd_help()                           2100-2119      Print the command reference.
+  ._cmd_help_inline()                    2121-2190      Cisco-style compact inline help — one line per command, no panels.
+  ._cmd_help_docs()                      2192-2226      Show the full documentation page for a command or topic.
+  ._cmd_help_full()                      2228-2256      Print the full command reference regardless of context.
+  ._cmd_show_write_help()                2258-2280      Show available delete/update commands in configure mode.
+  ._print_shell_builtins()               2282-2295      Print the shell built-in commands section (shared by inline and full h
+  ._is_command_available()               2297-2306      Return True when a registered command is executable in the current con
+  ._is_config_command()                  2309-2313      Return True when a command should appear in configure-mode `?` help.
+  ._root_verb_options()                  2315-2343      Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
+  ._collapsed_prefix_help_options()      2345-2400      Return collapsed next-token help options for a command prefix.
+  ._collapsed_tier_help_options()        2402-2437      Return collapsed bare-tier help options for one scope.
+  ._context_annotation()                 2439-2460      Return a short inline context note for commands whose output depends o
+  ._print_context_hint_for()             2462-2466      Print a one-line context note below an exact-match docs result.
+  ._execute_api()                        2472-2521      
+  ._execute_remote()                     2527-2568      
+  ._resolve_ssh_command()                2570-2577      Return the concrete SSH command string for a registered command.
+  ._render()                             2583-2659      
+  ._make_context()                       2665-2673      
+  ._styled()                             2680-2688      Wrap *text* in a Rich markup tag for *style*.
+  ._cleanup()                            2690-2694      
+  ._random_goodbye_message()             2697-2715      Return a random goodbye line from app/goodbye.txt.
+  ._print_banner()                       2717-2744      
+  ._print_startup_help()                 2746-2761      Print compact startup command hints shown after SCM connection status.
 
 ## `app/commands/objects.py`  (1267 lines)
 
