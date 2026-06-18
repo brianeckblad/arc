@@ -688,6 +688,10 @@ class ArcShell:
             self._cmd_cli(tokens[1:])
             return False
 
+        if cmd == "feature":
+            self._cmd_feature(tokens[1:])
+            return False
+
         if cmd in ("help", "?"):
             rest = tokens[1:]
             if rest and rest[0].lower() == "all":
@@ -1698,8 +1702,66 @@ class ArcShell:
         )
 
     # ------------------------------------------------------------------
-    # Command: help
+    # Command: feature
     # ------------------------------------------------------------------
+
+    def _cmd_feature(self, args: list[str]) -> None:
+        """Show, enable, or disable feature flags at runtime.
+
+        Subcommands:
+          feature show                 — list all flags and their current state
+          feature enable <flag>        — turn a flag on for this session
+          feature disable <flag>       — turn a flag off for this session
+
+        Changes take effect immediately but are session-only unless you edit
+        config/features.json.  Use 'feature help' for the full docs page.
+        """
+        from dataclasses import asdict
+
+        sub = args[0].lower() if args else "show"
+
+        if sub == "help":
+            from app.docs import render_help_topic as _rht
+            if not _rht(console, "features"):
+                console.print("[dim]No docs found for 'features' — run 'help features'.[/dim]")
+            return
+
+        if sub == "show":
+            flag_dict = asdict(self._features)
+            console.print()
+            console.print(f"  [bold yellow]Feature Flags[/bold yellow]  [dim]— session state (edit config/features.json to persist)[/dim]")
+            console.print()
+            for flag, enabled in sorted(flag_dict.items()):
+                status  = "[green]  enabled[/green]" if enabled else "[red] disabled[/red]"
+                console.print(f"    {flag:<30} {status}")
+            console.print()
+            console.print("  [dim]  feature enable <flag>  |  feature disable <flag>  |  feature help[/dim]")
+            console.print()
+            return
+
+        if sub in ("enable", "disable"):
+            if len(args) < 2:
+                console.print(f"[yellow]Usage:[/yellow] feature {sub} <flag_name>")
+                return
+            flag_name = args[1].lower()
+            from dataclasses import asdict
+            if flag_name not in asdict(self._features):
+                all_flags = sorted(asdict(self._features).keys())
+                console.print(
+                    f"[red]Unknown feature flag:[/red] {flag_name!r}\n"
+                    f"  Available flags: {', '.join(all_flags)}"
+                )
+                return
+            new_val = (sub == "enable")
+            setattr(self._features, flag_name, new_val)
+            state = "[green]enabled[/green]" if new_val else "[red]disabled[/red]"
+            console.print(f"  {flag_name}  →  {state}  [dim](session only — edit config/features.json to persist)[/dim]")
+            return
+
+        console.print(
+            f"[yellow]Unknown feature subcommand:[/yellow] {sub!r}\n"
+            "  Usage: feature show | feature enable <flag> | feature disable <flag>"
+        )
 
     def _cmd_help(self, args: list[str]) -> None:
         """Print the command reference.
@@ -1774,50 +1836,25 @@ class ArcShell:
                     )
             return
 
-        # --- Bare ? or help — compact 3-tier listing ---
+        # --- Bare ? or help — Cisco/Palo-style root prompt listing ---
+        #
+        # Shows only the top-level verb stems (show, commit, ping, test, request)
+        # and SHELL builtins — just like the Palo/Cisco root prompt.  Operators
+        # drill down with "show ?" to see sub-commands.  FOLDER and DEVICE tiers
+        # are intentionally omitted here so the initial view stays clean.
         sh = t.section_header
         dd = t.description_dim
 
         console.print()
 
-        # Tier 1: GLOBAL — collapsed to concise stems (e.g. `show jobs`).
-        global_options = self._collapsed_tier_help_options(scope="global")
-        if global_options:
-            console.print(f"  {self._styled('GLOBAL', sh)}  {self._styled('— always available', dd)}")
-            for token, desc in global_options:
-                cmd_cell = self._styled(f"{token:<{_HELP_CMD_WIDTH}}", t.command_name)
-                desc_text = self._styled(desc, t.description) if (desc and t.description) else desc
-                console.print(f"    {cmd_cell} {desc_text}".rstrip())
-
-        # Tier 2: FOLDER — collapsed to concise stems (e.g. `show address`).
-        folder_options = self._collapsed_tier_help_options(scope="folder")
-        if folder_options:
-            if folder.lower() != "shared":
-                folder_label = (
-                    f"{self._styled('FOLDER', sh)}  "
-                    f"{self._styled(f'— folder: {folder}', dd)}"
-                )
-            else:
-                scope_hint = f"— folder: {folder}  (use 'folder <name>' to scope)"
-                folder_label = (
-                    f"{self._styled('FOLDER', sh)}  "
-                    f"{self._styled(scope_hint, dd)}"
-                )
-            console.print(f"\n  {folder_label}")
-            for token, desc in folder_options:
-                cmd_cell = self._styled(f"{token:<{_HELP_CMD_WIDTH}}", t.command_name)
-                desc_text = self._styled(desc, t.description) if (desc and t.description) else desc
-                console.print(f"    {cmd_cell} {desc_text}".rstrip())
-
-        # Tier 3: DEVICE — collapsed to concise stems.
-        device_options = self._collapsed_tier_help_options(scope="device")
-        if device_options:
-            console.print(
-                f"\n  {self._styled('DEVICE', sh)}  "
-                f"{self._styled(f'— device: {device_name}', dd)}"
-            )
-            for token, desc in device_options:
-                cmd_cell = self._styled(f"{token:<{_HELP_CMD_WIDTH}}", t.command_name)
+        # Collect top-level verb stems from ALL scopes that are currently available.
+        # We deduplicate by first token, so "show address" and "show devices" both
+        # collapse to just "show".  We annotate "show" with a brief group description.
+        root_verbs = self._root_verb_options()
+        if root_verbs:
+            console.print(f"  {self._styled('COMMANDS', sh)}  {self._styled('— type <verb> ? for sub-commands', dd)}")
+            for verb, desc in root_verbs:
+                cmd_cell = self._styled(f"{verb:<{_HELP_CMD_WIDTH}}", t.command_name)
                 desc_text = self._styled(desc, t.description) if (desc and t.description) else desc
                 console.print(f"    {cmd_cell} {desc_text}".rstrip())
 
@@ -1825,7 +1862,7 @@ class ArcShell:
 
         console.print()
         console.print(
-            f"  {self._styled('<command> help  → full docs page  |  help all        → complete reference', dd)}"
+            f"  {self._styled('show ?  → sub-commands  |  <cmd> help  → full docs  |  help all  → complete reference', dd)}"
         )
         console.print()
 
@@ -1925,6 +1962,47 @@ class ArcShell:
         del cmd_def
         # Configure mode keeps write workflows and read-only show navigation.
         return key == "commit" or key.startswith("show ")
+
+    def _root_verb_options(self) -> list[tuple[str, str]]:
+        """Return top-level verb stems for bare `?` — Cisco/Palo root-prompt style.
+
+        Collapses every available command down to its first token, then deduplicates.
+        'show devices', 'show address', 'show jobs' → just one entry: 'show'.
+        Single-token commands like 'commit' keep their description.
+
+        Verbs with multiple commands get a generic group description.
+        """
+        # Group descriptions for common verb groups
+        _VERB_GROUP_DESC: dict[str, str] = {
+            "show":    "Show configuration and status (type 'show ?' for sub-commands)",
+            "commit":  "Push candidate config to managed devices",
+            "ping":    "Ping a host from the device",
+            "test":    "Run policy-match and other tests",
+            "request": "Request system operations",
+        }
+
+        verb_counts: dict[str, int] = {}
+        verb_single_desc: dict[str, str] = {}
+
+        for key, cmd_def in COMMANDS.items():
+            if not self._is_command_available(key, cmd_def):
+                continue
+            if self._state.configure_mode and not self._is_config_command(key, cmd_def):
+                continue
+            verb = key.split()[0]
+            verb_counts[verb] = verb_counts.get(verb, 0) + 1
+            verb_single_desc[verb] = cmd_def.description  # last wins for multi-cmd verbs
+
+        options: list[tuple[str, str]] = []
+        for verb in sorted(verb_counts):
+            count = verb_counts[verb]
+            if count > 1 or verb in _VERB_GROUP_DESC:
+                desc = _VERB_GROUP_DESC.get(verb, f"({count} sub-commands — type '{verb} ?' to expand)")
+            else:
+                desc = verb_single_desc.get(verb, "")
+            options.append((verb, desc))
+
+        return options
 
     def _collapsed_prefix_help_options(
         self,

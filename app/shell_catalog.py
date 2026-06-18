@@ -32,6 +32,7 @@ SHELL_BUILTINS: tuple[str, ...] = (
     "pwd",
     "folder", "tsg", "account",
     "configure", "cli",
+    "feature",
     "clear", "exit", "quit",
     "help", "?",
 )
@@ -50,6 +51,7 @@ SHELL_HELP_ROWS: tuple[ShellBuiltinHelp, ...] = (
     ShellBuiltinHelp("account <name>",       "List or switch credential profiles  (Tab -> profile names)"),
     ShellBuiltinHelp("configure",            "Enter configure mode  (arc:global #)", hide_in_configure=True),
     ShellBuiltinHelp("cli <subcommand>",     "CLI theme operations in configure mode  (show | color | reset)", configure_only=True),
+    ShellBuiltinHelp("feature <subcommand>", "Feature flags  (show | enable <flag> | disable <flag>)"),
     ShellBuiltinHelp("pwd",                  "Show device, folder, TSG, and active account"),
     ShellBuiltinHelp("docs",                 "Open docs in browser"),
     ShellBuiltinHelp("clear",                "Clear the terminal screen"),

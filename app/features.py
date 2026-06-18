@@ -46,6 +46,26 @@ class FeatureFlags:
 
     Default=True   → shipped, on for everyone
     Default=False  → in development; enable locally via config/features.json
+
+    Object families already shipped (no flag — always enabled):
+
+    ADDRESS OBJECTS:
+      show address               → all types: ip-netmask, ip-range, ip-wildcard, fqdn
+      show address-group         → static groups and dynamic (tag-based) groups
+      Subtypes: ip-netmask (10.1.0.0/24), ip-range (10.1.0.1-10.1.0.10),
+                ip-wildcard (10.1.0.0/255.0.255.0), fqdn (*.example.com)
+
+    SERVICE OBJECTS:
+      show service               → tcp/udp port-based services
+      Subtypes: tcp, udp, application-default, any-port, port-range
+
+    TAGS:
+      show tag                   → all tags (used for dynamic address groups)
+
+    EDLs:
+      show external-dynamic-list → ip, domain, url, imsi, imei types
+
+    Use `help features` inside ARC for the full flag reference with enabled/disabled status.
     """
 
     # ── Implemented & shipped (always on) ──────────────────────────────
