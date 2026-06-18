@@ -149,7 +149,15 @@ class ArcCompleter(Completer):
         self._shell = shell
 
     def get_completions(self, document, complete_event):
-        text = document.text_before_cursor.lstrip()
+        raw = document.text_before_cursor.lstrip()
+        # Normalize internal whitespace: multiple spaces and tabs → single space.
+        # Preserve whether the user just pressed space/tab (trailing whitespace = new token).
+        import re as _re
+        ends_with_space = bool(raw) and raw[-1] in (" ", "\t")
+        text = _re.sub(r"[ \t]+", " ", raw).strip()
+        if ends_with_space:
+            text = text + " "  # restore single trailing space for has_arg_space detection
+
         parts = text.split()
 
         if not parts:
@@ -162,8 +170,39 @@ class ArcCompleter(Completer):
         has_arg_space = len(parts) > 1 or text.endswith(" ")
         partial_arg = parts[1] if len(parts) > 1 else ""
 
-        # ---- cd / remote / connect → device name completion ----
+        # ---- cd / remote / connect → device name or subcommand completion ----
         if first in ("cd", "remote", "connect") and has_arg_space:
+            second = parts[1].lower() if len(parts) > 1 else ""
+            # cd device / cd folder sub-commands
+            if first == "cd" and len(parts) <= 2:
+                for sub in ("device", "folder", "..", "/"):
+                    if sub.startswith(partial_arg.lower()):
+                        meta = "set device context" if sub == "device" else (
+                               "set folder scope" if sub == "folder" else "clear context"
+                        )
+                        yield Completion(sub, start_position=-len(partial_arg), display_meta=meta)
+                # Also offer device names directly (backward compat)
+                for device in self._shell._state.devices_cache:
+                    candidate = device.get("hostname") or device.get("name") or ""
+                    if candidate and candidate.lower().startswith(partial_arg.lower()):
+                        yield Completion(candidate, start_position=-len(partial_arg), display_meta="device")
+                return
+            # cd device <name> → complete device name
+            if first == "cd" and second == "device":
+                partial_name = parts[2] if len(parts) > 2 else ""
+                for device in self._shell._state.devices_cache:
+                    candidate = device.get("hostname") or device.get("name") or ""
+                    if candidate and candidate.lower().startswith(partial_name.lower()):
+                        yield Completion(candidate, start_position=-len(partial_name))
+                return
+            # cd folder <name> → complete folder name
+            if first == "cd" and second == "folder":
+                partial_folder = parts[2] if len(parts) > 2 else ""
+                for folder in self._shell._state.folders_cache:
+                    if folder.lower().startswith(partial_folder.lower()):
+                        yield Completion(folder, start_position=-len(partial_folder))
+                return
+            # remote/connect → device names
             for device in self._shell._state.devices_cache:
                 candidate = device.get("hostname") or device.get("name") or ""
                 if candidate and candidate.lower().startswith(partial_arg.lower()):
@@ -622,6 +661,9 @@ class ArcShell:
 
     def _dispatch(self, line: str) -> bool:
         """Process one input line.  Returns True when the user wants to exit ARC."""
+        # Normalize whitespace: collapse tabs and multiple spaces to a single space.
+        import re as _re
+        line = _re.sub(r"[ \t]+", " ", line).strip()
         # Strip --remote flag before any other parsing
         remote = False
         tokens = line.split()
