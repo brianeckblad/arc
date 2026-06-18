@@ -638,8 +638,11 @@ class ArcShell:
                     self._cmd_set(prefix_tokens[1:] + ["?"])
                     return False
                 if prefix_tokens[0].lower() == "delete" and self._state.configure_mode:
-                    # Trigger delete ? display via the dispatch block
-                    return self._dispatch("delete ?")
+                    self._cmd_show_write_help("delete")
+                    return False
+                if prefix_tokens[0].lower() == "update" and self._state.configure_mode:
+                    self._cmd_show_write_help("update")
+                    return False
                 self._pending_default = " ".join(prefix_tokens) + " "
                 self._cmd_help_inline(prefix_tokens)
                 return False
@@ -702,30 +705,16 @@ class ArcShell:
             self._cmd_feature(tokens[1:])
             return False
 
-        if cmd in ("set", "delete"):
-            # `delete ?` — show deletable object types
-            if cmd == "delete" and len(tokens) >= 2 and tokens[1] == "?":
-                t = self._theme
-                dd = t.description_dim
-                delete_cmds = [
-                    (k, v.description) for k, v in COMMANDS.items()
-                    if k.startswith("delete ") and self._is_command_available(k, v)
-                ]
-                console.print()
-                console.print(f"  [bold yellow]delete — Remove configuration objects[/bold yellow]  [dim](configure mode)[/dim]")
-                console.print()
-                if delete_cmds:
-                    for k, desc in sorted(delete_cmds):
-                        cmd_cell = self._styled(f"{k:<50}", t.command_name)
-                        console.print(f"    {cmd_cell} {self._styled(desc, dd)}")
+        if cmd in ("set", "delete", "update"):
+            # Bare verb ? — show available commands for that verb
+            if len(tokens) >= 2 and tokens[1] == "?":
+                if cmd == "set":
+                    self._cmd_set(["?"])
                 else:
-                    console.print("  [dim]No delete commands enabled.  Enable via features.json.[/dim]")
-                console.print()
+                    self._cmd_show_write_help(cmd)
                 return False
 
-            # Check the registry first — set address, delete service, etc.
-            # are registered CommandDef entries that route through _execute_api.
-            # Only fall through to the shell builtin for: set ?, set folder, bare set.
+            # Route set/delete/update to registry if subcommand is not a builtin
             if len(tokens) >= 2 and tokens[1].lower() not in ("?", "folder"):
                 key, cmd_def, cmd_args = match_command(tokens)
                 if key is not None:
@@ -737,7 +726,13 @@ class ArcShell:
             if cmd == "set":
                 self._cmd_set(tokens[1:])
                 return False
-            # delete with no registry match → friendly error
+            if cmd == "update":
+                console.print(
+                    f"[yellow]Unknown update target:[/yellow] [bold]{' '.join(tokens[1:])}[/bold]\n"
+                    "  Type [bold]update ?[/bold] to see updatable object types."
+                )
+                return False
+            # delete with no registry match
             console.print(
                 f"[yellow]Unknown delete target:[/yellow] [bold]{' '.join(tokens[1:])}[/bold]\n"
                 "  Type [bold]delete ?[/bold] to see deletable object types."
@@ -2163,6 +2158,30 @@ class ArcShell:
         self._print_shell_builtins()
         console.print()
 
+    def _cmd_show_write_help(self, verb: str) -> None:
+        """Show available delete/update commands in configure mode."""
+        t = self._theme
+        dd = t.description_dim
+        _LABELS = {
+            "delete": ("delete — Remove configuration objects", "No delete commands enabled. Enable flags: feature enable delete_objects"),
+            "update": ("update — Modify existing objects (GET→merge→PUT)", "No update commands enabled. Run: feature enable update_objects"),
+        }
+        label, empty_msg = _LABELS.get(verb, (verb, f"No {verb} commands enabled."))
+        matching = [
+            (k, v.description) for k, v in COMMANDS.items()
+            if k.startswith(f"{verb} ") and self._is_command_available(k, v)
+        ]
+        console.print()
+        console.print(f"  [bold yellow]{label}[/bold yellow]  [dim](configure mode)[/dim]")
+        console.print()
+        if matching:
+            for k, desc in sorted(matching):
+                cmd_cell = self._styled(f"{k:<50}", t.command_name)
+                console.print(f"    {cmd_cell} {self._styled(desc, dd)}")
+        else:
+            console.print(f"  [dim]{empty_msg}[/dim]")
+        console.print()
+
     def _print_shell_builtins(self) -> None:
         """Print the shell built-in commands section (shared by inline and full help)."""
         t = self._theme
@@ -2213,9 +2232,10 @@ class ArcShell:
             verb = key.split()[0]
             verb_counts[verb] = verb_counts.get(verb, 0) + 1
 
-        # In configure mode, always show 'set' and 'delete' as primary write verbs.
+        # In configure mode, always show 'set', 'update', and 'delete' as primary write verbs.
         if self._state.configure_mode:
             verb_counts.setdefault("set", 1)
+            verb_counts.setdefault("update", 1)
             verb_counts.setdefault("delete", 1)
 
         options: list[tuple[str, str]] = []
@@ -2371,8 +2391,8 @@ class ArcShell:
             )
             return
 
-        # All set/delete registered commands are write operations — block outside configure mode.
-        if (key.startswith("set ") or key.startswith("delete ")) and not self._state.configure_mode:
+        # All set/delete/update registered commands are write operations — block outside configure mode.
+        if (key.startswith(("set ", "delete ", "update "))) and not self._state.configure_mode:
             console.print(
                 f"[yellow]Write operation blocked:[/yellow] [bold]{key}[/bold] requires configure mode.\n"
                 "  Enter [bold]configure[/bold] first, then retry."

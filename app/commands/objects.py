@@ -868,3 +868,399 @@ _WRITE_COMMANDS: dict[str, CommandDef] = {
 
 COMMANDS.update(_WRITE_COMMANDS)
 
+
+# ---------------------------------------------------------------------------
+# Update handlers — configure mode, GET→merge→PUT via SCM API
+#
+# Pattern for every update handler:
+#   1. GET the current object by name (to get its ID and all current fields)
+#   2. Apply only the fields the user specified (leaving others unchanged)
+#   3. PUT the merged full object back
+#
+# This matches PAN-OS semantics: `set address HOST description "new"` only
+# changes the description — the IP/type/tags remain as they were.
+# ---------------------------------------------------------------------------
+
+def _merge_common_fields(obj: dict, args: dict, pos: list[str], pos_start: int) -> None:
+    """Apply description, tag changes from args/positionals onto an existing object dict."""
+    kv = _parse_kv_tail(pos, pos_start)
+    if args.get("description") or kv.get("description"):
+        obj["description"] = args.get("description") or kv["description"]
+    new_tags = [t for t in [args.get("tag"), kv.get("tag")] if t]
+    if new_tags:
+        obj["tag"] = new_tags
+
+
+def _update_address(ctx: ExecutionContext, args: dict) -> Any:
+    """Update an existing address object (GET→merge→PUT).
+
+    Changes only the fields you specify — unspecified fields are unchanged.
+
+    Syntax:
+      update address <name> ip-netmask  <new-value>
+      update address <name> ip-range    <new-value>
+      update address <name> ip-wildcard <new-value>
+      update address <name> fqdn        <new-value>
+      update address <name> description <text>
+      update address <name> tag         <name>
+
+    Changing the address type replaces the old type field entirely.
+
+    Examples:
+      update address WebServer   ip-netmask  10.1.2.4/32
+      update address DMZ-Subnet  description "Updated DMZ range"
+      update address API-Host    fqdn        api2.example.com
+      update address OldHost     tag         Decommissioned
+
+    pan.dev: PUT /config/objects/v1/addresses/{id}
+    """
+    scm = require_scm(ctx)
+    pos = args.get("_positional", [])
+    name = pos[0] if pos else (args.get("name") or "")
+    if not name:
+        raise ValueError(
+            "Usage: update address <name> <field> <value>\n"
+            "  e.g. update address WebServer ip-netmask 10.1.2.4/32\n"
+            "       update address WebServer description 'New description'"
+        )
+    # 1. GET current object
+    items = scm.get_addresses(folder=ctx.folder)
+    obj = scm._find_by_name(items, name)
+    if not obj:
+        raise ValueError(f"Address '{name}' not found in folder '{ctx.folder}'.  Run 'show address' to see available addresses.")
+    obj_id = obj.pop("id")
+
+    # 2. Apply address-type change if specified
+    field_key = pos[1].lower() if len(pos) > 1 else ""
+    if field_key in _ADDR_TYPE_MAP:
+        new_val = pos[2] if len(pos) > 2 else ""
+        if not new_val:
+            raise ValueError(f"Missing value for address type '{field_key}'")
+        # Clear all other address type fields first
+        for f in _ADDR_TYPE_MAP.values():
+            obj.pop(f, None)
+        obj[_ADDR_TYPE_MAP[field_key]] = new_val
+        _merge_common_fields(obj, args, pos, 3)
+    else:
+        # Only description/tag change
+        _merge_common_fields(obj, args, pos, 1)
+
+    # 3. PUT
+    result = scm.update_address(obj_id, obj)
+    changed = field_key or "description/tag"
+    return f"[green]✓[/green] Address [bold]{name}[/bold] updated ({changed})"
+
+
+def _update_address_group(ctx: ExecutionContext, args: dict) -> Any:
+    """Update an existing address group (GET→merge→PUT).
+
+    Syntax:
+      update address-group <name> static  <member1> [member2 ...]
+      update address-group <name> dynamic filter '<expression>'
+      update address-group <name> description <text>
+      update address-group <name> tag <name>
+
+    Changing static→dynamic or vice versa replaces the group type entirely.
+
+    Examples:
+      update address-group WebTier  static  web1 web2 web3 web4
+      update address-group ProdGroup dynamic filter 'Production and not Legacy'
+      update address-group DBServers description "All database hosts"
+
+    pan.dev: PUT /config/objects/v1/address-groups/{id}
+    """
+    scm = require_scm(ctx)
+    pos = args.get("_positional", [])
+    name = pos[0] if pos else (args.get("name") or "")
+    if not name:
+        raise ValueError("Usage: update address-group <name> static <m1>... | dynamic filter '<expr>'")
+    items = scm.get_address_groups(folder=ctx.folder)
+    obj = scm._find_by_name(items, name)
+    if not obj:
+        raise ValueError(f"Address group '{name}' not found in folder '{ctx.folder}'.")
+    obj_id = obj.pop("id")
+
+    mode = pos[1].lower() if len(pos) > 1 else ""
+    if mode == "static":
+        _KW = {"description", "tag"}
+        members, kv_start = [], len(pos)
+        for i, tok in enumerate(pos[2:], 2):
+            if tok.lower() in _KW:
+                kv_start = i; break
+            members.append(tok)
+        if not members:
+            raise ValueError("Need at least one member: update address-group <name> static <member>")
+        obj.pop("dynamic", None)
+        obj["static"] = members
+        _merge_common_fields(obj, args, pos, kv_start)
+    elif mode == "dynamic":
+        if len(pos) < 3 or pos[2].lower() != "filter":
+            raise ValueError("Usage: update address-group <name> dynamic filter '<expression>'")
+        expr = pos[3] if len(pos) > 3 else ""
+        if not expr:
+            raise ValueError("Missing filter expression")
+        obj.pop("static", None)
+        obj["dynamic"] = {"filter": expr}
+        _merge_common_fields(obj, args, pos, 4)
+    else:
+        _merge_common_fields(obj, args, pos, 1)
+
+    result = scm.update_address_group(obj_id, obj)
+    return f"[green]✓[/green] Address group [bold]{name}[/bold] updated"
+
+
+def _update_service(ctx: ExecutionContext, args: dict) -> Any:
+    """Update an existing service object (GET→merge→PUT).
+
+    Syntax:
+      update service <name> tcp port <n>  [source-port <n>]
+      update service <name> udp port <n>  [source-port <n>]
+      update service <name> description <text>
+      update service <name> tag <name>
+
+    Examples:
+      update service HTTP    tcp port 8080
+      update service HTTPS   tcp port 443  source-port 1024-65535
+      update service DNS     description "DNS resolver service"
+
+    pan.dev: PUT /config/objects/v1/services/{id}
+    """
+    scm = require_scm(ctx)
+    pos = args.get("_positional", [])
+    name = pos[0] if pos else (args.get("name") or "")
+    if not name:
+        raise ValueError("Usage: update service <name> tcp|udp port <n>")
+    items = scm.get_services(folder=ctx.folder)
+    obj = scm._find_by_name(items, name)
+    if not obj:
+        raise ValueError(f"Service '{name}' not found in folder '{ctx.folder}'.")
+    obj_id = obj.pop("id")
+
+    proto = pos[1].lower() if len(pos) > 1 else ""
+    pos_lower = [p.lower() for p in pos]
+    if proto in ("tcp", "udp"):
+        try:
+            port_idx = pos_lower.index("port")
+            dst_port = pos[port_idx + 1] if port_idx + 1 < len(pos) else ""
+        except ValueError:
+            dst_port = ""
+        if not dst_port:
+            raise ValueError(f"Missing port value: update service {name} {proto} port <n>")
+        proto_block: dict = {"port": dst_port}
+        try:
+            sp_idx = pos_lower.index("source-port")
+            src = pos[sp_idx + 1] if sp_idx + 1 < len(pos) else ""
+            if src:
+                proto_block["source_port"] = src
+        except ValueError:
+            pass
+        obj["protocol"] = {proto: proto_block}
+    _merge_common_fields(obj, args, pos, 1 if proto not in ("tcp", "udp") else 4)
+
+    result = scm.update_service(obj_id, obj)
+    return f"[green]✓[/green] Service [bold]{name}[/bold] updated"
+
+
+def _update_service_group(ctx: ExecutionContext, args: dict) -> Any:
+    """Update a service group's member list.
+
+    Syntax:
+      update service-group <name> members <svc1> [svc2 ...]
+      update service-group <name> description <text>
+
+    Examples:
+      update service-group Web-Services  members HTTP HTTPS HTTP-ALT
+      update service-group DB-Ports      description "Database access ports"
+
+    pan.dev: PUT /config/objects/v1/service-groups/{id}
+    """
+    scm = require_scm(ctx)
+    pos = args.get("_positional", [])
+    name = pos[0] if pos else (args.get("name") or "")
+    if not name:
+        raise ValueError("Usage: update service-group <name> members <svc1> [svc2...]")
+    items = scm.get_service_groups(folder=ctx.folder)
+    obj = scm._find_by_name(items, name)
+    if not obj:
+        raise ValueError(f"Service group '{name}' not found in folder '{ctx.folder}'.")
+    obj_id = obj.pop("id")
+
+    pos_lower = [p.lower() for p in pos]
+    if "members" in pos_lower:
+        mem_idx = pos_lower.index("members")
+        _KW = {"tag", "description"}
+        members, kv_start = [], len(pos)
+        for i, tok in enumerate(pos[mem_idx + 1:], mem_idx + 1):
+            if tok.lower() in _KW:
+                kv_start = i; break
+            members.append(tok)
+        if members:
+            obj["members"] = members
+        _merge_common_fields(obj, args, pos, kv_start)
+    else:
+        _merge_common_fields(obj, args, pos, 1)
+
+    result = scm.update_service_group(obj_id, obj)
+    return f"[green]✓[/green] Service group [bold]{name}[/bold] updated"
+
+
+def _update_tag(ctx: ExecutionContext, args: dict) -> Any:
+    """Update an existing tag (color, comments).
+
+    Syntax:
+      update tag <name> color <color>
+      update tag <name> comments <text>
+      update tag <name> color <color> comments <text>
+
+    Examples:
+      update tag Production  color  green
+      update tag Staging     color  yellow  comments "Pre-production environment"
+      update tag Critical    comments "High priority — review before change"
+
+    pan.dev: PUT /config/objects/v1/tags/{id}
+    """
+    scm = require_scm(ctx)
+    pos = args.get("_positional", [])
+    name = pos[0] if pos else (args.get("name") or "")
+    if not name:
+        raise ValueError("Usage: update tag <name> color <color> [comments <text>]")
+    items = scm.get_tags(folder=ctx.folder)
+    obj = scm._find_by_name(items, name)
+    if not obj:
+        raise ValueError(f"Tag '{name}' not found in folder '{ctx.folder}'.")
+    obj_id = obj.pop("id")
+
+    kv = _parse_kv_tail(pos, 1)
+    color = args.get("color") or kv.get("color") or ""
+    if color:
+        norm = color.lower()
+        if norm not in _TAG_COLORS:
+            raise ValueError(f"Unknown color: {color!r}. Valid: {', '.join(sorted(_TAG_COLORS))}")
+        obj["color"] = norm
+    comments = args.get("comments") or kv.get("comments") or ""
+    if comments:
+        obj["comments"] = comments
+
+    result = scm.update_tag(obj_id, obj)
+    return f"[green]✓[/green] Tag [bold]{name}[/bold] updated"
+
+
+def _update_external_dynamic_list(ctx: ExecutionContext, args: dict) -> Any:
+    """Update an existing EDL (URL, description, or frequency).
+
+    Syntax:
+      update external-dynamic-list <name> url <new-fetch-url>
+      update external-dynamic-list <name> description <text>
+      update external-dynamic-list <name> frequency hourly|daily|weekly|monthly|5minute
+      update external-dynamic-list <name> url <url> frequency <freq>
+
+    Examples:
+      update external-dynamic-list Threat-IPs  url https://new-feed.example.com/ips.txt
+      update external-dynamic-list Bad-Domains frequency daily
+      update external-dynamic-list Phish-URLs  description "Updated phishing feed"
+
+    pan.dev: PUT /config/objects/v1/external-dynamic-lists/{id}
+    """
+    scm = require_scm(ctx)
+    pos = args.get("_positional", [])
+    name = pos[0] if pos else (args.get("name") or "")
+    if not name:
+        raise ValueError("Usage: update external-dynamic-list <name> url <url> | description <text> | frequency <freq>")
+    items = scm.get_external_dynamic_lists(folder=ctx.folder)
+    obj = scm._find_by_name(items, name)
+    if not obj:
+        raise ValueError(f"EDL '{name}' not found in folder '{ctx.folder}'.")
+    obj_id = obj.pop("id")
+
+    pos_lower = [p.lower() for p in pos]
+    # Update fetch URL
+    try:
+        url_idx = pos_lower.index("url")
+        new_url = pos[url_idx + 1] if url_idx + 1 < len(pos) else ""
+        if new_url:
+            # Navigate into the nested type block and update the url
+            for type_key in ("ip", "domain", "url", "imsi", "imei"):
+                if type_key in obj.get("type", {}):
+                    obj["type"][type_key]["url"] = new_url
+                    break
+    except ValueError:
+        pass
+    # Update frequency
+    try:
+        freq_idx = pos_lower.index("frequency")
+        freq = pos[freq_idx + 1].lower() if freq_idx + 1 < len(pos) else ""
+        if freq in ("hourly", "daily", "weekly", "monthly", "5minute"):
+            for type_key in ("ip", "domain", "url", "imsi", "imei"):
+                if type_key in obj.get("type", {}):
+                    obj["type"][type_key]["recurring"] = {freq: {}}
+                    break
+    except ValueError:
+        pass
+    kv = _parse_kv_tail(pos, 1)
+    if args.get("description") or kv.get("description"):
+        obj["description"] = args.get("description") or kv["description"]
+
+    result = scm.update_external_dynamic_list(obj_id, obj)
+    return f"[green]✓[/green] EDL [bold]{name}[/bold] updated"
+
+
+_UPDATE_COMMANDS: dict[str, CommandDef] = {
+    "update address": CommandDef(
+        description="Update address — update address <name> ip-netmask|fqdn|ip-range|ip-wildcard|description|tag <value>",
+        category="objects",
+        scope="folder",
+        api_handler=_update_address,
+        ssh_command=None,
+        render="raw",
+        feature_flag="update_objects",
+    ),
+    "update address-group": CommandDef(
+        description="Update address group — update address-group <name> static <m1>... | dynamic filter '<expr>'",
+        category="objects",
+        scope="folder",
+        api_handler=_update_address_group,
+        ssh_command=None,
+        render="raw",
+        feature_flag="update_objects",
+    ),
+    "update service": CommandDef(
+        description="Update service — update service <name> tcp|udp port <n> [source-port <n>]",
+        category="objects",
+        scope="folder",
+        api_handler=_update_service,
+        ssh_command=None,
+        render="raw",
+        feature_flag="update_objects",
+    ),
+    "update service-group": CommandDef(
+        description="Update service group members — update service-group <name> members <svc1> [svc2...]",
+        category="objects",
+        scope="folder",
+        api_handler=_update_service_group,
+        ssh_command=None,
+        render="raw",
+        feature_flag="update_objects",
+    ),
+    "update tag": CommandDef(
+        description="Update tag color/comments — update tag <name> color <color> [comments <text>]",
+        category="objects",
+        scope="folder",
+        api_handler=_update_tag,
+        ssh_command=None,
+        render="raw",
+        feature_flag="update_objects",
+    ),
+    "update external-dynamic-list": CommandDef(
+        description="Update EDL url/frequency — update external-dynamic-list <name> url <url>",
+        category="objects",
+        scope="folder",
+        api_handler=_update_external_dynamic_list,
+        ssh_command=None,
+        render="raw",
+        feature_flag="update_objects",
+    ),
+}
+
+COMMANDS.update(_UPDATE_COMMANDS)
+
+

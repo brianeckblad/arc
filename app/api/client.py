@@ -171,6 +171,16 @@ class SCMClient:
         resp.raise_for_status()
         return resp.json()
 
+    def _put_objects(self, path: str, json: Any = None) -> Any:
+        """PUT to api.strata.paloaltonetworks.com/config/objects/v1."""
+        resp = self._http.put(
+            f"{self.OBJECTS_URL}{path}",
+            headers=self._headers(),
+            json=json,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
     def _delete_objects(self, path: str, params: Optional[dict] = None) -> Any:
         """DELETE from api.strata.paloaltonetworks.com/config/objects/v1."""
         resp = self._http.delete(
@@ -188,6 +198,16 @@ class SCMClient:
             headers=self._headers(),
             json=json,
             params=params,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+    def _put_security(self, path: str, json: Any = None) -> Any:
+        """PUT to api.strata.paloaltonetworks.com/config/security/v1."""
+        resp = self._http.put(
+            f"{self.SECURITY_URL}{path}",
+            headers=self._headers(),
+            json=json,
         )
         resp.raise_for_status()
         return resp.json()
@@ -211,6 +231,16 @@ class SCMClient:
             params=params,
         )
         resp.raise_for_status()
+
+    def _put_network(self, path: str, json: Any = None) -> Any:
+        """PUT to api.strata.paloaltonetworks.com/config/network/v1."""
+        resp = self._http.put(
+            f"{self.NETWORK_URL}{path}",
+            headers=self._headers(),
+            json=json,
+        )
+        resp.raise_for_status()
+        return resp.json()
         return resp.json()
 
     def _delete_network(self, path: str, params: Optional[dict] = None) -> Any:
@@ -680,6 +710,66 @@ class SCMClient:
             if item.get("name", "").lower() == name.lower():
                 return item.get("id")
         return None
+
+    def _find_by_name(self, items: list[dict], name: str) -> Optional[dict]:
+        """Return the full dict of the first item matching *name*.  None if not found."""
+        for item in items:
+            if item.get("name", "").lower() == name.lower():
+                return item
+        return None
+
+    # ------------------------------------------------------------------
+    # Objects — UPDATE (PUT)
+    # PUT requires the full object body; ARC does GET→merge→PUT internally.
+    # ------------------------------------------------------------------
+
+    def update_address(self, obj_id: str, payload: dict) -> dict:
+        """PUT /config/objects/v1/addresses/{id}"""
+        return self._put_objects(f"/addresses/{obj_id}", json=payload)
+
+    def update_address_group(self, obj_id: str, payload: dict) -> dict:
+        """PUT /config/objects/v1/address-groups/{id}"""
+        return self._put_objects(f"/address-groups/{obj_id}", json=payload)
+
+    def update_service(self, obj_id: str, payload: dict) -> dict:
+        """PUT /config/objects/v1/services/{id}"""
+        return self._put_objects(f"/services/{obj_id}", json=payload)
+
+    def update_service_group(self, obj_id: str, payload: dict) -> dict:
+        """PUT /config/objects/v1/service-groups/{id}"""
+        return self._put_objects(f"/service-groups/{obj_id}", json=payload)
+
+    def update_tag(self, obj_id: str, payload: dict) -> dict:
+        """PUT /config/objects/v1/tags/{id}"""
+        return self._put_objects(f"/tags/{obj_id}", json=payload)
+
+    def update_external_dynamic_list(self, obj_id: str, payload: dict) -> dict:
+        """PUT /config/objects/v1/external-dynamic-lists/{id}"""
+        return self._put_objects(f"/external-dynamic-lists/{obj_id}", json=payload)
+
+    # ------------------------------------------------------------------
+    # Security — UPDATE (PUT)
+    # ------------------------------------------------------------------
+
+    def update_security_rule(self, rule_id: str, payload: dict) -> dict:
+        """PUT /config/security/v1/security-rules/{id}"""
+        return self._put_security(f"/security-rules/{rule_id}", json=payload)
+
+    def update_url_category(self, cat_id: str, payload: dict) -> dict:
+        """PUT /config/security/v1/url-categories/{id}"""
+        return self._put_security(f"/url-categories/{cat_id}", json=payload)
+
+    # ------------------------------------------------------------------
+    # Network — UPDATE (PUT)
+    # ------------------------------------------------------------------
+
+    def update_nat_rule(self, rule_id: str, payload: dict) -> dict:
+        """PUT /config/network/v1/nat-rules/{id}"""
+        return self._put_network(f"/nat-rules/{rule_id}", json=payload)
+
+    def update_zone(self, zone_id: str, payload: dict) -> dict:
+        """PUT /config/network/v1/zones/{id}"""
+        return self._put_network(f"/zones/{zone_id}", json=payload)
 
     # ------------------------------------------------------------------
     # Security  (api.strata.paloaltonetworks.com/config/security/v1)

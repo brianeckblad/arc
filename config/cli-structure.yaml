@@ -30,6 +30,10 @@ verb_groups:
     description: "Create or modify configuration"
     hint: "configure mode only — type 'set ?' for sub-commands"
 
+  update:
+    description: "Modify an existing configuration object (GET→merge→PUT)"
+    hint: "configure mode only — type 'update ?' for types"
+
   delete:
     description: "Remove configuration objects"
     hint: "configure mode only — type 'delete ?' for types"

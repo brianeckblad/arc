@@ -111,7 +111,12 @@ class FeatureFlags:
     #   False = command hidden; running it prints "feature not enabled"
     # =========================================================================
 
-    # ── Objects — create/delete ───────────────────────────────────────────────
+    # ── Update operations — configure mode required, default False ───────────
+    # Gates the `update <resource> <name> [field value ...]` commands.
+    # PUT requires the full object; ARC does GET→merge→PUT automatically.
+    update_objects:         bool = False   # update address/service/tag/address-group/edl/service-group
+    update_security:        bool = False   # update security-rule/url-category
+    update_network:         bool = False   # update nat-rule/zone
     create_address:         bool = False   # set address <name> ip-netmask/fqdn/ip-range <value>
     create_address_group:   bool = False   # set address-group <name> static <members>
     create_service:         bool = False   # set service <name> tcp/udp port <n>

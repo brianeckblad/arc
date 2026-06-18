@@ -92,3 +92,9 @@ Use `help <command>` to open detailed docs for a command.
 - `test security-policy-match` — Test security policy match — test security-policy-match source <ip> destination <ip> application <app> protocol <n> destination-port <n>
 - `test url` — Test URL categorization — test url <url>  (use --remote)
 - `traceroute host` — Traceroute from device — traceroute host <ip>  (use --remote)
+- `update address` — Update address — update address <name> ip-netmask|fqdn|ip-range|ip-wildcard|description|tag <value>
+- `update address-group` — Update address group — update address-group <name> static <m1>... | dynamic filter '<expr>'
+- `update external-dynamic-list` — Update EDL url/frequency — update external-dynamic-list <name> url <url>
+- `update service` — Update service — update service <name> tcp|udp port <n> [source-port <n>]
+- `update service-group` — Update service group members — update service-group <name> members <svc1> [svc2...]
+- `update tag` — Update tag color/comments — update tag <name> color <color> [comments <text>]
