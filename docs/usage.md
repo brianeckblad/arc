@@ -12,7 +12,7 @@ python run.py
 
 ```text
 folder Shared          Set the active SCM folder
-ls                     List managed devices in the active folder
+show devices           List managed devices
 cd fw-dallas-01        Change Device in SCM/API context
 pwd                    Show device, mode, and folder
 ```

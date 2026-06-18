@@ -316,7 +316,7 @@ Future extraction order if `shell.py` keeps growing (one string at a time,
 validate with `python dev/smoke_test.py --file app/shell.py` after each):
 
 1. `app/shell_help.py` — `_cmd_help*`, collapsed prefix/tier helpers
-2. `app/shell_nav.py` — `cd`, `folder`, `ls`, `pwd`, cache refresh
+2. `app/shell_nav.py` — `cd`, `folder`, `pwd`, cache refresh
 3. `app/shell_sessions.py` — `connect`, `remote`, `tsg`, `account`
 4. `app/shell_execution.py` — `_execute_api`, `_execute_remote`, `_render`
 5. `app/shell_prompt.py` — banner, prompt, goodbye, lifecycle

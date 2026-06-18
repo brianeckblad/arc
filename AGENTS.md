@@ -935,7 +935,6 @@ Handled directly in `ArcShell._dispatch()` before the registry is consulted:
 | `remote <device>` | SSH to Device — opens an interactive SSH session on the named device (also sets device context). **Tab** after `remote ` lists all managed devices. |
 | `connect <device>` | SSH to Device — opens an interactive SSH session on the named device, or on the current `cd` device when no name is given. |
 | `exit` | Exit ARC — closes all connections and quits. |
-| `ls` / `devices` | List managed devices and refresh the device cache. `ls folder` renders a Rich tree of the SCM folder hierarchy with device counts. |
 | `pwd` | Print current device, active SCM folder, TSG, and active credential profile. |
 | `folder <name>` | Set `ShellState.folder` (used by all SCM API calls). **Tab** after `folder ` lists available SCM folders. `folder ..` resets to Shared. |
 | `folder create <name>` | Create a new SCM folder (configure mode required) — interactive numbered parent-selection menu, then POST to SCM and refresh cache. |
@@ -1093,7 +1092,7 @@ Use `exit` to leave configure mode and return to the normal prompt.
 | `show sy` | All matching ARC command prefixes |
 | `show system info --` | `--remote` suffix for running that single command remotely |
 
-Device and folder caches are populated at startup when SCM is configured. Both caches refresh on `ls` / `devices`.
+Device and folder caches are populated at startup when SCM is configured. Both caches refresh when the user runs `show devices` or navigates with `folder`/`tsg` commands.
 
 #### Unambiguous shorthand (Cisco-style)
 

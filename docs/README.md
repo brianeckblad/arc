@@ -14,7 +14,7 @@ SCM environments with interactive SSH access to managed PAN-OS devices.
 ## Core workflows
 
 1. Set the SCM folder with `folder <name>`.
-2. List managed devices with `ls` or `devices`.
+2. List managed devices with `show devices`.
 3. Change API context with `cd <device>`.
 4. Run supported commands through SCM APIs by default.
 5. Use `connect` or `remote <device>` to open an interactive SSH session on a device.
