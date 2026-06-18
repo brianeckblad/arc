@@ -238,6 +238,37 @@ format_raw()                             877-878
 format_dict()                            881-882        
 _flatten()                               889-904        Recursively flatten a nested dict into dot-separated key/value pairs.
 
+## `app/commands/objects.py`  (870 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+_show_address()                          14-20          List address objects in the active SCM folder.
+_show_address_group()                    23-29          List address groups in the active SCM folder.
+_show_service()                          32-38          List service objects in the active SCM folder.
+_show_tag()                              41-47          List tags in the active SCM folder.
+_show_external_dynamic_list()            50-56          List external dynamic lists (EDLs) in the active SCM folder.
+_show_service_groups()                   116-119        pan.dev: GET /config/objects/v1/service-groups?folder=<folder>
+_show_application_groups()               122-125        pan.dev: GET /config/objects/v1/application-groups?folder=<folder>
+_show_application_filters()              128-131        pan.dev: GET /config/objects/v1/application-filters?folder=<folder>
+_show_schedules()                        134-137        pan.dev: GET /config/objects/v1/schedules?folder=<folder>
+_show_regions()                          140-143        pan.dev: GET /config/objects/v1/regions  (global — no folder filter)
+_show_hip_objects()                      146-149        pan.dev: GET /config/objects/v1/hip-objects?folder=<folder>
+_show_hip_profiles()                     152-155        pan.dev: GET /config/objects/v1/hip-profiles?folder=<folder>
+_show_log_forwarding_profiles()          158-161        pan.dev: GET /config/objects/v1/log-forwarding-profiles?folder=<folder
+_parse_kv_tail()                         269-276        Parse positional[start:] as alternating key/value pairs.
+_set_address()                           279-346        Create an address object in the active SCM folder.
+_delete_address()                        349-360        Delete an address object.  Usage: delete address <name>
+_set_address_group()                     363-427        Create a static or dynamic address group in the active folder.
+_delete_address_group()                  430-441        Delete an address group.  Usage: delete address-group <name>
+_set_service()                           444-514        Create a TCP or UDP service object in the active folder.
+_delete_service()                        517-528        Delete a service object.  Usage: delete service <name>
+_set_service_group()                     531-577        Create a service group (named collection of service objects).
+_delete_service_group()                  580-591        Delete a service group.  Usage: delete service-group <name>
+_set_tag()                               594-645        Create a tag in the active folder.
+_delete_tag()                            648-659        Delete a tag.  Usage: delete tag <name>
+_set_external_dynamic_list()             662-740        Create an External Dynamic List (EDL) in the active folder.
+_delete_external_dynamic_list()          743-754        Delete an EDL.  Usage: delete external-dynamic-list <name>
+
 ## `app/config.py`  (568 lines)
 
 Symbol                                   Lines          Purpose
@@ -294,32 +325,6 @@ _test_nat_policy_match()                 334-342        Test NAT policy match �
 _ssh_test_nat()                          345-353        
 _test_url()                              356-363        Test URL categorization — use --remote.  PAN-OS: test url <url>
 _ssh_test_url()                          366-368        
-
-## `app/commands/objects.py`  (511 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_show_address()                          14-20          List address objects in the active SCM folder.
-_show_address_group()                    23-29          List address groups in the active SCM folder.
-_show_service()                          32-38          List service objects in the active SCM folder.
-_show_tag()                              41-47          List tags in the active SCM folder.
-_show_external_dynamic_list()            50-56          List external dynamic lists (EDLs) in the active SCM folder.
-_show_service_groups()                   116-119        pan.dev: GET /config/objects/v1/service-groups?folder=<folder>
-_show_application_groups()               122-125        pan.dev: GET /config/objects/v1/application-groups?folder=<folder>
-_show_application_filters()              128-131        pan.dev: GET /config/objects/v1/application-filters?folder=<folder>
-_show_schedules()                        134-137        pan.dev: GET /config/objects/v1/schedules?folder=<folder>
-_show_regions()                          140-143        pan.dev: GET /config/objects/v1/regions  (global — no folder filter)
-_show_hip_objects()                      146-149        pan.dev: GET /config/objects/v1/hip-objects?folder=<folder>
-_show_hip_profiles()                     152-155        pan.dev: GET /config/objects/v1/hip-profiles?folder=<folder>
-_show_log_forwarding_profiles()          158-161        pan.dev: GET /config/objects/v1/log-forwarding-profiles?folder=<folder
-_set_address()                           246-291        Create an address object in the active SCM folder.
-_delete_address()                        294-309        Delete an address object by name from the active SCM folder.
-_set_service()                           312-339        Create a service object.
-_delete_service()                        342-356        Delete a service object by name.
-_set_tag()                               359-377        Create a tag.
-_delete_tag()                            380-391        Delete a tag by name.  Usage: delete tag <name>
-_set_address_group()                     394-416        Create a static address group.
-_delete_address_group()                  419-430        Delete an address group.  Usage: delete address-group <name>
 
 ## `app/commands/security.py`  (347 lines)
 
