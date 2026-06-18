@@ -335,10 +335,14 @@ class ArcCompleter(Completer):
 
 
         # ---- Default: ARC command + built-in completion ----
+        # Trim trailing space before prefix matching so that typing "show address "
+        # (with a space) still matches "show address-group" for Tab completion.
         include_remote_suffix = " --" in text
+        text_trim = text.rstrip(" ")  # e.g. "show address " → "show address"
         for name in sorted(self._all_commands(include_remote_suffix=include_remote_suffix)):
-            if name.startswith(text):
-                # Show full candidates in the menu instead of suffix fragments.
+            if name.startswith(text_trim) and name != text_trim:
+                # Replace from the start of the last typed word.
+                # start_position: how many chars to delete before inserting the completion.
                 yield Completion(name, start_position=-len(text))
 
     def _all_commands(self, include_remote_suffix: bool) -> list[str]:
@@ -2018,6 +2022,32 @@ class ArcShell:
 
         sub = args[0].lower()
 
+        # `set <resource> ?` — user wants help on a specific resource
+        if len(args) >= 2 and args[-1] == "?":
+            resource = sub
+            candidate_key = f"set {resource}"
+            if candidate_key in COMMANDS:
+                cmd_def = COMMANDS[candidate_key]
+                flag = cmd_def.feature_flag
+                if flag and not is_enabled(self._features, flag):
+                    console.print(
+                        f"\n  [bold cyan]{candidate_key}[/bold cyan]  [dim]— {cmd_def.description}[/dim]\n\n"
+                        f"  [yellow]Feature not enabled.[/yellow]  Flag: [bold]{flag}[/bold]\n"
+                        f"  Enable with: [bold]feature enable {flag}[/bold]\n"
+                        f"  Then run:    [bold]{candidate_key} help[/bold]  for full usage.\n"
+                    )
+                else:
+                    from app.docs import render_help_topic as _rht
+                    if not _rht(console, f"set-{resource}"):
+                        console.print(f"  [bold]{candidate_key}[/bold]  —  {cmd_def.description}")
+            else:
+                console.print(
+                    f"\n  [yellow]No 'set {resource}' command found.[/yellow]\n"
+                    "  Type [bold]set ?[/bold] to see all create operations.\n"
+                    "  Type [bold]feature enable ?[/bold] to see commands that can be enabled.\n"
+                )
+            return
+
         # ── set folder ──────────────────────────────────────────────────
         if sub == "folder":
             # `set folder ?` — show folder sub-commands
@@ -2032,10 +2062,32 @@ class ArcShell:
             self._cmd_set_folder(args[1:])
             return
 
-        console.print(
-            f"[yellow]Unknown set sub-command:[/yellow] {sub!r}\n"
-            "  Type [bold]set ?[/bold] to see available create operations."
-        )
+        # Before saying "unknown" — check if a matching `set <sub>` command exists
+        # in the registry but is feature-disabled.  If so, give a targeted message.
+        candidate_key = f"set {sub}"
+        if candidate_key in COMMANDS:
+            cmd_def = COMMANDS[candidate_key]
+            flag = cmd_def.feature_flag
+            if flag and not is_enabled(self._features, flag):
+                console.print(
+                    f"[yellow]Feature not enabled:[/yellow] [bold]{candidate_key}[/bold]\n"
+                    f"  Flag [bold]{flag}[/bold] is currently off.\n"
+                    f"  To enable this session: [bold]feature enable {flag}[/bold]\n"
+                    f"  To persist: add [bold]{{\"{flag}\": true}}[/bold] to [bold]config/features.json[/bold]\n"
+                    f"  Or use env var: [bold]ARC_FEATURE_{flag.upper()}=1 arc[/bold]"
+                )
+            else:
+                # Command exists but something else is wrong
+                console.print(
+                    f"[yellow]Cannot run:[/yellow] [bold]{candidate_key}[/bold]  "
+                    "— type [bold]set ?[/bold] to see available create operations."
+                )
+        else:
+            console.print(
+                f"[yellow]Unknown set sub-command:[/yellow] [bold]{sub}[/bold]\n"
+                "  Type [bold]set ?[/bold] to see available create operations.\n"
+                f"  Tip: [bold]feature enable ?[/bold] shows commands that can be enabled."
+            )
 
     def _cmd_set_folder(self, args: list[str]) -> None:
         """Create an SCM folder via the set command.
