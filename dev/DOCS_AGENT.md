@@ -57,7 +57,7 @@ Only the **Removed** and **changed** endpoints require code action. Workflow:
 2. If ARC calls a removed/renamed path, update `app/api/client.py` (the URL)
    and any handler in `app/commands/<module>.py`.
 3. For **Added** endpoints the user wants exposed, use the normal add-command
-   flow (`dev/scaffold.py`, see `QUICK.md`) — that is a feature, not a docs fix.
+   flow (`dev/scaffold.py`, see `README.dev.md`) — that is a feature, not a docs fix.
 4. Validate: `python dev/smoke_test.py --only 1,2,3`.
 
 ---

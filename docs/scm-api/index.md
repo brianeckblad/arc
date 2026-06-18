@@ -20,8 +20,8 @@ Consolidated OpenAPI endpoint listings per NGFW config domain. See
 - **[specs/ngfw-security.md](specs/ngfw-security.md)** — 113 endpoints
 - **[specs/ngfw-setup.md](specs/ngfw-setup.md)** — 47 endpoints
 - **[specs/ngfw-network.md](specs/ngfw-network.md)** — 246 endpoints
-- **[specs/ngfw-operations.md](specs/ngfw-operations.md)** — 8 endpoints
-- **[specs/ngfw-operations-config.md](specs/ngfw-operations-config.md)** — 10 endpoints
+- **[specs/ngfw-config-operations.md](specs/ngfw-config-operations.md)** — 8 endpoints
+- **[specs/ngfw-operations.md](specs/ngfw-operations.md)** — 10 endpoints
 - **[specs/ngfw-device.md](specs/ngfw-device.md)** — 71 endpoints
 - **[specs/ngfw-identity.md](specs/ngfw-identity.md)** — 88 endpoints
 - **[specs/ngfw-device-onboarding.md](specs/ngfw-device-onboarding.md)** — 21 endpoints

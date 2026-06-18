@@ -8,8 +8,8 @@ Pulled on 2026-06-18 from `PaloAltoNetworks/pan.dev` (master).
 | `ngfw-security` | `https://api.strata.paloaltonetworks.com/config/security/v1` | `openapi-specs/scm/config/ngfw/security/security-services-R2-2026.yaml` |
 | `ngfw-setup` | `https://api.strata.paloaltonetworks.com/config/setup/v1` | `openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml` |
 | `ngfw-network` | `https://api.strata.paloaltonetworks.com/config/network/v1` | `openapi-specs/scm/config/ngfw/network/network-services-R2-2026.yaml` |
-| `ngfw-operations` | `https://api.strata.paloaltonetworks.com/config/operations/v1` | `openapi-specs/scm/config/ngfw/operations/config-operations-march.yaml` |
-| `ngfw-operations-config` | `https://api.strata.paloaltonetworks.com/operations/v1` | `openapi-specs/scm/config/ngfw-operations/operations-R2-2026.yaml` |
+| `ngfw-config-operations` | `https://api.strata.paloaltonetworks.com/config/operations/v1` | `openapi-specs/scm/config/ngfw/operations/config-operations-march.yaml` |
+| `ngfw-operations` | `https://api.strata.paloaltonetworks.com/operations/v1` | `openapi-specs/scm/config/ngfw-operations/operations-R2-2026.yaml` |
 | `ngfw-device` | `https://api.strata.paloaltonetworks.com/config/device/v1` | `openapi-specs/scm/config/ngfw/device/device-settings_April.yaml` |
 | `ngfw-identity` | `https://api.strata.paloaltonetworks.com/config/identity/v1` | `openapi-specs/scm/config/ngfw/identity/identity-services-march.yaml` |
 | `ngfw-device-onboarding` | `https://api.strata.paloaltonetworks.com/config/setup/device-onboarding/v1` | `openapi-specs/scm/config/ngfw/setup/device-onboarding/device-onboarding-updated.yaml` |

@@ -34,3 +34,10 @@ help show system info
 help remote
 ```
 
+## Development
+
+Developing ARC (or working on it with an AI agent)? Start with
+[`README.dev.md`](README.dev.md) — the developer guide with tokenmaxing recipes,
+a keyword dictionary, file ownership, and the smoke-test map. `AGENTS.md` holds
+the full spec (architecture, security, SCM API gateway map).
+

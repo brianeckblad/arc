@@ -26,6 +26,16 @@ Resource                                      Methods  ARC Command              
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
   iam/v1/service_accounts                     LRCUD    —                                          —
 
+## Config Operations
+**Base:** `https://api.strata.paloaltonetworks.com/config/operations/v1`  |  **Spec:** `docs/scm-api/specs/ngfw-config-operations.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  config-versions                             LRC      ✓ commit                                   —
+  config-versions/candidate                   CD       ✓ commit                                   —
+  config-versions/running                     L        ✓ commit                                   —
+  jobs                                        LR       ✓ show jobs all / show jobs id             show jobs processed
+
 ## Device Onboarding
 **Base:** `https://api.strata.paloaltonetworks.com/config/setup/device-onboarding/v1`  |  **Spec:** `docs/scm-api/specs/ngfw-device-onboarding.yaml`
 
@@ -167,7 +177,7 @@ Resource                                      Methods  ARC Command              
   tags                                        LRCUD    ✓ show tag                                 show objects tag
 
 ## Operations and Troubleshooting
-**Base:** `https://api.strata.paloaltonetworks.com/operations/v1`  |  **Spec:** `docs/scm-api/specs/ngfw-operations-config.yaml`
+**Base:** `https://api.strata.paloaltonetworks.com/operations/v1`  |  **Spec:** `docs/scm-api/specs/ngfw-operations.yaml`
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
@@ -181,16 +191,6 @@ Resource                                      Methods  ARC Command              
   jobs/route-table                            C        ✓ show jobs all / show jobs id             show jobs processed
   local-config/download                       L        —                                          —
   local-config/versions                       L        —                                          —
-
-## Config Operations
-**Base:** `https://api.strata.paloaltonetworks.com/config/operations/v1`  |  **Spec:** `docs/scm-api/specs/ngfw-operations.yaml`
-
-Resource                                      Methods  ARC Command                                SSH Command
-───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  config-versions                             LRC      ✓ commit                                   —
-  config-versions/candidate                   CD       ✓ commit                                   —
-  config-versions/running                     L        ✓ commit                                   —
-  jobs                                        LR       ✓ show jobs all / show jobs id             show jobs processed
 
 ## Security Services
 **Base:** `https://api.strata.paloaltonetworks.com/config/security/v1`  |  **Spec:** `docs/scm-api/specs/ngfw-security.yaml`
