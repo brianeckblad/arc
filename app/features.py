@@ -106,38 +106,56 @@ class FeatureFlags:
     # Enable locally via config/features.json when working on a command.
     # =========================================================================
 
-    # ── Network (unimplemented) ───────────────────────────────────────────────
-    nat_rules:           bool = False   # show nat-rules / create / delete
-    ipsec_vpn:           bool = False   # show ipsec-tunnels, ike-gateways
-    bgp_routing:         bool = False   # show bgp peers, bgp profiles
-    pbf_rules:           bool = False   # show pbf-rules
-    sdwan:               bool = False   # show sdwan-rules, profiles
-    dhcp:                bool = False   # show dhcp-interfaces
-    dns_proxy:           bool = False   # show dns-proxies
-    qos:                 bool = False   # show qos-rules, qos-profiles
-    logical_routers:     bool = False   # show logical-routers
-    vpn_auto:            bool = False   # show auto-vpn-clusters
+    # ── Network (unimplemented SCM config) ────────────────────────────────────
+    nat_rules:           bool = False   # show nat-rules (SCM: /config/network/v1/nat-rules)
+    pbf_rules:           bool = False   # show pbf-rules (SCM: /config/network/v1/pbf-rules)
+    ipsec_vpn:           bool = False   # show ike-gateway / ipsec-tunnel (SCM config)
+                                        # + show vpn ike-sa / vpn tunnel (SSH live state)
+    bgp_routing:         bool = False   # show bgp-routing-profile (SCM)
+                                        # + show routing bgp peer/summary (SSH live)
+    sdwan:               bool = False   # show sdwan-rules (SCM: /config/network/v1/sdwan-rules)
+    dhcp:                bool = False   # show dhcp (SCM: /config/network/v1/dhcp-interfaces)
+    dns_proxy:           bool = False   # show dns-proxy (SCM: /config/network/v1/dns-proxies)
+    qos:                 bool = False   # show qos-profile (SCM: /config/network/v1/qos-profiles)
+    logical_routers:     bool = False   # show logical-router (SCM: /config/network/v1/logical-routers)
+    vpn_auto:            bool = False   # show auto-vpn (SCM: /config/network/v1/auto-vpn-*)
 
     # ── Security (unimplemented) ──────────────────────────────────────────────
-    decryption_policy:   bool = False   # show decryption-rules / profiles
-    dos_protection:      bool = False   # show dos-protection-rules / profiles
+    decryption_policy:   bool = False   # show decryption-rules / decryption-profile
+    dos_protection:      bool = False   # show dos-protection-rules / dos-protection-profile
     app_override:        bool = False   # show app-override-rules
-    profile_groups:      bool = False   # show profile-groups
+    profile_groups:      bool = False   # show profile-group
     url_admin_override:  bool = False   # show url-admin-override
+    security_profiles:   bool = False   # show anti-spyware / vulnerability / wildfire / dns-security profiles
 
     # ── Identity (unimplemented) ──────────────────────────────────────────────
-    authentication:      bool = False   # show authentication-profiles / rules
-    certificates:        bool = False   # show certificates / cert-profiles
-    local_users:         bool = False   # show local-users / user-groups
+    authentication:      bool = False   # show authentication-profile / authentication-rule
+                                        # + show radius-server / ldap-server / mfa-server
+    certificates:        bool = False   # show certificate-profile / tls-service-profile
+    local_users:         bool = False   # show local-user / local-user-group
+                                        # + show user ip-user-mapping (SSH live)
 
     # ── Objects (unimplemented) ───────────────────────────────────────────────
-    app_groups:          bool = False   # show application-groups / filters
-    service_groups:      bool = False   # show service-groups
-    schedules:           bool = False   # show schedules
-    regions:             bool = False   # show regions
+    app_groups:          bool = False   # show application-group / application-filter
+    service_groups:      bool = False   # show service-group
+    schedules:           bool = False   # show schedule
+    regions:             bool = False   # show region
+    hip:                 bool = False   # show hip-object / hip-profile (GlobalProtect)
+    log_profiles:        bool = False   # show log-forwarding-profile
 
     # ── Device Settings (unimplemented) ──────────────────────────────────────
-    device_settings:     bool = False   # show general-settings / mgmt-interface
+    device_settings:     bool = False   # show general-settings / management-interface
+                                        # / session-settings / service-route
+
+    # ── Live device only — SSH --remote required ──────────────────────────────
+    show_arp:            bool = False   # show arp (PAN-OS: show arp all)
+    show_sessions:       bool = False   # show session all / info / id
+    show_routing_live:   bool = False   # show routing protocol bgp peer/summary
+                                        # show routing protocol ospf summary/neighbor
+    traceroute:          bool = False   # traceroute host <ip>
+    test_nat:            bool = False   # test nat-policy-match
+    test_url:            bool = False   # test url <url>
+    request_system_reboot: bool = False # request system reboot / shutdown (with confirmation)
 
     # ── Operations (unimplemented) ────────────────────────────────────────────
     onboarding:          bool = False   # device onboarding APIs

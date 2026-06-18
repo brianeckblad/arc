@@ -233,3 +233,59 @@ COMMANDS: dict[str, CommandDef] = {
     ),
 }
 
+
+# ---------------------------------------------------------------------------
+# Additional handlers — system request operations (SSH / --remote)
+# ---------------------------------------------------------------------------
+
+def _request_system_reboot(ctx: ExecutionContext, args: dict) -> Any:
+    """Request a system reboot — use --remote.  Requires active device context.
+
+    SAFETY: This will reboot the physical firewall.  Always confirm before executing.
+    """
+    from app.commands.base import require_device
+    device = require_device(ctx)
+    name   = device.get("hostname") or device.get("name") or "device"
+    return (
+        f"[bold red]SAFETY CHECK[/bold red]: This will reboot {name}.\n"
+        f"  Run:  request system reboot --remote  to execute on {name}.\n"
+        f"  The device will be unavailable for ~2-5 minutes."
+    )
+
+
+def _request_system_shutdown(ctx: ExecutionContext, args: dict) -> Any:
+    """Request a system shutdown — use --remote.  Requires active device context."""
+    from app.commands.base import require_device
+    device = require_device(ctx)
+    name   = device.get("hostname") or device.get("name") or "device"
+    return (
+        f"[bold red]SAFETY CHECK[/bold red]: This will shut down {name}.\n"
+        f"  Run:  request system shutdown --remote  to execute on {name}.\n"
+        f"  The device will be offline until manually powered on."
+    )
+
+
+_EXTRA_COMMANDS: dict[str, CommandDef] = {
+    "request system reboot": CommandDef(
+        description="Reboot a managed device — use --remote  (CAUTION: device will restart)",
+        category="operations",
+        scope="device",
+        api_handler=_request_system_reboot,
+        ssh_command="request system reboot",
+        render="raw",
+        feature_flag="request_system_reboot",
+    ),
+    "request system shutdown": CommandDef(
+        description="Shut down a managed device — use --remote  (CAUTION: device will go offline)",
+        category="operations",
+        scope="device",
+        api_handler=_request_system_shutdown,
+        ssh_command="request system shutdown",
+        render="raw",
+        feature_flag="request_system_reboot",
+    ),
+}
+
+COMMANDS.update(_EXTRA_COMMANDS)
+
+

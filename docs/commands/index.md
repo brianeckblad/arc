@@ -4,25 +4,60 @@ Use `help <command>` to open detailed docs for a command.
 
 - `commit` — Push candidate config to managed devices — commit [description <text>]
 - `ping host` — Ping a host from the device — ping host <ip>  (use --remote)
+- `request system reboot` — Reboot a managed device — use --remote  (CAUTION: device will restart)
+- `request system shutdown` — Shut down a managed device — use --remote  (CAUTION: device will go offline)
 - `request system software check` — Check available software updates — use --remote for live data
 - `show address` — Show address objects in the active folder
 - `show address-group` — Show address groups in the active folder
+- `show anti-spyware-profile` — Show anti-spyware profiles in the active folder
+- `show app-override-rules` — Show application override rules in the active folder
+- `show application-filter` — Show application filters in the active folder
+- `show application-group` — Show application groups in the active folder
+- `show arp` — Show live ARP table from device — use --remote
+- `show authentication-profile` — Show authentication profiles in the active folder
+- `show authentication-rules` — Show authentication rules in the active folder
+- `show bgp-profile` — Show BGP routing profiles (configuration) in the active folder
+- `show certificate-profile` — Show certificate profiles in the active folder
+- `show decryption-profile` — Show decryption profiles in the active folder
+- `show decryption-rules` — Show decryption rules in the active folder
 - `show device` — Show detail for a device — show device <hostname>  (or 'show device' when cd'd in)
 - `show device snippets` — Show snippets attached to a device — show device <hostname> snippets
 - `show devices` — List all SCM-managed devices
+- `show dns-proxy` — Show DNS proxy configurations in the active folder
+- `show dos-protection-profile` — Show DoS protection profiles in the active folder
+- `show dos-protection-rules` — Show DoS protection rules in the active folder
 - `show external-dynamic-list` — Show external dynamic lists (EDLs) in the active folder
 - `show high-availability all` — Show full HA configuration from the active folder
 - `show high-availability state` — Show HA state summary from the active folder
+- `show hip-object` — Show GlobalProtect HIP objects in the active folder
+- `show hip-profile` — Show GlobalProtect HIP profiles in the active folder
+- `show ike-gateway` — Show IKE gateway configurations (VPN) in the active folder
 - `show interface` — Show a specific interface — show interface <name>
 - `show interface all` — Show all interfaces in the active folder
+- `show ipsec-tunnel` — Show IPsec tunnel configurations in the active folder
 - `show jobs all` — Show all SCM jobs (TSG-wide)
 - `show jobs id` — Show a specific job by ID — show jobs id <n>
+- `show local-user` — Show local users in the active folder
+- `show local-user-group` — Show local user groups in the active folder
 - `show log system` — Show live system log — use --remote for live device data
 - `show log traffic` — Show live traffic log — use --remote for live device data
+- `show log-forwarding-profile` — Show log forwarding profiles in the active folder
+- `show mfa-server` — Show MFA server profiles in the active folder
+- `show nat-rules` — Show NAT rules in the active folder
+- `show pbf-rules` — Show policy-based forwarding rules in the active folder
+- `show profile-group` — Show security profile groups in the active folder
+- `show qos-profile` — Show QoS profiles in the active folder
+- `show radius-server` — Show RADIUS server profiles in the active folder
+- `show region` — Show regions (TSG-wide, no folder filter)
+- `show routing bgp` — Show live BGP routing state from device — use --remote
 - `show routing route` — Show static routes in the active folder
 - `show routing summary` — Show virtual routers / routing profiles in the active folder
+- `show schedule` — Show schedules in the active folder
+- `show sdwan-rules` — Show SD-WAN rules in the active folder
 - `show security policy` — Show security policy rules in the active folder
 - `show service` — Show service objects in the active folder
+- `show service-group` — Show service groups in the active folder
+- `show session all` — Show live session table from device — use --remote
 - `show snippet` — Show full detail for a snippet — show snippet <name>
 - `show snippets` — List snippets for the current context  [dim](device → device snippets | folder → folder snippets | Shared → all)[/dim]
 - `show snippets global` — List ALL snippets regardless of device or folder context
@@ -30,6 +65,15 @@ Use `help <command>` to open detailed docs for a command.
 - `show system info` — Show device info from SCM (model, serial, SW version, IP, status…)
 - `show system resources` — Show live CPU / memory — use --remote for live device data
 - `show tag` — Show tags in the active folder
+- `show tls-service-profile` — Show TLS service profiles in the active folder
 - `show url-categories` — Show custom URL categories in the active folder
+- `show user ip-user-mapping` — Show live user-to-IP mapping from device — use --remote
+- `show vpn ike-sa` — Show live IKE security associations from device — use --remote
+- `show vpn tunnel` — Show live VPN tunnel state from device — use --remote
+- `show vulnerability-profile` — Show vulnerability protection profiles in the active folder
+- `show wildfire-profile` — Show WildFire anti-virus profiles in the active folder
 - `show zone` — Show security zones in the active folder
+- `test nat-policy-match` — Test NAT policy match — source <ip> destination <ip>  (use --remote)
 - `test security-policy-match` — Test security policy match — test security-policy-match source <ip> destination <ip> application <app> protocol <n> destination-port <n>
+- `test url` — Test URL categorization — test url <url>  (use --remote)
+- `traceroute host` — Traceroute from device — traceroute host <ip>  (use --remote)

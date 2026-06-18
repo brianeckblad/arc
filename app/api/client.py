@@ -68,6 +68,9 @@ class SCMClient:
     # pan.dev: openapi-specs/scm/config/ngfw/network/  (verify exact spec file at pan.dev)
     NETWORK_URL = "https://api.strata.paloaltonetworks.com/config/network/v1"
 
+    # pan.dev: openapi-specs/scm/config/ngfw/identity/identity-services-march.yaml
+    IDENTITY_URL = "https://api.strata.paloaltonetworks.com/config/identity/v1"
+
     # pan.dev: openapi-specs/scm/iam/ServiceAccounts.yaml
     #          openapi-specs/scm/tenancy/TenantServiceGroup.yaml
     IAM_URL = "https://api.sase.paloaltonetworks.com"
@@ -550,6 +553,264 @@ class SCMClient:
         """pan.dev: GET /config/security/v1/dns-security-profiles"""
         data = self._get_security("/dns-security-profiles", params={"folder": folder})
         return data.get("data", [])
+
+    # Additional security resources
+    def get_decryption_rules(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/security/v1/decryption-rules"""
+        data = self._get_security("/decryption-rules", params={"folder": folder})
+        return data.get("data", [])
+
+    def get_dos_protection_rules(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/security/v1/dos-protection-rules"""
+        data = self._get_security("/dos-protection-rules", params={"folder": folder})
+        return data.get("data", [])
+
+    def get_dos_protection_profiles(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/security/v1/dos-protection-profiles"""
+        data = self._get_security("/dos-protection-profiles", params={"folder": folder})
+        return data.get("data", [])
+
+    def get_app_override_rules(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/security/v1/app-override-rules"""
+        data = self._get_security("/app-override-rules", params={"folder": folder})
+        return data.get("data", [])
+
+    def get_decryption_profiles(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/security/v1/decryption-profiles"""
+        data = self._get_security("/decryption-profiles", params={"folder": folder})
+        return data.get("data", [])
+
+    def get_profile_groups(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/security/v1/profile-groups"""
+        data = self._get_security("/profile-groups", params={"folder": folder})
+        return data.get("data", [])
+
+    def get_anti_spyware_profiles(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/security/v1/anti-spyware-profiles"""
+        data = self._get_security("/anti-spyware-profiles", params={"folder": folder})
+        return data.get("data", [])
+
+    def get_vulnerability_protection_profiles(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/security/v1/vulnerability-protection-profiles"""
+        data = self._get_security("/vulnerability-protection-profiles", params={"folder": folder})
+        return data.get("data", [])
+
+    def get_wildfire_profiles(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/security/v1/wildfire-anti-virus-profiles"""
+        data = self._get_security("/wildfire-anti-virus-profiles", params={"folder": folder})
+        return data.get("data", [])
+
+    def get_url_admin_override(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/security/v1/url-admin-override"""
+        data = self._get_security("/url-admin-override", params={"folder": folder})
+        return data.get("data", [])
+
+    # ------------------------------------------------------------------
+    # Additional Objects
+    # ------------------------------------------------------------------
+
+    def get_service_groups(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/objects/v1/service-groups"""
+        data = self._get_objects("/service-groups", params={"folder": folder})
+        return data.get("data", [])
+
+    def get_application_groups(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/objects/v1/application-groups"""
+        data = self._get_objects("/application-groups", params={"folder": folder})
+        return data.get("data", [])
+
+    def get_application_filters(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/objects/v1/application-filters"""
+        data = self._get_objects("/application-filters", params={"folder": folder})
+        return data.get("data", [])
+
+    def get_schedules(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/objects/v1/schedules"""
+        data = self._get_objects("/schedules", params={"folder": folder})
+        return data.get("data", [])
+
+    def get_regions(self) -> list[dict]:
+        """pan.dev: GET /config/objects/v1/regions  (global — no folder filter)"""
+        data = self._get_objects("/regions")
+        return data.get("data", [])
+
+    def get_hip_objects(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/objects/v1/hip-objects"""
+        data = self._get_objects("/hip-objects", params={"folder": folder})
+        return data.get("data", [])
+
+    def get_hip_profiles(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/objects/v1/hip-profiles"""
+        data = self._get_objects("/hip-profiles", params={"folder": folder})
+        return data.get("data", [])
+
+    def get_log_forwarding_profiles(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/objects/v1/log-forwarding-profiles"""
+        data = self._get_objects("/log-forwarding-profiles", params={"folder": folder})
+        return data.get("data", [])
+
+    # ------------------------------------------------------------------
+    # Additional Network
+    # ------------------------------------------------------------------
+
+    def get_nat_rules(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/network/v1/nat-rules"""
+        try:
+            data = self._get_network("/nat-rules", params={"folder": folder})
+            return data.get("data", [])
+        except Exception:
+            return []
+
+    def get_pbf_rules(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/network/v1/pbf-rules"""
+        try:
+            data = self._get_network("/pbf-rules", params={"folder": folder})
+            return data.get("data", [])
+        except Exception:
+            return []
+
+    def get_ike_gateways(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/network/v1/ike-gateways"""
+        try:
+            data = self._get_network("/ike-gateways", params={"folder": folder})
+            return data.get("data", [])
+        except Exception:
+            return []
+
+    def get_ipsec_tunnels(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/network/v1/ipsec-tunnels"""
+        try:
+            data = self._get_network("/ipsec-tunnels", params={"folder": folder})
+            return data.get("data", [])
+        except Exception:
+            return []
+
+    def get_bgp_routing_profiles(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/network/v1/bgp-address-family-profiles"""
+        try:
+            data = self._get_network("/bgp-address-family-profiles", params={"folder": folder})
+            return data.get("data", [])
+        except Exception:
+            return []
+
+    def get_dns_proxies(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/network/v1/dns-proxies"""
+        try:
+            data = self._get_network("/dns-proxies", params={"folder": folder})
+            return data.get("data", [])
+        except Exception:
+            return []
+
+    def get_qos_profiles(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/network/v1/qos-profiles"""
+        try:
+            data = self._get_network("/qos-profiles", params={"folder": folder})
+            return data.get("data", [])
+        except Exception:
+            return []
+
+    def get_sdwan_rules(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/network/v1/sdwan-rules"""
+        try:
+            data = self._get_network("/sdwan-rules", params={"folder": folder})
+            return data.get("data", [])
+        except Exception:
+            return []
+
+    def get_tunnel_interfaces(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/network/v1/tunnel-interfaces"""
+        try:
+            data = self._get_network("/tunnel-interfaces", params={"folder": folder})
+            return data.get("data", [])
+        except Exception:
+            return []
+
+    def get_vlan_interfaces(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/network/v1/vlan-interfaces"""
+        try:
+            data = self._get_network("/vlan-interfaces", params={"folder": folder})
+            return data.get("data", [])
+        except Exception:
+            return []
+
+    # ------------------------------------------------------------------
+    # Identity  (api.strata.paloaltonetworks.com/config/identity/v1)
+    # pan.dev: https://pan.dev/scm/api/config/cloudngfw/identity/
+    # ------------------------------------------------------------------
+
+    def _get_identity(self, path: str, params: Optional[dict] = None) -> Any:
+        """GET from api.strata.paloaltonetworks.com/config/identity/v1."""
+        resp = self._http.get(
+            f"{self.IDENTITY_URL}{path}",
+            headers=self._headers(),
+            params=params,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+    def get_authentication_profiles(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/identity/v1/authentication-profiles"""
+        try:
+            data = self._get_identity("/authentication-profiles", params={"folder": folder})
+            return data.get("data", [])
+        except Exception:
+            return []
+
+    def get_authentication_rules(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/identity/v1/authentication-rules"""
+        try:
+            data = self._get_identity("/authentication-rules", params={"folder": folder})
+            return data.get("data", [])
+        except Exception:
+            return []
+
+    def get_certificate_profiles(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/identity/v1/certificate-profiles"""
+        try:
+            data = self._get_identity("/certificate-profiles", params={"folder": folder})
+            return data.get("data", [])
+        except Exception:
+            return []
+
+    def get_local_users(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/identity/v1/local-users"""
+        try:
+            data = self._get_identity("/local-users", params={"folder": folder})
+            return data.get("data", [])
+        except Exception:
+            return []
+
+    def get_local_user_groups(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/identity/v1/local-user-groups"""
+        try:
+            data = self._get_identity("/local-user-groups", params={"folder": folder})
+            return data.get("data", [])
+        except Exception:
+            return []
+
+    def get_radius_server_profiles(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/identity/v1/radius-server-profiles"""
+        try:
+            data = self._get_identity("/radius-server-profiles", params={"folder": folder})
+            return data.get("data", [])
+        except Exception:
+            return []
+
+    def get_tls_service_profiles(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/identity/v1/tls-service-profiles"""
+        try:
+            data = self._get_identity("/tls-service-profiles", params={"folder": folder})
+            return data.get("data", [])
+        except Exception:
+            return []
+
+    def get_mfa_servers(self, folder: str = "Shared") -> list[dict]:
+        """pan.dev: GET /config/identity/v1/mfa-servers"""
+        try:
+            data = self._get_identity("/mfa-servers", params={"folder": folder})
+            return data.get("data", [])
+        except Exception:
+            return []
 
     # ------------------------------------------------------------------
     # Network  (api.strata.paloaltonetworks.com/config/network/v1)

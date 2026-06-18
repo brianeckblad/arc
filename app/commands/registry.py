@@ -9,6 +9,7 @@ from typing import Optional
 from app.commands.base import CommandDef, ExecutionContext  # noqa: F401
 
 # Domain-specific command tables
+from app.commands.identity import COMMANDS as _IDENTITY
 from app.commands.network import COMMANDS as _NETWORK
 from app.commands.objects import COMMANDS as _OBJECTS
 from app.commands.operations import COMMANDS as _OPERATIONS
@@ -31,6 +32,7 @@ COMMANDS: dict[str, CommandDef] = {
     **_SECURITY,
     **_NETWORK,
     **_OPERATIONS,
+    **_IDENTITY,
 }
 
 # Sorted longest-first so match_command() always finds the most-specific key.
