@@ -33,6 +33,7 @@ SHELL_BUILTINS: tuple[str, ...] = (
     "folder", "tsg", "account",
     "configure", "cli",
     "feature",
+    "set",
     "clear", "exit", "quit",
     "help", "?",
 )
@@ -42,20 +43,20 @@ SHELL_BUILTINS: tuple[str, ...] = (
 # `configure_only=True` means visible only while in configure mode.
 # `hide_in_configure=True` means visible only outside configure mode.
 SHELL_HELP_ROWS: tuple[ShellBuiltinHelp, ...] = (
-    ShellBuiltinHelp("cd <device>",          "Change Device in SCM  (Tab -> device list)"),
+    ShellBuiltinHelp("cd <device|folder>",   "Navigate context  (cd device <name> | cd folder <name> | cd ..)"),
     ShellBuiltinHelp("connect <device>",     "SSH to device — interactive session  (returns to ARC on exit)"),
     ShellBuiltinHelp("remote <device>",      "SSH to named device — interactive session  (keyboard-interactive + 2FA)"),
     ShellBuiltinHelp("folder <name>",        "Set SCM Folder scope  (Tab -> folder list | folder .. -> Shared)"),
-    ShellBuiltinHelp("folder create <name>", "Create a new folder  (configure mode required)", configure_only=True),
     ShellBuiltinHelp("tsg <id>",             "Set active TSG  (Tab -> configured TSG)"),
     ShellBuiltinHelp("account <name>",       "List or switch credential profiles  (Tab -> profile names)"),
     ShellBuiltinHelp("configure",            "Enter configure mode  (arc:global #)", hide_in_configure=True),
-    ShellBuiltinHelp("cli <subcommand>",     "CLI theme operations in configure mode  (show | color | reset)", configure_only=True),
+    ShellBuiltinHelp("set <type> <name>",    "Create configuration  (configure mode)  — set ? for sub-commands", configure_only=True),
+    ShellBuiltinHelp("cli <subcommand>",     "CLI theme operations  (show | color | reset)", configure_only=True),
     ShellBuiltinHelp("feature <subcommand>", "Feature flags  (show | enable <flag> | disable <flag>)"),
     ShellBuiltinHelp("pwd",                  "Show device, folder, TSG, and active account"),
     ShellBuiltinHelp("docs",                 "Open docs in browser"),
     ShellBuiltinHelp("clear",                "Clear the terminal screen"),
-    ShellBuiltinHelp("exit / quit",          "Exit ARC", configure_only=True),
+    ShellBuiltinHelp("exit / quit",          "Exit ARC (or leave configure mode)", configure_only=True),
 )
 
 

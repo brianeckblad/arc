@@ -1,0 +1,85 @@
+# ARC CLI Structure — edit this file to customize labels, descriptions,
+# and help text without touching Python code.
+#
+# After editing, restart ARC (or run `arc`) — changes take effect on next start.
+# Validate: python dev/smoke_test.py --only 1,2
+#
+# Keys you can safely change:
+#   verb_groups     - what shows next to each verb in bare ? output
+#   sections        - header labels for the COMMANDS and SHELL sections
+#   help_footer     - the footer hint below ? output
+#   configure_banner - text shown when entering configure mode
+#   cd_hints        - feedback messages after cd navigation
+
+# ── Bare ? verb group descriptions ──────────────────────────────────────────
+#
+# Each entry has:
+#   description: shown after the verb name in bare ?
+#   hint: optional dim secondary hint
+#
+# Add a new verb here if you add a command with a new first token
+# (e.g. "debug", "trace", "export").
+
+verb_groups:
+
+  show:
+    description: "Show configuration and status"
+    hint: "type 'show ?' for sub-commands"
+
+  set:
+    description: "Create or modify configuration"
+    hint: "configure mode only — type 'set ?' for sub-commands"
+
+  commit:
+    description: "Push candidate config to managed devices"
+    hint: ""
+
+  test:
+    description: "Test policy and connectivity"
+    hint: "type 'test ?' for sub-commands"
+
+  ping:
+    description: "Ping a host from a managed device"
+    hint: "use --remote or connect first"
+
+  request:
+    description: "Request system operations"
+    hint: "type 'request ?' for sub-commands"
+
+  delete:
+    description: "Remove configuration objects"
+    hint: "configure mode only — type 'delete ?' for sub-commands"
+
+
+# ── Section headers in ? output ─────────────────────────────────────────────
+
+sections:
+  commands_header: "COMMANDS"
+  commands_hint: "type <verb> ? for sub-commands"
+  shell_header: "SHELL"
+  shell_hint: "navigation & session"
+
+
+# ── Footer hint below ? output ───────────────────────────────────────────────
+
+help_footer: "show ?  → sub-commands  |  <cmd> help  → full docs  |  help all  → complete reference"
+
+
+# ── Configure mode banner ────────────────────────────────────────────────────
+#
+# Shown when the user types `configure`.  Use \n for newlines.
+
+configure_banner: |
+  Entered configure mode.  Use 'set' to create objects, 'exit' to leave.
+  set ? → create operations  |  show ? → read configuration  |  exit → leave configure mode
+
+
+# ── cd navigation feedback messages ─────────────────────────────────────────
+#
+# {name} is replaced with the device or folder name.
+
+cd_hints:
+  device: "API context → {name}.  Use 'connect' to open an SSH session."
+  folder: "SCM folder scope → {name}."
+  clear: "Context cleared.  Back at global scope."
+

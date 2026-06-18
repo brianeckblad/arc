@@ -66,6 +66,13 @@ from app.commands.registry import (
     match_command,
 )
 from app.config import ArcConfig, list_profiles, load_config, set_active_profile
+from app.cli_structure import (
+    cd_hint as _cd_hint,
+    configure_banner as _configure_banner,
+    help_footer as _help_footer,
+    section_label as _section_label,
+    verb_description as _verb_description,
+)
 from app.docs import available_help_topics, open_docs_in_browser, render_help_topic
 from app.features import FeatureFlags, is_enabled, load_features
 from app.shell_catalog import SHELL_BUILTINS, shell_help_rows
@@ -622,14 +629,15 @@ class ArcShell:
             return False
 
         # Cisco-style inline help: trailing '?' shows a compact one-liner per command.
-        # e.g.  "show address ?"  → all commands starting with "show address"
-        #        "show ?"         → all commands starting with "show"
-        #        "?"              → full 3-tier inline listing
         if "?" in tokens:
             question_idx = tokens.index("?")
             prefix_tokens = tokens[:question_idx]
             if prefix_tokens:
-                # Restore the prefix so the user can keep typing after help renders.
+                # Special case: `set ?` or `set <sub> ?` in configure mode
+                # → route to _cmd_set which knows about set sub-commands.
+                if prefix_tokens[0].lower() == "set" and self._state.configure_mode:
+                    self._cmd_set(prefix_tokens[1:] + ["?"])
+                    return False
                 self._pending_default = " ".join(prefix_tokens) + " "
                 self._cmd_help_inline(prefix_tokens)
                 return False
@@ -692,6 +700,10 @@ class ArcShell:
             self._cmd_feature(tokens[1:])
             return False
 
+        if cmd == "set":
+            self._cmd_set(tokens[1:])
+            return False
+
         if cmd in ("help", "?"):
             rest = tokens[1:]
             if rest and rest[0].lower() == "all":
@@ -742,27 +754,71 @@ class ArcShell:
         return False
 
     # ------------------------------------------------------------------
-    # Command: cd
+    # Command: cd  (unified navigation)
     # ------------------------------------------------------------------
 
     def _cmd_cd(self, args: list[str]) -> None:
-        """Change the active SCM/API device context.
+        """Unified context navigation — device or folder.
 
-        This never starts SSH. Use `connect` for the current device or
-        `remote <device>` to open an interactive SSH session.
+        Usage:
+          cd device <name>   — set device context (Tab -> device list)
+          cd folder <name>   — set folder scope (Tab -> folder list)
+          cd ..  |  cd /     — clear device context and return to global
+          cd <name>          — shorthand for 'cd device <name>' (backward compat)
+          cd                 — show current context
         """
-        if not args or args[0] in ("..", "/"):
-            self._state.device = None
-            console.print(
-                f"[cyan]Device context cleared.[/cyan]  "
-                f"SCM / global  folder: [bold green]{self._state.folder}[/bold green]"
-            )
+        # Bare `cd` — show current position
+        if not args:
+            dev = self._state.device
+            folder = self._state.folder
+            if dev:
+                name = dev.get("hostname") or dev.get("name") or "?"
+                console.print(
+                    f"[cyan]device:[/cyan] [bold]{name}[/bold]  "
+                    f"[cyan]folder:[/cyan] [bold green]{folder}[/bold green]"
+                )
+            else:
+                console.print(
+                    f"[cyan]context:[/cyan] global  "
+                    f"[cyan]folder:[/cyan] [bold green]{folder}[/bold green]"
+                )
+            console.print("[dim]  cd device <name>  |  cd folder <name>  |  cd .. → clear device[/dim]")
             return
 
-        target = " ".join(args)
+        # cd ..  or  cd /  — clear device
+        if args[0] in ("..", "/"):
+            self._state.device = None
+            console.print(_cd_hint("clear"))
+            return
 
-        # Always try to refresh if cache is empty so we give the most
-        # accurate answer about whether the device exists in this TSG.
+        # Subcommand dispatch
+        sub = args[0].lower()
+        rest = args[1:]
+
+        if sub == "device":
+            if not rest:
+                console.print("[yellow]Usage:[/yellow] cd device <hostname | serial | ip>")
+                return
+            self._cmd_cd_device(" ".join(rest))
+            return
+
+        if sub == "folder":
+            if not rest:
+                console.print("[yellow]Usage:[/yellow] cd folder <name>  (Tab to list folders)")
+                return
+            # Delegate to the existing folder command for validation + state update
+            self._cmd_folder(rest)
+            return
+
+        # Backward compat: `cd <name>` with no subcommand keyword → device
+        self._cmd_cd_device(" ".join(args))
+
+    def _cmd_cd_device(self, target: str) -> None:
+        """Switch the active SCM/API device context to *target*.
+
+        Fuzzy-matches hostname, serial, name, or IP against the device cache.
+        Never starts an SSH session — use `connect` for that.
+        """
         if not self._state.devices_cache:
             self._refresh_devices()
 
@@ -788,11 +844,10 @@ class ArcShell:
             if sw_ver:
                 parts.append(f"sw: {sw_ver}")
             console.print("  ".join(parts) + connected)
+            console.print(f"  [dim]{_cd_hint('device', name)}[/dim]")
             return
 
-        # Device not found.
         if self._state.devices_cache:
-            # Cache is populated — this TSG has no such device. Hard stop.
             active_tsg = self._state.tsg_id or self._config.scm.tsg_id or "current TSG"
             console.print(
                 f"[red]Device '{target}' not found in TSG {active_tsg}.[/red]\n"
@@ -801,19 +856,14 @@ class ArcShell:
                 "  Use [bold]tsg <id>[/bold] to switch to a different tenant.[/dim]"
             )
         else:
-            # Cache empty even after refresh (API unavailable / empty tenant).
-            # Permit a stub only in this case so SSH still works when SCM
-            # device inventory is inaccessible.
             console.print(
                 f"[yellow]Device list unavailable — creating stub for '{target}'.[/yellow]\n"
                 "  [dim]SSH with [bold]remote[/bold] / [bold]connect[/bold] may still "
                 "work if the device is reachable directly.[/dim]"
             )
             self._state.device = {
-                "name": target,
-                "hostname": target,
-                "ip_address": target,
-                "serial_number": "",
+                "name": target, "hostname": target,
+                "ip_address": target, "serial_number": "",
             }
 
     def _find_device(self, query: str) -> Optional[dict]:
@@ -1622,11 +1672,14 @@ class ArcShell:
     # ------------------------------------------------------------------
 
     def _cmd_configure(self, args: list[str]) -> None:
-        """Enter configure mode (Cisco-style)."""
+        """Enter configure mode (Cisco-style).
+
+        In configure mode, 'set' creates objects and 'exit' leaves configure mode.
+        """
         if args and args[0].lower() not in ("t", "terminal"):
             console.print(
                 "[yellow]Usage:[/yellow] configure | conf | conf t\n"
-                "  Then use [bold]cli[/bold] for CLI theme operations in configure mode."
+                "  Then use [bold]set[/bold] to create objects, [bold]cli[/bold] for theme operations."
             )
             return
 
@@ -1634,16 +1687,11 @@ class ArcShell:
             console.print("[dim]Already in configure mode.[/dim]")
             return
 
-        # Enter from a predictable base context: arc:global #
         self._state.configure_mode = True
         self._state.device = None
         self._state.folder = "Shared"
-        console.print(
-            "[green]Entered configure mode.  Write operations are enabled:[/green]"
-        )
-        console.print(
-            "[dim]  cli show  |  cli color <key> <style>  |  cli reset[/dim]"
-        )
+        for line in _configure_banner().splitlines():
+            console.print(f"[green]{line.strip()}[/green]" if line.strip() else "")
 
     def _cmd_cli(self, args: list[str]) -> None:
         """Read/write CLI theme settings (configure mode only)."""
@@ -1763,14 +1811,134 @@ class ArcShell:
             "  Usage: feature show | feature enable <flag> | feature disable <flag>"
         )
 
+    # ------------------------------------------------------------------
+    # Command: set  (configure mode create/modify)
+    # ------------------------------------------------------------------
+
+    def _cmd_set(self, args: list[str]) -> None:
+        """Create or modify SCM configuration objects (configure mode only).
+
+        Mirrors PAN-OS `set` syntax.  All write operations require configure
+        mode — `set` outside configure mode prints a friendly error.
+
+        Usage:
+          set folder <name>                  Create a folder (prompts for parent)
+          set folder <name> parent <parent>  Create a folder under a specific parent
+          set folder new subfolder <name>    Create a subfolder under the active folder
+          set ?                              Show available set sub-commands
+        """
+        if not self._state.configure_mode:
+            console.print(
+                "[yellow]Write operation blocked:[/yellow] 'set' requires configure mode.\n"
+                "  Type [bold]configure[/bold] first, then use [bold]set[/bold]."
+            )
+            return
+
+        # `set ?` — show what set can do
+        if not args or (len(args) == 1 and args[0] == "?"):
+            t = self._theme
+            console.print()
+            console.print(f"  {self._styled('set — Create or modify configuration', t.section_header)}")
+            console.print()
+            set_ops = [
+                ("set folder <name>",                   "Create a folder (prompts for parent placement)"),
+                ("set folder <name> parent <parent>",   "Create a folder under a specific parent"),
+                ("set folder new subfolder <name>",     "Create a subfolder under the active folder"),
+            ]
+            for cmd_str, desc in set_ops:
+                cmd_cell = self._styled(f"{cmd_str:<50}", t.command_name)
+                console.print(f"    {cmd_cell} {self._styled(desc, t.description_dim)}")
+            console.print()
+            console.print(f"  {self._styled('<set command> help  → full docs  |  exit → leave configure mode', t.description_dim)}")
+            console.print()
+            return
+
+        sub = args[0].lower()
+
+        # ── set folder ──────────────────────────────────────────────────
+        if sub == "folder":
+            # `set folder ?` — show folder sub-commands
+            if args[1:] == ["?"] or args[1:] == ["?"]:
+                console.print(
+                    "\n  [bold yellow]set folder[/bold yellow]  — create SCM folders\n\n"
+                    "    [cyan]set folder <name>[/cyan]                  Create a folder (interactive parent selection)\n"
+                    "    [cyan]set folder <name> parent <parent>[/cyan]  Create with an explicit parent\n"
+                    "    [cyan]set folder new subfolder <name>[/cyan]    Create subfolder under the active folder\n"
+                )
+                return
+            self._cmd_set_folder(args[1:])
+            return
+
+        console.print(
+            f"[yellow]Unknown set sub-command:[/yellow] {sub!r}\n"
+            "  Type [bold]set ?[/bold] to see available create operations."
+        )
+
+    def _cmd_set_folder(self, args: list[str]) -> None:
+        """Create an SCM folder via the set command.
+
+        set folder <name>                  — interactive parent selection
+        set folder <name> parent <parent>  — explicit parent
+        set folder new subfolder <name>    — subfolder under active folder
+        """
+        if not args:
+            console.print(
+                "[yellow]Usage:[/yellow]\n"
+                "  set folder <name>                  — create a folder\n"
+                "  set folder <name> parent <parent>  — create with explicit parent\n"
+                "  set folder new subfolder <name>    — create subfolder under active folder"
+            )
+            return
+
+        # `set folder new subfolder <name>` — create under current folder
+        if len(args) >= 3 and args[0].lower() == "new" and args[1].lower() == "subfolder":
+            subfolder_name = " ".join(args[2:])
+            if not subfolder_name:
+                console.print("[yellow]Usage:[/yellow] set folder new subfolder <name>")
+                return
+            parent = self._state.folder  # create under the active folder
+            if not self._scm:
+                console.print("[red]SCM not configured — cannot create folders.[/red]")
+                return
+            try:
+                self._scm.create_folder(subfolder_name, parent)
+                console.print(
+                    f"[green]✓[/green] Folder [bold]{subfolder_name}[/bold] created under [bold]{parent}[/bold]."
+                )
+                self._refresh_folders(silent=True)
+            except Exception as exc:
+                console.print(f"[red]Failed to create subfolder:[/red] {exc}")
+            return
+
+        # `set folder <name> parent <parent>` — explicit parent
+        folder_name = args[0]
+        if len(args) >= 3 and args[1].lower() == "parent":
+            parent_name = " ".join(args[2:])
+            if not self._scm:
+                console.print("[red]SCM not configured — cannot create folders.[/red]")
+                return
+            try:
+                self._scm.create_folder(folder_name, parent_name)
+                console.print(
+                    f"[green]✓[/green] Folder [bold]{folder_name}[/bold] created under [bold]{parent_name}[/bold]."
+                )
+                self._refresh_folders(silent=True)
+            except Exception as exc:
+                console.print(f"[red]Failed to create folder:[/red] {exc}")
+            return
+
+        # `set folder <name>` — interactive parent selection
+        self._cmd_folder_create(folder_name)
+
+    # ------------------------------------------------------------------
+    # Command: help
+    # ------------------------------------------------------------------
+
     def _cmd_help(self, args: list[str]) -> None:
         """Print the command reference.
 
-        Bare `?` / `help` is always context-aware — commands are shown in three
-        tiers (global → folder → device) so the operator sees what is available
-        at the current navigation level, mirroring PAN-OS/Panorama CLI behaviour.
-
-        `help all` always forces the full unfiltered reference.
+        Bare `?` / `help` is always context-aware.
+        `help all` forces the full unfiltered reference.
         """
         if args and args[0].lower() != "all":
             topic = " ".join(args)
@@ -1837,33 +2005,25 @@ class ArcShell:
             return
 
         # --- Bare ? or help — Cisco/Palo-style root prompt listing ---
-        #
-        # Shows only the top-level verb stems (show, commit, ping, test, request)
-        # and SHELL builtins — just like the Palo/Cisco root prompt.  Operators
-        # drill down with "show ?" to see sub-commands.  FOLDER and DEVICE tiers
-        # are intentionally omitted here so the initial view stays clean.
         sh = t.section_header
         dd = t.description_dim
 
         console.print()
 
-        # Collect top-level verb stems from ALL scopes that are currently available.
-        # We deduplicate by first token, so "show address" and "show devices" both
-        # collapse to just "show".  We annotate "show" with a brief group description.
         root_verbs = self._root_verb_options()
         if root_verbs:
-            console.print(f"  {self._styled('COMMANDS', sh)}  {self._styled('— type <verb> ? for sub-commands', dd)}")
+            hdr   = _section_label("commands_header", "COMMANDS")
+            hint  = _section_label("commands_hint", "type <verb> ? for sub-commands")
+            console.print(f"  {self._styled(hdr, sh)}  {self._styled(f'— {hint}', dd)}")
             for verb, desc in root_verbs:
-                cmd_cell = self._styled(f"{verb:<{_HELP_CMD_WIDTH}}", t.command_name)
+                cmd_cell  = self._styled(f"{verb:<{_HELP_CMD_WIDTH}}", t.command_name)
                 desc_text = self._styled(desc, t.description) if (desc and t.description) else desc
                 console.print(f"    {cmd_cell} {desc_text}".rstrip())
 
         self._print_shell_builtins()
 
         console.print()
-        console.print(
-            f"  {self._styled('show ?  → sub-commands  |  <cmd> help  → full docs  |  help all  → complete reference', dd)}"
-        )
+        console.print(f"  {self._styled(_help_footer(), dd)}")
         console.print()
 
     def _cmd_help_docs(self, topic: str) -> None:
@@ -1935,9 +2095,11 @@ class ArcShell:
     def _print_shell_builtins(self) -> None:
         """Print the shell built-in commands section (shared by inline and full help)."""
         t = self._theme
+        hdr  = _section_label("shell_header", "SHELL")
+        hint = _section_label("shell_hint", "navigation & session")
         console.print(
-            f"\n  {self._styled('SHELL', t.section_header)}  "
-            f"{self._styled('— navigation & session', t.description_dim)}"
+            f"\n  {self._styled(hdr, t.section_header)}  "
+            f"{self._styled(f'— {hint}', t.description_dim)}"
         )
         for row in shell_help_rows(self._state.configure_mode):
             name = row.name
@@ -1968,22 +2130,10 @@ class ArcShell:
 
         Collapses every available command down to its first token, then deduplicates.
         'show devices', 'show address', 'show jobs' → just one entry: 'show'.
-        Single-token commands like 'commit' keep their description.
-
-        Verbs with multiple commands get a generic group description.
+        Descriptions come from config/cli-structure.yaml (editable without code changes).
+        In configure mode, also shows 'set' since it's the primary write verb.
         """
-        # Group descriptions for common verb groups
-        _VERB_GROUP_DESC: dict[str, str] = {
-            "show":    "Show configuration and status (type 'show ?' for sub-commands)",
-            "commit":  "Push candidate config to managed devices",
-            "ping":    "Ping a host from the device",
-            "test":    "Run policy-match and other tests",
-            "request": "Request system operations",
-        }
-
         verb_counts: dict[str, int] = {}
-        verb_single_desc: dict[str, str] = {}
-
         for key, cmd_def in COMMANDS.items():
             if not self._is_command_available(key, cmd_def):
                 continue
@@ -1991,15 +2141,14 @@ class ArcShell:
                 continue
             verb = key.split()[0]
             verb_counts[verb] = verb_counts.get(verb, 0) + 1
-            verb_single_desc[verb] = cmd_def.description  # last wins for multi-cmd verbs
+
+        # In configure mode, always show 'set' as the primary write verb.
+        if self._state.configure_mode:
+            verb_counts.setdefault("set", 1)
 
         options: list[tuple[str, str]] = []
         for verb in sorted(verb_counts):
-            count = verb_counts[verb]
-            if count > 1 or verb in _VERB_GROUP_DESC:
-                desc = _VERB_GROUP_DESC.get(verb, f"({count} sub-commands — type '{verb} ?' to expand)")
-            else:
-                desc = verb_single_desc.get(verb, "")
+            desc = _verb_description(verb, verb_counts[verb])
             options.append((verb, desc))
 
         return options
