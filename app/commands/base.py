@@ -121,3 +121,39 @@ def translation_pending(command: str) -> str:
         "'remote <device>' / 'connect' for SSH passthrough mode."
     )
 
+
+# ---------------------------------------------------------------------------
+# Write-command helpers — used by objects.py, security.py, network.py etc.
+# ---------------------------------------------------------------------------
+
+def parse_kv_tail(pos: list[str], start: int) -> dict[str, str]:
+    """Parse positional[start:] as alternating key/value pairs.
+
+    e.g. ["description", "My object", "tag", "Production"]
+    → {"description": "My object", "tag": "Production"}
+
+    Used by all 'set'/'update' command handlers to extract optional trailing
+    keyword-value pairs after the primary type/value arguments.
+    """
+    result: dict[str, str] = {}
+    i = start
+    while i + 1 < len(pos):
+        result[pos[i].lower().replace("-", "_")] = pos[i + 1]
+        i += 2
+    return result
+
+
+def merge_common_fields(obj: dict, args: dict, pos: list[str], pos_start: int) -> None:
+    """Apply description and tag changes from parsed args onto an existing object dict.
+
+    Used by update handlers (GET→merge→PUT pattern) to selectively overwrite
+    only the fields the user specified.
+    """
+    kv = parse_kv_tail(pos, pos_start)
+    if args.get("description") or kv.get("description"):
+        obj["description"] = args.get("description") or kv["description"]
+    new_tags = [t for t in [args.get("tag"), kv.get("tag")] if t]
+    if new_tags:
+        obj["tag"] = new_tags
+
+

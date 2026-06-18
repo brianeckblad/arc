@@ -1,10 +1,21 @@
-"""Objects commands (addresses, services, tags, EDLs). See docs/commands/ and docs/scm-api/specs/objects.md for details."""
+"""Objects commands (addresses, services, tags, EDLs).
+
+Read commands:  app/commands/objects.py → SCM /config/objects/v1
+Write commands: set/update/delete for addresses, services, tags, address-groups, EDLs
+See docs/commands/ and docs/scm-api/specs/ngfw-objects.yaml for full API reference.
+"""
 
 from __future__ import annotations
 
 from typing import Any
 
-from app.commands.base import CommandDef, ExecutionContext, require_scm
+from app.commands.base import (
+    CommandDef,
+    ExecutionContext,
+    merge_common_fields,
+    parse_kv_tail,
+    require_scm,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -267,15 +278,6 @@ _ADDR_TYPE_MAP = {
 }
 
 
-def _parse_kv_tail(pos: list[str], start: int) -> dict[str, str]:
-    """Parse positional[start:] as alternating key/value pairs."""
-    result: dict[str, str] = {}
-    i = start
-    while i + 1 < len(pos):
-        result[pos[i].lower().replace("-", "_")] = pos[i + 1]
-        i += 2
-    return result
-
 
 def _set_address(ctx: ExecutionContext, args: dict) -> Any:
     """Create an address object in the active SCM folder.
@@ -329,7 +331,7 @@ def _set_address(ctx: ExecutionContext, args: dict) -> Any:
         )
     if not addr_val:
         raise ValueError(f"Missing value after {addr_type!r}")
-    kv = _parse_kv_tail(pos, 3)
+    kv = parse_kv_tail(pos, 3)
     payload: dict = {"name": name, "folder": ctx.folder, _ADDR_TYPE_MAP[addr_type]: addr_val}
     if args.get("description") or kv.get("description"):
         payload["description"] = args.get("description") or kv["description"]
@@ -405,7 +407,7 @@ def _set_address_group(ctx: ExecutionContext, args: dict) -> Any:
         if not members:
             raise ValueError("Static group needs at least one member.\n  e.g. set address-group Servers static web1 db1")
         payload["static"] = members
-        kv = _parse_kv_tail(pos, kv_start)
+        kv = parse_kv_tail(pos, kv_start)
     elif mode == "dynamic":
         if len(pos) < 3 or pos[2].lower() != "filter":
             raise ValueError("Usage: set address-group <name> dynamic filter '<expression>'")
@@ -413,7 +415,7 @@ def _set_address_group(ctx: ExecutionContext, args: dict) -> Any:
         if not expr:
             raise ValueError("Missing filter expression after 'filter'")
         payload["dynamic"] = {"filter": expr}
-        kv = _parse_kv_tail(pos, 4)
+        kv = parse_kv_tail(pos, 4)
     else:
         raise ValueError(f"Unknown group type {mode!r} — use 'static' or 'dynamic'")
     if args.get("description") or kv.get("description"):
@@ -564,7 +566,7 @@ def _set_service_group(ctx: ExecutionContext, args: dict) -> Any:
         members.append(tok)
     if not members:
         raise ValueError("At least one service member required.")
-    kv = _parse_kv_tail(pos, kv_start)
+    kv = parse_kv_tail(pos, kv_start)
     payload: dict = {"name": name, "folder": ctx.folder, "members": members}
     if args.get("description") or kv.get("description"):
         payload["description"] = args.get("description") or kv["description"]
@@ -622,7 +624,7 @@ def _set_tag(ctx: ExecutionContext, args: dict) -> Any:
     name = pos[0] if pos else (args.get("name") or "")
     if not name:
         raise ValueError("Usage: set tag <name> [color <color>] [comments <text>]")
-    kv = _parse_kv_tail(pos, 1)
+    kv = parse_kv_tail(pos, 1)
     payload: dict = {"name": name, "folder": ctx.folder}
     color = args.get("color") or kv.get("color") or ""
     if color:
@@ -728,7 +730,7 @@ def _set_external_dynamic_list(ctx: ExecutionContext, args: dict) -> Any:
     except ValueError:
         pass
     payload: dict = {"name": name, "folder": ctx.folder, "type": {edl_type: type_block}}
-    kv = _parse_kv_tail(pos, url_idx + 2) if url_idx + 2 < len(pos) else {}
+    kv = parse_kv_tail(pos, url_idx + 2) if url_idx + 2 < len(pos) else {}
     if args.get("description") or kv.get("description"):
         payload["description"] = args.get("description") or kv["description"]
     tags = [t for t in [args.get("tag"), kv.get("tag")] if t]
@@ -881,14 +883,6 @@ COMMANDS.update(_WRITE_COMMANDS)
 # changes the description — the IP/type/tags remain as they were.
 # ---------------------------------------------------------------------------
 
-def _merge_common_fields(obj: dict, args: dict, pos: list[str], pos_start: int) -> None:
-    """Apply description, tag changes from args/positionals onto an existing object dict."""
-    kv = _parse_kv_tail(pos, pos_start)
-    if args.get("description") or kv.get("description"):
-        obj["description"] = args.get("description") or kv["description"]
-    new_tags = [t for t in [args.get("tag"), kv.get("tag")] if t]
-    if new_tags:
-        obj["tag"] = new_tags
 
 
 def _update_address(ctx: ExecutionContext, args: dict) -> Any:
@@ -940,10 +934,10 @@ def _update_address(ctx: ExecutionContext, args: dict) -> Any:
         for f in _ADDR_TYPE_MAP.values():
             obj.pop(f, None)
         obj[_ADDR_TYPE_MAP[field_key]] = new_val
-        _merge_common_fields(obj, args, pos, 3)
+        merge_common_fields(obj, args, pos, 3)
     else:
         # Only description/tag change
-        _merge_common_fields(obj, args, pos, 1)
+        merge_common_fields(obj, args, pos, 1)
 
     # 3. PUT
     result = scm.update_address(obj_id, obj)
@@ -992,7 +986,7 @@ def _update_address_group(ctx: ExecutionContext, args: dict) -> Any:
             raise ValueError("Need at least one member: update address-group <name> static <member>")
         obj.pop("dynamic", None)
         obj["static"] = members
-        _merge_common_fields(obj, args, pos, kv_start)
+        merge_common_fields(obj, args, pos, kv_start)
     elif mode == "dynamic":
         if len(pos) < 3 or pos[2].lower() != "filter":
             raise ValueError("Usage: update address-group <name> dynamic filter '<expression>'")
@@ -1001,9 +995,9 @@ def _update_address_group(ctx: ExecutionContext, args: dict) -> Any:
             raise ValueError("Missing filter expression")
         obj.pop("static", None)
         obj["dynamic"] = {"filter": expr}
-        _merge_common_fields(obj, args, pos, 4)
+        merge_common_fields(obj, args, pos, 4)
     else:
-        _merge_common_fields(obj, args, pos, 1)
+        merge_common_fields(obj, args, pos, 1)
 
     result = scm.update_address_group(obj_id, obj)
     return f"[green]✓[/green] Address group [bold]{name}[/bold] updated"
@@ -1055,7 +1049,7 @@ def _update_service(ctx: ExecutionContext, args: dict) -> Any:
         except ValueError:
             pass
         obj["protocol"] = {proto: proto_block}
-    _merge_common_fields(obj, args, pos, 1 if proto not in ("tcp", "udp") else 4)
+    merge_common_fields(obj, args, pos, 1 if proto not in ("tcp", "udp") else 4)
 
     result = scm.update_service(obj_id, obj)
     return f"[green]✓[/green] Service [bold]{name}[/bold] updated"
@@ -1096,9 +1090,9 @@ def _update_service_group(ctx: ExecutionContext, args: dict) -> Any:
             members.append(tok)
         if members:
             obj["members"] = members
-        _merge_common_fields(obj, args, pos, kv_start)
+        merge_common_fields(obj, args, pos, kv_start)
     else:
-        _merge_common_fields(obj, args, pos, 1)
+        merge_common_fields(obj, args, pos, 1)
 
     result = scm.update_service_group(obj_id, obj)
     return f"[green]✓[/green] Service group [bold]{name}[/bold] updated"
@@ -1130,7 +1124,7 @@ def _update_tag(ctx: ExecutionContext, args: dict) -> Any:
         raise ValueError(f"Tag '{name}' not found in folder '{ctx.folder}'.")
     obj_id = obj.pop("id")
 
-    kv = _parse_kv_tail(pos, 1)
+    kv = parse_kv_tail(pos, 1)
     color = args.get("color") or kv.get("color") or ""
     if color:
         norm = color.lower()
@@ -1196,7 +1190,7 @@ def _update_external_dynamic_list(ctx: ExecutionContext, args: dict) -> Any:
                     break
     except ValueError:
         pass
-    kv = _parse_kv_tail(pos, 1)
+    kv = parse_kv_tail(pos, 1)
     if args.get("description") or kv.get("description"):
         obj["description"] = args.get("description") or kv["description"]
 

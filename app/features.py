@@ -111,12 +111,9 @@ class FeatureFlags:
     #   False = command hidden; running it prints "feature not enabled"
     # =========================================================================
 
-    # ── Update operations — configure mode required, default False ───────────
-    # Gates the `update <resource> <name> [field value ...]` commands.
+    # ── Update operations (objects domain) ──────────────────────────────────
     # PUT requires the full object; ARC does GET→merge→PUT automatically.
     update_objects:         bool = False   # update address/service/tag/address-group/edl/service-group
-    update_security:        bool = False   # update security-rule/url-category
-    update_network:         bool = False   # update nat-rule/zone
     create_address:         bool = False   # set address <name> ip-netmask/fqdn/ip-range <value>
     create_address_group:   bool = False   # set address-group <name> static <members>
     create_service:         bool = False   # set service <name> tcp/udp port <n>
@@ -126,14 +123,18 @@ class FeatureFlags:
     delete_objects:         bool = False   # delete address/service/tag/address-group/etc.
 
     # ── Security — create/delete ─────────────────────────────────────────────
-    create_security_rule:   bool = False   # set security-rule <name> ... (requires many params)
-    create_nat_rule:        bool = False   # set nat-rule <name> source/dest/translated
+    create_security_rule:   bool = False   # set security-rule <name>
     create_url_category:    bool = False   # set url-category <name> type <t> list <urls>
-    delete_security:        bool = False   # delete security-rule/nat-rule/url-category
+    delete_security:        bool = False   # delete security-rule/url-category
 
     # ── Network — create/delete ──────────────────────────────────────────────
-    create_zone:            bool = False   # set zone <name> [type layer3]
-    delete_network:         bool = False   # delete zone/interface/route/etc.
+    create_zone:            bool = False   # set zone <name> [type layer3]  ← placeholder, no handler yet
+    create_nat_rule:        bool = False   # set nat-rule <name>             ← placeholder, no handler yet
+    delete_network:         bool = False   # delete zone/interface/route     ← placeholder, no handler yet
+
+    # ── Update (future domains) ──────────────────────────────────────────────
+    update_security:        bool = False   # update security-rule/url-category ← placeholder, no handler yet
+    update_network:         bool = False   # update nat-rule/zone               ← placeholder, no handler yet
 
     # =========================================================================
     # UNIMPLEMENTED / IN-DEVELOPMENT — default False.
@@ -151,15 +152,15 @@ class FeatureFlags:
     dhcp:                bool = False   # show dhcp (SCM: /config/network/v1/dhcp-interfaces)
     dns_proxy:           bool = False   # show dns-proxy (SCM: /config/network/v1/dns-proxies)
     qos:                 bool = False   # show qos-profile (SCM: /config/network/v1/qos-profiles)
-    logical_routers:     bool = False   # show logical-router (SCM: /config/network/v1/logical-routers)
-    vpn_auto:            bool = False   # show auto-vpn (SCM: /config/network/v1/auto-vpn-*)
+    logical_routers:     bool = False   # show logical-router (placeholder, no handler yet)
+    vpn_auto:            bool = False   # show auto-vpn (placeholder, no handler yet)
 
     # ── Security (unimplemented) ──────────────────────────────────────────────
     decryption_policy:   bool = False   # show decryption-rules / decryption-profile
     dos_protection:      bool = False   # show dos-protection-rules / dos-protection-profile
     app_override:        bool = False   # show app-override-rules
     profile_groups:      bool = False   # show profile-group
-    url_admin_override:  bool = False   # show url-admin-override
+    url_admin_override:  bool = False   # show url-admin-override (placeholder, no handler yet)
     security_profiles:   bool = False   # show anti-spyware / vulnerability / wildfire / dns-security profiles
 
     # ── Identity (unimplemented) ──────────────────────────────────────────────
@@ -177,22 +178,20 @@ class FeatureFlags:
     hip:                 bool = False   # show hip-object / hip-profile (GlobalProtect)
     log_profiles:        bool = False   # show log-forwarding-profile
 
-    # ── Device Settings (unimplemented) ──────────────────────────────────────
-    device_settings:     bool = False   # show general-settings / management-interface
-                                        # / session-settings / service-route
+    # ── Device Settings (unimplemented — placeholder) ────────────────────────
+    device_settings:     bool = False   # show general-settings / management-interface / session-settings
 
     # ── Live device only — SSH --remote required ──────────────────────────────
     show_arp:            bool = False   # show arp (PAN-OS: show arp all)
     show_sessions:       bool = False   # show session all / info / id
-    show_routing_live:   bool = False   # show routing protocol bgp peer/summary
-                                        # show routing protocol ospf summary/neighbor
+    show_routing_live:   bool = False   # show routing protocol bgp peer/summary (placeholder, no handler yet)
     traceroute:          bool = False   # traceroute host <ip>
     test_nat:            bool = False   # test nat-policy-match
     test_url:            bool = False   # test url <url>
     request_system_reboot: bool = False # request system reboot / shutdown (with confirmation)
 
-    # ── Operations (unimplemented) ────────────────────────────────────────────
-    onboarding:          bool = False   # device onboarding APIs
+    # ── Operations (placeholder — no handler yet) ─────────────────────────────
+    onboarding:          bool = False   # device onboarding APIs (placeholder)
 
 
 def load_features() -> FeatureFlags:

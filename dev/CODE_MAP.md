@@ -9,102 +9,100 @@
   files. Files under app/ with >= 300 lines are mapped.
 -->
 
-## `app/shell.py`  (2863 lines)
+## `app/shell.py`  (2843 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_expand_unambiguous_prefix()             100-132        Expand command-token prefixes when they resolve to exactly one phrase.
-class ArcCompleter                       139-393        Context-aware tab completer.
-  .__init__()                            148-149        
-  .get_completions()                     151-385        
-  ._all_commands()                       387-393        
-_make_key_bindings()                     410-432        Return key bindings for the ARC shell.
-class ShellState                         436-448        
-class ArcShell                           451-2862       Main interactive REPL.
-  .__init__()                            454-490        
-  ._init_clients()                       496-577        
-  ._prompt()                             583-627        Build the prompt string reflecting the active context tier.
-  .run()                                 633-656        
-  ._dispatch()                           662-872        Process one input line.  Returns True when the user wants to exit ARC.
-  ._cmd_cd()                             878-932        Unified context navigation — device or folder.
-  ._cmd_cd_device()                      934-985        Switch the active SCM/API device context to *target*.
-  ._find_device()                        987-1003       Find a device in the cache by hostname, serial, name, or IP.
-  ._refresh_devices()                    1005-1021      Fetch managed devices and populate the cache used by tab completion an
-  ._refresh_folders()                    1023-1033      Fetch SCM folder names and populate the cache used by 'folder' tab com
-  ._refresh_tsgs()                       1035-1050      Fetch TSG entries from SCM IAM and populate the cache used by 'tsg' ta
-  ._cmd_connect()                        1056-1150      Connect to a device via SSH and hand the terminal over to the remote s
-  ._run_interactive_shell()              1156-1249      Hand the terminal over to *channel* for a fully interactive SSH sessio
-  ._cmd_pwd()                            1258-1302      Show current device context, active SCM folder, TSG, and SSH credentia
-  ._cmd_folder()                         1308-1398      Set or display the active SCM folder context.
-  ._cmd_folder_create()                  1404-1524      Interactive folder creation: prompt for a parent, confirm, and POST to
-  ._cmd_tsg()                            1532-1653      Switch the active Tenant Services Group (TSG) context.
-  ._cmd_account()                        1659-1786      List or switch named credential profiles.
-  ._cmd_configure()                      1792-1812      Enter configure mode (Cisco-style).
-  ._cmd_cli()                            1814-1868      Read/write CLI theme settings (configure mode only).
-  ._cmd_feature()                        1874-2028      Show, enable, or disable feature flags at runtime.
-  ._cmd_set()                            2034-2139      Create or modify SCM configuration objects (configure mode only).
-  ._cmd_set_folder()                     2141-2195      Create an SCM folder via the set command.
-  ._cmd_help()                           2201-2220      Print the command reference.
-  ._cmd_help_inline()                    2222-2291      Cisco-style compact inline help — one line per command, no panels.
-  ._cmd_help_docs()                      2293-2327      Show the full documentation page for a command or topic.
-  ._cmd_help_full()                      2329-2357      Print the full command reference regardless of context.
-  ._cmd_show_write_help()                2359-2381      Show available delete/update commands in configure mode.
-  ._print_shell_builtins()               2383-2396      Print the shell built-in commands section (shared by inline and full h
-  ._is_command_available()               2398-2407      Return True when a registered command is executable in the current con
-  ._is_config_command()                  2410-2414      Return True when a command should appear in configure-mode `?` help.
-  ._root_verb_options()                  2416-2444      Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
-  ._collapsed_prefix_help_options()      2446-2501      Return collapsed next-token help options for a command prefix.
-  ._collapsed_tier_help_options()        2503-2538      Return collapsed bare-tier help options for one scope.
-  ._context_annotation()                 2540-2561      Return a short inline context note for commands whose output depends o
-  ._print_context_hint_for()             2563-2567      Print a one-line context note below an exact-match docs result.
-  ._execute_api()                        2573-2622      
-  ._execute_remote()                     2628-2669      
-  ._resolve_ssh_command()                2671-2678      Return the concrete SSH command string for a registered command.
-  ._render()                             2684-2760      
-  ._make_context()                       2766-2774      
-  ._styled()                             2781-2789      Wrap *text* in a Rich markup tag for *style*.
-  ._cleanup()                            2791-2795      
-  ._random_goodbye_message()             2798-2816      Return a random goodbye line from app/goodbye.txt.
-  ._print_banner()                       2818-2845      
-  ._print_startup_help()                 2847-2862      Print compact startup command hints shown after SCM connection status.
+_expand_unambiguous_prefix()             101-133        Expand command-token prefixes when they resolve to exactly one phrase.
+class ArcCompleter                       140-392        Context-aware tab completer.
+  .__init__()                            149-150        
+  .get_completions()                     152-384        
+  ._all_commands()                       386-392        
+_make_key_bindings()                     409-431        Return key bindings for the ARC shell.
+class ShellState                         435-447        
+class ArcShell                           450-2842       Main interactive REPL.
+  .__init__()                            453-489        
+  ._init_clients()                       495-576        
+  ._prompt()                             582-626        Build the prompt string reflecting the active context tier.
+  .run()                                 632-655        
+  ._dispatch()                           661-870        Process one input line.  Returns True when the user wants to exit ARC.
+  ._cmd_cd()                             876-930        Unified context navigation — device or folder.
+  ._cmd_cd_device()                      932-983        Switch the active SCM/API device context to *target*.
+  ._find_device()                        985-1001       Find a device in the cache by hostname, serial, name, or IP.
+  ._refresh_devices()                    1003-1019      Fetch managed devices and populate the cache used by tab completion an
+  ._refresh_folders()                    1021-1031      Fetch SCM folder names and populate the cache used by 'folder' tab com
+  ._refresh_tsgs()                       1033-1048      Fetch TSG entries from SCM IAM and populate the cache used by 'tsg' ta
+  ._cmd_connect()                        1054-1148      Connect to a device via SSH and hand the terminal over to the remote s
+  ._run_interactive_shell()              1154-1247      Hand the terminal over to *channel* for a fully interactive SSH sessio
+  ._cmd_pwd()                            1256-1300      Show current device context, active SCM folder, TSG, and SSH credentia
+  ._cmd_folder()                         1306-1396      Set or display the active SCM folder context.
+  ._cmd_folder_create()                  1402-1522      Interactive folder creation: prompt for a parent, confirm, and POST to
+  ._cmd_tsg()                            1530-1651      Switch the active Tenant Services Group (TSG) context.
+  ._cmd_account()                        1657-1784      List or switch named credential profiles.
+  ._cmd_configure()                      1790-1810      Enter configure mode (Cisco-style).
+  ._cmd_cli()                            1812-1866      Read/write CLI theme settings (configure mode only).
+  ._cmd_feature()                        1872-2008      Show, enable, or disable feature flags at runtime.
+  ._cmd_set()                            2014-2119      Create or modify SCM configuration objects (configure mode only).
+  ._cmd_set_folder()                     2121-2175      Create an SCM folder via the set command.
+  ._cmd_help()                           2181-2200      Print the command reference.
+  ._cmd_help_inline()                    2202-2271      Cisco-style compact inline help — one line per command, no panels.
+  ._cmd_help_docs()                      2273-2307      Show the full documentation page for a command or topic.
+  ._cmd_help_full()                      2309-2337      Print the full command reference regardless of context.
+  ._cmd_show_write_help()                2339-2361      Show available delete/update commands in configure mode.
+  ._print_shell_builtins()               2363-2376      Print the shell built-in commands section (shared by inline and full h
+  ._is_command_available()               2378-2387      Return True when a registered command is executable in the current con
+  ._is_config_command()                  2390-2394      Return True when a command should appear in configure-mode `?` help.
+  ._root_verb_options()                  2396-2424      Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
+  ._collapsed_prefix_help_options()      2426-2481      Return collapsed next-token help options for a command prefix.
+  ._collapsed_tier_help_options()        2483-2518      Return collapsed bare-tier help options for one scope.
+  ._context_annotation()                 2520-2541      Return a short inline context note for commands whose output depends o
+  ._print_context_hint_for()             2543-2547      Print a one-line context note below an exact-match docs result.
+  ._execute_api()                        2553-2602      
+  ._execute_remote()                     2608-2649      
+  ._resolve_ssh_command()                2651-2658      Return the concrete SSH command string for a registered command.
+  ._render()                             2664-2740      
+  ._make_context()                       2746-2754      
+  ._styled()                             2761-2769      Wrap *text* in a Rich markup tag for *style*.
+  ._cleanup()                            2771-2775      
+  ._random_goodbye_message()             2778-2796      Return a random goodbye line from app/goodbye.txt.
+  ._print_banner()                       2798-2825      
+  ._print_startup_help()                 2827-2842      Print compact startup command hints shown after SCM connection status.
 
-## `app/commands/objects.py`  (1267 lines)
+## `app/commands/objects.py`  (1261 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_show_address()                          14-20          List address objects in the active SCM folder.
-_show_address_group()                    23-29          List address groups in the active SCM folder.
-_show_service()                          32-38          List service objects in the active SCM folder.
-_show_tag()                              41-47          List tags in the active SCM folder.
-_show_external_dynamic_list()            50-56          List external dynamic lists (EDLs) in the active SCM folder.
-_show_service_groups()                   116-119        pan.dev: GET /config/objects/v1/service-groups?folder=<folder>
-_show_application_groups()               122-125        pan.dev: GET /config/objects/v1/application-groups?folder=<folder>
-_show_application_filters()              128-131        pan.dev: GET /config/objects/v1/application-filters?folder=<folder>
-_show_schedules()                        134-137        pan.dev: GET /config/objects/v1/schedules?folder=<folder>
-_show_regions()                          140-143        pan.dev: GET /config/objects/v1/regions  (global — no folder filter)
-_show_hip_objects()                      146-149        pan.dev: GET /config/objects/v1/hip-objects?folder=<folder>
-_show_hip_profiles()                     152-155        pan.dev: GET /config/objects/v1/hip-profiles?folder=<folder>
-_show_log_forwarding_profiles()          158-161        pan.dev: GET /config/objects/v1/log-forwarding-profiles?folder=<folder
-_parse_kv_tail()                         270-277        Parse positional[start:] as alternating key/value pairs.
-_set_address()                           280-347        Create an address object in the active SCM folder.
-_delete_address()                        350-361        Delete an address object.  Usage: delete address <name>
-_set_address_group()                     364-428        Create a static or dynamic address group in the active folder.
-_delete_address_group()                  431-442        Delete an address group.  Usage: delete address-group <name>
-_set_service()                           445-515        Create a TCP or UDP service object in the active folder.
-_delete_service()                        518-529        Delete a service object.  Usage: delete service <name>
-_set_service_group()                     532-578        Create a service group (named collection of service objects).
-_delete_service_group()                  581-592        Delete a service group.  Usage: delete service-group <name>
-_set_tag()                               595-646        Create a tag in the active folder.
-_delete_tag()                            649-660        Delete a tag.  Usage: delete tag <name>
-_set_external_dynamic_list()             663-741        Create an External Dynamic List (EDL) in the active folder.
-_delete_external_dynamic_list()          744-755        Delete an EDL.  Usage: delete external-dynamic-list <name>
-_merge_common_fields()                   884-891        Apply description, tag changes from args/positionals onto an existing 
-_update_address()                        894-951        Update an existing address object (GET→merge→PUT).
-_update_address_group()                  954-1009       Update an existing address group (GET→merge→PUT).
-_update_service()                        1012-1061      Update an existing service object (GET→merge→PUT).
-_update_service_group()                  1064-1104      Update a service group's member list.
-_update_tag()                            1107-1145      Update an existing tag (color, comments).
-_update_external_dynamic_list()          1148-1204      Update an existing EDL (URL, description, or frequency).
+_show_address()                          25-31          List address objects in the active SCM folder.
+_show_address_group()                    34-40          List address groups in the active SCM folder.
+_show_service()                          43-49          List service objects in the active SCM folder.
+_show_tag()                              52-58          List tags in the active SCM folder.
+_show_external_dynamic_list()            61-67          List external dynamic lists (EDLs) in the active SCM folder.
+_show_service_groups()                   127-130        pan.dev: GET /config/objects/v1/service-groups?folder=<folder>
+_show_application_groups()               133-136        pan.dev: GET /config/objects/v1/application-groups?folder=<folder>
+_show_application_filters()              139-142        pan.dev: GET /config/objects/v1/application-filters?folder=<folder>
+_show_schedules()                        145-148        pan.dev: GET /config/objects/v1/schedules?folder=<folder>
+_show_regions()                          151-154        pan.dev: GET /config/objects/v1/regions  (global — no folder filter)
+_show_hip_objects()                      157-160        pan.dev: GET /config/objects/v1/hip-objects?folder=<folder>
+_show_hip_profiles()                     163-166        pan.dev: GET /config/objects/v1/hip-profiles?folder=<folder>
+_show_log_forwarding_profiles()          169-172        pan.dev: GET /config/objects/v1/log-forwarding-profiles?folder=<folder
+_set_address()                           282-349        Create an address object in the active SCM folder.
+_delete_address()                        352-363        Delete an address object.  Usage: delete address <name>
+_set_address_group()                     366-430        Create a static or dynamic address group in the active folder.
+_delete_address_group()                  433-444        Delete an address group.  Usage: delete address-group <name>
+_set_service()                           447-517        Create a TCP or UDP service object in the active folder.
+_delete_service()                        520-531        Delete a service object.  Usage: delete service <name>
+_set_service_group()                     534-580        Create a service group (named collection of service objects).
+_delete_service_group()                  583-594        Delete a service group.  Usage: delete service-group <name>
+_set_tag()                               597-648        Create a tag in the active folder.
+_delete_tag()                            651-662        Delete a tag.  Usage: delete tag <name>
+_set_external_dynamic_list()             665-743        Create an External Dynamic List (EDL) in the active folder.
+_delete_external_dynamic_list()          746-757        Delete an EDL.  Usage: delete external-dynamic-list <name>
+_update_address()                        888-945        Update an existing address object (GET→merge→PUT).
+_update_address_group()                  948-1003       Update an existing address group (GET→merge→PUT).
+_update_service()                        1006-1055      Update an existing service object (GET→merge→PUT).
+_update_service_group()                  1058-1098      Update a service group's member list.
+_update_tag()                            1101-1139      Update an existing tag (color, comments).
+_update_external_dynamic_list()          1142-1198      Update an existing EDL (URL, description, or frequency).
 
 ## `app/api/client.py`  (1207 lines)
 

@@ -25,6 +25,7 @@ th# SHELL.PY — the shell spine (prompt loop, dispatch, execution, rendering)
 from __future__ import annotations
 
 import os
+import re
 import random
 import select
 import shutil
@@ -33,7 +34,7 @@ import sys
 import time
 import traceback
 import xml.etree.ElementTree as ET
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Optional
 
@@ -152,9 +153,8 @@ class ArcCompleter(Completer):
         raw = document.text_before_cursor.lstrip()
         # Normalize internal whitespace: multiple spaces and tabs → single space.
         # Preserve whether the user just pressed space/tab (trailing whitespace = new token).
-        import re as _re
         ends_with_space = bool(raw) and raw[-1] in (" ", "\t")
-        text = _re.sub(r"[ \t]+", " ", raw).strip()
+        text = re.sub(r"[ \t]+", " ", raw).strip()
         if ends_with_space:
             text = text + " "  # restore single trailing space for has_arg_space detection
 
@@ -237,7 +237,6 @@ class ArcCompleter(Completer):
                         yield Completion(sub, start_position=-len(partial_arg))
             elif second in ("enable", "disable") and len(parts) <= 3:
                 # Complete feature flag names from features.py
-                from dataclasses import asdict
                 flag_dict = asdict(self._shell._features)
                 partial_flag = parts[2] if len(parts) > 2 else ""
                 for flag, enabled in sorted(flag_dict.items()):
@@ -662,8 +661,7 @@ class ArcShell:
     def _dispatch(self, line: str) -> bool:
         """Process one input line.  Returns True when the user wants to exit ARC."""
         # Normalize whitespace: collapse tabs and multiple spaces to a single space.
-        import re as _re
-        line = _re.sub(r"[ \t]+", " ", line).strip()
+        line = re.sub(r"[ \t]+", " ", line).strip()
         # Strip --remote flag before any other parsing
         remote = False
         tokens = line.split()
@@ -1885,16 +1883,10 @@ class ArcShell:
         Changes take effect immediately but are session-only unless you edit
         config/features.json.  Use 'feature help' for the full docs page.
         """
-        from dataclasses import asdict
-
         sub = args[0].lower() if args else "show"
 
         # ── ? suffix handling ─────────────────────────────────────────────────
-        # `feature ?`          → show subcommand usage
-        # `feature enable ?`   → list flags currently OFF (candidates to enable)
-        # `feature disable ?`  → list flags currently ON (candidates to disable)
         if sub == "?":
-            t = self._theme
             console.print()
             console.print(f"  [bold yellow]feature[/bold yellow]  [dim]— feature flag management[/dim]")
             console.print()
@@ -1909,16 +1901,20 @@ class ArcShell:
             console.print()
             return
 
-        if sub in ("enable", "disable") and len(args) >= 2 and args[1] == "?":
-            flag_dict = asdict(self._features)
-            from app.features import FeatureFlags as _FF
-            defaults = asdict(_FF())
-            from app.commands.registry import COMMANDS as _CMDS
-            flag_to_cmds: dict[str, list[str]] = {}
-            for cmd_key, cmd_def in _CMDS.items():
+        # Helper: build flag→commands reverse map (used by show and enable/disable ?)
+        def _flag_to_cmds() -> dict[str, list[str]]:
+            result: dict[str, list[str]] = {}
+            for cmd_key, cmd_def in COMMANDS.items():
                 if cmd_def.feature_flag:
-                    flag_to_cmds.setdefault(cmd_def.feature_flag, []).append(cmd_key)
-            t = self._theme
+                    result.setdefault(cmd_def.feature_flag, []).append(cmd_key)
+            return result
+
+        # Helper: default flag values to separate shipped from unimplemented
+        _defaults = asdict(FeatureFlags())
+
+        if sub in ("enable", "disable") and len(args) >= 2 and args[1] == "?":
+            flag_dict   = asdict(self._features)
+            flag_cmds   = _flag_to_cmds()
             console.print()
             if sub == "enable":
                 candidates = {k: v for k, v in flag_dict.items() if not v}
@@ -1932,18 +1928,17 @@ class ArcShell:
             if not candidates:
                 console.print(f"  [dim]No flags are currently {'disabled' if sub == 'enable' else 'enabled'}.[/dim]")
             else:
-                # Group by shipped vs unimplemented
-                shipped_off   = {k for k, v in candidates.items() if defaults.get(k, False)}
-                unimpl_off    = {k for k in candidates if k not in shipped_off}
-                if shipped_off:
+                shipped_set = {k for k in candidates if _defaults.get(k, False)}
+                unimpl_set  = {k for k in candidates if k not in shipped_set}
+                if shipped_set:
                     console.print(f"  [cyan]Shipped commands[/cyan]  [dim](default: on)[/dim]")
-                    for flag in sorted(shipped_off):
-                        cmds = ", ".join(sorted(flag_to_cmds.get(flag, []))) or "—"
+                    for flag in sorted(shipped_set):
+                        cmds = ", ".join(sorted(flag_cmds.get(flag, []))) or "—"
                         console.print(f"    [bold]{flag:<35}[/bold]  [dim]{cmds}[/dim]")
-                if unimpl_off:
+                if unimpl_set:
                     console.print(f"  [cyan]Unimplemented / development[/cyan]  [dim](default: off)[/dim]")
-                    for flag in sorted(unimpl_off):
-                        cmds = ", ".join(sorted(flag_to_cmds.get(flag, []))) or "—"
+                    for flag in sorted(unimpl_set):
+                        cmds = ", ".join(sorted(flag_cmds.get(flag, []))) or "—"
                         console.print(f"    [bold]{flag:<35}[/bold]  [dim]{cmds}[/dim]")
             console.print()
             console.print(f"  [dim]feature enable <flag>  |  feature disable <flag>  |  feature show[/dim]")
@@ -1951,35 +1946,22 @@ class ArcShell:
             return
 
         if sub == "help":
-            from app.docs import render_help_topic as _rht
-            if not _rht(console, "features"):
+            if not render_help_topic(console, "features"):
                 console.print("[dim]No docs found for 'features' — run 'help features'.[/dim]")
             return
 
         if sub == "show":
-            from app.commands.registry import COMMANDS as _CMDS
-            from dataclasses import asdict
+            flag_dict  = asdict(self._features)
+            flag_cmds  = _flag_to_cmds()
+            shipped    = {k: v for k, v in flag_dict.items() if _defaults[k]}
+            unimpl     = {k: v for k, v in flag_dict.items() if not _defaults[k]}
 
-            flag_dict = asdict(self._features)
-
-            # Build a reverse map: flag_name → [command strings that use it]
-            flag_to_cmds: dict[str, list[str]] = {}
-            for cmd_key, cmd_def in _CMDS.items():
-                if cmd_def.feature_flag:
-                    flag_to_cmds.setdefault(cmd_def.feature_flag, []).append(cmd_key)
-
-            t = self._theme
             console.print()
             console.print(
                 f"  [bold yellow]Feature Flags[/bold yellow]  "
                 f"[dim]— session state (edit config/features.json to persist)[/dim]"
             )
 
-            # Separate shipped (True by default) from unimplemented (False by default)
-            from app.features import FeatureFlags as _FF
-            defaults = asdict(_FF())
-            shipped   = {k: v for k, v in flag_dict.items() if defaults[k]}
-            unimpl    = {k: v for k, v in flag_dict.items() if not defaults[k]}
 
             console.print(f"\n  [bold cyan]Shipped commands[/bold cyan]  [dim](default: enabled)[/dim]")
             for flag in sorted(shipped):
@@ -2002,12 +1984,10 @@ class ArcShell:
 
         if sub in ("enable", "disable"):
             if len(args) < 2:
-                # No flag name given — show what's available
                 console.print(f"[yellow]Usage:[/yellow] feature {sub} <flag_name>")
                 console.print(f"  Tip: [bold]feature {sub} ?[/bold]  lists all flags that can be {sub}d")
                 return
             flag_name = args[1].lower()
-            from dataclasses import asdict
             if flag_name not in asdict(self._features):
                 all_flags = sorted(asdict(self._features).keys())
                 console.print(
