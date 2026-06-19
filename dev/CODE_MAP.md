@@ -346,27 +346,6 @@ _ssh_test_nat()                          345-353
 _test_url()                              356-363        Test URL categorization — use --remote.  PAN-OS: test url <url>
 _ssh_test_url()                          366-368        
 
-## `app/commands/security.py`  (347 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_show_security_policy()                  26-32          List security rules (pre-position) in the active SCM folder.
-_show_url_categories()                   35-41          List custom URL categories in the active SCM folder.
-_pending_test_security_policy_match()    44-50          
-_ssh_test_spm()                          57-66          
-_show_decryption_rules()                 112-115        pan.dev: GET /config/security/v1/decryption-rules?folder=<folder>
-_show_decryption_profiles()              118-121        pan.dev: GET /config/security/v1/decryption-profiles?folder=<folder>
-_show_dos_protection_rules()             124-127        pan.dev: GET /config/security/v1/dos-protection-rules?folder=<folder>
-_show_dos_protection_profiles()          130-133        pan.dev: GET /config/security/v1/dos-protection-profiles?folder=<folde
-_show_app_override_rules()               136-139        pan.dev: GET /config/security/v1/app-override-rules?folder=<folder>
-_show_profile_groups()                   142-145        pan.dev: GET /config/security/v1/profile-groups?folder=<folder>
-_show_anti_spyware_profiles()            148-151        pan.dev: GET /config/security/v1/anti-spyware-profiles?folder=<folder>
-_show_vulnerability_profiles()           154-157        pan.dev: GET /config/security/v1/vulnerability-protection-profiles?fol
-_show_wildfire_profiles()                160-163        pan.dev: GET /config/security/v1/wildfire-anti-virus-profiles?folder=<
-_delete_security_rule()                  257-272        Delete a security rule by name.
-_set_url_category()                      275-297        Create a custom URL category.
-_delete_url_category()                   300-311        Delete a URL category.  Usage: delete url-category <name>
-
 ## `app/commands/setup.py`  (343 lines)
 
 Symbol                                   Lines          Purpose
@@ -378,6 +357,25 @@ _show_device_snippets()                  97-148         Show snippets attached t
 _show_snippets()                         151-220        List snippets scoped to the current context.
 _show_snippets_global()                  223-235        List ALL snippets regardless of device or folder context.
 _show_snippet_detail()                   238-277        Show detail for a named snippet.
+
+## `app/commands/security.py`  (311 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+_show_security_policy()                  25-31          List security rules (pre-position) in the active SCM folder.
+_show_url_categories()                   34-40          List custom URL categories in the active SCM folder.
+_show_decryption_rules()                 76-79          pan.dev: GET /config/security/v1/decryption-rules?folder=<folder>
+_show_decryption_profiles()              82-85          pan.dev: GET /config/security/v1/decryption-profiles?folder=<folder>
+_show_dos_protection_rules()             88-91          pan.dev: GET /config/security/v1/dos-protection-rules?folder=<folder>
+_show_dos_protection_profiles()          94-97          pan.dev: GET /config/security/v1/dos-protection-profiles?folder=<folde
+_show_app_override_rules()               100-103        pan.dev: GET /config/security/v1/app-override-rules?folder=<folder>
+_show_profile_groups()                   106-109        pan.dev: GET /config/security/v1/profile-groups?folder=<folder>
+_show_anti_spyware_profiles()            112-115        pan.dev: GET /config/security/v1/anti-spyware-profiles?folder=<folder>
+_show_vulnerability_profiles()           118-121        pan.dev: GET /config/security/v1/vulnerability-protection-profiles?fol
+_show_wildfire_profiles()                124-127        pan.dev: GET /config/security/v1/wildfire-anti-virus-profiles?folder=<
+_delete_security_rule()                  221-236        Delete a security rule by name.
+_set_url_category()                      239-261        Create a custom URL category.
+_delete_url_category()                   264-275        Delete a URL category.  Usage: delete url-category <name>
 
 ## `app/ssh/manager.py`  (309 lines)
 

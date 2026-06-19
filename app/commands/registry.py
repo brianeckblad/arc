@@ -13,6 +13,7 @@ from app.commands.identity import COMMANDS as _IDENTITY
 from app.commands.network import COMMANDS as _NETWORK
 from app.commands.objects import COMMANDS as _OBJECTS
 from app.commands.operations import COMMANDS as _OPERATIONS
+from app.commands.packet_tracer import COMMANDS as _PACKET_TRACER
 from app.commands.security import COMMANDS as _SECURITY
 from app.commands.setup import COMMANDS as _SETUP
 
@@ -33,6 +34,7 @@ COMMANDS: dict[str, CommandDef] = {
     **_NETWORK,
     **_OPERATIONS,
     **_IDENTITY,
+    **_PACKET_TRACER,
 }
 
 # Sorted longest-first so match_command() always finds the most-specific key.

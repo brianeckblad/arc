@@ -26,6 +26,10 @@ verb_groups:
     description: "Show configuration and status"
     hint: "type 'show ?' for sub-commands"
 
+  packet-tracer:
+    description: "Trace a packet through the folder's security rule base"
+    hint: "packet-tracer from <zone> to <zone> source <ip> destination <ip>"
+
   set:
     description: "Create or modify configuration"
     hint: "configure mode only — type 'set ?' for sub-commands"

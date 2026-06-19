@@ -15,7 +15,6 @@ from app.commands.base import (
     CommandDef,
     ExecutionContext,
     require_scm,
-    translation_pending,
 )
 
 
@@ -41,33 +40,11 @@ def _show_url_categories(ctx: ExecutionContext, args: dict) -> Any:
     return scm.get_url_categories(folder=ctx.folder)
 
 
-def _pending_test_security_policy_match(ctx: ExecutionContext, args: dict) -> str:
-    if not args.get("source") or not args.get("destination"):
-        raise RuntimeError(
-            "Usage: test security-policy-match source <ip> destination <ip> "
-            "[application <app>] [protocol <n>] [destination-port <n>]"
-        )
-    return translation_pending("test security-policy-match")
-
-
-# ---------------------------------------------------------------------------
-# SSH command builders
-# ---------------------------------------------------------------------------
-
-def _ssh_test_spm(args: dict) -> str:
-    src   = args.get("source", "")
-    dst   = args.get("destination", "")
-    app   = args.get("application", "any")
-    proto = args.get("protocol", "6")
-    dport = args.get("destination-port", "80")
-    return (
-        f"test security-policy-match source {src} destination {dst} "
-        f"application {app} protocol {proto} destination-port {dport}"
-    )
-
-
 # ---------------------------------------------------------------------------
 # Command table — merged into COMMANDS by registry.py
+#
+# NOTE: `test security-policy-match` and `packet-tracer` live in
+# app/commands/packet_tracer.py (they simulate the folder rule base).
 # ---------------------------------------------------------------------------
 
 COMMANDS: dict[str, CommandDef] = {
@@ -88,19 +65,6 @@ COMMANDS: dict[str, CommandDef] = {
         ssh_command=None,
         render="url_categories",
         feature_flag="show_url_categories",
-    ),
-    "test security-policy-match": CommandDef(
-        description=(
-            "Test security policy match — "
-            "test security-policy-match source <ip> destination <ip> "
-            "application <app> protocol <n> destination-port <n>"
-        ),
-        category="security",
-        scope="device",
-        api_handler=_pending_test_security_policy_match,
-        ssh_command=_ssh_test_spm,
-        render="raw",
-        feature_flag="test_security_policy_match",
     ),
 }
 
