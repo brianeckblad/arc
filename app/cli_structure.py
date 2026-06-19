@@ -1,4 +1,4 @@
-"""Loader for config/cli-structure.yaml — the user-editable CLI customization file.
+"""Loader for settings/cli-structure.yaml — the user-editable CLI customization file.
 
 Reading from this file lets operators change how the ARC CLI looks (labels,
 descriptions, help text, configure banner) without editing Python code.
@@ -10,13 +10,12 @@ the YAML file is missing or malformed, so the shell always starts cleanly.
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 from typing import Any
+
+from app.paths import STRUCTURE_FILE as _STRUCTURE_FILE
 
 logger = logging.getLogger(__name__)
 
-# Resolved path to the YAML file (lives in the config/ directory at repo root).
-_STRUCTURE_FILE = Path(__file__).resolve().parents[1] / "config" / "cli-structure.yaml"
 
 # Module-level cache — loaded once per session.
 _cache: dict[str, Any] | None = None

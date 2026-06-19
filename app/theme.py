@@ -3,17 +3,16 @@
 All colour values are Rich markup style strings, e.g. ``"cyan"``,
 ``"bold yellow"``, ``"dim"``.  An empty string means no styling (plain text).
 
-The active theme is stored in ``app/cli_theme.json``.  Edit that file
-directly or use the ``conf color <key> <style>`` shell command.
+The active theme is stored in ``settings/theme.json``.  Edit that file
+directly or use the ``cli color <key> <style>`` shell command.
 """
 
 from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass
-from pathlib import Path
 
-_THEME_FILE = Path(__file__).parent / "cli_theme.json"
+from app.paths import THEME_FILE as _THEME_FILE
 
 
 @dataclass

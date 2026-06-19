@@ -136,7 +136,7 @@ def _parse_cli_args() -> tuple[set[int], bool]:
             return base | {7} | map_check, quiet
         if name in ("shell.py", "shell_catalog.py"):
             return base | {8, 9} | map_check, quiet
-        if name in ("theme.py", "cli_theme.json"):
+        if name in ("theme.py", "theme.json"):
             return base | {10}, quiet
         if name in ("config.py", "features.py"):
             return base | {6} | map_check, quiet
@@ -367,23 +367,18 @@ def test_config() -> None:
     else:
         fail(f"ArcConfig.profile_name expected 'default', got {cfg.profile_name!r}")
 
-    # 6f — FeatureFlags constructs and load_features() returns FeatureFlags
-    from app.features import FeatureFlags, load_features, is_enabled
-    try:
-        flags = FeatureFlags()
-        ok("FeatureFlags() constructs with defaults")
-    except Exception as exc:
-        fail("FeatureFlags() construction failed", str(exc))
-        return
-
+    # 6f — load_features() returns a dict and is_enabled works
+    from app.features import load_features, is_enabled
     try:
         loaded = load_features()
-        if isinstance(loaded, FeatureFlags):
-            ok("load_features() returns FeatureFlags instance")
+        if isinstance(loaded, dict):
+            ok(f"load_features() returns a dict ({len(loaded)} flags)")
         else:
             fail(f"load_features() returned unexpected type: {type(loaded)}")
     except Exception as exc:
         fail("load_features() raised", str(exc))
+        return
+    flags = loaded
 
     # 6g — is_enabled: empty flag name always True
     if is_enabled(flags, ""):
@@ -660,22 +655,24 @@ def test_theme() -> None:
     except Exception as exc:
         fail("load_theme() raised", str(exc))
 
-    # 9d — cli_theme.json exists
-    theme_file = APP / "cli_theme.json"
+    # 9d — settings/theme.json exists
+    theme_file = ROOT / "settings" / "theme.json"
     if theme_file.exists():
-        ok(f"app/cli_theme.json exists")
+        ok("settings/theme.json exists")
     else:
-        fail("app/cli_theme.json is missing — run: arc (to create defaults)")
+        fail("settings/theme.json is missing")
 
-    # 9e — banner.txt is in app/, not in root
-    if (APP / "banner.txt").exists():
-        ok("app/banner.txt exists")
+    # 9e — user assets live in settings/, not in app/ or root
+    settings = ROOT / "settings"
+    for name in ("banner.txt", "goodbye.txt", "cli-structure.yaml", "features.json"):
+        if (settings / name).exists():
+            ok(f"settings/{name} exists")
+        else:
+            fail(f"settings/{name} missing — was it moved out of settings/?")
+    if (APP / "banner.txt").exists() or (ROOT / "banner.txt").exists():
+        fail("banner.txt should live in settings/, not app/ or root")
     else:
-        fail("app/banner.txt missing — was it moved out of app/?")
-    if (ROOT / "banner.txt").exists():
-        fail("banner.txt found in project root — should be in app/")
-    else:
-        ok("banner.txt not in project root (correct)")
+        ok("banner.txt correctly under settings/ only")
 
 
 # ---------------------------------------------------------------------------

@@ -182,7 +182,7 @@ def main() -> int:
     parser.add_argument("--render",       default="list",   choices=_VALID_RENDERS)
     parser.add_argument("--ssh",          default=None, help="SSH command string override")
     parser.add_argument("--feature-flag", default="", dest="feature_flag",
-                        help="FeatureFlags field name to gate this command (e.g. nat_rules)")
+                        help="Feature flag name to gate this command (e.g. nat_rules); add it to settings/features.json")
     parser.add_argument("--dry-run",      action="store_true", help="Print without writing files")
     args = parser.parse_args()
 
@@ -240,9 +240,9 @@ def main() -> int:
     print(f"  1. Paste the handler + CommandDef above into app/commands/{module}.py")
     print(f"  2. Fill in the TODO: items (handler body, endpoint, description)")
     if feature_flag:
-        print(f"  3. Enable locally: add {{\"{feature_flag}\": true}} to config/features.json")
-        print(f"     (or: ARC_FEATURE_{feature_flag.upper()}=1 arc)")
-        print(f"     When ready to ship: set {feature_flag}=True in app/features.py FeatureFlags")
+        print(f"  3. Add to settings/features.json: \"{feature_flag}\": false")
+        print(f"     (enable for a session: ARC_FEATURE_{feature_flag.upper()}=1 arc)")
+        print(f"     When ready to ship: set \"{feature_flag}\": true in settings/features.json")
         next_step = 4
     else:
         next_step = 3

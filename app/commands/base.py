@@ -71,10 +71,10 @@ class CommandDef:
                       Callable signature: (args: dict) -> str
                       None means API-only (config / SCM object commands).
         render:       Key into ArcShell._render() dispatch table.
-        feature_flag: Name of a FeatureFlags field that gates this command.
+        feature_flag: Name of a flag in settings/features.json that gates this command.
                       Empty string (default) means always enabled.
-                      When the flag is False the command is hidden from ? and blocked.
-                      Example: feature_flag='nat_rules'
+                      When the flag is false (or absent) the command is hidden from
+                      ? help and blocked at runtime.  Example: feature_flag='nat_rules'
     """
 
     description: str
@@ -83,7 +83,7 @@ class CommandDef:
     api_handler: Optional[Callable] = None
     ssh_command: str | Callable[[dict], str] | None = None
     render: str = ""
-    feature_flag: str = ""   # gate behind app/features.py FeatureFlags field
+    feature_flag: str = ""   # key in settings/features.json that gates this command
 
 
 # ---------------------------------------------------------------------------

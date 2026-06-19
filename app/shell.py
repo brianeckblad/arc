@@ -34,7 +34,7 @@ import sys
 import time
 import traceback
 import xml.etree.ElementTree as ET
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
@@ -59,6 +59,7 @@ from rich.panel import Panel
 import platformdirs
 from app.api.client import SCMClient
 from app import __version__
+from app.paths import BANNER_FILE as _BANNER_FILE, GOODBYE_FILE as _GOODBYE_FILE
 from app.commands.registry import (
     COMMANDS,
     CATEGORIES,
@@ -75,7 +76,7 @@ from app.cli_structure import (
     verb_description as _verb_description,
 )
 from app.docs import available_help_topics, open_docs_in_browser, render_help_topic
-from app.features import FeatureFlags, is_enabled, load_features
+from app.features import is_enabled, load_features
 from app.shell_catalog import SHELL_BUILTINS, shell_help_rows
 from app.ssh.manager import SSHManager
 from app.theme import ArcTheme, THEME_KEYS, load_theme, reset_theme, save_theme
@@ -84,7 +85,7 @@ from app.utils import formatter as fmt
 console = Console()
 
 HISTORY_FILE = os.path.join(platformdirs.user_data_dir("arc"), "history")
-GOODBYE_FILE = Path(__file__).parent / "goodbye.txt"
+GOODBYE_FILE = _GOODBYE_FILE  # settings/goodbye.txt (imported below)
 
 # Width of the command column in all inline help output.
 # All sections (GLOBAL / FOLDER / DEVICE / SHELL) use the same value so
@@ -236,8 +237,8 @@ class ArcCompleter(Completer):
                     if sub.startswith(partial_arg.lower()):
                         yield Completion(sub, start_position=-len(partial_arg))
             elif second in ("enable", "disable") and len(parts) <= 3:
-                # Complete feature flag names from features.py
-                flag_dict = asdict(self._shell._features)
+                # Complete feature flag names from settings/features.json
+                flag_dict = self._shell._features
                 partial_flag = parts[2] if len(parts) > 2 else ""
                 for flag, enabled in sorted(flag_dict.items()):
                     if flag.startswith(partial_flag.lower()):
@@ -462,8 +463,8 @@ class ArcShell:
         self._pending_default: str = ""
 
         # Feature flags — loaded once at startup; apply to all command dispatch.
-        # Edit config/features.json or set ARC_FEATURE_<NAME>=1 env vars to enable.
-        self._features: FeatureFlags = load_features()
+        # Edit settings/features.json or set ARC_FEATURE_<NAME>=1 env vars to enable.
+        self._features: dict[str, bool] = load_features()
 
         # Build clients
         self._scm: Optional[SCMClient] = None
@@ -1823,7 +1824,7 @@ class ArcShell:
 
         if sub == "show":
             console.print()
-            console.print("  [bold]ARC CLI Theme[/bold]  [dim](app/cli_theme.json)[/dim]")
+            console.print("  [bold]ARC CLI Theme[/bold]  [dim](settings/theme.json)[/dim]")
             console.print()
             for key, label in THEME_KEYS.items():
                 current = getattr(t, key)
@@ -1852,12 +1853,12 @@ class ArcShell:
             setattr(self._theme, key, style)
             save_theme(self._theme)
             preview = self._styled(f"  {style or '(none)'}  ", style) if style else "[dim](none)[/dim]"
-            console.print(f"[green]✓[/green] {key} = {preview}  [dim](saved to app/cli_theme.json)[/dim]")
+            console.print(f"[green]✓[/green] {key} = {preview}  [dim](saved to settings/theme.json)[/dim]")
             return
 
         if sub == "reset":
             self._theme = reset_theme()
-            console.print("[green]✓[/green] Theme reset to defaults  [dim](saved to app/cli_theme.json)[/dim]")
+            console.print("[green]✓[/green] Theme reset to defaults  [dim](saved to settings/theme.json)[/dim]")
             return
 
         console.print(
@@ -1881,7 +1882,7 @@ class ArcShell:
           feature disable ?            — list all flags that are currently enabled
 
         Changes take effect immediately but are session-only unless you edit
-        config/features.json.  Use 'feature help' for the full docs page.
+        settings/features.json.  Use 'feature help' for the full docs page.
         """
         sub = args[0].lower() if args else "show"
 
@@ -1909,37 +1910,29 @@ class ArcShell:
                     result.setdefault(cmd_def.feature_flag, []).append(cmd_key)
             return result
 
-        # Helper: default flag values to separate shipped from unimplemented
-        _defaults = asdict(FeatureFlags())
+        # The universe of known flags = those in settings/features.json plus any
+        # referenced by a command in the registry (so newly-added flags appear).
+        def _all_flags() -> list[str]:
+            names = set(self._features) | set(_flag_to_cmds())
+            return sorted(names)
 
         if sub in ("enable", "disable") and len(args) >= 2 and args[1] == "?":
-            flag_dict   = asdict(self._features)
-            flag_cmds   = _flag_to_cmds()
+            flag_cmds = _flag_to_cmds()
             console.print()
             if sub == "enable":
-                candidates = {k: v for k, v in flag_dict.items() if not v}
-                console.print(f"  [bold yellow]feature enable <flag>[/bold yellow]  [dim]— flags currently OFF (disabled)[/dim]")
-                console.print(f"  [dim]  Run:  feature enable <flag>  to turn one on for this session[/dim]")
-                console.print(f"  [dim]  Persist: add to config/features.json[/dim]")
+                candidates = [f for f in _all_flags() if not is_enabled(self._features, f)]
+                console.print(f"  [bold yellow]feature enable <flag>[/bold yellow]  [dim]— flags currently OFF[/dim]")
+                console.print(f"  [dim]  Persist by editing settings/features.json[/dim]")
             else:
-                candidates = {k: v for k, v in flag_dict.items() if v}
-                console.print(f"  [bold yellow]feature disable <flag>[/bold yellow]  [dim]— flags currently ON (enabled)[/dim]")
+                candidates = [f for f in _all_flags() if is_enabled(self._features, f)]
+                console.print(f"  [bold yellow]feature disable <flag>[/bold yellow]  [dim]— flags currently ON[/dim]")
             console.print()
             if not candidates:
-                console.print(f"  [dim]No flags are currently {'disabled' if sub == 'enable' else 'enabled'}.[/dim]")
+                console.print(f"  [dim]No flags are currently {'OFF' if sub == 'enable' else 'ON'}.[/dim]")
             else:
-                shipped_set = {k for k in candidates if _defaults.get(k, False)}
-                unimpl_set  = {k for k in candidates if k not in shipped_set}
-                if shipped_set:
-                    console.print(f"  [cyan]Shipped commands[/cyan]  [dim](default: on)[/dim]")
-                    for flag in sorted(shipped_set):
-                        cmds = ", ".join(sorted(flag_cmds.get(flag, []))) or "—"
-                        console.print(f"    [bold]{flag:<35}[/bold]  [dim]{cmds}[/dim]")
-                if unimpl_set:
-                    console.print(f"  [cyan]Unimplemented / development[/cyan]  [dim](default: off)[/dim]")
-                    for flag in sorted(unimpl_set):
-                        cmds = ", ".join(sorted(flag_cmds.get(flag, []))) or "—"
-                        console.print(f"    [bold]{flag:<35}[/bold]  [dim]{cmds}[/dim]")
+                for flag in candidates:
+                    cmds = ", ".join(sorted(flag_cmds.get(flag, []))) or "—"
+                    console.print(f"    [bold]{flag:<35}[/bold]  [dim]{cmds}[/dim]")
             console.print()
             console.print(f"  [dim]feature enable <flag>  |  feature disable <flag>  |  feature show[/dim]")
             console.print()
@@ -1951,31 +1944,26 @@ class ArcShell:
             return
 
         if sub == "show":
-            flag_dict  = asdict(self._features)
-            flag_cmds  = _flag_to_cmds()
-            shipped    = {k: v for k, v in flag_dict.items() if _defaults[k]}
-            unimpl     = {k: v for k, v in flag_dict.items() if not _defaults[k]}
+            flag_cmds = _flag_to_cmds()
+            names = _all_flags()
+            on  = [f for f in names if is_enabled(self._features, f)]
+            off = [f for f in names if not is_enabled(self._features, f)]
 
             console.print()
             console.print(
                 f"  [bold yellow]Feature Flags[/bold yellow]  "
-                f"[dim]— session state (edit config/features.json to persist)[/dim]"
+                f"[dim]— edit settings/features.json to persist[/dim]"
             )
 
+            console.print(f"\n  [bold green]ENABLED[/bold green]  [dim]({len(on)})[/dim]")
+            for flag in on:
+                cmds = ", ".join(sorted(flag_cmds.get(flag, []))) or "—"
+                console.print(f"    {flag:<35} [green]on[/green]   [dim]{cmds}[/dim]")
 
-            console.print(f"\n  [bold cyan]Shipped commands[/bold cyan]  [dim](default: enabled)[/dim]")
-            for flag in sorted(shipped):
-                enabled = shipped[flag]
-                status  = "[green]  on[/green]" if enabled else "[red] off[/red]"
-                cmds    = ", ".join(sorted(flag_to_cmds.get(flag, []))) or "—"
-                console.print(f"    {flag:<35} {status}  [dim]{cmds}[/dim]")
-
-            console.print(f"\n  [bold cyan]Unimplemented / in-development[/bold cyan]  [dim](default: disabled)[/dim]")
-            for flag in sorted(unimpl):
-                enabled = unimpl[flag]
-                status  = "[green]  on[/green]" if enabled else "[red] off[/red]"
-                cmds    = ", ".join(sorted(flag_to_cmds.get(flag, []))) or "—"
-                console.print(f"    {flag:<35} {status}  [dim]{cmds}[/dim]")
+            console.print(f"\n  [bold red]DISABLED[/bold red]  [dim]({len(off)})[/dim]")
+            for flag in off:
+                cmds = ", ".join(sorted(flag_cmds.get(flag, []))) or "—"
+                console.print(f"    {flag:<35} [red]off[/red]  [dim]{cmds}[/dim]")
 
             console.print()
             console.print("  [dim]  feature enable <flag>  |  feature disable <flag>  |  feature help[/dim]")
@@ -1988,18 +1976,16 @@ class ArcShell:
                 console.print(f"  Tip: [bold]feature {sub} ?[/bold]  lists all flags that can be {sub}d")
                 return
             flag_name = args[1].lower()
-            if flag_name not in asdict(self._features):
-                all_flags = sorted(asdict(self._features).keys())
+            if flag_name not in _all_flags():
                 console.print(
                     f"[red]Unknown feature flag:[/red] {flag_name!r}\n"
-                    f"  Run [bold]feature enable ?[/bold] to see all available flags.\n"
-                    f"  All flags: {', '.join(all_flags)}"
+                    f"  Run [bold]feature enable ?[/bold] to see all available flags."
                 )
                 return
             new_val = (sub == "enable")
-            setattr(self._features, flag_name, new_val)
+            self._features[flag_name] = new_val   # session-only override
             state = "[green]enabled[/green]" if new_val else "[red]disabled[/red]"
-            console.print(f"  {flag_name}  →  {state}  [dim](session only — edit config/features.json to persist)[/dim]")
+            console.print(f"  {flag_name}  →  {state}  [dim](session only — edit settings/features.json to persist)[/dim]")
             return
 
         console.print(
@@ -2102,7 +2088,7 @@ class ArcShell:
                     f"[yellow]Feature not enabled:[/yellow] [bold]{candidate_key}[/bold]\n"
                     f"  Flag [bold]{flag}[/bold] is currently off.\n"
                     f"  To enable this session: [bold]feature enable {flag}[/bold]\n"
-                    f"  To persist: add [bold]{{\"{flag}\": true}}[/bold] to [bold]config/features.json[/bold]\n"
+                    f"  To persist: add [bold]{{\"{flag}\": true}}[/bold] to [bold]settings/features.json[/bold]\n"
                     f"  Or use env var: [bold]ARC_FEATURE_{flag.upper()}=1 arc[/bold]"
                 )
             else:
@@ -2557,7 +2543,7 @@ class ArcShell:
             console.print(
                 f"[yellow]Feature not enabled:[/yellow] [bold]{key}[/bold]\n"
                 f"  Flag [bold]{flag}[/bold] is currently off.\n"
-                f"  To enable: add [bold]{{\"{flag}\": true}}[/bold] to [bold]config/features.json[/bold]\n"
+                f"  To enable: add [bold]{{\"{flag}\": true}}[/bold] to [bold]settings/features.json[/bold]\n"
                 f"  or set env var [bold]ARC_FEATURE_{flag.upper()}=1[/bold]"
             )
             return
@@ -2796,13 +2782,9 @@ class ArcShell:
         return random.choice(lines)
 
     def _print_banner(self) -> None:
-        # banner.txt lives in app/ alongside the source code.
-        # It uses Rich markup tags for colour — edit it to change the logo,
-        # subtitle, or add a legal notice.  Lines starting with ## are comments.
-        # The theme's banner_logo / banner_subtitle keys are the DEFAULT styles
-        # written into a fresh banner.txt, but the file is the single source of
-        # truth — change colours there, not here.
-        _BANNER_FILE = Path(__file__).parent / "banner.txt"
+        # banner.txt lives in settings/ (user-editable).  It uses Rich markup
+        # tags for colour — edit it to change the logo, subtitle, or add a legal
+        # notice.  Lines starting with ## are comments.
         try:
             raw = _BANNER_FILE.read_text(encoding="utf-8")
         except OSError:
