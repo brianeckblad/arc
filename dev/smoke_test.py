@@ -126,15 +126,21 @@ def _parse_cli_args() -> tuple[set[int], bool]:
         base = {1, 2}
         # Files mapped in dev/CODE_MAP.md trigger the drift check too.
         _mapped_large_files = {
-            "shell.py", "cli.py", "formatter.py", "client.py",
-            "config.py", "setup.py", "manager.py",
+            "navigation.py", "help.py", "cli.py", "formatter.py", "client.py",
+            "config.py", "setup.py", "manager.py", "objects.py", "network.py",
+            "security.py",
         }
         map_check = {11} if name in _mapped_large_files else set()
         if "commands" in parts and name.endswith(".py"):
             return base | {3} | map_check, quiet
         if name == "formatter.py":
             return base | {7} | map_check, quiet
-        if name in ("shell.py", "shell_catalog.py"):
+        # app/shell/ package: prompt.py drives the banner (8); _base.py drives help width (9).
+        if "shell" in parts and name == "prompt.py":
+            return base | {8} | map_check, quiet
+        if "shell" in parts and name in ("_base.py", "help.py"):
+            return base | {9} | map_check, quiet
+        if name == "shell_catalog.py":
             return base | {8, 9} | map_check, quiet
         if name in ("theme.py", "theme.json"):
             return base | {10}, quiet
@@ -182,8 +188,10 @@ def test_imports() -> None:
         "app.commands.security",
         "app.commands.network",
         "app.commands.operations",
+        "app.commands.packet_tracer",
         "app.commands.registry",
         "app.api.client",
+        "app.shell",
         "app.shell_catalog",
         "app.ssh.manager",
         "app.utils.formatter",
@@ -473,7 +481,7 @@ _BANNER_PATTERN = re.compile(
 def test_banner_alignment() -> None:
     section("8. CLI banner alignment  (descriptions at visual col 28)")
 
-    shell_src = (APP / "shell.py").read_text(encoding="utf-8")
+    shell_src = (APP / "shell" / "prompt.py").read_text(encoding="utf-8")
 
     # Extract live banner lines from source
     live_matches = _BANNER_PATTERN.findall(shell_src)
@@ -547,11 +555,11 @@ _MARKUP_RE = re.compile(r'\[[a-zA-Z/_][^\]]*\]')
 def test_inline_help_alignment() -> None:
     section("9. Inline help alignment")
 
-    # Read _HELP_CMD_WIDTH from shell.py
-    shell_src = (APP / "shell.py").read_text(encoding="utf-8")
+    # Read _HELP_CMD_WIDTH from the shell spine
+    shell_src = (APP / "shell" / "_base.py").read_text(encoding="utf-8")
     m = re.search(r'^_HELP_CMD_WIDTH\s*=\s*(\d+)', shell_src, re.MULTILINE)
     if not m:
-        fail("_HELP_CMD_WIDTH constant not found in shell.py")
+        fail("_HELP_CMD_WIDTH constant not found in app/shell/_base.py")
         return
     cmd_width = int(m.group(1))
     ok(f"_HELP_CMD_WIDTH = {cmd_width}")

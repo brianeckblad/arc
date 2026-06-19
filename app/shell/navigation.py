@@ -1,0 +1,692 @@
+"""ArcShell navigation mixin — cd / folder / tsg / account / pwd + cache refresh."""
+from __future__ import annotations
+
+from app.shell._base import *  # noqa: F401,F403  (shared spine namespace)
+
+
+class NavigationMixin:
+    def _cmd_cd(self, args: list[str]) -> None:
+        """Unified context navigation — device or folder.
+
+        Usage:
+          cd device <name>   — set device context (Tab -> device list)
+          cd folder <name>   — set folder scope (Tab -> folder list)
+          cd ..  |  cd /     — clear device context and return to global
+          cd <name>          — shorthand for 'cd device <name>' (backward compat)
+          cd                 — show current context
+        """
+        # Bare `cd` — show current position
+        if not args:
+            dev = self._state.device
+            folder = self._state.folder
+            if dev:
+                name = dev.get("hostname") or dev.get("name") or "?"
+                console.print(
+                    f"[cyan]device:[/cyan] [bold]{name}[/bold]  "
+                    f"[cyan]folder:[/cyan] [bold green]{folder}[/bold green]"
+                )
+            else:
+                console.print(
+                    f"[cyan]context:[/cyan] global  "
+                    f"[cyan]folder:[/cyan] [bold green]{folder}[/bold green]"
+                )
+            console.print("[dim]  cd device <name>  |  cd folder <name>  |  cd .. → clear device[/dim]")
+            return
+
+        # cd ..  or  cd /  — clear device
+        if args[0] in ("..", "/"):
+            self._state.device = None
+            console.print(_cd_hint("clear"))
+            return
+
+        # Subcommand dispatch
+        sub = args[0].lower()
+        rest = args[1:]
+
+        if sub == "device":
+            if not rest:
+                console.print("[yellow]Usage:[/yellow] cd device <hostname | serial | ip>")
+                return
+            self._cmd_cd_device(" ".join(rest))
+            return
+
+        if sub == "folder":
+            if not rest:
+                console.print("[yellow]Usage:[/yellow] cd folder <name>  (Tab to list folders)")
+                return
+            # Delegate to the existing folder command for validation + state update
+            self._cmd_folder(rest)
+            return
+
+        # Backward compat: `cd <name>` with no subcommand keyword → device
+        self._cmd_cd_device(" ".join(args))
+
+    def _cmd_cd_device(self, target: str) -> None:
+        """Switch the active SCM/API device context to *target*.
+
+        Fuzzy-matches hostname, serial, name, or IP against the device cache.
+        Never starts an SSH session — use `connect` for that.
+        """
+        if not self._state.devices_cache:
+            self._refresh_devices()
+
+        match = self._find_device(target)
+        if match:
+            self._state.device = match
+            name    = match.get("hostname") or match.get("display_name") or match.get("name") or target
+            serial  = match.get("serial_number") or match.get("serial") or match.get("name") or "n/a"
+            ip_raw  = match.get("ip_address") or match.get("ip-address") or ""
+            ip      = ip_raw if ip_raw and ip_raw.lower() not in ("unknown", "none") else "n/a"
+            model   = match.get("model") or ""
+            sw_ver  = match.get("software_version") or match.get("sw_version") or ""
+            connected = (
+                "  [green]connected[/green]" if match.get("is_connected")
+                else "  [red]disconnected[/red]" if match.get("is_connected") is False
+                else ""
+            )
+            parts = [f"[cyan]SCM device:[/cyan] [bold]{name}[/bold]"]
+            parts.append(f"serial: [bold]{serial}[/bold]")
+            parts.append(f"ip: {ip}")
+            if model:
+                parts.append(f"model: {model}")
+            if sw_ver:
+                parts.append(f"sw: {sw_ver}")
+            console.print("  ".join(parts) + connected)
+            console.print(f"  [dim]{_cd_hint('device', name)}[/dim]")
+            return
+
+        if self._state.devices_cache:
+            active_tsg = self._state.tsg_id or self._config.scm.tsg_id or "current TSG"
+            console.print(
+                f"[red]Device '{target}' not found in TSG {active_tsg}.[/red]\n"
+                f"  [dim]Use [bold]show devices[/bold] to see "
+                f"the {len(self._state.devices_cache)} device(s) visible in this TSG.\n"
+                "  Use [bold]tsg <id>[/bold] to switch to a different tenant.[/dim]"
+            )
+        else:
+            console.print(
+                f"[yellow]Device list unavailable — creating stub for '{target}'.[/yellow]\n"
+                "  [dim]SSH with [bold]remote[/bold] / [bold]connect[/bold] may still "
+                "work if the device is reachable directly.[/dim]"
+            )
+            self._state.device = {
+                "name": target, "hostname": target,
+                "ip_address": target, "serial_number": "",
+            }
+
+    def _find_device(self, query: str) -> Optional[dict]:
+        """Find a device in the cache by hostname, serial, name, or IP.
+
+        Checks all field-name variants the SCM API may return.
+        """
+        q = query.lower()
+        for d in self._state.devices_cache:
+            if (
+                (d.get("hostname") or "").lower() == q
+                or (d.get("display_name") or "").lower() == q
+                or (d.get("name") or "").lower() == q
+                or (d.get("serial_number") or "").lower() == q
+                or (d.get("serial") or "").lower() == q
+                or (d.get("ip_address") or "").lower() == q
+            ):
+                return d
+        return None
+
+    def _refresh_devices(self, silent: bool = False) -> None:
+        """Fetch managed devices and populate the cache used by tab completion and cd.
+
+        Uses self._scm directly (same pattern as _refresh_folders / _refresh_tsgs)
+        rather than going through _make_context().  The devices endpoint returns
+        all managed devices TSG-wide regardless of the active folder, so no folder
+        parameter is passed.
+        """
+        if not self._scm:
+            return
+        try:
+            devices = self._scm.get_devices()
+            if devices:
+                self._state.devices_cache = devices
+        except Exception as exc:
+            if not silent:
+                console.print(f"[yellow]Could not refresh device list: {exc}[/yellow]")
+
+    def _refresh_folders(self, silent: bool = False) -> None:
+        """Fetch SCM folder names and populate the cache used by 'folder' tab completion."""
+        if not self._scm:
+            return
+        try:
+            folders = self._scm.get_folders()
+            if folders:
+                self._state.folders_cache = folders
+        except Exception as exc:
+            if not silent:
+                console.print(f"[yellow]Could not refresh folder list: {exc}[/yellow]")
+
+    def _refresh_tsgs(self, silent: bool = False) -> None:
+        """Fetch TSG entries from SCM IAM and populate the cache used by 'tsg' tab completion.
+
+        Each entry is a dict with at minimum 'id' and 'display_name'.  The list
+        may be empty if the token lacks IAM read permissions — the completer falls
+        back to the configured TSG ID in that case.
+        """
+        if not self._scm:
+            return
+        try:
+            tenants = self._scm.get_tenants()
+            if tenants:
+                self._state.tsgs_cache = tenants
+        except Exception as exc:
+            if not silent:
+                console.print(f"[yellow]Could not refresh TSG list: {exc}[/yellow]")
+
+    def _cmd_pwd(self) -> None:
+        """Show current device context, active SCM folder, TSG, and SSH credential status."""
+        if self._state.device:
+            d = self._state.device
+            name    = d.get("hostname") or d.get("name") or "?"
+            serial  = d.get("serial_number") or d.get("name") or "n/a"
+            ip      = d.get("ip_address") or "n/a"
+            model   = d.get("model") or ""
+            sw_ver  = d.get("software_version") or ""
+            connected = "[green]connected[/green]" if d.get("is_connected") else "[red]disconnected[/red]"
+            snippets = d.get("snippets") or []
+            console.print(
+                f"[bold cyan]Device:[/bold cyan] {name}  "
+                f"serial: {serial}  ip: {ip}  {model}  {sw_ver}  {connected}"
+            )
+            if snippets:
+                console.print(
+                    f"[bold cyan]Snippets:[/bold cyan] {', '.join(snippets)}"
+                )
+            console.print(
+                "[dim]  show device snippets → full snippet list  |  "
+                "show snippet <name> → snippet detail[/dim]"
+            )
+        else:
+            console.print("[bold cyan]Context:[/bold cyan] SCM / global  [API mode]")
+            console.print(
+                "[dim]  show devices → list devices  |  "
+                "cd <device> → enter device context  |  "
+                "show device <name> → device detail[/dim]"
+            )
+        # Folder is always shown — it is the primary SCM scope for all API calls.
+        console.print(
+            f"[bold cyan]SCM folder:[/bold cyan] [bold green]{self._state.folder}[/bold green]"
+            "  [dim](all API calls scoped to this folder — change with 'folder <name>')[/dim]"
+        )
+        active_tsg = self._state.tsg_id or "(root / config default)"
+        console.print(f"[bold cyan]TSG:[/bold cyan] [cyan]{active_tsg}[/cyan]")
+
+        # Show active profile — always useful to see which account you are on.
+        profile_name = self._config.profile_name
+        client_id    = self._config.scm.client_id or "(bearer token)"
+        console.print(
+            f"[bold cyan]Account profile:[/bold cyan] [bold]{profile_name}[/bold]  "
+            f"[dim]{client_id}[/dim]"
+        )
+
+    def _cmd_folder(self, args: list[str]) -> None:
+        """Set or display the active SCM folder context.
+
+        The active folder is passed as the ``?folder=`` query parameter on
+        every SCM REST call.  It is always visible in the prompt so there is
+        no ambiguity about which folder a command is scoped to.
+
+        Usage:
+          folder                  — list available folders and show the active one
+          folder <name>           — switch to <name>
+          folder ..               — switch to 'Shared' (root / default)
+          folder create <name>    — create a new folder (interactive parent selection)
+        """
+        # Subcommand: folder create <name>
+        if args and args[0].lower() == "create":
+            folder_name = args[1] if len(args) > 1 else None
+            if not self._state.configure_mode:
+                console.print(
+                    "[yellow]Write operation blocked:[/yellow] folder creation requires configure mode.\n"
+                    "  Enter [bold]configure[/bold] first, then run [bold]folder create <name>[/bold]."
+                )
+                return
+            self._cmd_folder_create(folder_name)
+            return
+
+        if not args:
+            # Show current folder and available options, same pattern as `tsg` with no args.
+            console.print(f"[cyan]Active SCM folder:[/cyan] [bold]{self._state.folder}[/bold]")
+            if self._state.folders_cache:
+                console.print("\n[bold yellow]Available Folders[/bold yellow]  "
+                              "[dim](Tab after 'folder ' to complete)[/dim]")
+                for name in sorted(self._state.folders_cache):
+                    marker = " [green]◀ active[/green]" if name == self._state.folder else ""
+                    console.print(f"  [green]{name}[/green]{marker}")
+            else:
+                console.print(
+                    "[dim]No folder list cached — run [bold]show devices[/bold] or "
+                    "[bold]folder[/bold] after SCM is connected to populate.[/dim]"
+                )
+                self._refresh_folders(silent=False)
+                if self._state.folders_cache:
+                    console.print("\n[bold yellow]Available Folders[/bold yellow]")
+                    for name in sorted(self._state.folders_cache):
+                        marker = " [green]◀ active[/green]" if name == self._state.folder else ""
+                        console.print(f"  [green]{name}[/green]{marker}")
+            console.print(
+                "\n[dim]  folder <name> → switch  |  "
+                "folder .. → back to Shared  |  "
+                "Tab after 'folder ' → complete folder name[/dim]"
+            )
+            return
+
+        # `folder ..` or `folder /` → reset to default (Shared).
+        if args[0] in ("..", "/"):
+            self._state.folder = "Shared"
+            console.print("[cyan]SCM folder reset to:[/cyan] [bold]Shared[/bold]")
+            return
+
+        new_folder = args[0]
+
+        # Validate against the known folder list when the cache is populated.
+        # This prevents silently setting a folder that doesn't exist in the
+        # active TSG — same principle as cd refusing unknown devices.
+        if (
+            self._state.folders_cache
+            and self._state.folders_cache != ["Shared", "Global"]
+            and new_folder not in self._state.folders_cache
+        ):
+            active_tsg = self._state.tsg_id or self._config.scm.tsg_id or "current TSG"
+            console.print(
+                f"[red]Folder '{new_folder}' not found in TSG {active_tsg}.[/red]\n"
+                f"  [dim]Available folders: {', '.join(sorted(self._state.folders_cache))}\n"
+                "  Tab after 'folder ' to complete, or 'folder' alone to list folders.[/dim]"
+            )
+            return
+
+        self._state.folder = new_folder
+        # Clear device context when switching folder — a device cd'd to in one
+        # folder may not be visible or relevant in another.
+        if self._state.device:
+            device_name = (
+                self._state.device.get("hostname") or
+                self._state.device.get("name") or "device"
+            )
+            self._state.device = None
+            console.print(
+                f"[cyan]SCM folder set to:[/cyan] [bold]{new_folder}[/bold]  "
+                f"[dim](device context {device_name} cleared — use cd to re-enter)[/dim]"
+            )
+        else:
+            console.print(f"[cyan]SCM folder set to:[/cyan] [bold]{new_folder}[/bold]")
+
+    def _cmd_folder_create(self, name: Optional[str]) -> None:
+        """Interactive folder creation: prompt for a parent, confirm, and POST to SCM.
+
+        Displays the full folder hierarchy as a numbered list so the operator
+        can see the tree and pick the parent by number or by name.
+
+        "above" = pick a folder closer to the root (shorter path).
+        "below" = pick a folder deeper in the tree (longer path / a child folder).
+        The new folder will be created as a direct child of the selected parent.
+        """
+        if not name or not name.strip():
+            console.print(
+                "[yellow]Usage:[/yellow] folder create <name>\n"
+                "  Example: folder create Production-West"
+            )
+            return
+
+        name = name.strip()
+
+        if not self._scm:
+            console.print("[red]SCM not configured — cannot create folders.[/red]")
+            return
+
+        console.print("[dim]Fetching folder list…[/dim]", end="\r")
+        folders = self._scm.get_folders_full()
+        console.print(" " * 40, end="\r")
+
+        if not folders:
+            console.print("[yellow]No folders returned — cannot determine placement.[/yellow]")
+            return
+
+        # Build a flat ordered list: [(depth, name, full_path), …]
+        flat = fmt._folder_flat_list(folders)
+
+        # Display the numbered selection table.
+        console.print(f"\n[bold]Creating folder:[/bold] [cyan]{name}[/cyan]\n")
+        console.print(
+            "[bold yellow]Select parent folder[/bold yellow]  "
+            "[dim]('above' → pick a shorter path; 'below' → pick a deeper path)[/dim]\n"
+        )
+
+        # Header row
+        console.print(f"  [dim]{'#':<5}{'Folder':<35}Path[/dim]")
+        console.print("  " + "─" * 65)
+
+        for i, (depth, fname, path) in enumerate(flat, start=1):
+            indent   = "  " * depth
+            name_col = f"{indent}{fname}"
+            console.print(
+                f"  [cyan]{i:<5}[/cyan]"
+                f"[green]{name_col:<35}[/green]"
+                f"[dim]{path}[/dim]"
+            )
+
+        console.print()
+
+        # Prompt for the parent.
+        try:
+            raw = input("  Enter # or folder name for parent [Shared]: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            console.print("\n[dim]Cancelled.[/dim]")
+            return
+
+        # Resolve selection to a folder name.
+        parent_name = "Shared"  # sensible default
+        if raw:
+            if raw.isdigit():
+                idx = int(raw) - 1
+                if 0 <= idx < len(flat):
+                    parent_name = flat[idx][1]
+                else:
+                    console.print(f"[red]Invalid number: {raw}  (valid range 1–{len(flat)})[/red]")
+                    return
+            else:
+                # Accept a raw folder name too.
+                known_names = {f[1] for f in flat}
+                if raw in known_names:
+                    parent_name = raw
+                else:
+                    console.print(
+                        f"[red]Folder '{raw}' not found.[/red]\n"
+                        "  Enter a number from the list or an exact folder name."
+                    )
+                    return
+
+        # Confirm.
+        console.print(
+            f"\n  Create [bold cyan]{name}[/bold cyan] "
+            f"inside [bold green]{parent_name}[/bold green]?"
+        )
+        try:
+            confirm = input("  [y/n]: ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            console.print("\n[dim]Cancelled.[/dim]")
+            return
+
+        if confirm not in ("y", "yes"):
+            console.print("[dim]Cancelled.[/dim]")
+            return
+
+        # Create via API.
+        try:
+            result       = self._scm.create_folder(name, parent_name)
+            created_id   = result.get("id", "")
+            created_name = result.get("name") or name
+            console.print(
+                f"\n[green]✓[/green] Folder [bold cyan]{created_name}[/bold cyan] created "
+                f"inside [bold green]{parent_name}[/bold green]"
+                + (f"  [dim](id: {created_id})[/dim]" if created_id else "")
+            )
+        except Exception as exc:
+            console.print(f"[red]Failed to create folder:[/red] {exc}")
+            return
+
+        # Refresh folder cache so the new folder appears in completions immediately.
+        self._refresh_folders(silent=True)
+        total = len(self._state.folders_cache)
+        console.print(
+            f"[dim]Folder list refreshed — {total} folder(s) total.  "
+            f"Use [bold]folder {created_name}[/bold] to switch into it.[/dim]"
+        )
+
+    def _cmd_tsg(self, args: list[str]) -> None:
+        """Switch the active Tenant Services Group (TSG) context.
+
+        ARC authenticates to the parent / root TSG at startup.  Use this
+        command to switch into a child TSG so that all subsequent API calls
+        (devices, policy, addresses…) are scoped to that tenant.
+
+        ARC re-authenticates automatically via OAuth to obtain a token
+        scoped to the new TSG — no manual token management needed.
+
+        Usage:
+          tsg                  — show current TSG and list available child TSGs
+          tsg <id>             — switch to the given TSG ID
+        """
+        if not args:
+            active = self._state.tsg_id or self._config.scm.tsg_id or "(not set)"
+            console.print(f"[cyan]Active TSG:[/cyan] [bold]{active}[/bold]")
+
+            # Show cached child TSGs if available
+            if self._state.tsgs_cache:
+                console.print("\n[bold yellow]Available TSGs[/bold yellow]  "
+                              "[dim](Tab after 'tsg ' to complete)[/dim]")
+                for entry in self._state.tsgs_cache:
+                    tsg_id = str(entry.get("id") or entry.get("tsg_id") or "")
+                    name   = str(entry.get("display_name") or entry.get("name") or "")
+                    marker = " [green]◀ active[/green]" if tsg_id == active else ""
+                    console.print(f"  [cyan]{tsg_id:<20}[/cyan] {name}{marker}")
+            else:
+                console.print(
+                    "[dim]No TSG list cached — ARC will attempt to fetch child TSGs.[/dim]"
+                )
+                self._refresh_tsgs(silent=False)
+                if self._state.tsgs_cache:
+                    console.print("\n[bold yellow]Available TSGs[/bold yellow]")
+                    for entry in self._state.tsgs_cache:
+                        tsg_id = str(entry.get("id") or entry.get("tsg_id") or "")
+                        name   = str(entry.get("display_name") or entry.get("name") or "")
+                        console.print(f"  [cyan]{tsg_id:<20}[/cyan] {name}")
+                else:
+                    console.print(
+                        "[yellow]No child TSGs found.[/yellow]  "
+                        "Your service account may only have access to "
+                        f"TSG [bold]{active}[/bold] itself.\n"
+                        "Use [bold]tsg <id>[/bold] to switch if you know the child TSG ID."
+                    )
+            return
+
+        new_tsg = args[0].strip()
+        if not new_tsg:
+            console.print("[yellow]TSG ID cannot be blank.[/yellow]")
+            return
+
+        previous_tsg    = self._state.tsg_id
+        previous_device = self._state.device
+        previous_folder = self._state.folder
+        has_client_creds = bool(
+            self._config.scm.client_id and self._config.scm.client_secret
+        )
+
+        if not has_client_creds:
+            # Bearer-token-only mode: we cannot mint a new token scoped to a
+            # different TSG. Keep a local context switch so operators can still
+            # organize state, but make it explicit that API visibility may not
+            # actually change until re-auth with client credentials.
+            self._state.tsg_id = new_tsg
+            self._state.device = None
+            self._state.folder = self._config.default_folder
+            self._state.devices_cache = []
+            self._state.folders_cache = ["Shared", "Global"]
+            self._state.tsgs_cache = []
+            self._refresh_devices(silent=True)
+            self._refresh_folders(silent=True)
+            self._refresh_tsgs(silent=True)
+            console.print(
+                f"[yellow]⚠[/yellow] Set active TSG to [bold]{new_tsg}[/bold] in bearer-token mode.\n"
+                "  [dim]To fully re-scope API access, configure OAuth client credentials and restart ARC.[/dim]"
+            )
+            return
+
+        # OAuth client credentials available — perform a real token re-scope.
+        try:
+            if not self._scm:
+                self._scm = SCMClient(self._config.scm)
+            self._scm.reauthenticate(new_tsg)
+
+            # Commit new context
+            self._state.tsg_id = new_tsg
+            self._state.device = None
+            self._state.folder = self._config.default_folder
+            self._state.devices_cache = []
+            self._state.folders_cache = ["Shared", "Global"]
+            self._state.tsgs_cache = []
+
+            # Refresh caches for the new tenant scope.
+            self._refresh_devices(silent=True)
+            self._refresh_folders(silent=True)
+            self._refresh_tsgs(silent=True)
+
+            console.print(
+                f"[green]✓[/green] Switched active TSG to [bold]{new_tsg}[/bold]  "
+                f"[dim]{len(self._state.devices_cache)} device(s), {len(self._state.folders_cache)} folder(s)[/dim]"
+            )
+            if not self._state.devices_cache:
+                console.print(
+                    "[yellow]No devices visible in this TSG.[/yellow]  "
+                    "[dim]Use [bold]tsg[/bold] to list alternatives or verify account permissions.[/dim]"
+                )
+
+        except Exception as exc:
+            # Roll back fully on failure so context is consistent.
+            self._state.tsg_id = previous_tsg
+            self._state.device = previous_device
+            self._state.folder = previous_folder
+            if self._scm:
+                try:
+                    self._scm.reauthenticate(previous_tsg or self._config.scm.tsg_id)
+                except Exception:
+                    pass
+            console.print(
+                f"[red]TSG switch failed:[/red] {exc}\n"
+                f"[dim]Context restored to TSG {previous_tsg or self._config.scm.tsg_id}.[/dim]"
+            )
+
+    def _cmd_account(self, args: list[str]) -> None:
+        """List or switch named credential profiles.
+
+        Profiles hold a separate set of SCM credentials (client_id, client_secret,
+        tsg_id) stored under their own keychain entries.  A typical setup has a
+        read-only profile for day-to-day monitoring and a read-write profile for
+        making policy changes.
+
+        Create profiles outside the shell with:
+          arc auth configure --profile <name>
+
+        Usage:
+          account               — list all profiles with active marker
+          account <name>        — switch to the named profile
+        """
+        profiles = list_profiles()
+
+        if not args:
+            # List all configured profiles.
+            active_name = self._config.profile_name
+
+            if len(profiles) == 1 and profiles[0]["name"] == "default":
+                p = profiles[0]
+                client_id = p["client_id"] or "(not set)"
+                tsg_id    = p["tsg_id"]    or "(not set)"
+                console.print(
+                    f"\n[cyan]Active account:[/cyan] [bold]{active_name}[/bold]\n"
+                    f"  client_id : {client_id}\n"
+                    f"  tsg_id    : {tsg_id}\n\n"
+                    "[dim]Create additional profiles with: "
+                    "[bold]arc auth configure --profile <name>[/bold][/dim]"
+                )
+                return
+
+            console.print(
+                "\n[bold yellow]Credential Profiles[/bold yellow]  "
+                "[dim](use [bold]account <name>[/bold] to switch)[/dim]\n"
+            )
+            for p in profiles:
+                marker      = " [green]◀ active[/green]" if p["active"] else ""
+                name_col    = f"[bold]{p['name']}[/bold]" if p["active"] else p["name"]
+                client_id   = p["client_id"] or "[dim](not set)[/dim]"
+                tsg_id      = p["tsg_id"]    or "[dim](not set)[/dim]"
+                console.print(f"  {name_col:<22} {client_id:<55} {tsg_id}{marker}")
+            return
+
+        target       = args[0].strip()
+        profile_names = [p["name"] for p in profiles]
+
+        if target not in profile_names:
+            console.print(
+                f"[red]Profile '{target}' not found.[/red]\n"
+                f"  Available: [bold]{', '.join(profile_names)}[/bold]\n"
+                f"  Create it with: [bold]arc auth configure --profile {target}[/bold]"
+            )
+            return
+
+        if target == self._config.profile_name:
+            p = next(p for p in profiles if p["name"] == target)
+            console.print(
+                f"[cyan]Already using profile:[/cyan] [bold]{target}[/bold]  "
+                f"[dim](TSG: {p['tsg_id'] or 'n/a'})[/dim]"
+            )
+            return
+
+        console.print(f"[dim]Loading profile '{target}'…[/dim]")
+
+        previous_config = self._config
+        previous_scm    = self._scm
+
+        try:
+            new_cfg = load_config(profile=target)
+            new_cfg.debug = self._config.debug  # preserve session debug flag
+
+            if new_cfg.scm.is_configured:
+                new_scm: Optional[SCMClient] = SCMClient(new_cfg.scm)
+            else:
+                new_scm = None
+
+            # Swap config and client atomically.
+            self._config = new_cfg
+            self._scm    = new_scm
+
+            # Clear all context — new account = different TSG + devices.
+            self._state.device         = None
+            self._state.folder         = new_cfg.default_folder
+            self._state.tsg_id         = new_cfg.scm.tsg_id
+            self._state.devices_cache  = []
+            self._state.folders_cache  = ["Shared", "Global"]
+            self._state.tsgs_cache     = []
+
+            # Persist the new active profile to disk so the next launch uses it.
+            set_active_profile(target)
+
+            if new_scm:
+                console.print(f"[dim]Refreshing caches for profile '{target}'…[/dim]")
+                self._refresh_devices(silent=True)
+                self._refresh_folders(silent=True)
+                self._refresh_tsgs(silent=True)
+
+                device_count = len(self._state.devices_cache)
+                client_id    = new_cfg.scm.client_id or "(bearer token)"
+                console.print(
+                    f"[green]✓[/green] Switched to profile [bold]{target}[/bold]  "
+                    f"[dim]|  TSG:[/dim] [cyan]{new_cfg.scm.tsg_id}[/cyan]  "
+                    f"[dim]{device_count} device(s)[/dim]"
+                )
+                if device_count == 0:
+                    console.print(
+                        "[yellow]No devices visible.[/yellow]  "
+                        "[dim]Check your service account has Device Administrator access, "
+                        "or use [bold]tsg <id>[/bold] to switch to a TSG with devices.[/dim]"
+                    )
+            else:
+                console.print(
+                    f"[yellow]⚠[/yellow] Switched to profile [bold]{target}[/bold] "
+                    f"but SCM is not configured for this profile.\n"
+                    f"  Run [bold]arc auth configure --profile {target}[/bold] to add credentials."
+                )
+
+        except Exception as exc:
+            # Roll back to the previous config on any failure.
+            self._config = previous_config
+            self._scm    = previous_scm
+            console.print(
+                f"[red]Failed to switch to profile '{target}':[/red] {exc}\n"
+                f"[dim]Still using profile '{previous_config.profile_name}'.[/dim]"
+            )

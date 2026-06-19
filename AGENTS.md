@@ -13,7 +13,7 @@
 |--------------|-----------|
 | Add a command | Command Registry Pattern + domain keyword ([network], [security], [objects], [setup], [operations]) |
 | Fix formatting output | `app/utils/formatter.py` + [formatter] keyword |
-| Update shell help/prompts | `app/shell.py` + [shell] keyword |
+| Update shell help/prompts | `app/shell/help.py` or `app/shell/prompt.py` + [shell] keyword |
 | Add SCM API endpoint | SCM Gateway Map section + `app/api/client.py` + [scm-api] keyword |
 | Update docs | `docs/` + Documentation Strategy section |
 | Run validation | `python dev/smoke_test.py` |
@@ -510,8 +510,8 @@ Apply these rules on every edit to keep agent context costs low as the codebase 
 **Read minimally:**
 - Read `README.dev.md` (not `AGENTS.md`) for routine tasks and keyword phrasing
 - Use `read_file` with `offset` + `limit` to read only the relevant section of large files
-- **Never read `app/shell.py` (or any 300+ line file) whole.** Look up the method's exact line range in `dev/CODE_MAP.md`, then read only that range
-- For shell builtin names/help rows, read `app/shell_catalog.py` before reading `app/shell.py`
+- **Never read a 300+ line file whole.** The shell is now `app/shell/<file>.py` (a mixin package). Look up the method's exact line range in `dev/CODE_MAP.md`, then read only that range
+- For shell builtin names/help rows, read `app/shell_catalog.py` before reading any `app/shell/*.py`
 - For command patterns, read `docs/COMMAND_PATTERNS.md` (saves reading existing 300+ line modules)
 - For available render types, read `docs/RENDER_CATALOG.md` (saves reading formatter.py)
 - For CommandDef fields, read `docs/COMMANDDEF_REFERENCE.md` (saves reading base.py)
@@ -524,7 +524,7 @@ Apply these rules on every edit to keep agent context costs low as the codebase 
 
 **String-theory structure:**
 - Keep new feature metadata in small attached files whenever possible (`shell_catalog.py`, `features.py`, command modules)
-- Treat `app/shell.py` as the shell spine; do not grow it with large static dictionaries or catalogs
+- Treat `app/shell/_base.py` as the shell spine; do not grow it with large static dictionaries or catalogs
 - Extract one string at a time only after smoke coverage exists for that seam; avoid large multi-section shell refactors in one pass
 
 **Write minimally:**
@@ -534,7 +534,7 @@ Apply these rules on every edit to keep agent context costs low as the codebase 
 
 **Validate minimally:**
 - `python dev/smoke_test.py --only 1,2,3` for command additions (not the full 90-check suite)
-- `python dev/smoke_test.py --file app/shell.py` auto-selects relevant sections
+- `python dev/smoke_test.py --file app/shell/<file>.py` auto-selects relevant sections
 - Only run the full suite `python dev/smoke_test.py` before committing
 
 **Feature-flag new work (JSON-first):**
@@ -556,7 +556,7 @@ Apply these rules on every edit to keep agent context costs low as the codebase 
 python dev/smoke_test.py --only 1,2,3    # syntax + imports + registry (after adding a command)
 python dev/smoke_test.py --only 8        # builtins alignment only
 python dev/smoke_test.py --file app/commands/network.py  # auto-selects 1,2,3
-python dev/smoke_test.py --file app/shell.py             # auto-selects 1,2,7,8
+python dev/smoke_test.py --file app/shell/prompt.py      # auto-selects 1,2,8
 ```
 
 **Scaffold new commands** — generates handler stub + CommandDef + docs file:
@@ -592,11 +592,11 @@ The debug error table in `README.dev.md` maps error text to the 1–2 relevant f
 |---------|----------------|
 | New command added to a `COMMANDS` dict | No change needed — registry tests auto-discover it |
 | New formatter function added | Add a minimal call in **section 6** of `dev/smoke_test.py` |
-| CLI banner lines changed (`_print_banner` in `shell.py`) | Update `_BANNER_LINES` in **section 7** of `dev/smoke_test.py` — the test will catch mismatches and print exactly what to change |
+| CLI banner lines changed (`_print_startup_help` in `app/shell/prompt.py`) | Update `_BANNER_LINES` in **section 7** of `dev/smoke_test.py` — the test will catch mismatches and print exactly what to change |
 | New module added under `app/` | No change needed — syntax and import tests auto-discover it |
 | New `SCMConfig` / `ArcConfig` field with invariant | Add a case in **section 5** of `dev/smoke_test.py` |
 | New theme key added to `ArcTheme` | Add a display label to `THEME_KEYS` in `app/theme.py`; add to **section 9** if there is an invariant |
-| Builtin command added/removed/renamed | Edit `app/shell_catalog.py` first; then grep `app/shell.py` for dispatch/completer/hint-string refs; delete `docs/commands/<name>.md`; smoke section 8 validates catalog wiring. Full checklist in `README.dev.md`. |
+| Builtin command added/removed/renamed | Edit `app/shell_catalog.py` first; then grep `app/shell/` for dispatch/completer/hint-string refs; delete `docs/commands/<name>.md`; smoke section 8 validates catalog wiring. Full checklist in `README.dev.md`. |
 | Any 300+ line file's methods moved/renamed | `dev/CODE_MAP.md` auto-checked by **section 10**; run `python dev/gen_code_map.py` (pre-commit also auto-refreshes) |
 
 **Targeted run flags** (saves time and tokens during development):
@@ -606,7 +606,7 @@ python dev/smoke_test.py --only 1,2,3      # syntax + imports + registry
 python dev/smoke_test.py --only 8          # builtins alignment only
 python dev/smoke_test.py --file app/shell_catalog.py      # builtin catalog + shell help wiring
 python dev/smoke_test.py --file app/commands/network.py   # auto-selects 1,2,3
-python dev/smoke_test.py --file app/shell.py              # auto-selects 1,2,7,8
+python dev/smoke_test.py --file app/shell/prompt.py       # auto-selects 1,2,8
 python dev/smoke_test.py --file app/utils/formatter.py    # auto-selects 1,2,6
 python dev/smoke_test.py --file app/theme.py              # auto-selects 1,2,9
 python dev/smoke_test.py --file app/config.py             # auto-selects 1,2,5
@@ -669,7 +669,18 @@ arc/
     ├── __init__.py                 ← package version
     ├── paths.py                    ← single source of truth for filesystem paths (settings/, config/, docs/)
     ├── cli.py                      ← typer app: arc / arc auth / arc scm / arc docs
-    ├── shell.py                    ← ArcShell REPL (prompt_toolkit)  ⚠ large — split planned (see below)
+    ├── shell/                       ← interactive REPL (mixin package — one concern per file)
+    │   ├── __init__.py              ← ArcShell composes the mixins + __init__/_init_clients/run
+    │   ├── _base.py                 ← shared spine: imports, constants, helpers, ShellState (mixins do `from _base import *`)
+    │   ├── completer.py             ← ArcCompleter (tab completion)
+    │   ├── dispatch.py              ← DispatchMixin: _dispatch (parse + route every line)
+    │   ├── navigation.py            ← NavigationMixin: cd / folder / tsg / account / pwd + cache refresh
+    │   ├── sessions.py              ← SessionsMixin: connect / remote interactive SSH
+    │   ├── execution.py             ← ExecutionMixin: _execute_api / _execute_remote / _render
+    │   ├── help.py                  ← HelpMixin: ? help system (inline/full/docs/verb options)
+    │   ├── configure.py             ← ConfigureMixin: configure mode, cli theme, feature flags
+    │   ├── write_cmd.py             ← WriteMixin: set / set folder (create)
+    │   └── prompt.py                ← PromptMixin: prompt / banner / startup / goodbye / styling
     ├── shell_catalog.py            ← small builtin catalog: accepted names + SHELL help rows
     ├── features.py                 ← JSON-first feature loader: reads settings/features.json → dict
     ├── theme.py                    ← ArcTheme dataclass + load/save/reset (reads settings/theme.json)
@@ -731,28 +742,31 @@ dict, merges them, builds `SORTED_COMMANDS` and `CATEGORIES`, and exposes
 the base URL constant and getter to `SCMClient`, add the module to the merge block
 in `registry.py`, and add the feature flag(s) to `settings/features.json`.
 
-#### ⚠ Planned: split `app/shell.py` into a package (Phase 3, not yet done)
+#### `app/shell/` — the REPL package (mixins)
 
-`app/shell.py` is still large. The committed plan is to split it into an
-`app/shell/` package using mixin classes on `ArcShell` (each method's exact line
-range is in `dev/CODE_MAP.md`):
+`ArcShell` is composed from mixin classes, one concern per file. To change shell
+behaviour, edit the **one** mixin file that owns it (see the tree above), not a
+2,800-line monolith. Method line ranges are in `dev/CODE_MAP.md` (now per module:
+`app/shell/navigation.py`, `app/shell/help.py`, …).
 
-```
-app/shell/
-├── __init__.py        ← ArcShell (composes the mixins) + ShellState + run loop
-├── completer.py       ← ArcCompleter (tab completion)
-├── dispatch.py        ← _dispatch + whitespace/shorthand parsing
-├── navigation.py      ← cd / folder / tsg / account / pwd + cache refresh
-├── sessions.py        ← connect / remote (interactive SSH)
-├── execution.py       ← _execute_api / _execute_remote / _render
-├── help.py            ← ? help system (inline/full/docs, verb options)
-├── feature_cmd.py     ← feature show/enable/disable
-├── write_cmd.py       ← set / update / delete dispatch + _cmd_set / _cmd_show_write_help
-└── prompt.py          ← banner / prompt / startup / goodbye
-```
-Validate after each extraction with `python dev/smoke_test.py --file app/shell.py`.
+Rules when editing the package:
+- Shared imports / constants / module helpers / `ShellState` live in `app/shell/_base.py`.
+  Every mixin starts with `from app.shell._base import *` to get that namespace.
+- Add a new shared name → put it in `_base.py` (it auto-exports via `__all__`).
+- Add a new shell command method → put it in the mixin that owns the concern;
+  no `__init__.py` change needed (mixins are inherited).
+- A brand-new concern → new `app/shell/<thing>.py` with a `class <Thing>Mixin:`,
+  then add it to the `ArcShell(...)` base list and the import block in `__init__.py`.
+- Public surface (do not break): `from app.shell import ArcShell, ShellState, console,`
+  `_SHELL_BUILTINS, _expand_unambiguous_prefix`.
+- Validate: `python dev/smoke_test.py --file app/shell/<file>.py` then the full suite.
+
+The split was produced by slicing the original monolith verbatim (no behaviour
+change). `dev/gen_code_map.py` maps `navigation.py` and `help.py` (the two files
+still ≥ 300 lines); section 11 keeps the map honest.
 
 ---
+
 
 
 ### ARC Domain Keywords — For Scoped Agent Work
@@ -769,7 +783,7 @@ When an agent needs to work on a specific domain or feature area, use these keyw
 | `operations` | Jobs, commit, live device | `app/commands/operations.py`, `docs/scm-api/specs/ngfw-operations.md` | Commit operations, job tracking, live device commands |
 | `packet-tracer` | Policy simulation | `app/commands/packet_tracer.py`, `docs/commands/packet-tracer.md` | Rule-base match logic, ASA-style packet trace |
 | `formatter` | Output rendering | `app/utils/formatter.py` | Adding new table/panel renderers |
-| `shell` | REPL, help, completion | `app/shell.py` (use `dev/CODE_MAP.md` for line ranges) | Shell UX, prompts, help system, dispatch |
+| `shell` | REPL, help, completion | `app/shell/` package (dispatch.py, help.py, navigation.py; `dev/CODE_MAP.md` for ranges) | Shell UX, prompts, help system, dispatch |
 | `feature` | Feature on/off | `settings/features.json`, `app/features.py`, `docs/commands/features.md` | Turn a command on/off, the feature system |
 | `settings` | User-editable assets | `settings/` (banner, theme, goodbye, cli-structure, features), `app/paths.py` | Banner, colours, labels, exit messages — no code |
 | `theme` | Colours | `settings/theme.json`, `app/theme.py` | Recolour `?` help, prompt, banner |
@@ -815,7 +829,7 @@ When working on ARC as an agent, follow these patterns to minimize token usage:
 #### Minimize doc reading for simple changes
 - For typo fixes, argument tweaks, or one-line changes: read only the target file
 - For new commands following existing patterns: read one example command in the same domain
-- For shell UX changes: read only the relevant section of `app/shell.py` (use line ranges)
+- For shell UX changes: read only the relevant `app/shell/<file>.py` (use `dev/CODE_MAP.md` line ranges)
 
 ---
 
@@ -1024,7 +1038,7 @@ ARC's colour roles are stored in `settings/theme.json` and loaded at shell start
 **Rules for adding a new theme key:**
 1. Add the field to `ArcTheme` in `app/theme.py` with a default value.
 2. Add a display label to `THEME_KEYS` in `app/theme.py`.
-3. Use `self._styled(text, self._theme.<key>)` wherever the colour is applied in `shell.py`.
+3. Use `self._styled(text, self._theme.<key>)` wherever the colour is applied in the `app/shell/` package.
 4. Add a case in **section 9** of `dev/smoke_test.py` if there is an invariant to check.
 5. Run `python dev/smoke_test.py` to verify.
 
