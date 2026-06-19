@@ -11,6 +11,7 @@ Use `help <command>` to open detailed docs for a command.
 - `delete service-group` — Delete a service group — delete service-group <name>
 - `delete tag` — Delete a tag — delete tag <name>
 - `delete url-category` — Delete a URL category — delete url-category <name>
+- `packet-tracer` — Trace a packet through the folder's security rule base — packet-tracer from <zone> to <zone> source <ip> destination <ip> [application <app>] [destination-port <n>] [protocol <n>]
 - `ping host` — Ping a host from the device — ping host <ip>  (use --remote)
 - `request system reboot` — Reboot a managed device — use --remote  (CAUTION: device will restart)
 - `request system shutdown` — Shut down a managed device — use --remote  (CAUTION: device will go offline)
@@ -89,7 +90,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show wildfire-profile` — Show WildFire anti-virus profiles in the active folder
 - `show zone` — Show security zones in the active folder
 - `test nat-policy-match` — Test NAT policy match — source <ip> destination <ip>  (use --remote)
-- `test security-policy-match` — Test security policy match — test security-policy-match source <ip> destination <ip> application <app> protocol <n> destination-port <n>
+- `test security-policy-match` — Test which security rule a packet matches (alias of packet-tracer) — test security-policy-match source <ip> destination <ip> [from <zone>] [to <zone>] [application <app>] [destination-port <n>]
 - `test url` — Test URL categorization — test url <url>  (use --remote)
 - `traceroute host` — Traceroute from device — traceroute host <ip>  (use --remote)
 - `update address` — Update address — update address <name> ip-netmask|fqdn|ip-range|ip-wildcard|description|tag <value>

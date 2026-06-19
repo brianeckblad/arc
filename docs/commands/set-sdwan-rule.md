@@ -10,7 +10,7 @@ This command requires the **`sdwan`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable sdwan
 
-# Enable permanently (config/features.json — git-ignored):
+# Enable permanently (settings/features.json — git-ignored):
 {"  \"sdwan\": true"}
 ```
 

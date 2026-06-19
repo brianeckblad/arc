@@ -10,7 +10,7 @@ This command requires the **`create_security_rule`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable create_security_rule
 
-# Enable permanently (config/features.json — git-ignored):
+# Enable permanently (settings/features.json — git-ignored):
 {"  \"create_security_rule\": true"}
 ```
 

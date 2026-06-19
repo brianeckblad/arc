@@ -10,7 +10,7 @@ This command requires the **`ipsec_vpn`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable ipsec_vpn
 
-# Enable permanently (config/features.json — git-ignored):
+# Enable permanently (settings/features.json — git-ignored):
 {"  \"ipsec_vpn\": true"}
 ```
 

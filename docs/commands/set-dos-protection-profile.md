@@ -10,7 +10,7 @@ This command requires the **`dos_protection`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable dos_protection
 
-# Enable permanently (config/features.json — git-ignored):
+# Enable permanently (settings/features.json — git-ignored):
 {"  \"dos_protection\": true"}
 ```
 

@@ -10,7 +10,7 @@ This command requires the **`create_service_group`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable create_service_group
 
-# Enable permanently (config/features.json — git-ignored):
+# Enable permanently (settings/features.json — git-ignored):
 {"  \"create_service_group\": true"}
 ```
 

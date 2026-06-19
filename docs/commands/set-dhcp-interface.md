@@ -10,7 +10,7 @@ This command requires the **`dhcp`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable dhcp
 
-# Enable permanently (config/features.json — git-ignored):
+# Enable permanently (settings/features.json — git-ignored):
 {"  \"dhcp\": true"}
 ```
 

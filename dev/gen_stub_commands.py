@@ -486,7 +486,7 @@ This command requires the **`{flag}`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable {flag}
 
-# Enable permanently (config/features.json — git-ignored):
+# Enable permanently (settings/features.json — git-ignored):
 {{"  \\"{flag}\\": true"}}
 ```
 
@@ -688,7 +688,7 @@ def main() -> None:
     print(f"Existing docs (not overwritten): already present in docs/commands/")
     print(f"\nNext steps:")
     print(f"  1. Review generated stubs in docs/commands/")
-    print(f"  2. Enable flags in config/features.json to test")
+    print(f"  2. Enable flags in settings/features.json to test")
     print(f"  3. Implement handlers in app/commands/<module>.py")
     print(f"  4. Run: python dev/smoke_test.py --only 1,2,3")
 

@@ -537,11 +537,12 @@ Apply these rules on every edit to keep agent context costs low as the codebase 
 - `python dev/smoke_test.py --file app/shell.py` auto-selects relevant sections
 - Only run the full suite `python dev/smoke_test.py` before committing
 
-**Feature-flag new work:**
+**Feature-flag new work (JSON-first):**
 - Set `feature_flag='your_flag'` on any CommandDef not yet ready to ship
-- Add the flag to `app/features.py` with `default=False`
-- Enable locally via `config/features.json` — never commit `features.json`
-- This prevents reading/testing an unfinished command from polluting other sessions
+- Add `"your_flag": false` to `settings/features.json` (the single source of truth)
+- Flip to `true` in `settings/features.json` when the command is ready
+- Toggle for one session inside ARC: `feature enable/disable <flag>` (not saved)
+- There is no FeatureFlags dataclass — `app/features.py` just reads the JSON into a dict
 
 **Model selection:**
 - Use cheap/fast models (claude-3-5-sonnet, gpt-4o) for pattern-mechanical tasks (add a command, fix a typo)
@@ -633,65 +634,76 @@ The test is intentionally lightweight — no mocking, no network, no auth. It va
 
 ### Project Structure
 
+ARC separates **core code** (`app/`) from **user-editable settings** (`settings/`)
+and **per-user secrets** (`config/`).  A non-programmer customizes ARC by editing
+files under `settings/` — never the Python.
+
 ```
 arc/
 ├── README.md                       ← project overview linking to docs/
 ├── README.dev.md                   ← developer guide: tokenmaxing recipes + keyword dictionary (read first)
 ├── pyproject.toml                  ← uv-managed project config
 ├── run.py                          ← dev entry point (python run.py)
+├── settings/                       ← USER-EDITABLE assets (committed; hand-edit, no code)
+│   ├── README.md                   ← "edit these files to customize ARC"
+│   ├── features.json               ← THE on/off switch for every command (source of truth)
+│   ├── banner.txt                  ← startup banner (Rich markup; ## lines are comments)
+│   ├── goodbye.txt                 ← random exit messages (one chosen per exit)
+│   ├── theme.json                  ← CLI colour roles (edited via `cli color` or by hand)
+│   └── cli-structure.yaml          ← verb descriptions, section labels, help footer, configure banner
 ├── config/
-│   ├── config.example.json         ← credential template (copy to config/<os_username>/config.json)
-│   └── features.example.json       ← feature flag template (copy to config/features.json to override)
+│   └── config.example.json         ← credential template → config/<os_username>/config.json (secrets, gitignored)
 ├── dev/
 │   ├── smoke_test.py               ← developer smoke suite (run: python dev/smoke_test.py)
-│   │                                  flags: --only 1,2,3  --file app/commands/network.py
-│   ├── scaffold.py                 ← command scaffolder (run: python dev/scaffold.py "cmd" module)
-│   ├── gen_api_index.py            ← compact API index generator (run: python dev/gen_api_index.py)
-│   ├── API_INDEX.md                ← generated compact endpoint table (299 lines; replaces reading specs)
-│   ├── gen_code_map.py             ← method→line-range map generator (run: python dev/gen_code_map.py)
-│   ├── CODE_MAP.md                 ← generated method line ranges for large files (read before editing them)
-│   ├── update_scm_docs.py          ← SCM doc puller + self-healing path discovery + change report
-│   ├── scm_sources.json            ← editable/auto-updated registry of pan.dev doc source paths
-│   └── DOCS_AGENT.md               ← docs-agent mode playbook (pull docs, read CHANGES, update code)
+│   ├── scaffold.py                 ← command scaffolder (python dev/scaffold.py "cmd" module)
+│   ├── gen_api_index.py / API_INDEX.md  ← compact endpoint table (replaces reading specs)
+│   ├── gen_code_map.py / CODE_MAP.md    ← method→line-range map for large files
+│   ├── gen_stub_commands.py        ← generate show/set/delete stub docs from the API resource table
+│   ├── update_scm_docs.py / scm_sources.json  ← SCM doc puller + self-healing discovery
+│   └── DOCS_AGENT.md               ← docs-agent mode playbook
 ├── docs/                           ← user-facing Markdown rendered by ARC help
-│   ├── README.md                   ← help overview
-│   ├── usage.md                    ← user workflows
-│   ├── architecture.md             ← user-readable architecture
-│   ├── configuration.md            ← credential/configuration guide
-│   ├── commands/                   ← one Markdown file per shell/registered command
-│   └── scm-api/                    ← SCM NGFW reference (pulled by `docsupdate`; excluded from cliup bundle)
-│       ├── index.md                ← spec + guide index
-│       ├── MANIFEST.md             ← base URLs + sources (gateway-map source of truth)
-│       ├── CHANGES.md              ← added/removed endpoints + relocations from the last pull
-│       ├── specs/                  ← OpenAPI per-domain: <category>.yaml + <category>.md
-│       └── guides/                 ← conceptual pan.dev docs (auth, roles, scope, …)
-└── app/
+│   ├── README.md / usage.md / architecture.md / configuration.md
+│   ├── commands/                   ← one Markdown file per command (show-X, set-X, delete-X, packet-tracer …)
+│   └── scm-api/                    ← SCM NGFW reference (specs/ + guides/ + MANIFEST + CHANGES)
+└── app/                            ← CORE CODE ONLY (no user assets live here)
     ├── __init__.py                 ← package version
-    ├── banner.txt                  ← startup banner (Rich markup; ## lines are comments)
-    ├── goodbye.txt                 ← random exit messages (one line chosen at random per exit)
-    ├── features.py                 ← FeatureFlags dataclass + load_features() — gates commands
+    ├── paths.py                    ← single source of truth for filesystem paths (settings/, config/, docs/)
     ├── cli.py                      ← typer app: arc / arc auth / arc scm / arc docs
-    ├── cli_theme.json              ← editable CLI colour roles (edited via `configure` + `cli color`)
-    ├── config.py                   ← ArcConfig dataclasses + load_config() / save_config()
-    ├── docs.py                     ← docs/ Markdown loader for `help <topic>` and browser opener
+    ├── shell.py                    ← ArcShell REPL (prompt_toolkit)  ⚠ large — split planned (see below)
     ├── shell_catalog.py            ← small builtin catalog: accepted names + SHELL help rows
-    ├── shell.py                    ← ArcShell REPL (prompt_toolkit)
-    ├── theme.py                    ← ArcTheme dataclass + load/save/reset helpers
+    ├── features.py                 ← JSON-first feature loader: reads settings/features.json → dict
+    ├── theme.py                    ← ArcTheme dataclass + load/save/reset (reads settings/theme.json)
+    ├── cli_structure.py            ← loader for settings/cli-structure.yaml
+    ├── config.py                   ← ArcConfig dataclasses + load_config() / save_config() (secrets)
+    ├── docs.py                     ← docs/ Markdown loader for `help <topic>` and browser opener
     ├── api/
     │   └── client.py               ← SCMClient (REST only)
     ├── ssh/
     │   └── manager.py              ← SSHManager (paramiko connection pool)
     ├── commands/
-    │   ├── base.py                 ← CommandDef, ExecutionContext, require_scm(), require_device(), translation_pending()
+    │   ├── base.py                 ← CommandDef, ExecutionContext, require_scm/require_device, write helpers
     │   ├── registry.py             ← thin assembler: merges all domain COMMANDS, exposes match_command()
     │   ├── setup.py                ← /config/setup/v1  — devices, snippets, folders
-    │   ├── objects.py              ← /config/objects/v1 — addresses, services, tags, EDLs
-    │   ├── security.py             ← /config/security/v1 — security-rules, url-categories
-    │   ├── network.py              ← /config/network/v1 — interfaces, routing, zones, HA
-    │   └── operations.py           ← jobs, commit (SCM); system resources, logs, ping (SSH/--remote only)
+    │   ├── objects.py              ← /config/objects/v1 — addresses, services, tags, EDLs (read + set/update/delete)
+    │   ├── security.py             ← /config/security/v1 — security-rules, url-categories, profiles
+    │   ├── network.py              ← /config/network/v1 — interfaces, routing, zones, HA, NAT, VPN
+    │   ├── identity.py             ← /config/identity/v1 — auth profiles, certs, local users
+    │   ├── operations.py           ← jobs, commit (SCM); system info/logs/ping (SSH/--remote)
+    │   └── packet_tracer.py        ← packet-tracer / test security-policy-match (folder rule-base simulation)
     └── utils/
         └── formatter.py            ← rich Table/Panel renderers for all output types
 ```
+
+#### Where things live — the three-folder rule
+
+| Folder | Contains | Edited by |
+|--------|----------|-----------|
+| `app/` | Python — the application logic | developers/agents |
+| `settings/` | banner, theme, features.json, structure, goodbye | **anyone** (no code) |
+| `config/<user>/` | secrets (tokens, SSH passwords) | `arc auth configure` (keychain-backed) |
+
+**Path rule:** never hard-code an asset path. Import from `app/paths.py`
+(`BANNER_FILE`, `GOODBYE_FILE`, `THEME_FILE`, `STRUCTURE_FILE`, `FEATURES_FILE`).
 
 #### Command module layout — mirrors SCM URI structure
 
@@ -701,17 +713,47 @@ Each module under `app/commands/` maps to one SCM API domain or operational grou
 |--------|---------------|----------|
 | `setup.py` | `/config/setup/v1` | devices, snippets, folders |
 | `objects.py` | `/config/objects/v1` | addresses, address-groups, services, tags, EDLs |
-| `security.py` | `/config/security/v1` | security-rules, url-categories, policy-match test |
-| `network.py` | `/config/network/v1` | interfaces, zones, routing, HA |
-| `operations.py` | `/config/setup/v1` + live-device | jobs, commit (SCM); system resources, logs, ping (SSH via --remote) |
+| `security.py` | `/config/security/v1` | security-rules, url-categories, profiles |
+| `network.py` | `/config/network/v1` | interfaces, zones, routing, HA, NAT, VPN |
+| `identity.py` | `/config/identity/v1` | auth profiles, certificates, local users |
+| `operations.py` | `/config/setup/v1` + live-device | jobs, commit (SCM); system info, logs, ping (SSH via --remote) |
+| `packet_tracer.py` | (client-side) | packet-tracer / test security-policy-match — simulates the folder rule base |
 
-`base.py` contains only shared types (`CommandDef`, `ExecutionContext`) and utility functions (`require_scm`, `require_device`, `translation_pending`). No handler logic goes in `base.py`.
+`base.py` contains only shared types (`CommandDef`, `ExecutionContext`) and
+utility functions (`require_scm`, `require_device`, `parse_kv_tail`,
+`merge_common_fields`). No handler logic goes in `base.py`.
 
-`registry.py` is a **thin assembler only** — it imports each module's `COMMANDS` dict, merges them, builds `SORTED_COMMANDS` and `CATEGORIES`, and exposes `match_command()`. No handler logic goes in `registry.py`.
+`registry.py` is a **thin assembler only** — it imports each module's `COMMANDS`
+dict, merges them, builds `SORTED_COMMANDS` and `CATEGORIES`, and exposes
+`match_command()`. No handler logic goes in `registry.py`.
 
-**When adding a new SCM endpoint family**, create `app/commands/<domain>.py`, add the base URL constant and `_get_<domain>()` helper to `SCMClient`, and add the module to the merge block in `registry.py`. Nothing else needs to change.
+**When adding a new SCM endpoint family**, create `app/commands/<domain>.py`, add
+the base URL constant and getter to `SCMClient`, add the module to the merge block
+in `registry.py`, and add the feature flag(s) to `settings/features.json`.
+
+#### ⚠ Planned: split `app/shell.py` into a package (Phase 3, not yet done)
+
+`app/shell.py` is still large. The committed plan is to split it into an
+`app/shell/` package using mixin classes on `ArcShell` (each method's exact line
+range is in `dev/CODE_MAP.md`):
+
+```
+app/shell/
+├── __init__.py        ← ArcShell (composes the mixins) + ShellState + run loop
+├── completer.py       ← ArcCompleter (tab completion)
+├── dispatch.py        ← _dispatch + whitespace/shorthand parsing
+├── navigation.py      ← cd / folder / tsg / account / pwd + cache refresh
+├── sessions.py        ← connect / remote (interactive SSH)
+├── execution.py       ← _execute_api / _execute_remote / _render
+├── help.py            ← ? help system (inline/full/docs, verb options)
+├── feature_cmd.py     ← feature show/enable/disable
+├── write_cmd.py       ← set / update / delete dispatch + _cmd_set / _cmd_show_write_help
+└── prompt.py          ← banner / prompt / startup / goodbye
+```
+Validate after each extraction with `python dev/smoke_test.py --file app/shell.py`.
 
 ---
+
 
 ### ARC Domain Keywords — For Scoped Agent Work
 
@@ -722,17 +764,23 @@ When an agent needs to work on a specific domain or feature area, use these keyw
 | `network` | Network config commands | `app/commands/network.py`, `docs/scm-api/specs/network.md` | Adding/fixing interface, zone, routing, or HA commands |
 | `security` | Security policy commands | `app/commands/security.py`, `docs/scm-api/specs/security.md` | Working on security-rules, URL categories, profiles |
 | `objects` | Address/service objects | `app/commands/objects.py`, `docs/scm-api/specs/objects.md` | Adding address, service, tag, or EDL commands |
+| `identity` | Auth profiles, certs, users | `app/commands/identity.py`, `docs/scm-api/specs/ngfw-identity.md` | Auth profiles, certificates, local users |
 | `setup` | Device/folder/snippet mgmt | `app/commands/setup.py`, `docs/scm-api/specs/setup.md` | Device inventory, folder ops, snippet management |
-| `operations` | Jobs, commit, live device | `app/commands/operations.py`, `docs/scm-api/specs/ngfw-operations.md` (live ops R2) + `ngfw-config-operations.md` (config jobs/push) | Commit operations, job tracking, live device commands |
+| `operations` | Jobs, commit, live device | `app/commands/operations.py`, `docs/scm-api/specs/ngfw-operations.md` | Commit operations, job tracking, live device commands |
+| `packet-tracer` | Policy simulation | `app/commands/packet_tracer.py`, `docs/commands/packet-tracer.md` | Rule-base match logic, ASA-style packet trace |
 | `formatter` | Output rendering | `app/utils/formatter.py` | Adding new table/panel renderers |
-| `shell` | REPL, help, completion | `app/shell.py`, `app/theme.py` | Shell UX, prompts, help system, theming |
+| `shell` | REPL, help, completion | `app/shell.py` (use `dev/CODE_MAP.md` for line ranges) | Shell UX, prompts, help system, dispatch |
+| `feature` | Feature on/off | `settings/features.json`, `app/features.py`, `docs/commands/features.md` | Turn a command on/off, the feature system |
+| `settings` | User-editable assets | `settings/` (banner, theme, goodbye, cli-structure, features), `app/paths.py` | Banner, colours, labels, exit messages — no code |
+| `theme` | Colours | `settings/theme.json`, `app/theme.py` | Recolour `?` help, prompt, banner |
 | `auth` | Authentication/credentials | `app/cli.py` (auth commands), `app/config.py` | Profile management, credential storage |
-| `scm-api` | SCM REST integration | `app/api/client.py`, `docs/scm-api/` | Adding new SCM API endpoints |
+| `scm-api` | SCM REST integration | `app/api/client.py`, `dev/API_INDEX.md`, `docs/scm-api/` | Adding new SCM API endpoints |
 
 **Usage pattern:**
-- "Add support for BGP peer listing [network]" → Agent reads network.py, network.md spec
-- "Fix security policy table rendering [formatter]" → Agent reads formatter.py only
-- "Add OAuth refresh [auth]" → Agent reads cli.py auth commands, config.py
+- "Add BGP peer listing [network]" → Agent reads network.py + the network spec only
+- "Change the banner [settings]" → Agent edits settings/banner.txt only
+- "Turn on show-zone for everyone [feature]" → Agent edits settings/features.json only
+- "Improve packet-tracer port matching [packet-tracer]" → Agent reads packet_tracer.py only
 
 **Token savings:** Using a keyword prevents the agent from reading all 5 domain modules + full AGENTS.md when only 1-2 files are relevant.
 
@@ -952,7 +1000,7 @@ Handled directly in `ArcShell._dispatch()` before the registry is consulted:
 
 ### CLI Theme System
 
-ARC's colour roles are stored in `app/cli_theme.json` and loaded at shell startup into `ArcTheme` (defined in `app/theme.py`). Every colour value is a Rich markup style string (e.g. `"cyan"`, `"bold yellow"`, `"dim"`).
+ARC's colour roles are stored in `settings/theme.json` and loaded at shell startup into `ArcTheme` (defined in `app/theme.py`). Every colour value is a Rich markup style string (e.g. `"cyan"`, `"bold yellow"`, `"dim"`).
 
 **Theme keys:**
 
@@ -963,15 +1011,15 @@ ARC's colour roles are stored in `app/cli_theme.json` and loaded at shell startu
 | `section_header_locked` | `dim bold` | DEVICE section header when no device is active |
 | `description` | *(empty — plain)* | Description text beside commands |
 | `description_dim` | `dim` | Dim/secondary text and context annotations |
-| `banner_logo` | `bold cyan` | Default style tag written into `app/banner.txt` |
-| `banner_subtitle` | `dim` | Default style tag for subtitle line in `app/banner.txt` |
+| `banner_logo` | `bold cyan` | Default style tag for the logo |
+| `banner_subtitle` | `dim` | Default style tag for the subtitle line |
 
 **Editing colours:**
-- **In-shell:** `configure` then `cli color <key> <style>` — saved immediately to `app/cli_theme.json`
-- **Direct file edit:** open `app/cli_theme.json` and change any value
+- **In-shell:** `configure` then `cli color <key> <style>` — saved immediately to `settings/theme.json`
+- **Direct file edit:** open `settings/theme.json` and change any value
 - **Reset:** `configure` then `cli reset` — restores all keys to defaults
 
-**`app/banner.txt`** is the single source of truth for the startup banner. It contains Rich markup tags directly (e.g. `[bold cyan]...[/bold cyan]`). Lines starting with `##` are comments stripped before printing. Add a blank line for spacing, a legal notice, or change the logo colour — all without touching Python code.
+**`settings/banner.txt`** is the single source of truth for the startup banner. It contains Rich markup tags directly (e.g. `[bold cyan]...[/bold cyan]`). Lines starting with `##` are comments stripped before printing. Add a blank line for spacing, a legal notice, or change the logo colour — all without touching Python code.
 
 **Rules for adding a new theme key:**
 1. Add the field to `ArcTheme` in `app/theme.py` with a default value.

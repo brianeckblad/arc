@@ -10,7 +10,7 @@ This command requires the **`show_interface`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable show_interface
 
-# Enable permanently (config/features.json — git-ignored):
+# Enable permanently (settings/features.json — git-ignored):
 {"  \"show_interface\": true"}
 ```
 

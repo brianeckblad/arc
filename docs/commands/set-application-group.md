@@ -10,7 +10,7 @@ This command requires the **`app_groups`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable app_groups
 
-# Enable permanently (config/features.json — git-ignored):
+# Enable permanently (settings/features.json — git-ignored):
 {"  \"app_groups\": true"}
 ```
 

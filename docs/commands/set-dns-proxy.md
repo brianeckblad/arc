@@ -10,7 +10,7 @@ This command requires the **`dns_proxy`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable dns_proxy
 
-# Enable permanently (config/features.json — git-ignored):
+# Enable permanently (settings/features.json — git-ignored):
 {"  \"dns_proxy\": true"}
 ```
 

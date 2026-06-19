@@ -10,7 +10,7 @@ This command requires the **`show_snippets`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable show_snippets
 
-# Enable permanently (config/features.json — git-ignored):
+# Enable permanently (settings/features.json — git-ignored):
 {"  \"show_snippets\": true"}
 ```
 

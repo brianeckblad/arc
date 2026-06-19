@@ -2,24 +2,23 @@
 <!-- Gitignored. Read by all agents at session start. Updated automatically. -->
 
 ## Current Work
-**Goal:** Refactor — move user-customizable assets to a `settings/` folder, make features JSON-driven, set an MVP feature set, add a Cisco-ASA-style packet-tracer, break up monolithic shell.py, refresh docs + AGENTS.md.
+**Goal:** Refactor — settings/ folder, JSON-first features, MVP, packet-tracer, docs/AGENTS.
 **Branch:** main
-**Status:** in-progress
+**Status:** done (Phases 1, 2, 4) — Phase 3 (shell split) staged + documented in AGENTS.md
 
-**Plan (phased, each validated with `python dev/smoke_test.py`):**
-- PHASE 1: create `settings/` folder; move banner/goodbye/theme/cli-structure there; features JSON-first (`settings/features.json` = source of truth); MVP defaults (most off).
-- PHASE 2: add `packet-tracer` (Cisco-ASA alias of test-security-policy-match), context-aware.
-- PHASE 3: split `app/shell.py` (2843 lines) into `app/shell/` package via mixins.
-- PHASE 4: docs cleanup + AGENTS.md rewrite (new structure + keyword system).
+**Completed:**
+- PHASE 1 ✅ settings/ folder (banner, goodbye, theme.json, cli-structure.yaml, features.json, README); app/paths.py; features JSON-first (dict, no dataclass); MVP defaults (8 on / 53 off); feature show ENABLED/DISABLED.
+- PHASE 2 ✅ app/commands/packet_tracer.py — folder rule-base simulation (`packet-tracer` + `test security-policy-match`), --remote SSH fallback; docs page.
+- PHASE 4 ✅ AGENTS.md structure rewrite + keyword system (settings/feature/theme/identity/packet-tracer keywords) + Phase-3 shell-split plan; README.dev.md + docs path fixes; features.md rewritten JSON-first.
+- PHASE 3 ⏳ shell.py split into app/shell/ package — NOT done; precise plan committed in AGENTS.md (mixins, CODE_MAP line ranges). Next agent can execute cheaply.
 
-**Key decisions:**
-- `settings/` (repo root, committed) = ALL user-editable assets. `config/<user>/config.json` = secrets only.
-- `settings/features.json` = on/off source of truth; valid flags derived from registry; missing flag → False.
-- MVP ON: show devices, show address, show security policy, show snippets/snippet/device snippets, cd folder, test-security-policy-match / packet-tracer.
+**Validation:** 103/103 smoke checks; live shell verified (MVP commands, feature toggles, packet-tracer wired).
 
-**Files in play:** app/theme.py, app/cli_structure.py, app/features.py, app/shell.py, dev/smoke_test.py, settings/*
+**Key facts for next session:**
+- settings/ = user-editable (no code). config/<user>/ = secrets. app/ = core code.
+- settings/features.json is THE feature on/off source of truth.
+- app/paths.py holds all asset paths — never hard-code.
 
 ---
 
 ## Checkpoints
-

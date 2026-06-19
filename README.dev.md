@@ -43,14 +43,14 @@ without scanning the whole codebase. One word replaces a paragraph.
 | `index` | use the API index | Read `dev/API_INDEX.md` for the endpoint, skip spec files |
 | `string <file>` | work only in this small file | Edit only the named string file; don't open `shell.py` whole |
 | `catalog` | builtin metadata | Open `app/shell_catalog.py` only |
-| `flag <name>` | feature flag work | Open `app/features.py` + the one CommandDef |
+| `flag <name>` | feature flag work | Edit `settings/features.json` + the one CommandDef |
 | `scaffold <cmd> <module>` | generate boilerplate | Run `dev/scaffold.py`, then fill TODOs |
 | `smoke <file>` | targeted validation | Run `python dev/smoke_test.py --file <file>` |
 | `only <n>` | run smoke section n | Run `python dev/smoke_test.py --only <n>` |
 | `endpoint <resource>` | API lookup | Find row in `dev/API_INDEX.md`, note methods + SSH column |
 | `method <name>` | read one method | Look up name in `dev/CODE_MAP.md`, read just that range |
 | `debug` | start the debug protocol | Use the debug template; read only files the error names |
-| `ship <flag>` | enable a feature for all | Flip `app/features.py` default to `True`; run smoke |
+| `ship <flag>` | enable a feature for all | Flip the flag to `true` in `settings/features.json`; run smoke |
 | `docsupdate` | pull + self-heal docs | Run `dev/update_scm_docs.py`; read `docs/scm-api/CHANGES.md`; follow `dev/DOCS_AGENT.md` |
 | `docs agent` | enter docs mode | Read `dev/DOCS_AGENT.md`; pull docs, report changes, update affected API calls only |
 
@@ -120,7 +120,7 @@ notes: <anything you already know changed on pan.dev>
 | `add device command` | `docs/COMMAND_PATTERNS.md` (pattern 4), `dev/API_INDEX.md` SSH column | `operations.py`, docs page | `python dev/smoke_test.py --only 1,2,3` |
 | `add shell builtin` | `app/shell_catalog.py`, `dev/CODE_MAP.md` | `shell_catalog.py`, one `_cmd_*`, `_dispatch()` | `python dev/smoke_test.py --file app/shell_catalog.py` |
 | `change help text` | `app/shell_catalog.py` for SHELL help, command module for registered commands | small catalog/module only | `python dev/smoke_test.py --only 8` |
-| `change prompt/banner` | `dev/CODE_MAP.md` (`_print_banner`/`_prompt`), `app/banner.txt` | banner/theme files | `python dev/smoke_test.py --only 7,9` |
+| `change prompt/banner` | `dev/CODE_MAP.md` (`_print_banner`/`_prompt`), `settings/banner.txt` | banner/theme files | `python dev/smoke_test.py --only 7,9` |
 | `change renderer` | `docs/RENDER_CATALOG.md` (find matching render= key), then `app/utils/formatter.py` | formatter + `_render` dispatch | `python dev/smoke_test.py --file app/utils/formatter.py` |
 | `debug API 4xx` | `app/api/client.py`, `dev/API_INDEX.md` | client method or handler params | targeted smoke + reproduce command |
 | `debug tab completion` | `dev/CODE_MAP.md` (`ArcCompleter.get_completions`) | completer only | `python dev/smoke_test.py --file app/shell.py` |
@@ -142,8 +142,8 @@ notes: <anything you already know changed on pan.dev>
 | Change API endpoint | `app/api/client.py` | same |
 | Change output rendering | `app/utils/formatter.py` + `app/shell.py _render()` | same |
 | Config / auth changes | `app/config.py`, `app/cli.py` | same |
-| Theme / UI | `app/theme.py`, `app/cli_theme.json`, `app/shell.py _styled()` | same |
-| Feature flags | `app/features.py` + `config/features.json` | same |
+| Theme / UI | `app/theme.py`, `settings/theme.json`, `app/shell.py _styled()` | same |
+| Feature flags | `app/features.py` + `settings/features.json` | same |
 
 ---
 
@@ -159,8 +159,8 @@ When you see an error during development, this table points to the 1–2 most li
 | `KeyError` / `'NoneType' object is not subscriptable` | Command handler logic, `docs/scm-api/specs/<category>.md` schema | API response key missing; check endpoint docs |
 | `KeyboardInterrupt` during SSH | `app/ssh/manager.py` paramiko session, `dev/CODE_MAP.md` (`_cmd_connect` range) | SSH timeout or ctrl-C during interactive mode |
 | Tab completion returns empty | `app/shell.py` completer (use `dev/CODE_MAP.md` for `_cmd_cd`/`_cmd_folder`), `dev/smoke_test.py` section 8 | Cache not populated or completer not wired |
-| `feature_flag='...' not recognized` | `app/features.py` FeatureFlags dataclass | Feature flag name not in FeatureFlags or typo |
-| Theme colour not showing | `app/cli_theme.json`, `app/theme.py` THEME_KEYS, `dev/smoke_test.py` section 10 | Theme key not in THEME_KEYS or JSON has bad value |
+| `feature_flag='...' not recognized` | `settings/features.json` (flag key missing/typo) | Flag name not in features.json or typo |
+| Theme colour not showing | `settings/theme.json`, `app/theme.py` THEME_KEYS, `dev/smoke_test.py` section 10 | Theme key not in THEME_KEYS or JSON has bad value |
 | Inline help `?` shows wrong list | `app/shell_catalog.py` SHELL_HELP_ROWS, `dev/smoke_test.py` section 9 | Builtin help entry missing or command not registered in right scope |
 | `render='unknown'` error | `docs/RENDER_CATALOG.md`, `app/utils/formatter.py`, `app/shell.py _render()` | Render key not in catalog; add formatter function + dispatch case |
 
@@ -260,26 +260,28 @@ python dev/smoke_test.py --file app/shell_catalog.py
 
 ---
 
-## Feature Flags — Enable/Disable API Commands
+## Feature Flags — Enable/Disable Commands (JSON-first)
 
-Flags let you add a command to the registry but keep it hidden until tested.
+`settings/features.json` is the single source of truth. Add a command to the
+registry but keep it hidden until tested.
 
-```python
-# 1. Add flag to app/features.py FeatureFlags (default=False)
-nat_rules: bool = False
-
-# 2. Set on CommandDef
+```text
+# 1. Gate the CommandDef
 'show nat-rules': CommandDef(..., feature_flag='nat_rules')
 
-# 3. Enable locally — add to config/features.json (git-ignored)
-{"nat_rules": true}
+# 2. Add the flag to settings/features.json
+{ "nat_rules": false }
 
-# 4. Or use env var for one session:
-ARC_FEATURE_NAT_RULES=1 python run.py
+# 3. Toggle for one session (inside ARC, not saved):
+feature enable nat_rules        # or: ARC_FEATURE_NAT_RULES=1 python run.py
 
-# 5. When ready to ship: flip default to True in FeatureFlags
-nat_rules: bool = True   # ships to everyone
+# 4. When ready to ship: set it true in settings/features.json
+{ "nat_rules": true }
 ```
+
+There is no `FeatureFlags` dataclass — `app/features.py` just reads the JSON
+into a `dict[str, bool]`. A flag absent from the file is treated as `false`.
+
 
 When a flag is OFF: command hidden from `?`, blocked at execution with an
 actionable message. Empty `feature_flag=""` (default) = always enabled.
@@ -298,7 +300,7 @@ tiny file instead of the whole CLI:
 | `app/commands/<module>.py` | registered command handlers + `CommandDef`s | adding SCM/device commands |
 | `app/api/client.py` | SCM HTTP methods | endpoint path/query changes |
 | `app/utils/formatter.py` | output renderers | display changes |
-| `app/theme.py` + `app/cli_theme.json` | color roles | theme changes |
+| `app/theme.py` + `settings/theme.json` | color roles | theme changes |
 
 **Section jumps:** `app/shell.py` is large — never read it whole. `dev/CODE_MAP.md`
 lists the exact, always-current line range of every method (smoke section 10
@@ -419,7 +421,7 @@ python dev/smoke_test.py --file app/shell.py              # auto-selects relevan
 | 7 | formatter | `app/utils/formatter.py` — new render function |
 | 8 | banner alignment | `app/shell.py _print_banner()` |
 | 9 | inline help / builtins | `app/shell_catalog.py` or `app/shell.py` help |
-| 10 | theme | `app/theme.py`, `app/cli_theme.json` |
+| 10 | theme | `app/theme.py`, `settings/theme.json` |
 | 11 | code map freshness | any 300+ line file — fails if `dev/CODE_MAP.md` is stale |
 
 ---
