@@ -1,3 +1,13 @@
+---
+command: "show device snippets"
+description: "Show snippets attached to a device"
+usage: "show device <hostname> snippets"
+feature_flag: show_devices
+category: setup
+scope: global
+api: "GET /config/setup/v1/devices/{id}"
+---
+
 # show device snippets
 
 **Category:** setup

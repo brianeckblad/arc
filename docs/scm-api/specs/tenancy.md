@@ -15,6 +15,7 @@
 **Summary:** List all tenant service groups  
 **Operation ID:** `get-tenancy-v1-tenant_service_groups`  
 **Tags:** TenantServiceGroup  
+**Query params:** hierarchy  
 **Response codes:** 200, 401, 403, 404, 500
 
 ### `POST /tenancy/v1/tenant_service_groups`
@@ -22,6 +23,7 @@
 **Summary:** Create a tenant service group  
 **Operation ID:** `post-tenancy-v1-tenant_service_groups`  
 **Tags:** TenantServiceGroup  
+**Body schema:** `tenant_service_group_create`  
 **Response codes:** 200, 400, 401, 403, 404, 500
 
 ### `DELETE /tenancy/v1/tenant_service_groups/{tsg_id}`
@@ -43,6 +45,7 @@
 **Summary:** Update a tenant service group  
 **Operation ID:** `put-tenancy-v1-tenant_service_groups-tsg_id`  
 **Tags:** TenantServiceGroup  
+**Body schema:** `tenant_service_group_update`  
 **Response codes:** 200, 401, 403, 404, 500
 
 ### `POST /tenancy/v1/tenant_service_groups/{tsg_id}/operations/list_ancestors`
@@ -50,6 +53,7 @@
 **Summary:** List tenant service group ancestors  
 **Operation ID:** `post-tenancy-v1-tenant_service_groups-tsg_id-operations-list_ancestors`  
 **Tags:** TenantServiceGroup  
+**Query params:** sort, include_self, fields  
 **Response codes:** 200, 401, 403, 404, 500
 
 ### `POST /tenancy/v1/tenant_service_groups/{tsg_id}/operations/list_children`
@@ -57,4 +61,5 @@
 **Summary:** List tenant service group children  
 **Operation ID:** `post-tenancy-v1-tenant_service_groups-tsg_id-operations-list_children`  
 **Tags:** TenantServiceGroup  
+**Query params:** hierarchy, include_self  
 **Response codes:** 200, 401, 403, 404, 500

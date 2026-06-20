@@ -1,3 +1,13 @@
+---
+command: "set service"
+description: "Create service — set service <name> tcp|udp port <n> [source-port <n>]"
+usage: "set service <name> tcp|udp port <n> [source-port <n>] [description <text>] [tag <name>]"
+feature_flag: create_service
+category: objects
+scope: folder
+api: "POST /config/objects/v1/services"
+---
+
 # set service
 
 Create a service object (TCP or UDP) in the active SCM folder.

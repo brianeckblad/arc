@@ -1,3 +1,13 @@
+---
+command: "update address-group"
+description: "Update address group — update address-group <name> static <m1>... | dynamic filter '<expr>'"
+usage: "update address-group <name> static|dynamic <value> [description <text>]"
+feature_flag: update_objects
+category: objects
+scope: folder
+api: "PUT /config/objects/v1/address-groups/{id}"
+---
+
 # update address-group
 
 **Category:** objects

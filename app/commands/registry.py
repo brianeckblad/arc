@@ -8,6 +8,15 @@ from typing import Optional
 # without changing their import paths.
 from app.commands.base import CommandDef, ExecutionContext  # noqa: F401
 
+# Description / usage override loader — lets operators reword command help in
+# each command's docs/commands/<slug>.md front-matter without editing Python.
+from app.settings.command_help import apply_overrides
+
+# Structure-aware argument parser — when a command has an entry in
+# settings/command-structure.csv, ARC parses its arguments with greedy string
+# handling so the operator never needs to quote a string field.
+from app.settings import command_structure
+
 # Domain-specific command tables
 from app.commands.identity import COMMANDS as _IDENTITY
 from app.commands.network import COMMANDS as _NETWORK
@@ -16,6 +25,12 @@ from app.commands.operations import COMMANDS as _OPERATIONS
 from app.commands.packet_tracer import COMMANDS as _PACKET_TRACER
 from app.commands.security import COMMANDS as _SECURITY
 from app.commands.setup import COMMANDS as _SETUP
+
+# Auto-generated `show <resource>` commands for 100% NGFW config coverage — one
+# per uncovered list endpoint in the pulled specs (see app/commands/generated.py
+# and dev/generate_resource_catalog.py).  Merged FIRST so any hand-written command
+# with the same key always wins.
+from app.commands.generated import COMMANDS as _GENERATED
 
 # ---------------------------------------------------------------------------
 # Merged command table
@@ -28,6 +43,7 @@ from app.commands.setup import COMMANDS as _SETUP
 # ---------------------------------------------------------------------------
 
 COMMANDS: dict[str, CommandDef] = {
+    **_GENERATED,
     **_SETUP,
     **_OBJECTS,
     **_SECURITY,
@@ -36,6 +52,12 @@ COMMANDS: dict[str, CommandDef] = {
     **_IDENTITY,
     **_PACKET_TRACER,
 }
+
+# Apply description + usage from each command's docs/commands/<slug>.md
+# front-matter (no-op when a doc has none).  Mutates the merged CommandDefs so
+# every help/completion call site that reads CommandDef.description / .usage
+# shows the doc-file text.
+apply_overrides(COMMANDS)
 
 # Sorted longest-first so match_command() always finds the most-specific key.
 SORTED_COMMANDS: list[tuple[str, CommandDef]] = sorted(
@@ -128,5 +150,10 @@ def match_command(tokens: list[str]) -> tuple[Optional[str], CommandDef, dict]:
     for key, cmd_def in SORTED_COMMANDS:
         if sentence == key or sentence.startswith(key + " "):
             remainder = tokens[len(key.split()):]
+            # Prefer the structure-aware parser (greedy string fields, no quotes
+            # required) when this command is described in command-structure.csv.
+            spec = command_structure.arg_spec(key)
+            if spec:
+                return key, cmd_def, command_structure.parse(spec, remainder)
             return key, cmd_def, _parse_args(remainder)
     return None, None, {}  # type: ignore[return-value]

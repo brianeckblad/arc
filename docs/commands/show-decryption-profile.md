@@ -1,3 +1,12 @@
+---
+command: "show decryption-profile"
+description: "Show decryption profiles in the active folder"
+feature_flag: decryption_policy
+category: security
+scope: folder
+api: "GET /config/security/v1/decryption-profiles"
+---
+
 # show decryption-profile
 
 **Category:** security

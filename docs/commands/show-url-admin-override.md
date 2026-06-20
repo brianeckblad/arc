@@ -1,3 +1,10 @@
+---
+command: "show url-admin-override"
+description: "Show url admin override in the active folder"
+category: security
+scope: folder
+---
+
 # show url-admin-override
 
 List **url-admin-override** objects in the active SCM folder.

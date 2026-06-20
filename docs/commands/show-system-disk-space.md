@@ -1,3 +1,12 @@
+---
+command: "show system disk-space"
+description: "Show live disk usage — use --remote for live device data"
+feature_flag: show_system_disk_space
+category: operations
+scope: device
+api: "(live device state — SSH via --remote)"
+---
+
 # show system disk-space
 
 Show disk space usage

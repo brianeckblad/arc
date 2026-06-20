@@ -1,3 +1,12 @@
+---
+command: "show dos-protection-rules"
+description: "Show DoS protection rules in the active folder"
+feature_flag: dos_protection
+category: security
+scope: folder
+api: "GET /config/security/v1/dos-protection-rules"
+---
+
 # show dos-protection-rules
 
 **Category:** security

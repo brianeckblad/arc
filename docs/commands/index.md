@@ -2,7 +2,7 @@
 
 Use `help <command>` to open detailed docs for a command.
 
-- `commit` — Push candidate config to managed devices — commit [description <text>]
+- `commit` — Push candidate config to managed devices
 - `delete address` — Delete an address object — delete address <name>
 - `delete address-group` — Delete an address group — delete address-group <name>
 - `delete external-dynamic-list` — Delete an EDL — delete external-dynamic-list <name>
@@ -11,11 +11,11 @@ Use `help <command>` to open detailed docs for a command.
 - `delete service-group` — Delete a service group — delete service-group <name>
 - `delete tag` — Delete a tag — delete tag <name>
 - `delete url-category` — Delete a URL category — delete url-category <name>
-- `packet-tracer` — Trace a packet through the folder's security rule base — packet-tracer from <zone> to <zone> source <ip> destination <ip> [application <app>] [destination-port <n>] [protocol <n>]
-- `ping host` — Ping a host from the device — ping host <ip>  (use --remote)
-- `request system reboot` — Reboot a managed device — use --remote  (CAUTION: device will restart)
-- `request system shutdown` — Shut down a managed device — use --remote  (CAUTION: device will go offline)
-- `request system software check` — Check available software updates — use --remote for live data
+- `packet-tracer` — Trace a packet through the folder's security rule base
+- `ping host` — Ping a host from a managed device (use --remote)
+- `request system reboot` — Reboot a managed device (CAUTION: device will restart)
+- `request system shutdown` — Shut down a managed device (CAUTION: device will go offline)
+- `request system software check` — Check available software updates (use --remote for live data)
 - `set address` — Create address — set address <name> ip-netmask|ip-range|ip-wildcard|fqdn <value>
 - `set address-group` — Create address group — set address-group <name> static <m1> [m2] | dynamic filter '<expr>'
 - `set external-dynamic-list` — Create EDL — set external-dynamic-list <name> type ip|domain|url url <fetch-url>
@@ -25,74 +25,146 @@ Use `help <command>` to open detailed docs for a command.
 - `set url-category` — Create a custom URL category — set url-category <name> type url-list list <url1>
 - `show address` — Show address objects in the active folder
 - `show address-group` — Show address groups in the active folder
+- `show advanced-device-objects` — Show advanced device objects in the active folder
+- `show aggregate-interfaces` — Show aggregate interfaces in the active folder
 - `show anti-spyware-profile` — Show anti-spyware profiles in the active folder
+- `show anti-spyware-signatures` — Show anti spyware signatures in the active folder
 - `show app-override-rules` — Show application override rules in the active folder
 - `show application-filter` — Show application filters in the active folder
 - `show application-group` — Show application groups in the active folder
+- `show applications` — Show applications in the active folder
 - `show arp` — Show live ARP table from device — use --remote
+- `show authentication-portals` — Show authentication portals in the active folder
 - `show authentication-profile` — Show authentication profiles in the active folder
 - `show authentication-rules` — Show authentication rules in the active folder
+- `show authentication-sequences` — Show authentication sequences in the active folder
+- `show auto-tag-actions` — Show auto tag actions in the active folder
+- `show auto-vpn-clusters` — Show auto vpn clusters in the active folder
+- `show auto-vpn-monitor` — Show auto vpn monitor in the active folder
+- `show auto-vpn-settings` — Show auto vpn settings in the active folder
+- `show bgp-auth-profiles` — Show bgp auth profiles in the active folder
+- `show bgp-filtering-profiles` — Show bgp filtering profiles in the active folder
 - `show bgp-profile` — Show BGP routing profiles (configuration) in the active folder
+- `show bgp-redistribution-profiles` — Show bgp redistribution profiles in the active folder
+- `show bgp-route-map-redistributions` — Show bgp route map redistributions in the active folder
+- `show bgp-route-maps` — Show bgp route maps in the active folder
 - `show certificate-profile` — Show certificate profiles in the active folder
+- `show certificates` — Show certificates in the active folder
+- `show config-match-list` — Show config match list in the active folder
+- `show data-filtering-profiles` — Show data filtering profiles in the active folder
+- `show data-objects` — Show data objects in the active folder
+- `show decryption-exclusions` — Show decryption exclusions in the active folder
 - `show decryption-profile` — Show decryption profiles in the active folder
 - `show decryption-rules` — Show decryption rules in the active folder
-- `show device` — Show detail for a device — show device <hostname>  (or 'show device' when cd'd in)
-- `show device snippets` — Show snippets attached to a device — show device <hostname> snippets
+- `show device` — Show detail for a device (or 'show device' when cd'd in)
+- `show device snippets` — Show snippets attached to a device
+- `show device-context-segments` — Show device context segments in the active folder
 - `show devices` — List all SCM-managed devices
+- `show dhcp-interfaces` — Show dhcp interfaces in the active folder
 - `show dns-proxy` — Show DNS proxy configurations in the active folder
+- `show dns-security-profiles` — Show dns security profiles in the active folder
 - `show dos-protection-profile` — Show DoS protection profiles in the active folder
 - `show dos-protection-rules` — Show DoS protection rules in the active folder
+- `show dynamic-user-groups` — Show dynamic user groups in the active folder
 - `show external-dynamic-list` — Show external dynamic lists (EDLs) in the active folder
+- `show file-blocking-profiles` — Show file blocking profiles in the active folder
+- `show globalprotect-match-list` — Show globalprotect match list in the active folder
 - `show high-availability all` — Show full HA configuration from the active folder
 - `show high-availability state` — Show HA state summary from the active folder
 - `show hip-object` — Show GlobalProtect HIP objects in the active folder
 - `show hip-profile` — Show GlobalProtect HIP profiles in the active folder
+- `show hipmatch-match-list` — Show hipmatch match list in the active folder
+- `show http-header-profiles` — Show http header profiles in the active folder
+- `show http-server-profiles` — Show http server profiles in the active folder
+- `show ike-crypto-profiles` — Show ike crypto profiles in the active folder
 - `show ike-gateway` — Show IKE gateway configurations (VPN) in the active folder
-- `show interface` — Show a specific interface — show interface <name>
+- `show interface` — Show a specific interface in the active folder
 - `show interface all` — Show all interfaces in the active folder
+- `show interface-management-profiles` — Show interface management profiles in the active folder
+- `show ipsec-crypto-profiles` — Show ipsec crypto profiles in the active folder
 - `show ipsec-tunnel` — Show IPsec tunnel configurations in the active folder
+- `show iptag-match-list` — Show iptag match list in the active folder
 - `show jobs all` — Show all SCM jobs (TSG-wide)
-- `show jobs id` — Show a specific job by ID — show jobs id <n>
+- `show jobs id` — Show a specific SCM job by ID
+- `show kerberos-server-profiles` — Show kerberos server profiles in the active folder
+- `show layer2-subinterfaces` — Show layer2 subinterfaces in the active folder
+- `show layer3-subinterfaces` — Show layer3 subinterfaces in the active folder
+- `show ldap-server-profiles` — Show ldap server profiles in the active folder
+- `show link-tags` — Show link tags in the active folder
+- `show lldp-profiles` — Show lldp profiles in the active folder
 - `show local-user` — Show local users in the active folder
 - `show local-user-group` — Show local user groups in the active folder
 - `show log system` — Show live system log — use --remote for live device data
 - `show log traffic` — Show live traffic log — use --remote for live device data
 - `show log-forwarding-profile` — Show log forwarding profiles in the active folder
+- `show logical-routers` — Show logical routers in the active folder
+- `show loopback-interfaces` — Show loopback interfaces in the active folder
 - `show mfa-server` — Show MFA server profiles in the active folder
 - `show nat-rules` — Show NAT rules in the active folder
+- `show network_packet_broker_profiles` — Show network_packet_broker_profiles in the active folder
+- `show network_packet_broker_rules` — Show network_packet_broker_rules in the active folder
+- `show ocsp-responders` — Show ocsp responders in the active folder
+- `show ospf-auth-profiles` — Show ospf auth profiles in the active folder
 - `show pbf-rules` — Show policy-based forwarding rules in the active folder
 - `show profile-group` — Show security profile groups in the active folder
+- `show qos-policy-rules` — Show qos policy rules in the active folder
 - `show qos-profile` — Show QoS profiles in the active folder
+- `show quarantined-devices` — Show quarantined devices in the active folder
 - `show radius-server` — Show RADIUS server profiles in the active folder
 - `show region` — Show regions (TSG-wide, no folder filter)
+- `show remote-networks-license-info` — Show remote networks license info in the active folder
+- `show route-access-lists` — Show route access lists in the active folder
+- `show route-community-lists` — Show route community lists in the active folder
+- `show route-path-access-lists` — Show route path access lists in the active folder
+- `show route-prefix-lists` — Show route prefix lists in the active folder
 - `show routing bgp` — Show live BGP routing state from device — use --remote
 - `show routing route` — Show static routes in the active folder
 - `show routing summary` — Show virtual routers / routing profiles in the active folder
+- `show saas-tenant-restrictions` — Show saas tenant restrictions in the active folder
+- `show saml-server-profiles` — Show saml server profiles in the active folder
+- `show scep-profiles` — Show scep profiles in the active folder
 - `show schedule` — Show schedules in the active folder
+- `show sdwan-error-correction-profiles` — Show sdwan error correction profiles in the active folder
+- `show sdwan-path-quality-profiles` — Show sdwan path quality profiles in the active folder
 - `show sdwan-rules` — Show SD-WAN rules in the active folder
+- `show sdwan-saas-quality-profiles` — Show sdwan saas quality profiles in the active folder
+- `show sdwan-traffic-distribution-profiles` — Show sdwan traffic distribution profiles in the active folder
 - `show security policy` — Show security policy rules in the active folder
 - `show service` — Show service objects in the active folder
 - `show service-group` — Show service groups in the active folder
 - `show session all` — Show live session table from device — use --remote
-- `show snippet` — Show full detail for a snippet — show snippet <name>
+- `show snippet` — Show full detail for a snippet
 - `show snippets` — List snippets for the current context  [dim](device → device snippets | folder → folder snippets | Shared → all)[/dim]
 - `show snippets global` — List ALL snippets regardless of device or folder context
+- `show ssl-decryption-settings` — Show ssl decryption settings in the active folder
+- `show syslog-server-profiles` — Show syslog server profiles in the active folder
 - `show system disk-space` — Show live disk usage — use --remote for live device data
 - `show system info` — Show device info from SCM (model, serial, SW version, IP, status…)
 - `show system resources` — Show live CPU / memory — use --remote for live device data
+- `show system-match-list` — Show system match list in the active folder
+- `show tacacs-server-profiles` — Show tacacs server profiles in the active folder
 - `show tag` — Show tags in the active folder
 - `show tls-service-profile` — Show TLS service profiles in the active folder
+- `show trusted-certificate-authorities` — Show trusted certificate authorities in the active folder
+- `show tunnel-interfaces` — Show tunnel interfaces in the active folder
+- `show url-access-profiles` — Show url access profiles in the active folder
+- `show url-admin-override` — Show url admin override in the active folder
 - `show url-categories` — Show custom URL categories in the active folder
+- `show url-filtering-categories` — Show url filtering categories in the active folder
 - `show user ip-user-mapping` — Show live user-to-IP mapping from device — use --remote
+- `show userid-match-list` — Show userid match list in the active folder
+- `show vlan-interfaces` — Show vlan interfaces in the active folder
 - `show vpn ike-sa` — Show live IKE security associations from device — use --remote
 - `show vpn tunnel` — Show live VPN tunnel state from device — use --remote
 - `show vulnerability-profile` — Show vulnerability protection profiles in the active folder
+- `show vulnerability-protection-signatures` — Show vulnerability protection signatures in the active folder
 - `show wildfire-profile` — Show WildFire anti-virus profiles in the active folder
 - `show zone` — Show security zones in the active folder
-- `test nat-policy-match` — Test NAT policy match — source <ip> destination <ip>  (use --remote)
-- `test security-policy-match` — Test which security rule a packet matches (alias of packet-tracer) — test security-policy-match source <ip> destination <ip> [from <zone>] [to <zone>] [application <app>] [destination-port <n>]
-- `test url` — Test URL categorization — test url <url>  (use --remote)
-- `traceroute host` — Traceroute from device — traceroute host <ip>  (use --remote)
+- `show zone-protection-profiles` — Show zone protection profiles in the active folder
+- `test nat-policy-match` — Test NAT policy match (use --remote)
+- `test security-policy-match` — Test which security rule a packet matches (alias of packet-tracer)
+- `test url` — Test URL categorization (use --remote)
+- `traceroute host` — Traceroute from a managed device (use --remote)
 - `update address` — Update address — update address <name> ip-netmask|fqdn|ip-range|ip-wildcard|description|tag <value>
 - `update address-group` — Update address group — update address-group <name> static <m1>... | dynamic filter '<expr>'
 - `update external-dynamic-list` — Update EDL url/frequency — update external-dynamic-list <name> url <url>

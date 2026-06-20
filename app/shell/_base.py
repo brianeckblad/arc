@@ -7,17 +7,17 @@ th# SHELL.PY — the shell spine (prompt loop, dispatch, execution, rendering)
 # AGENT READ STRATEGY — do NOT read this whole file.
 #   `dev/CODE_MAP.md` has the exact, always-current line range of every method
 #   here. Read that map, then read_file(offset=START, limit=END-START+1) for the
-#   one method you need. Regenerate the map with: python dev/gen_code_map.py
+#   one method you need. Regenerate the map with: python dev/generate_code_map.py
 #   (smoke_test.py section 10 fails if the map is stale.)
 #
 # SMALL "STRINGS" attached to this spine (edit these first when relevant):
-#   app/shell_catalog.py  — builtin command names + SHELL `?` help rows
-#   app/features.py       — feature flags that gate commands
-#   app/theme.py          — colour roles for `?` help and prompt
-#   app/commands/*.py     — registered command handlers + CommandDefs
+#   app/shell_catalog.py       — builtin command names + SHELL `?` help rows
+#   app/settings/features.py   — feature flags that gate commands
+#   app/settings/theme.py      — colour roles for `?` help and prompt
+#   app/commands/*.py          — registered command handlers + CommandDefs
 #
 # FEATURE FLAGS:
-#   CommandDef.feature_flag = 'flag_name' gates a command behind app/features.py.
+#   CommandDef.feature_flag = 'flag_name' gates a command behind app/settings/features.py.
 #   _is_command_available() enforces flags in `?` help; _execute_api() at runtime.
 # ============================================================================
 """
@@ -28,6 +28,7 @@ import os
 import re
 import random
 import select
+import shlex
 import shutil
 import signal
 import sys
@@ -68,7 +69,7 @@ from app.commands.registry import (
     match_command,
 )
 from app.config import ArcConfig, list_profiles, load_config, set_active_profile
-from app.cli_structure import (
+from app.settings.cli_structure import (
     cd_hint as _cd_hint,
     configure_banner as _configure_banner,
     help_footer as _help_footer,
@@ -76,10 +77,10 @@ from app.cli_structure import (
     verb_description as _verb_description,
 )
 from app.docs import available_help_topics, open_docs_in_browser, render_help_topic
-from app.features import is_enabled, load_features
+from app.settings.features import dev_mode_from_env, feature_state, is_enabled, load_features
 from app.shell_catalog import SHELL_BUILTINS, shell_help_rows
 from app.ssh.manager import SSHManager
-from app.theme import ArcTheme, THEME_KEYS, load_theme, reset_theme, save_theme
+from app.settings.theme import ArcTheme, THEME_KEYS, load_theme, reset_theme, save_theme
 from app.utils import formatter as fmt
 
 console = Console()
@@ -141,15 +142,32 @@ PROMPT_STYLE = Style.from_dict({
     "ctx":    "ansicyan dim",        # context-tier label (:global, :device)
     "sep":    "ansicyan",
     "arrow":  "bold ansicyan",
+    "dev":    "bold ansimagenta",     # development-mode marker in the prompt
 })
 
 
-def _make_key_bindings() -> KeyBindings:
+def tokenize(line: str) -> list[str]:
+    """Split a command line into tokens, honouring single/double quotes.
+
+    A value that contains spaces must be quoted (vendor-CLI / shell convention),
+    e.g. ``set address "My Host" fqdn x description "DMZ host"`` → the quoted
+    parts stay single tokens.  Unbalanced quotes fall back to a plain split so a
+    half-typed line never raises.
+    """
+    try:
+        return shlex.split(line, posix=True)
+    except ValueError:
+        return line.split()
+
+
+def _make_key_bindings(shell=None) -> KeyBindings:
     """Return key bindings for the ARC shell.
 
-    '?' is bound to submit immediately — no Enter required.
-    This mirrors the PAN-OS CLI convention where '?' instantly
-    shows context-sensitive help.
+    '?' is bound to submit immediately — no Enter required.  This mirrors the
+    Cisco / PAN-OS convention where '?' instantly shows context-sensitive help.
+    Pressing '?' a second time on the same unchanged prefix escalates to full
+    help (the typed-`??` gesture, which an instant-submit '?' cannot enter
+    literally).
     """
     kb = KeyBindings()
 
@@ -159,12 +177,38 @@ def _make_key_bindings() -> KeyBindings:
         # Preserve any partial command the user has already typed so that
         # dispatch can show context-sensitive help instead of the full menu.
         # e.g.  "show address" + ? → submit "show address ?"
-        existing = buf.text
-        if existing.strip():
-            buf.text = existing.rstrip() + " ?"
+        prefix = buf.text.rstrip()
+        last = getattr(shell, "_last_q_prefix", None) if shell is not None else None
+        if prefix and last == prefix:
+            # Second '?' on the same prefix → full help ("??").
+            buf.text = prefix + " ??"
+            if shell is not None:
+                shell._last_q_prefix = None
         else:
-            buf.text = "?"
+            buf.text = (prefix + " ?") if prefix else "?"
+            if shell is not None:
+                shell._last_q_prefix = prefix
         buf.validate_and_handle()
+
+    @kb.add("tab")
+    def _handle_tab(event) -> None:
+        # First Tab shows the completion menu (so value hints like "<name>"
+        # are always visible, even when a slot has a single, non-inserting
+        # hint); subsequent Tabs cycle through the entries.  This is the
+        # vendor-CLI / bash behaviour and avoids silently auto-filling.
+        buf = event.current_buffer
+        if buf.complete_state:
+            buf.complete_next()
+        else:
+            buf.start_completion(select_first=False)
+
+    @kb.add("s-tab")
+    def _handle_back_tab(event) -> None:
+        buf = event.current_buffer
+        if buf.complete_state:
+            buf.complete_previous()
+        else:
+            buf.start_completion(select_last=True)
 
     return kb
 

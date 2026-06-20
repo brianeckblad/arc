@@ -1,3 +1,13 @@
+---
+command: "show snippet"
+description: "Show full detail for a snippet"
+usage: "show snippet <name>"
+feature_flag: show_snippets
+category: setup
+scope: global
+api: "GET /config/setup/v1/snippets"
+---
+
 # show snippet
 
 **Category:** setup

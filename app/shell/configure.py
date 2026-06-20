@@ -84,18 +84,18 @@ class ConfigureMixin:
         )
 
     def _cmd_feature(self, args: list[str]) -> None:
-        """Show, enable, or disable feature flags at runtime.
+        """Show or change feature-flag states at runtime.
 
         Subcommands:
-          feature show                 — list all flags grouped by shipped/unimplemented
-          feature enable <flag>        — turn a flag on for this session
-          feature disable <flag>       — turn a flag off for this session
+          feature show                 — list all flags grouped ON / DEV / OFF
+          feature enable <flag>        — set a flag ON for this session
+          feature disable <flag>       — set a flag OFF for this session
+          feature dev <flag>           — mark a flag DEV for this session
           feature ?                    — show this usage summary
-          feature enable ?             — list all flags that are currently disabled
-          feature disable ?            — list all flags that are currently enabled
 
-        Changes take effect immediately but are session-only unless you edit
-        settings/features.json.  Use 'feature help' for the full docs page.
+        Flag states: ON (everyone), DEV (only in development mode — see the
+        hidden 'dev' command), OFF (hidden for everyone).  Changes take effect
+        immediately but are session-only unless you edit settings/features.json.
         """
         sub = args[0].lower() if args else "show"
 
@@ -104,14 +104,14 @@ class ConfigureMixin:
             console.print()
             console.print(f"  [bold yellow]feature[/bold yellow]  [dim]— feature flag management[/dim]")
             console.print()
-            console.print(f"  [cyan]feature show[/cyan]           List all flags with current on/off status")
-            console.print(f"  [cyan]feature enable <flag>[/cyan]  Turn a flag on for this session")
-            console.print(f"  [cyan]feature disable <flag>[/cyan] Turn a flag off for this session")
+            console.print(f"  [cyan]feature show[/cyan]           List all flags with ON / DEV / OFF state")
+            console.print(f"  [cyan]feature enable <flag>[/cyan]  Set a flag ON for this session")
+            console.print(f"  [cyan]feature disable <flag>[/cyan] Set a flag OFF for this session")
+            console.print(f"  [cyan]feature dev <flag>[/cyan]     Mark a flag DEV (shown in development mode)")
             console.print(f"  [cyan]feature help[/cyan]           Open full feature flag documentation")
             console.print()
-            console.print(f"  [dim]feature enable ?   → list flags that are OFF (can be enabled)[/dim]")
-            console.print(f"  [dim]feature disable ?  → list flags that are ON  (can be disabled)[/dim]")
-            console.print(f"  [dim]feature show       → full list with shipped/unimplemented grouping[/dim]")
+            console.print(f"  [dim]DEV flags appear only after you type [bold]dev[/bold] to enter development mode.[/dim]")
+            console.print(f"  [dim]feature enable ?  → flags not yet ON   |   feature disable ?  → flags not yet OFF[/dim]")
             console.print()
             return
 
@@ -129,25 +129,28 @@ class ConfigureMixin:
             names = set(self._features) | set(_flag_to_cmds())
             return sorted(names)
 
-        if sub in ("enable", "disable") and len(args) >= 2 and args[1] == "?":
+        if sub in ("enable", "disable", "dev") and len(args) >= 2 and args[1] == "?":
             flag_cmds = _flag_to_cmds()
             console.print()
             if sub == "enable":
-                candidates = [f for f in _all_flags() if not is_enabled(self._features, f)]
-                console.print(f"  [bold yellow]feature enable <flag>[/bold yellow]  [dim]— flags currently OFF[/dim]")
+                candidates = [f for f in _all_flags() if feature_state(self._features, f) != "on"]
+                console.print(f"  [bold yellow]feature enable <flag>[/bold yellow]  [dim]— flags not yet ON[/dim]")
                 console.print(f"  [dim]  Persist by editing settings/features.json[/dim]")
+            elif sub == "dev":
+                candidates = [f for f in _all_flags() if feature_state(self._features, f) != "dev"]
+                console.print(f"  [bold yellow]feature dev <flag>[/bold yellow]  [dim]— flags not yet DEV[/dim]")
             else:
-                candidates = [f for f in _all_flags() if is_enabled(self._features, f)]
-                console.print(f"  [bold yellow]feature disable <flag>[/bold yellow]  [dim]— flags currently ON[/dim]")
+                candidates = [f for f in _all_flags() if feature_state(self._features, f) != "off"]
+                console.print(f"  [bold yellow]feature disable <flag>[/bold yellow]  [dim]— flags not yet OFF[/dim]")
             console.print()
             if not candidates:
-                console.print(f"  [dim]No flags are currently {'OFF' if sub == 'enable' else 'ON'}.[/dim]")
+                console.print(f"  [dim]No matching flags.[/dim]")
             else:
                 for flag in candidates:
                     cmds = ", ".join(sorted(flag_cmds.get(flag, []))) or "—"
                     console.print(f"    [bold]{flag:<35}[/bold]  [dim]{cmds}[/dim]")
             console.print()
-            console.print(f"  [dim]feature enable <flag>  |  feature disable <flag>  |  feature show[/dim]")
+            console.print(f"  [dim]feature enable <flag>  |  feature disable <flag>  |  feature dev <flag>  |  feature show[/dim]")
             console.print()
             return
 
@@ -159,49 +162,116 @@ class ConfigureMixin:
         if sub == "show":
             flag_cmds = _flag_to_cmds()
             names = _all_flags()
-            on  = [f for f in names if is_enabled(self._features, f)]
-            off = [f for f in names if not is_enabled(self._features, f)]
+            on  = [f for f in names if feature_state(self._features, f) == "on"]
+            dev = [f for f in names if feature_state(self._features, f) == "dev"]
+            off = [f for f in names if feature_state(self._features, f) == "off"]
 
+            mode = (
+                "[magenta]ON[/magenta]" if self._dev_mode
+                else "[dim]off[/dim]"
+            )
             console.print()
             console.print(
                 f"  [bold yellow]Feature Flags[/bold yellow]  "
-                f"[dim]— edit settings/features.json to persist[/dim]"
+                f"[dim]— development mode:[/dim] {mode}  "
+                f"[dim](edit settings/features.json to persist)[/dim]"
             )
 
-            console.print(f"\n  [bold green]ENABLED[/bold green]  [dim]({len(on)})[/dim]")
+            console.print(f"\n  [bold green]ON[/bold green]  [dim]({len(on)}) — visible to everyone[/dim]")
             for flag in on:
                 cmds = ", ".join(sorted(flag_cmds.get(flag, []))) or "—"
                 console.print(f"    {flag:<35} [green]on[/green]   [dim]{cmds}[/dim]")
 
-            console.print(f"\n  [bold red]DISABLED[/bold red]  [dim]({len(off)})[/dim]")
+            dev_hint = "shown now" if self._dev_mode else "hidden — type 'dev' to reveal"
+            console.print(f"\n  [bold magenta]DEV[/bold magenta]  [dim]({len(dev)}) — {dev_hint}[/dim]")
+            for flag in dev:
+                cmds = ", ".join(sorted(flag_cmds.get(flag, []))) or "—"
+                console.print(f"    {flag:<35} [magenta]dev[/magenta]  [dim]{cmds}[/dim]")
+
+            console.print(f"\n  [bold red]OFF[/bold red]  [dim]({len(off)}) — hidden for everyone[/dim]")
             for flag in off:
                 cmds = ", ".join(sorted(flag_cmds.get(flag, []))) or "—"
                 console.print(f"    {flag:<35} [red]off[/red]  [dim]{cmds}[/dim]")
 
             console.print()
-            console.print("  [dim]  feature enable <flag>  |  feature disable <flag>  |  feature help[/dim]")
+            console.print("  [dim]  feature enable <flag>  |  feature disable <flag>  |  feature dev <flag>  |  dev[/dim]")
             console.print()
             return
 
-        if sub in ("enable", "disable"):
+        if sub in ("enable", "disable", "dev"):
             if len(args) < 2:
                 console.print(f"[yellow]Usage:[/yellow] feature {sub} <flag_name>")
-                console.print(f"  Tip: [bold]feature {sub} ?[/bold]  lists all flags that can be {sub}d")
+                console.print(f"  Tip: [bold]feature {sub} ?[/bold]  lists the flags you can {sub}")
                 return
             flag_name = args[1].lower()
             if flag_name not in _all_flags():
                 console.print(
                     f"[red]Unknown feature flag:[/red] {flag_name!r}\n"
-                    f"  Run [bold]feature enable ?[/bold] to see all available flags."
+                    f"  Run [bold]feature {sub} ?[/bold] to see all available flags."
                 )
                 return
-            new_val = (sub == "enable")
-            self._features[flag_name] = new_val   # session-only override
-            state = "[green]enabled[/green]" if new_val else "[red]disabled[/red]"
-            console.print(f"  {flag_name}  →  {state}  [dim](session only — edit settings/features.json to persist)[/dim]")
+            new_state = {"enable": "on", "disable": "off", "dev": "dev"}[sub]
+            self._features[flag_name] = new_state   # session-only override
+            colour = {"on": "green", "dev": "magenta", "off": "red"}[new_state]
+            note = ""
+            if new_state == "dev" and not self._dev_mode:
+                note = "  [dim](type 'dev' to reveal dev commands)[/dim]"
+            console.print(
+                f"  {flag_name}  →  [{colour}]{new_state}[/{colour}]{note}  "
+                f"[dim](session only — edit settings/features.json to persist)[/dim]"
+            )
             return
 
         console.print(
             f"[yellow]Unknown feature subcommand:[/yellow] {sub!r}\n"
-            "  Usage: feature show | feature enable <flag> | feature disable <flag>"
+            "  Usage: feature show | feature enable <flag> | feature disable <flag> | feature dev <flag>"
         )
+
+    def _cmd_dev(self, args: list[str]) -> None:
+        """Toggle development mode (hidden command).
+
+        Development mode reveals every command whose feature flag is "dev" —
+        work-in-progress commands that normal users never see.  This supports a
+        CI/CD lifecycle: ship a command as "dev", test it in development mode,
+        then flip its flag to true in settings/features.json when it is ready.
+
+          dev            toggle development mode on/off
+          dev on         force development mode on
+          dev off        force development mode off
+          dev status     show current state (without changing it)
+
+        The state is session-only.  Pre-enable it in CI with ARC_DEV_MODE=1.
+        """
+        action = args[0].lower() if args else "toggle"
+
+        if action == "status":
+            self._print_dev_status()
+            return
+        if action in ("on", "enable", "true"):
+            self._dev_mode = True
+        elif action in ("off", "disable", "false"):
+            self._dev_mode = False
+        elif action == "toggle":
+            self._dev_mode = not self._dev_mode
+        else:
+            console.print(
+                f"[yellow]Usage:[/yellow] dev [on|off|status]  [dim](no argument toggles)[/dim]"
+            )
+            return
+        self._print_dev_status()
+
+    def _print_dev_status(self) -> None:
+        """Print the current development-mode state and the dev-flag count."""
+        dev_flags = [f for f in self._features if feature_state(self._features, f) == "dev"]
+        if self._dev_mode:
+            console.print(
+                f"[magenta]● Development mode ON[/magenta] — "
+                f"{len(dev_flags)} dev command group(s) now visible.  "
+                f"[dim]Type 'dev off' to hide them again.[/dim]"
+            )
+        else:
+            console.print(
+                f"[dim]○ Development mode OFF[/dim] — "
+                f"{len(dev_flags)} dev command group(s) hidden.  "
+                f"[dim]Type 'dev' to reveal them.[/dim]"
+            )

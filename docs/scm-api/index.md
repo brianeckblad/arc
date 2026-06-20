@@ -1,8 +1,8 @@
 # SCM NGFW API Reference
 
 > Pulled from https://pan.dev/scm/docs/home/ and the pan.dev GitHub
-> OpenAPI specs on 2026-06-18.
-> Regenerate with: `python dev/update_scm_docs.py` (the `docsupdate` trigger).
+> OpenAPI specs on 2026-06-20.
+> Regenerate with: `python dev/docsupdate.py` (the `docsupdate` trigger).
 
 This reference set ships with ARC but is excluded from the browsable
 docs portal (`arc cliup` bundle) because it is developer/agent material.

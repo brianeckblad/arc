@@ -27,9 +27,20 @@ THEME_FILE    = SETTINGS_DIR / "theme.json"
 STRUCTURE_FILE = SETTINGS_DIR / "cli-structure.yaml"
 FEATURES_FILE = SETTINGS_DIR / "features.json"
 
+# Per-command argument structure that drives Tab completion and `?` help.
+# Hand-editable; the CSV holds only the ORDER of each command's fields
+# (object,field,field,...), with all field metadata resolved from the code-side
+# field library.  A nested JSON form is read as a fallback when no CSV exists.
+COMMAND_STRUCTURE_CSV  = SETTINGS_DIR / "command-structure.csv"
+COMMAND_STRUCTURE_JSON = SETTINGS_DIR / "command-structure.json"
+
 # Per-user secrets directory (config.json is written here, never committed).
 CONFIG_DIR = REPO_ROOT / "config"
 
 # Documentation root.
 DOCS_DIR = REPO_ROOT / "docs"
+
+# Per-command help docs (Markdown with YAML front-matter — the single source of
+# truth for each command's description + usage shown by `?` and `help`).
+COMMAND_DOCS_DIR = DOCS_DIR / "commands"
 

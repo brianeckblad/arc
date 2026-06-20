@@ -1,3 +1,13 @@
+---
+command: "update service-group"
+description: "Update service group members — update service-group <name> members <svc1> [svc2...]"
+usage: "update service-group <name> members <svc1> [svc2 ...]"
+feature_flag: update_objects
+category: objects
+scope: folder
+api: "PUT /config/objects/v1/service-groups/{id}"
+---
+
 # update service-group
 
 **Category:** objects

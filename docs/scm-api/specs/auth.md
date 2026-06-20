@@ -15,6 +15,7 @@
 **Summary:** Create an access token  
 **Operation ID:** `post-auth-v1-oauth2-access_token`  
 **Tags:** AuthService  
+**Required fields:** `grant_type`  
 **Response codes:** 200, 400, 401
 
 ### `POST /auth/v1/oauth2/userinfo`
@@ -22,6 +23,7 @@
 **Summary:** Retrieve oAuth oAuth 2.0 claims  
 **Operation ID:** `post-auth-v1-oauth2-userinfo`  
 **Tags:** AuthService  
+**Required fields:** `access_token`  
 **Response codes:** 200, 400, 401
 
 ### `GET /auth/v1/oauth2/userinfo`

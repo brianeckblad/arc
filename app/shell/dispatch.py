@@ -9,9 +9,12 @@ class DispatchMixin:
         """Process one input line.  Returns True when the user wants to exit ARC."""
         # Normalize whitespace: collapse tabs and multiple spaces to a single space.
         line = re.sub(r"[ \t]+", " ", line).strip()
-        # Strip --remote flag before any other parsing
+        # Strip --remote flag before any other parsing.
+        # Quote-aware tokenization: a value with spaces must be quoted, e.g.
+        #   set address "My Host" fqdn x description "DMZ network"
+        # so quoted segments stay single tokens (vendor-CLI / shell convention).
         remote = False
-        tokens = line.split()
+        tokens = tokenize(line)
         if "--remote" in tokens:
             remote = True
             tokens = [t for t in tokens if t != "--remote"]
@@ -25,13 +28,18 @@ class DispatchMixin:
         # Expansion occurs only when a prefix resolves to exactly one command.
         phrases = [[b] for b in _SHELL_BUILTINS if b != "?"] + [k.split() for k in COMMANDS]
 
+        # Detect a trailing help trigger: '?' (brief, context-sensitive) or
+        # '??' (full help).  Both are appended by the '?' key binding.
+        help_token = "??" if "??" in tokens else ("?" if "?" in tokens else None)
+        help_full = help_token == "??"
+
         # Expand the command/topic portion before trailing "help".
         if len(tokens) >= 2 and tokens[-1].lower() == "help":
             tokens = _expand_unambiguous_prefix(tokens[:-1], phrases) + ["help"]
 
-        # Expand prefix before '?' context help trigger.
-        if "?" in tokens:
-            qidx = tokens.index("?")
+        # Expand prefix before the '?' / '??' context-help trigger.
+        if help_token is not None:
+            qidx = tokens.index(help_token)
             tokens = _expand_unambiguous_prefix(tokens[:qidx], phrases) + tokens[qidx:]
         else:
             tokens = _expand_unambiguous_prefix(tokens, phrases)
@@ -44,9 +52,10 @@ class DispatchMixin:
             self._cmd_help_docs(topic)
             return False
 
-        # Cisco-style inline help: trailing '?' shows a compact one-liner per command.
-        if "?" in tokens:
-            question_idx = tokens.index("?")
+        # Cisco-style context help: a trailing '?' shows the next syntax options
+        # (brief); a trailing '??' shows the full command help.
+        if help_token is not None:
+            question_idx = tokens.index(help_token)
             prefix_tokens = tokens[:question_idx]
             if prefix_tokens:
                 # Always restore the prompt prefix after displaying ? help so the operator
@@ -54,6 +63,10 @@ class DispatchMixin:
                 # For sub-command variants (feature enable ?, set address ?) restore
                 # the immediate parent prefix (e.g. "feature enable " or "set ").
                 self._pending_default = " ".join(prefix_tokens) + " "
+
+                # Brief '?' on a structured command → next syntax options only.
+                if not help_full and self._print_context_help(prefix_tokens):
+                    return False
 
                 # Special case: `set ?` / `set <sub> ?` in configure mode.
                 if prefix_tokens[0].lower() == "set" and self._state.configure_mode:
@@ -74,7 +87,15 @@ class DispatchMixin:
                 # General case: prefix help for registered commands.
                 self._cmd_help_inline(prefix_tokens)
                 return False
+            if help_full:
+                # Bare '??' → the full unfiltered command reference.
+                self._cmd_help_full()
+                return False
             # Fall through so the bare "?" branch below fires
+
+        # A real command line was entered — reset the '?'-repeat tracker so the
+        # next single '?' starts fresh (brief) rather than escalating to full.
+        self._last_q_prefix = None
 
         cmd = tokens[0].lower()
 
@@ -131,6 +152,12 @@ class DispatchMixin:
 
         if cmd == "feature":
             self._cmd_feature(tokens[1:])
+            return False
+
+        # Hidden command — not advertised in ? or tab completion.  Reveals
+        # commands whose feature flag is "dev" (work-in-progress).
+        if cmd == "dev":
+            self._cmd_dev(tokens[1:])
             return False
 
         if cmd in ("set", "delete", "update"):

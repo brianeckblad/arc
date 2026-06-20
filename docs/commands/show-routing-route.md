@@ -1,3 +1,12 @@
+---
+command: "show routing route"
+description: "Show static routes in the active folder"
+feature_flag: show_routing
+category: network
+scope: folder
+api: "GET /config/network/v1/routing/static-routes"
+---
+
 # show routing route
 
 Show routing table

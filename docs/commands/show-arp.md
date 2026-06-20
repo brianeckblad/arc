@@ -1,3 +1,12 @@
+---
+command: "show arp"
+description: "Show live ARP table from device — use --remote"
+feature_flag: show_arp
+category: network
+scope: device
+api: "(live device state — SSH via --remote)"
+---
+
 # show arp
 
 **Category:** network

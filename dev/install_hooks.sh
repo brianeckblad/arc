@@ -14,7 +14,7 @@ cd "$REPO_ROOT"
 
 if git diff --cached --name-only | grep -q '^app/.*\.py$'; then
     echo "pre-commit: Python files changed — regenerating dev/CODE_MAP.md"
-    python dev/gen_code_map.py
+    python dev/generate_code_map.py
     git add dev/CODE_MAP.md
 fi
 

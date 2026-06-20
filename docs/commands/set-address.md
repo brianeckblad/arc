@@ -1,3 +1,13 @@
+---
+command: "set address"
+description: "Create address — set address <name> ip-netmask|ip-range|ip-wildcard|fqdn <value>"
+usage: "set address <name> ip-netmask|ip-range|ip-wildcard|fqdn <value> [description <optional>] [tag <optional>]"
+feature_flag: create_address
+category: objects
+scope: folder
+api: "POST /config/objects/v1/addresses"
+---
+
 # set address
 
 Create an address object in the active SCM folder.
@@ -5,6 +15,61 @@ Create an address object in the active SCM folder.
 **Source:** `POST /config/objects/v1/addresses`  
 **Schema:** addresses.addresses_create (see `docs/scm-api/specs/ngfw-objects.yaml`)  
 **Feature flag:** `create_address` — enable with `feature enable create_address`
+
+---
+
+## Context-sensitive help (`?` and `??`)
+
+Press `?` at any point to see only the **next** syntax options for where you are —
+Cisco-style:
+
+```text
+set address ?
+    <name>        Enter a unique name for the address object
+
+set address web1 ?
+    ip-netmask    Single IP or CIDR (10.1.2.3/32)
+    ip-range      Inclusive range (10.0.0.1-10.0.0.9)
+    ip-wildcard   Wildcard mask (10.0.0.0/0.0.0.255)
+    fqdn          Domain name (api.example.com)
+
+set address web1 fqdn ?
+    <value>       Enter the value for the chosen type (e.g. 10.1.2.3/32)
+
+set address web1 fqdn 10.1.2.3 ?
+    description   Enter a description for this object
+    tag           Enter a tag name (must already exist in this folder)
+```
+
+Press `?` **a second time** on the same line (i.e. `??`) to show the full command
+help page instead of the brief next-options list.
+
+---
+
+## Spaces — no quotes needed
+
+ARC figures out where each field ends from the command structure, so you can type
+multi-word values **without quotes**:
+
+```text
+set address my web host fqdn api.example.com description primary edge node
+```
+
+- The **name** absorbs words until the type keyword (`ip-netmask` / `ip-range` /
+  `ip-wildcard` / `fqdn`) appears → name = `my web host`.
+- The **description** absorbs the rest of the line (up to `tag`).
+
+Quotes are still accepted and are only needed for the rare case where a value
+literally contains a reserved word (a type keyword, or `description` / `tag`):
+
+```text
+set address "tag server" fqdn example.com
+```
+
+The order of arguments is defined in `settings/command-structure.csv` — a single
+line per command listing just the field names (`address,name,type,value,description,tag`).
+Reorder by moving the names; the choices, hints and which fields are required come
+from the API-derived field library in code, not the CSV.
 
 ---
 
@@ -90,24 +155,33 @@ set address CDN-Hosts     fqdn cdn.example.com
 
 ## Optional fields (apply to all subtypes)
 
-| Field | Type | Description |
-|---|---|---|
-| `description` | string (max 1023 chars) | Human-readable description |
-| `tag` | list of strings | Tag names to associate; tags must exist in the same folder |
+These are optional — the API does not require them. In the shell they are tab-completed
+*after* the type and value, and may appear in any order.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `description` | string (max 1023 chars) | optional | Human-readable description |
+| `tag` | list of strings | optional | Tag names to associate; tags must exist in the same folder |
 
 ```text
-set address WebServer ip-netmask 10.1.2.3/32  description "Web tier host"  tag Production
+set address WebServer ip-netmask 10.1.2.3/32  description <optional>  tag <optional>
 ```
+
+> **Tab-driven entry.** ARC builds the prompts from `settings/command-structure.csv`.
+> At each step Tab shows what to enter next: `<name>` → the type choices
+> (`ip-netmask` / `ip-range` / `ip-wildcard` / `fqdn`) → the `<value>` for that type →
+> the optional `description` / `tag` keywords. A required value never returns an empty
+> list — it shows a hint describing what to type.
 
 ---
 
 ## Full syntax
 
 ```text
-set address <name> ip-netmask  <value>   [description <text>] [tag <name>]
-set address <name> ip-range    <value>   [description <text>] [tag <name>]
-set address <name> ip-wildcard <value>   [description <text>] [tag <name>]
-set address <name> fqdn        <value>   [description <text>] [tag <name>]
+set address <name> ip-netmask  <value>   [description <optional>] [tag <optional>]
+set address <name> ip-range    <value>   [description <optional>] [tag <optional>]
+set address <name> ip-wildcard <value>   [description <optional>] [tag <optional>]
+set address <name> fqdn        <value>   [description <optional>] [tag <optional>]
 ```
 
 ---

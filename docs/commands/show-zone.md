@@ -1,3 +1,12 @@
+---
+command: "show zone"
+description: "Show security zones in the active folder"
+feature_flag: show_zone
+category: network
+scope: folder
+api: "GET /config/network/v1/zones"
+---
+
 # show zone
 
 Show security zones

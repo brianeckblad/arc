@@ -1,3 +1,13 @@
+---
+command: "delete security-rule"
+description: "Delete a security rule — delete security-rule <name>"
+usage: "delete security-rule <name>"
+feature_flag: delete_security
+category: security
+scope: folder
+api: "DELETE /config/security/v1/security-rules/{id}"
+---
+
 # delete security-rule
 
 **Category:** security

@@ -19,16 +19,17 @@
 #
 # Add a new verb here if you add a command with a new first token
 # (e.g. "debug", "trace", "export").
+#
+# NOTE: A verb that is itself a complete command (a single-token command such
+# as packet-tracer or commit) takes its description from its own
+# docs/commands/<command>.md front-matter, NOT from here.  Only multi-command
+# verbs (show, set, delete, …) use this list.
 
 verb_groups:
 
   show:
     description: "Show configuration and status"
     hint: "type 'show ?' for sub-commands"
-
-  packet-tracer:
-    description: "Trace a packet through the folder's security rule base"
-    hint: "packet-tracer from <zone> to <zone> source <ip> destination <ip>"
 
   set:
     description: "Create or modify configuration"
@@ -42,10 +43,6 @@ verb_groups:
     description: "Remove configuration objects"
     hint: "configure mode only — type 'delete ?' for types"
 
-  commit:
-    description: "Push candidate config to managed devices"
-    hint: ""
-
   test:
     description: "Test policy and connectivity"
     hint: "type 'test ?' for sub-commands"
@@ -58,9 +55,6 @@ verb_groups:
     description: "Request system operations"
     hint: "type 'request ?' for sub-commands"
 
-  delete:
-    description: "Remove configuration objects"
-    hint: "configure mode only — type 'delete ?' for sub-commands"
 
 
 # ── Section headers in ? output ─────────────────────────────────────────────

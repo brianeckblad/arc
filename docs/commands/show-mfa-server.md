@@ -1,3 +1,12 @@
+---
+command: "show mfa-server"
+description: "Show MFA server profiles in the active folder"
+feature_flag: authentication
+category: identity
+scope: folder
+api: "GET /config/identity/v1/mfa-servers"
+---
+
 # show mfa-server
 
 **Category:** identity

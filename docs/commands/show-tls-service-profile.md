@@ -1,3 +1,12 @@
+---
+command: "show tls-service-profile"
+description: "Show TLS service profiles in the active folder"
+feature_flag: certificates
+category: identity
+scope: folder
+api: "GET /config/identity/v1/tls-service-profiles"
+---
+
 # show tls-service-profile
 
 **Category:** identity

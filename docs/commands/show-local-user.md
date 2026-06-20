@@ -1,3 +1,12 @@
+---
+command: "show local-user"
+description: "Show local users in the active folder"
+feature_flag: local_users
+category: identity
+scope: folder
+api: "GET /config/identity/v1/local-users"
+---
+
 # show local-user
 
 **Category:** identity

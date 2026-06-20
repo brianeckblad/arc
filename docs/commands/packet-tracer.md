@@ -1,3 +1,13 @@
+---
+command: "packet-tracer"
+description: "Trace a packet through the folder's security rule base"
+usage: "packet-tracer from <zone> to <zone> source <ip> destination <ip> [application <app>] [destination-port <n>] [protocol <n>] [source-user <user>]"
+feature_flag: packet_tracer
+category: diagnostics
+scope: folder
+api: "(client-side simulation of the folder rule base)"
+---
+
 # packet-tracer
 
 Trace a synthetic packet through the **active folder's** security rule base and
@@ -12,7 +22,7 @@ ARC reads the rule base from SCM and simulates the match locally.
 
 ## Feature flag
 
-Gated by `test_security_policy_match` (ON in the MVP default `settings/features.json`).
+Gated by `packet_tracer` (ON in the MVP default `settings/features.json`).
 
 ## Syntax
 

@@ -21,6 +21,7 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 
 from app.commands.registry import COMMANDS
+from app.settings.command_help import parse_front_matter
 
 DOCS_ROOT = Path(__file__).resolve().parents[1] / "docs"
 COMMAND_DOCS_ROOT = DOCS_ROOT / "commands"
@@ -115,6 +116,9 @@ def render_help_topic(console: Console, topic: str) -> bool:
         return False
 
     markdown_text = path.read_text(encoding="utf-8")
+    # Command docs begin with YAML front-matter (the structured help fields used
+    # by `?`).  Strip it so only the human-readable body is rendered here.
+    _meta, markdown_text = parse_front_matter(markdown_text)
     console.print()
     console.print(Panel(Markdown(markdown_text), title=f"Help: {topic or 'overview'}", border_style="cyan"))
     console.print()

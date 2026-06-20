@@ -1,3 +1,13 @@
+---
+command: "request system shutdown"
+description: "Shut down a managed device (CAUTION: device will go offline)"
+usage: "request system shutdown  (use --remote)"
+feature_flag: request_system_reboot
+category: operations
+scope: device
+api: "(live device state — SSH via --remote)"
+---
+
 # request system shutdown
 
 **Category:** operations

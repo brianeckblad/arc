@@ -74,7 +74,7 @@ Short forms are the primary triggers. Longer natural-language forms still work.
 | `cpi` / `update cpi` / `update copilot instructions` / `update instructions` | Review what was built or decided and update both `.github/copilot-instructions.md` and `AGENTS.md` so they stay in sync. Confirm what changed in each file. |
 | `evala` / `evaluate agents` / `evaluate instructions` | Evaluate AI instruction files for clean general vs app-specific separation, then ensure `.github/copilot-instructions.md` and `AGENTS.md` are synced. |
 | `agi` / `read agent instructions` / `read copilot instructions` | Read `.github/copilot-instructions.md` and `AGENTS.md` in full, then confirm they have been loaded into context. |
-| `docsupdate` / `update docs` / `pull api docs` | Pull the latest provider API/reference specs from the upstream source and regenerate the project's local reference docs. For ARC this runs `python dev/update_scm_docs.py` (see the SCM Gateway Map section). Confirm which specs changed. |
+| `docsupdate` / `update docs` / `pull api docs` | Pull the latest provider API/reference specs from the upstream source and regenerate the project's local reference docs. For ARC this runs `python dev/docsupdate.py` (see the SCM Gateway Map section). Confirm which specs changed. |
 
 A short trigger (`ck`, `ctx`, `wipe`, `arc`, `gitp`, `cpi`, `evala`, `agi`, `docsupdate`) is a command only when it is the
 entire user message. Inside a longer sentence, treat it as normal text.
@@ -497,7 +497,7 @@ as implementations are added. Device-local execution is handled through SSH only
 | CLI banner lines changed (`_print_banner` in `shell.py`) | Update `_BANNER_LINES` in **section 7** of `dev/smoke_test.py` — the test will catch mismatches and print exactly what to change |
 | New module added under `app/` | No change needed — syntax and import tests auto-discover it |
 | New `SCMConfig` / `ArcConfig` field with invariant | Add a case in **section 5** of `dev/smoke_test.py` |
-| New theme key added to `ArcTheme` | Add a display label to `THEME_KEYS` in `app/theme.py`; add to **section 9** if there is an invariant |
+| New theme key added to `ArcTheme` | Add a display label to `THEME_KEYS` in `app/settings/theme.py`; add to **section 9** if there is an invariant |
 | Builtin command added/removed in `_print_shell_builtins` | Update `_BUILTIN_NAMES` in **section 8** of `dev/smoke_test.py` — the test will catch mismatches |
 
 The test is intentionally lightweight — no mocking, no network, no auth. It validates structure and wiring, not API behavior.
@@ -550,7 +550,11 @@ arc/
     ├── config.py                   ← ArcConfig dataclasses + load_config() / save_config()
     ├── docs.py                     ← docs/ Markdown loader for `help <topic>` and browser opener
     ├── shell.py                    ← ArcShell REPL (prompt_toolkit)
-    ├── theme.py                    ← ArcTheme dataclass + load/save/reset helpers
+    ├── settings/                    ← loaders for the user-editable settings/ directory
+    │   ├── theme.py                 ← ArcTheme dataclass + load/save/reset helpers
+    │   ├── features.py              ← reads settings/features.json → dict
+    │   ├── cli_structure.py         ← loader for settings/cli-structure.yaml
+    │   └── command_help.py          ← reads docs/commands/*.md front-matter → per-command description + usage
     ├── api/
     │   └── client.py               ← SCMClient (REST only)
     ├── ssh/
@@ -599,7 +603,7 @@ When an agent needs to work on a specific domain or feature area, use these keyw
 | `setup` | Device/folder/snippet mgmt | `app/commands/setup.py`, `docs/scm-api/specs/setup.md` | Device inventory, folder ops, snippet management |
 | `operations` | Jobs, commit, live device | `app/commands/operations.py`, `docs/scm-api/specs/operations*.md` | Commit operations, job tracking, live device commands |
 | `formatter` | Output rendering | `app/utils/formatter.py` | Adding new table/panel renderers |
-| `shell` | REPL, help, completion | `app/shell.py`, `app/theme.py` | Shell UX, prompts, help system, theming |
+| `shell` | REPL, help, completion | `app/shell.py`, `app/settings/theme.py` | Shell UX, prompts, help system, theming |
 | `auth` | Authentication/credentials | `app/cli.py` (auth commands), `app/config.py` | Profile management, credential storage |
 | `scm-api` | SCM REST integration | `app/api/client.py`, `docs/scm-api/` | Adding new SCM API endpoints |
 
@@ -809,7 +813,7 @@ Handled directly in `ArcShell._dispatch()` before the registry is consulted:
 
 ### CLI Theme System
 
-ARC's colour roles are stored in `app/cli_theme.json` and loaded at shell startup into `ArcTheme` (defined in `app/theme.py`). Every colour value is a Rich markup style string (e.g. `"cyan"`, `"bold yellow"`, `"dim"`).
+ARC's colour roles are stored in `app/cli_theme.json` and loaded at shell startup into `ArcTheme` (defined in `app/settings/theme.py`). Every colour value is a Rich markup style string (e.g. `"cyan"`, `"bold yellow"`, `"dim"`).
 
 **Theme keys:**
 
@@ -831,8 +835,8 @@ ARC's colour roles are stored in `app/cli_theme.json` and loaded at shell startu
 **`app/banner.txt`** is the single source of truth for the startup banner. It contains Rich markup tags directly (e.g. `[bold cyan]...[/bold cyan]`). Lines starting with `##` are comments stripped before printing. Add a blank line for spacing, a legal notice, or change the logo colour — all without touching Python code.
 
 **Rules for adding a new theme key:**
-1. Add the field to `ArcTheme` in `app/theme.py` with a default value.
-2. Add a display label to `THEME_KEYS` in `app/theme.py`.
+1. Add the field to `ArcTheme` in `app/settings/theme.py` with a default value.
+2. Add a display label to `THEME_KEYS` in `app/settings/theme.py`.
 3. Use `self._styled(text, self._theme.<key>)` wherever the colour is applied in `shell.py`.
 4. Add a case in **section 9** of `dev/smoke_test.py` if there is an invariant to check.
 5. Run `python dev/smoke_test.py` to verify.
@@ -1020,7 +1024,7 @@ changing any API call.  The pan.dev GitHub source for all specs is:
 getting started, access tokens, service accounts, roles, scope, platform
 configuration), plus `index.md` and a `MANIFEST.md` that records each spec's
 `servers[0].url` base URL and pull date.  Refresh it with the `docsupdate`
-trigger (`python dev/update_scm_docs.py`).  `MANIFEST.md` is the source of
+trigger (`python dev/docsupdate.py`).  `MANIFEST.md` is the source of
 truth this gateway-map table mirrors — if they disagree, re-run `docsupdate`
 and update this table from the manifest.  This reference set is excluded from
 the `arc cliup` browser bundle (it is developer/agent material, not user help).
@@ -1093,7 +1097,7 @@ Use `arc auth test` to verify which endpoints are accessible with the current cr
 
 When the user says `docsupdate` (or `update docs` / `pull api docs`):
 
-1. Run `python dev/update_scm_docs.py`. It downloads the current NGFW OpenAPI
+1. Run `python dev/docsupdate.py`. It downloads the current NGFW OpenAPI
    specs (objects, security, setup, network, operations, device, identity,
    device-onboarding) plus auth, tenancy, and IAM service-accounts, and the
    conceptual SCM guide docs (getting started, access tokens, service accounts,
@@ -1110,10 +1114,10 @@ When the user says `docsupdate` (or `update docs` / `pull api docs`):
    changed, update that table (and `app/api/client.py` URL constants if a
    gateway moved). Confirm to the user which specs changed.
 
-Helper flags: `python dev/update_scm_docs.py --list-remote` prints the live
+Helper flags: `python dev/docsupdate.py --list-remote` prints the live
 spec tree on pan.dev; `--check` reports drift without writing files. When
 pan.dev renames a dated spec file, update the matching entry in the `SPECS`
-dict at the top of `dev/update_scm_docs.py`.
+dict at the top of `dev/docsupdate.py`.
 
 ---
 

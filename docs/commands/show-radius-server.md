@@ -1,3 +1,12 @@
+---
+command: "show radius-server"
+description: "Show RADIUS server profiles in the active folder"
+feature_flag: authentication
+category: identity
+scope: folder
+api: "GET /config/identity/v1/radius-server-profiles"
+---
+
 # show radius-server
 
 **Category:** identity

@@ -1,3 +1,12 @@
+---
+command: "show ike-gateway"
+description: "Show IKE gateway configurations (VPN) in the active folder"
+feature_flag: ipsec_vpn
+category: network
+scope: folder
+api: "GET /config/network/v1/ike-gateways"
+---
+
 # show ike-gateway
 
 **Category:** network

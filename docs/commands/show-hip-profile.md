@@ -1,3 +1,12 @@
+---
+command: "show hip-profile"
+description: "Show GlobalProtect HIP profiles in the active folder"
+feature_flag: hip
+category: objects
+scope: folder
+api: "GET /config/objects/v1/hip-profiles"
+---
+
 # show hip-profile
 
 **Category:** objects

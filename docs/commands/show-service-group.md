@@ -1,3 +1,12 @@
+---
+command: "show service-group"
+description: "Show service groups in the active folder"
+feature_flag: service_groups
+category: objects
+scope: folder
+api: "GET /config/objects/v1/service-groups"
+---
+
 # show service-group
 
 **Category:** objects

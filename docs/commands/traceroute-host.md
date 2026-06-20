@@ -1,3 +1,13 @@
+---
+command: "traceroute host"
+description: "Traceroute from a managed device (use --remote)"
+usage: "traceroute host <ip>"
+feature_flag: traceroute
+category: network
+scope: device
+api: "(live device state — SSH via --remote)"
+---
+
 # traceroute host
 
 **Category:** network

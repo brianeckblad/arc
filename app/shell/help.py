@@ -2,9 +2,62 @@
 from __future__ import annotations
 
 from app.shell._base import *  # noqa: F401,F403  (shared spine namespace)
+from app.settings import command_structure
 
 
 class HelpMixin:
+    def _match_structured(self, prefix_tokens: list[str]) -> tuple[str | None, list[str]]:
+        """Find the longest command key (with a structure spec) inside *prefix_tokens*.
+
+        Returns ``(key, remainder_tokens)`` or ``(None, [])`` when no command in
+        ``settings/command-structure.csv`` matches the typed prefix.
+        """
+        lowered = [t.lower() for t in prefix_tokens]
+        for count in range(len(lowered), 0, -1):
+            key = " ".join(lowered[:count])
+            if key in COMMANDS and command_structure.arg_spec(key) is not None:
+                return key, prefix_tokens[count:]
+        return None, []
+
+    def _print_context_help(self, prefix_tokens: list[str]) -> bool:
+        """Print Cisco-style context-sensitive help for a structured command.
+
+        ``<command> ?`` lists only the *next* syntax options — the fixed choices,
+        a user-supplied variable, or the trailing keywords — driven by the
+        command's structure.  Returns True when it handled the prefix (so the
+        caller skips the generic full-help path); False when the command has no
+        structure spec.
+        """
+        key, remainder = self._match_structured(prefix_tokens)
+        if key is None:
+            return False
+        spec = command_structure.arg_spec(key)
+        if spec is None:
+            return False
+        rows = command_structure.help_options(spec, remainder)
+        self._render_context_help(rows)
+        return True
+
+    def _render_context_help(self, rows: list[dict]) -> None:
+        """Render the next-option rows: ``  token   description`` (token column aligned)."""
+        t = self._theme
+        console.print()
+        if not rows:
+            # Nothing more to type — the command is complete.
+            console.print("  <cr>")
+            console.print()
+            return
+        width = max((len(row["token"]) for row in rows), default=4)
+        width = max(width, 12)
+        for row in rows:
+            token_cell = self._styled(f"{row['token']:<{width}}", t.command_name)
+            description = row.get("description") or ""
+            if description:
+                console.print(f"  {token_cell}  {description}")
+            else:
+                console.print(f"  {token_cell}")
+        console.print()
+
     def _cmd_help(self, args: list[str]) -> None:
         """Print the command reference.
 
@@ -36,27 +89,43 @@ class HelpMixin:
         operators get a fast visual scan — identical to how Cisco IOS presents
         context-sensitive completion help.
         """
-        device = self._state.device
-        folder = self._state.folder
-        device_name = (
-            (device.get("hostname") or device.get("name") or "device") if device else ""
-        )
         t = self._theme  # shorthand
 
         if prefix_tokens:
+            # When the typed prefix is itself a complete command (e.g.
+            # "packet-tracer", "show interface"), show how to use it — its usage
+            # syntax — not just a bare <enter>.  Sub-command options (e.g.
+            # "show jobs ?" → all | id) are still listed below.
+            exact_key = " ".join(prefix_tokens).lower()
+            exact_cmd = COMMANDS.get(exact_key)
+            exact_available = exact_cmd is not None and self._is_command_available(exact_key, exact_cmd)
+
             options = self._collapsed_prefix_help_options(prefix_tokens)
-            if options:
+            if exact_available:
+                # The usage block covers "press enter to run", so drop the
+                # generic <enter> row to avoid repeating the description.
+                options = [(tok, desc) for tok, desc in options if tok != "<enter>"]
+
+            if exact_available or options:
                 console.print()
+                if exact_available:
+                    self._print_inline_usage(exact_key, exact_cmd)
                 for token, desc in options:
                     token_cell = self._styled(f"{token:<20}", t.command_name)
                     if desc:
                         console.print(f"  {token_cell} {desc}")
                     else:
                         console.print(f"  {token_cell}")
-                console.print()
-                console.print(
-                    f"  {self._styled('Use ? progressively: e.g. show jobs ? -> all | id', t.description_dim)}"
-                )
+                # Single footer covering both the docs pointer and the
+                # progressive-help reminder (only the parts that apply).
+                footer_parts: list[str] = []
+                if exact_available:
+                    footer_parts.append(f"{exact_key} help  → full docs & examples")
+                if options:
+                    footer_parts.append("Use ? progressively: e.g. show jobs ? -> all | id")
+                if footer_parts:
+                    console.print()
+                    console.print(f"  {self._styled('  |  '.join(footer_parts), t.description_dim)}")
             else:
                 prefix = " ".join(prefix_tokens).lower()
                 _builtin_names = {
@@ -208,8 +277,9 @@ class HelpMixin:
             return False
         if key == "commit" and not self._state.configure_mode:
             return False
-        # Feature-flagged commands are hidden when the flag is off.
-        if not is_enabled(self._features, cmd_def.feature_flag):
+        # Feature-flagged commands are hidden when the flag is off (or "dev"
+        # while development mode is inactive).
+        if not is_enabled(self._features, cmd_def.feature_flag, self._dev_mode):
             return False
         return True
 
@@ -245,7 +315,14 @@ class HelpMixin:
 
         options: list[tuple[str, str]] = []
         for verb in sorted(verb_counts):
-            desc = _verb_description(verb, verb_counts[verb])
+            # A verb that is itself a complete command (e.g. packet-tracer,
+            # commit) takes its description from the command — which honours the
+            # doc front-matter — so editing that doc updates bare `?`.
+            # Multi-command verbs (show, set, …) use cli-structure.yaml.
+            if verb in COMMANDS:
+                desc = COMMANDS[verb].description
+            else:
+                desc = _verb_description(verb, verb_counts[verb])
             options.append((verb, desc))
 
         return options
@@ -372,3 +449,31 @@ class HelpMixin:
         note = self._context_annotation(command_key)
         if note:
             console.print(f"[dim]Current context:[/dim]{note}")
+
+    def _print_inline_usage(self, key: str, cmd_def: CommandDef) -> None:
+        """Print the description + usage syntax for a complete command in `?` help.
+
+        Shows how to invoke the command (its arguments/options).  When a command
+        has no explicit ``usage`` string, the command name itself is shown as the
+        minimal usage.  The ``<command> help`` pointer is printed by the caller's
+        footer, so this method ends after the usage block.
+        """
+        t = self._theme
+        usage = cmd_def.usage or key
+        remote_hint = (
+            "  [dim](append --remote to run on the device via SSH)[/dim]"
+            if cmd_def.ssh_command is not None else ""
+        )
+
+        # Header: command name + one-line description.
+        desc = (
+            self._styled(cmd_def.description, t.description)
+            if (cmd_def.description and t.description) else cmd_def.description
+        )
+        console.print(f"  {self._styled(key, t.command_name)}  {desc}")
+        console.print()
+        console.print(f"  {self._styled('Usage:', t.section_header)}")
+        for index, line in enumerate(usage.split("\n")):
+            suffix = remote_hint if index == 0 else ""
+            console.print(f"    {line}{suffix}")
+

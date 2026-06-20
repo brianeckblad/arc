@@ -1,3 +1,12 @@
+---
+command: "show system resources"
+description: "Show live CPU / memory — use --remote for live device data"
+feature_flag: show_system_resources
+category: operations
+scope: device
+api: "(live device state — SSH via --remote)"
+---
+
 # show system resources
 
 Show system CPU / memory resources

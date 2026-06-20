@@ -43,11 +43,11 @@ Design notes (read before editing):
 
 Usage::
 
-    python dev/update_scm_docs.py                # refresh specs + guides (+ self-heal)
-    python dev/update_scm_docs.py --check         # report drift/relocations, write nothing
-    python dev/update_scm_docs.py --list-remote   # print live SCM spec paths
-    python dev/update_scm_docs.py --no-mirror     # curated guides only (skip "pull all")
-    python dev/update_scm_docs.py --self-test     # offline tests for discovery + diff
+    python dev/docsupdate.py                # refresh specs + guides (+ self-heal)
+    python dev/docsupdate.py --check         # report drift/relocations, write nothing
+    python dev/docsupdate.py --list-remote   # print live SCM spec paths
+    python dev/docsupdate.py --no-mirror     # curated guides only (skip "pull all")
+    python dev/docsupdate.py --self-test     # offline tests for discovery + diff
 """
 
 from __future__ import annotations
@@ -172,7 +172,7 @@ def save_sources(sources: dict[str, Any]) -> None:
     """Persist the source registry back to dev/scm_sources.json."""
     sources.setdefault(
         "_comment",
-        "Editable registry of SCM doc sources for dev/update_scm_docs.py. "
+        "Editable registry of SCM doc sources for dev/docsupdate.py. "
         "Auto-updated when pan.dev moves files (see 'relocations').",
     )
     SOURCES_FILE.write_text(json.dumps(sources, indent=2) + "\n", encoding="utf-8")
@@ -357,6 +357,126 @@ def _endpoint_signatures(spec: dict[str, Any]) -> set[str]:
     return sigs
 
 
+def _resolve_ref(spec: dict[str, Any], ref: str) -> dict[str, Any]:
+    """Resolve a local ``#/components/...`` JSON pointer within *spec*."""
+    node: Any = spec
+    for part in ref.lstrip("#/").split("/"):
+        if not isinstance(node, dict):
+            return {}
+        node = node.get(part, {})
+    return node if isinstance(node, dict) else {}
+
+
+def _deref(spec: dict[str, Any], schema: Any) -> dict[str, Any]:
+    """Return *schema* with a single top-level ``$ref`` resolved (one hop)."""
+    if isinstance(schema, dict) and "$ref" in schema:
+        return _resolve_ref(spec, schema["$ref"])
+    return schema if isinstance(schema, dict) else {}
+
+
+def _branch_label(spec: dict[str, Any], branch: dict[str, Any]) -> str:
+    """Best short label for one oneOf/anyOf leaf branch (the type-variant name).
+
+    SCM variant branches (e.g. an interface's layer2 vs layer3) are usually a
+    one-key object — that key is the variant name we want to surface.
+    """
+    branch = _deref(spec, branch)
+    title = str(branch.get("title") or "").strip()
+    if title:
+        return title
+    props = list((branch.get("properties") or {}).keys())
+    required = branch.get("required") or []
+    common = {"id", "name", "folder", "snippet", "device", "description", "comment", "tag"}
+    distinctive = [p for p in props if p not in common]
+    if distinctive:
+        return "+".join(distinctive[:2])
+    if required:
+        return "+".join(str(r) for r in required[:2])
+    return props[0] if props else ""
+
+
+def _collect_variants(spec: dict[str, Any], schema: Any, depth: int = 0) -> list[str]:
+    """Recursively collect oneOf/anyOf leaf-variant labels from a schema.
+
+    SCM nests choices (e.g. ``anyOf: [oneOf[...], oneOf[...]]``), so we descend
+    until each branch is a concrete object and return its distinctive field —
+    the actual type name like ``layer2`` / ``layer3`` / ``ha`` / ``tap``.
+    """
+    if depth > 4:
+        return []
+    schema = _deref(spec, schema)
+    labels: list[str] = []
+    nested = schema.get("oneOf") or schema.get("anyOf")
+    if isinstance(nested, list):
+        for branch in nested:
+            deeper = _collect_variants(spec, branch, depth + 1)
+            if deeper:
+                labels.extend(deeper)
+            else:
+                label = _branch_label(spec, branch)
+                if label:
+                    labels.append(label)
+    # De-duplicate while preserving order.
+    seen: set[str] = set()
+    out: list[str] = []
+    for label in labels:
+        if label not in seen:
+            seen.add(label)
+            out.append(label)
+    return out
+
+
+def _schema_variants(spec: dict[str, Any], schema: Any) -> list[str]:
+    """Return the oneOf/anyOf variant labels for a schema (the type choices)."""
+    schema = _deref(spec, schema)
+    top = _collect_variants(spec, schema)
+    if top:
+        return top
+    # Variants may live on a property instead of the top schema.
+    labels: list[str] = []
+    for prop_name, prop in (schema.get("properties") or {}).items():
+        prop = prop if isinstance(prop, dict) else {}
+        inner = _collect_variants(spec, prop)
+        if inner:
+            labels.append(f"{prop_name}({'/'.join(inner)})")
+    return labels
+
+
+def _operation_parameters(spec: dict[str, Any], operation: dict[str, Any]) -> tuple[list[str], list[str]]:
+    """Return (container_scopes, other_query_params) for an operation.
+
+    container_scopes is the subset of {folder, snippet, device} the endpoint
+    accepts — the SCM config container the object lives in.
+    """
+    containers: list[str] = []
+    others: list[str] = []
+    for prm in operation.get("parameters") or []:
+        if isinstance(prm, dict) and "$ref" in prm:
+            prm = _resolve_ref(spec, prm["$ref"])
+        if not isinstance(prm, dict):
+            continue
+        name = prm.get("name")
+        if not name:
+            continue
+        if name in ("folder", "snippet", "device"):
+            containers.append(str(name))
+        elif prm.get("in") == "query":
+            others.append(str(name))
+    return containers, others
+
+
+def _request_body_summary(spec: dict[str, Any], operation: dict[str, Any]) -> tuple[list[str], list[str], str]:
+    """Return (required_fields, variant_labels, schema_name) for a request body."""
+    content = (operation.get("requestBody") or {}).get("content") or {}
+    for _ctype, media in content.items():
+        schema = (media or {}).get("schema") or {}
+        name = schema.get("$ref", "").split("/")[-1] if isinstance(schema, dict) else ""
+        resolved = _deref(spec, schema)
+        required = [str(r) for r in (resolved.get("required") or [])]
+        return required, _schema_variants(spec, schema), name
+    return [], [], ""
+
+
 def _render_markdown(category: str, spec_path: str, spec: dict[str, Any], repo: str) -> tuple[str, int]:
     """Render a consolidated endpoint listing for one spec.
 
@@ -400,6 +520,35 @@ def _render_markdown(category: str, spec_path: str, spec: dict[str, Any], repo: 
                 lines.append(f"**Operation ID:** `{operation_id}`  ")
             if tags:
                 lines.append(f"**Tags:** {tags}  ")
+
+            # Deep detail: the SCM container the object lives in (folder / snippet
+            # / device) and any other query params — so the reference reflects
+            # that config can be scoped to a snippet or device, not just a folder.
+            containers, query_params = _operation_parameters(spec, operation)
+
+            # Deep detail: request-body required fields + oneOf/anyOf type
+            # variants (e.g. an interface's layer2 vs layer3), the structure the
+            # flat endpoint list used to discard.
+            required, variants, schema_name = _request_body_summary(spec, operation)
+            _CONTAINERS = ("folder", "snippet", "device")
+            # SCM encodes the container choice as a oneOf in the body too — pull
+            # those out so they show as the container scope, not a type variant.
+            body_containers = [c for c in _CONTAINERS if c in variants]
+            type_variants = [v for v in variants if v not in _CONTAINERS]
+            scope = containers or body_containers
+
+            if scope:
+                where = "" if containers else " (in request body)"
+                lines.append(f"**Container scope:** {' | '.join(scope)}{where}  ")
+            if query_params:
+                lines.append(f"**Query params:** {', '.join(query_params)}  ")
+            if schema_name:
+                lines.append(f"**Body schema:** `{schema_name}`  ")
+            if required:
+                lines.append(f"**Required fields:** {', '.join(f'`{r}`' for r in required)}  ")
+            if type_variants:
+                lines.append(f"**Type variants (oneOf/anyOf):** {' | '.join(f'`{v}`' for v in type_variants)}  ")
+
             if responses:
                 lines.append(f"**Response codes:** {responses}")
             lines.append("")
@@ -423,7 +572,7 @@ def _build_changes_markdown(
     lines = [
         "# SCM API Change Report",
         "",
-        f"> Generated by `dev/update_scm_docs.py` on {pulled_on}.",
+        f"> Generated by `dev/docsupdate.py` on {pulled_on}.",
         "> Read by the docs-agent (see `dev/DOCS_AGENT.md`) to update affected ARC API calls.",
         "",
     ]
@@ -474,7 +623,7 @@ def _write_index(sources: dict[str, Any], counts: dict[str, int], guides_pulled:
         "",
         "> Pulled from https://pan.dev/scm/docs/home/ and the pan.dev GitHub",
         f"> OpenAPI specs on {pulled_on}.",
-        "> Regenerate with: `python dev/update_scm_docs.py` (the `docsupdate` trigger).",
+        "> Regenerate with: `python dev/docsupdate.py` (the `docsupdate` trigger).",
         "",
         "This reference set ships with ARC but is excluded from the browsable",
         "docs portal (`arc cliup` bundle) because it is developer/agent material.",
@@ -859,11 +1008,36 @@ def main(argv: list[str] | None = None) -> int:
         print("\nRegenerating compact API index (dev/API_INDEX.md)…")
         try:
             subprocess.run(
-                [sys.executable, str(DEV_DIR / "gen_api_index.py")],
+                [sys.executable, str(DEV_DIR / "generate_api_index.py")],
                 check=True,
             )
         except (subprocess.CalledProcessError, OSError) as exc:
             print(f"[warn] API index regeneration failed: {exc}", file=sys.stderr)
+
+        # Regenerate the auto-coverage resource catalog FIRST: turn every new
+        # folder-scoped list endpoint in the freshly-pulled specs into a generic
+        # `show <resource>` command (100% NGFW config coverage policy).
+        print("\nRegenerating NGFW resource catalog (app/commands/resource_catalog.py)…")
+        try:
+            subprocess.run(
+                [sys.executable, str(DEV_DIR / "generate_resource_catalog.py")],
+                check=True,
+            )
+        except (subprocess.CalledProcessError, OSError) as exc:
+            print(f"[warn] resource-catalog regeneration failed: {exc}", file=sys.stderr)
+
+        # Regenerate per-command help docs: ensure every command's
+        # docs/commands/<slug>.md has help front-matter, and rebuild the command
+        # index + API reference.  This keeps the `?`/`help` text and the
+        # API→command map in sync with the registry after a spec pull.
+        print("\nRegenerating command help docs (docs/commands/)…")
+        try:
+            subprocess.run(
+                [sys.executable, str(DEV_DIR / "generate_command_docs.py")],
+                check=True,
+            )
+        except (subprocess.CalledProcessError, OSError) as exc:
+            print(f"[warn] command-doc regeneration failed: {exc}", file=sys.stderr)
 
     return result
 

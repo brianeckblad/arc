@@ -1,3 +1,12 @@
+---
+command: "show certificate-profile"
+description: "Show certificate profiles in the active folder"
+feature_flag: certificates
+category: identity
+scope: folder
+api: "GET /config/identity/v1/certificate-profiles"
+---
+
 # show certificate-profile
 
 **Category:** identity

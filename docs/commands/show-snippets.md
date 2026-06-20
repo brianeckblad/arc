@@ -1,3 +1,12 @@
+---
+command: "show snippets"
+description: "List snippets for the current context  [dim](device → device snippets | folder → folder snippets | Shared → all)[/dim]"
+feature_flag: show_snippets
+category: setup
+scope: folder
+api: "GET /config/setup/v1/snippets"
+---
+
 # show snippets
 
 **Category:** setup

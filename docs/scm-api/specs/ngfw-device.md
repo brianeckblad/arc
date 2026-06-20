@@ -15,6 +15,7 @@
 **Summary:** List authentication settings  
 **Operation ID:** `ListAuthenticationSettings`  
 **Tags:** Authentication Settings  
+**Container scope:** folder | snippet | device  
 **Response codes:** 200, 400, 401, 403, 404, default
 
 ### `POST /authentication-settings`
@@ -22,6 +23,9 @@
 **Summary:** Create authentication settings  
 **Operation ID:** `CreateAuthenticationSettings`  
 **Tags:** Authentication Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `authentication-settings`  
+**Required fields:** `id`  
 **Response codes:** 201, 400, 401, 403, 404, 409, default
 
 ### `GET /authentication-settings/{id}`
@@ -36,6 +40,9 @@
 **Summary:** Update authentication settings  
 **Operation ID:** `UpdateAuthenticationSettingsByID`  
 **Tags:** Authentication Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `authentication-settings`  
+**Required fields:** `id`  
 **Response codes:** 200, 400, 401, 403, 404, 409, default
 
 ### `DELETE /authentication-settings/{id}`
@@ -50,6 +57,7 @@
 **Summary:** List Content-ID settings  
 **Operation ID:** `ListContentIDSettings`  
 **Tags:** Content-ID Settings  
+**Container scope:** folder | snippet | device  
 **Response codes:** 200, 400, 401, 403, 404, default
 
 ### `POST /content-id-settings`
@@ -57,6 +65,8 @@
 **Summary:** Create Content-ID settings  
 **Operation ID:** `CreateContentIDSettings`  
 **Tags:** Content-ID Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `content-id-settings`  
 **Response codes:** 201, 400, 401, 403, 404, 409, default
 
 ### `GET /content-id-settings/{id}`
@@ -71,6 +81,8 @@
 **Summary:** Update Content-ID settings  
 **Operation ID:** `UpdateContentIDSettingsByID`  
 **Tags:** Content-ID Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `content-id-settings`  
 **Response codes:** 200, 400, 401, 403, 404, 409, default
 
 ### `DELETE /content-id-settings/{id}`
@@ -85,6 +97,7 @@
 **Summary:** List device redistribution collector settings  
 **Operation ID:** `ListDeviceRedistributionCollectorSettings`  
 **Tags:** Device Redistribution Collector Settings  
+**Container scope:** folder | snippet | device  
 **Response codes:** 200, 400, 401, 403, 404, default
 
 ### `POST /device-redistribution-collector`
@@ -92,6 +105,8 @@
 **Summary:** Create device redistribution collector settings  
 **Operation ID:** `CreateDeviceRedistributionCollectorSettings`  
 **Tags:** Device Redistribution Collector Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `device-redistribution-collector`  
 **Response codes:** 201, 400, 401, 403, 404, 409, default
 
 ### `GET /device-redistribution-collector/{id}`
@@ -106,6 +121,8 @@
 **Summary:** Update device redistribution collector settings  
 **Operation ID:** `UpdateDeviceRedistributionCollectorSettingsByID`  
 **Tags:** Device Redistribution Collector Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `device-redistribution-collector`  
 **Response codes:** 200, 400, 401, 403, 404, 409, default
 
 ### `DELETE /device-redistribution-collector/{id}`
@@ -120,6 +137,7 @@
 **Summary:** List general settings  
 **Operation ID:** `ListGeneralSettings`  
 **Tags:** General Settings  
+**Container scope:** folder | snippet | device  
 **Response codes:** 200, 400, 401, 403, 404, default
 
 ### `POST /general-settings`
@@ -127,6 +145,8 @@
 **Summary:** Create general settings  
 **Operation ID:** `CreateGeneralSettings`  
 **Tags:** General Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `general-settings`  
 **Response codes:** 201, 400, 401, 403, 404, 409, default
 
 ### `GET /general-settings/{id}`
@@ -141,6 +161,8 @@
 **Summary:** Update general settings  
 **Operation ID:** `UpdateGeneralSettingsByID`  
 **Tags:** General Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `general-settings`  
 **Response codes:** 200, 400, 401, 403, 404, 409, default
 
 ### `DELETE /general-settings/{id}`
@@ -155,6 +177,7 @@
 **Summary:** List high availability configurations  
 **Operation ID:** `ListHAConfigurations`  
 **Tags:** High Availability Configurations  
+**Container scope:** folder | snippet | device  
 **Response codes:** 200, 400, 401, 403, 404, default
 
 ### `POST /ha-configurations`
@@ -162,6 +185,9 @@
 **Summary:** Create high availability configurations  
 **Operation ID:** `CreateHAConfigurations`  
 **Tags:** High Availability Configurations  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `ha-configurations`  
+**Required fields:** `interface`, `group`  
 **Response codes:** 201, 400, 401, 403, 404, 409, default
 
 ### `GET /ha-configurations/{id}`
@@ -176,6 +202,9 @@
 **Summary:** Update high availability configurations  
 **Operation ID:** `UpdateHAConfigurationsByID`  
 **Tags:** High Availability Configurations  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `ha-configurations`  
+**Required fields:** `interface`, `group`  
 **Response codes:** 200, 400, 401, 403, 404, 409, default
 
 ### `DELETE /ha-configurations/{id}`
@@ -190,6 +219,7 @@
 **Summary:** List high availability devices  
 **Operation ID:** `ListHADevices`  
 **Tags:** High Availability Devices  
+**Container scope:** folder | snippet | device  
 **Response codes:** 200, 400, 401, 403, 404, default
 
 ### `GET /management-interface`
@@ -197,6 +227,7 @@
 **Summary:** List management interface settings  
 **Operation ID:** `ListManagementInterfaceSettings`  
 **Tags:** Management Interface Settings  
+**Container scope:** folder | snippet | device  
 **Response codes:** 200, 400, 401, 403, 404, default
 
 ### `POST /management-interface`
@@ -204,6 +235,8 @@
 **Summary:** Create management interface settings  
 **Operation ID:** `CreateManagementInterfaceSettings`  
 **Tags:** Management Interface Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `management-interface`  
 **Response codes:** 201, 400, 401, 403, 404, 409, default
 
 ### `GET /management-interface/{id}`
@@ -218,6 +251,8 @@
 **Summary:** Update management interface settings  
 **Operation ID:** `UpdateManagementInterfaceSettingsByID`  
 **Tags:** Management Interface Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `management-interface`  
 **Response codes:** 200, 400, 401, 403, 404, 409, default
 
 ### `DELETE /management-interface/{id}`
@@ -232,6 +267,7 @@
 **Summary:** List login banner settings  
 **Operation ID:** `ListLoginBannerSettings`  
 **Tags:** Login Banner Settings  
+**Container scope:** folder | snippet | device  
 **Response codes:** 200, 400, 401, 403, 404, default
 
 ### `POST /motd-banner-settings`
@@ -239,6 +275,8 @@
 **Summary:** Create login banner settings  
 **Operation ID:** `CreateLoginBannerSettings`  
 **Tags:** Login Banner Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `motd-banner-settings`  
 **Response codes:** 201, 400, 401, 403, 404, 409, default
 
 ### `GET /motd-banner-settings/{id}`
@@ -253,6 +291,8 @@
 **Summary:** Update login banner settings  
 **Operation ID:** `UpdateLoginBannerSettingsByID`  
 **Tags:** Login Banner Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `motd-banner-settings`  
 **Response codes:** 200, 400, 401, 403, 404, 409, default
 
 ### `DELETE /motd-banner-settings/{id}`
@@ -267,6 +307,7 @@
 **Summary:** List service route settings  
 **Operation ID:** `ListServiceRouteSettings`  
 **Tags:** Service Route Settings  
+**Container scope:** folder | snippet | device  
 **Response codes:** 200, 400, 401, 403, 404, default
 
 ### `POST /service-route`
@@ -274,6 +315,8 @@
 **Summary:** Create service route settings  
 **Operation ID:** `CreateServiceRouteSettings`  
 **Tags:** Service Route Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `service-route`  
 **Response codes:** 201, 400, 401, 403, 404, 409, default
 
 ### `GET /service-route/{id}`
@@ -288,6 +331,8 @@
 **Summary:** Update service route settings  
 **Operation ID:** `UpdateServiceRouteSettingsByID`  
 **Tags:** Service Route Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `service-route`  
 **Response codes:** 200, 400, 401, 403, 404, 409, default
 
 ### `DELETE /service-route/{id}`
@@ -302,6 +347,7 @@
 **Summary:** List service settings  
 **Operation ID:** `ListServiceSettings`  
 **Tags:** Service Settings  
+**Container scope:** folder | snippet | device  
 **Response codes:** 200, 400, 401, 403, 404, default
 
 ### `POST /service-settings`
@@ -309,6 +355,8 @@
 **Summary:** Create service settings  
 **Operation ID:** `CreateServiceSettings`  
 **Tags:** Service Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `service-settings`  
 **Response codes:** 201, 400, 401, 403, 404, 409, default
 
 ### `GET /service-settings/{id}`
@@ -323,6 +371,8 @@
 **Summary:** Update service settings  
 **Operation ID:** `UpdateServiceSettingsByID`  
 **Tags:** Service Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `service-settings`  
 **Response codes:** 200, 400, 401, 403, 404, 409, default
 
 ### `DELETE /service-settings/{id}`
@@ -337,6 +387,7 @@
 **Summary:** List session settings  
 **Operation ID:** `ListSessionSettings`  
 **Tags:** Session Settings  
+**Container scope:** folder | snippet | device  
 **Response codes:** 200, 400, 401, 403, 404, default
 
 ### `POST /session-settings`
@@ -344,6 +395,8 @@
 **Summary:** Create session settings  
 **Operation ID:** `CreateSessionSettings`  
 **Tags:** Session Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `session-settings`  
 **Response codes:** 201, 400, 401, 403, 404, 409, default
 
 ### `GET /session-settings/{id}`
@@ -358,6 +411,8 @@
 **Summary:** Update session settings  
 **Operation ID:** `UpdateSessionSettingsByID`  
 **Tags:** Session Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `session-settings`  
 **Response codes:** 200, 400, 401, 403, 404, 409, default
 
 ### `DELETE /session-settings/{id}`
@@ -372,6 +427,7 @@
 **Summary:** List session timeouts settings  
 **Operation ID:** `ListSessionTimeoutsSettings`  
 **Tags:** Session Timeouts Settings  
+**Container scope:** folder | snippet | device  
 **Response codes:** 200, 400, 401, 403, 404, default
 
 ### `POST /session-timeouts`
@@ -379,6 +435,8 @@
 **Summary:** Create session timeouts settings  
 **Operation ID:** `CreateSessionTimeoutsSettings`  
 **Tags:** Session Timeouts Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `session-timeouts`  
 **Response codes:** 201, 400, 401, 403, 404, 409, default
 
 ### `GET /session-timeouts/{id}`
@@ -393,6 +451,8 @@
 **Summary:** Update session settings  
 **Operation ID:** `UpdateSessionTimeoutsSettingsByID`  
 **Tags:** Session Timeouts Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `session-timeouts`  
 **Response codes:** 200, 400, 401, 403, 404, 409, default
 
 ### `DELETE /session-timeouts/{id}`
@@ -407,6 +467,7 @@
 **Summary:** List TCP settings  
 **Operation ID:** `ListTCPSettings`  
 **Tags:** TCP Settings  
+**Container scope:** folder | snippet | device  
 **Response codes:** 200, 400, 401, 403, 404, default
 
 ### `POST /tcp-settings`
@@ -414,6 +475,8 @@
 **Summary:** Create TCP settings  
 **Operation ID:** `CreateTCPSettings`  
 **Tags:** TCP Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `tcp-settings`  
 **Response codes:** 201, 400, 401, 403, 404, 409, default
 
 ### `GET /tcp-settings/{id}`
@@ -428,6 +491,8 @@
 **Summary:** Update TCP settings  
 **Operation ID:** `UpdateTCPSettingsByID`  
 **Tags:** TCP Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `tcp-settings`  
 **Response codes:** 200, 400, 401, 403, 404, 409, default
 
 ### `DELETE /tcp-settings/{id}`
@@ -442,6 +507,7 @@
 **Summary:** List update schedule settings  
 **Operation ID:** `ListUpdateScheduleSettings`  
 **Tags:** Update Schedule Settings  
+**Container scope:** folder | snippet | device  
 **Response codes:** 200, 400, 401, 403, 404, default
 
 ### `POST /update-schedule`
@@ -449,6 +515,8 @@
 **Summary:** Create update schedule settings  
 **Operation ID:** `CreateUpdateScheduleSettings`  
 **Tags:** Update Schedule Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `update-schedule`  
 **Response codes:** 201, 400, 401, 403, 404, 409, default
 
 ### `GET /update-schedule/{id}`
@@ -463,6 +531,8 @@
 **Summary:** Update update schedule settings  
 **Operation ID:** `UpdateUpdateScheduleSettingsByID`  
 **Tags:** Update Schedule Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `update-schedule`  
 **Response codes:** 200, 400, 401, 403, 404, 409, default
 
 ### `DELETE /update-schedule/{id}`
@@ -477,6 +547,7 @@
 **Summary:** List VPN settings  
 **Operation ID:** `ListVPNSettings`  
 **Tags:** VPN Settings  
+**Container scope:** folder | snippet | device  
 **Response codes:** 200, 400, 401, 403, 404, default
 
 ### `POST /vpn-settings`
@@ -484,6 +555,8 @@
 **Summary:** Create VPN settings  
 **Operation ID:** `CreateVPNSettings`  
 **Tags:** VPN Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `vpn-settings`  
 **Response codes:** 201, 400, 401, 403, 404, 409, default
 
 ### `GET /vpn-settings/{id}`
@@ -498,6 +571,8 @@
 **Summary:** Update VPN settings  
 **Operation ID:** `UpdateVPNSettingsByID`  
 **Tags:** VPN Settings  
+**Container scope:** folder | snippet | device (in request body)  
+**Body schema:** `vpn-settings`  
 **Response codes:** 200, 400, 401, 403, 404, 409, default
 
 ### `DELETE /vpn-settings/{id}`

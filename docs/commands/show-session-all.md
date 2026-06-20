@@ -1,3 +1,12 @@
+---
+command: "show session all"
+description: "Show live session table from device — use --remote"
+feature_flag: show_sessions
+category: network
+scope: device
+api: "(live device state — SSH via --remote)"
+---
+
 # show session all
 
 **Category:** network

@@ -1,3 +1,12 @@
+---
+command: "show sdwan-rules"
+description: "Show SD-WAN rules in the active folder"
+feature_flag: sdwan
+category: network
+scope: folder
+api: "GET /config/network/v1/sdwan-rules"
+---
+
 # show sdwan-rules
 
 **Category:** network

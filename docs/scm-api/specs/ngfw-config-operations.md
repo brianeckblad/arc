@@ -29,6 +29,7 @@
 **Summary:** Load config version  
 **Operation ID:** `LoadConfigVersions`  
 **Tags:** Config Versions  
+**Body schema:** `load-config`  
 **Response codes:** 201, 400, 401, 403, 409, default
 
 ### `POST /config-versions/candidate:push`
@@ -43,6 +44,7 @@
 **Summary:** List configuration versions  
 **Operation ID:** `ListConfigVersions`  
 **Tags:** Config Versions  
+**Query params:** limit, offset  
 **Response codes:** 200, 400, 401, 403, 404, default
 
 ### `DELETE /config-versions/candidate`

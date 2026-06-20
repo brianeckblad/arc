@@ -1,5 +1,5 @@
 {
-  "_comment": "Editable registry of SCM doc sources for dev/update_scm_docs.py. This file is auto-updated when pan.dev moves/renames files (see 'relocations'). Edit 'specs' or 'guides' by hand when you know the new path; the tool will also self-heal via tree discovery.",
+  "_comment": "Editable registry of SCM doc sources for dev/docsupdate.py. This file is auto-updated when pan.dev moves/renames files (see 'relocations'). Edit 'specs' or 'guides' by hand when you know the new path; the tool will also self-heal via tree discovery.",
   "repo": "PaloAltoNetworks/pan.dev",
   "branch": "master",
   "settings": {

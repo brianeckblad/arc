@@ -1,3 +1,13 @@
+---
+command: "commit"
+description: "Push candidate config to managed devices"
+usage: "commit [description <text>]"
+feature_flag: commit
+category: operations
+scope: folder
+api: "POST /config/setup/v1/config-versions/candidate:push"
+---
+
 # commit
 
 Commit the candidate configuration — commit [description <text>]

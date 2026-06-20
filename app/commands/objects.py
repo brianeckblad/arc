@@ -940,7 +940,7 @@ def _update_address(ctx: ExecutionContext, args: dict) -> Any:
         merge_common_fields(obj, args, pos, 1)
 
     # 3. PUT
-    result = scm.update_address(obj_id, obj)
+    scm.update_address(obj_id, obj)
     changed = field_key or "description/tag"
     return f"[green]✓[/green] Address [bold]{name}[/bold] updated ({changed})"
 
@@ -999,7 +999,7 @@ def _update_address_group(ctx: ExecutionContext, args: dict) -> Any:
     else:
         merge_common_fields(obj, args, pos, 1)
 
-    result = scm.update_address_group(obj_id, obj)
+    scm.update_address_group(obj_id, obj)
     return f"[green]✓[/green] Address group [bold]{name}[/bold] updated"
 
 
@@ -1051,7 +1051,7 @@ def _update_service(ctx: ExecutionContext, args: dict) -> Any:
         obj["protocol"] = {proto: proto_block}
     merge_common_fields(obj, args, pos, 1 if proto not in ("tcp", "udp") else 4)
 
-    result = scm.update_service(obj_id, obj)
+    scm.update_service(obj_id, obj)
     return f"[green]✓[/green] Service [bold]{name}[/bold] updated"
 
 
@@ -1094,7 +1094,7 @@ def _update_service_group(ctx: ExecutionContext, args: dict) -> Any:
     else:
         merge_common_fields(obj, args, pos, 1)
 
-    result = scm.update_service_group(obj_id, obj)
+    scm.update_service_group(obj_id, obj)
     return f"[green]✓[/green] Service group [bold]{name}[/bold] updated"
 
 
@@ -1135,7 +1135,7 @@ def _update_tag(ctx: ExecutionContext, args: dict) -> Any:
     if comments:
         obj["comments"] = comments
 
-    result = scm.update_tag(obj_id, obj)
+    scm.update_tag(obj_id, obj)
     return f"[green]✓[/green] Tag [bold]{name}[/bold] updated"
 
 
@@ -1194,7 +1194,7 @@ def _update_external_dynamic_list(ctx: ExecutionContext, args: dict) -> Any:
     if args.get("description") or kv.get("description"):
         obj["description"] = args.get("description") or kv["description"]
 
-    result = scm.update_external_dynamic_list(obj_id, obj)
+    scm.update_external_dynamic_list(obj_id, obj)
     return f"[green]✓[/green] EDL [bold]{name}[/bold] updated"
 
 

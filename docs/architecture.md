@@ -21,3 +21,20 @@
 
 The agent instructions describe architecture and coding rules. The `docs/` folder is the user manual. ARC reads Markdown from `docs/` at runtime and renders it in the CLI.
 
+## API coverage — 100%, always
+
+ARC's goal is full coverage of the NGFW configuration API: **every folder-scoped
+list endpoint in the SCM specs is reachable as a `show <resource>` command.**
+
+- Curated commands (e.g. `show address`, `show security policy`) have rich
+  formatting and live in `app/commands/*.py`.
+- Every *other* list endpoint is exposed automatically as a generic, always-on
+  `show <resource>` command — generated from the pulled specs, so nothing is
+  missing and nothing is hand-maintained per resource.
+- When the API specs are refreshed (`arc docs` / the `docsupdate` workflow), new
+  endpoints become commands automatically.
+
+So if Palo Alto adds a new object/policy/network/identity resource to the API,
+`show <that-resource>` works after the next docs refresh — you do not wait for a
+code change. Run `?` or `help commands` to see the full list.
+

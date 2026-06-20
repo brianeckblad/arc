@@ -1,3 +1,12 @@
+---
+command: "show profile-group"
+description: "Show security profile groups in the active folder"
+feature_flag: profile_groups
+category: security
+scope: folder
+api: "GET /config/security/v1/profile-groups"
+---
+
 # show profile-group
 
 **Category:** security

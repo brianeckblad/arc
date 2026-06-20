@@ -1,3 +1,12 @@
+---
+command: "show ipsec-tunnel"
+description: "Show IPsec tunnel configurations in the active folder"
+feature_flag: ipsec_vpn
+category: network
+scope: folder
+api: "GET /config/network/v1/ipsec-tunnels"
+---
+
 # show ipsec-tunnel
 
 **Category:** network

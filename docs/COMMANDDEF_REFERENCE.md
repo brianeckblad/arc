@@ -12,7 +12,8 @@ Every command lives in one of the domain modules' `COMMANDS` dict and has a `Com
 | `api_handler` | callable | ✓ | `_show_thing` | Private module-level function: `(ctx: ExecutionContext, args: dict) -> Any`. Called for API mode. |
 | `ssh_command` | `str` or callable | optional | `'show thing'`, `_ssh_ping_host` | Static string or function that returns PAN-OS command. `None` = API-only (config commands). |
 | `render` | `str` | required | `'list'`, `'dict'`, `'raw'`, `'interfaces'`, etc. | Key into `ArcShell._render()` dispatch. See `docs/RENDER_CATALOG.md` |
-| `feature_flag` | `str` | optional (default: `""`) | `'nat_rules'`, `'decryption_policy'` | Empty string = always enabled. When present, command hidden & blocked until flag is True in `app/features.py`. |
+| `feature_flag` | `str` | optional (default: `""`) | `'nat_rules'`, `'decryption_policy'` | Empty string = always enabled. When present, command hidden & blocked until flag is True in `app/settings/features.py`. |
+| `usage` | `str` | optional (default: `""`) | `'show interface <name>'` | Syntax line shown by `<command> ?`. Empty → `?` shows the command name. Best set in the command's `docs/commands/<slug>.md` front-matter (`usage:`), not in code. |
 
 ## Scope Rules (Every CommandDef Must Declare)
 

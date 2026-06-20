@@ -7,8 +7,8 @@ No handler logic goes here; only definitions shared across modules.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable, Literal, Optional
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Callable, Literal, Optional
 
 if TYPE_CHECKING:
     from app.api.client import SCMClient
@@ -62,6 +62,10 @@ class CommandDef:
 
     Fields:
         description:  One-line description shown in help output.
+        usage:        Optional syntax line shown by ``<command> ?`` — how to
+                      invoke the command, including its arguments/options.
+                      Empty (default) → ``?`` falls back to the command name.
+                      Overridable per command in docs/commands/<slug>.md front-matter.
         category:     Grouping key used in help (e.g. 'setup', 'objects', 'security').
         scope:        Context requirement — 'folder' (default), 'device', or 'global'.
                       See CommandScope above.
@@ -84,6 +88,7 @@ class CommandDef:
     ssh_command: str | Callable[[dict], str] | None = None
     render: str = ""
     feature_flag: str = ""   # key in settings/features.json that gates this command
+    usage: str = ""          # syntax line shown by `<command> ?` (see docs/commands front-matter)
 
 
 # ---------------------------------------------------------------------------

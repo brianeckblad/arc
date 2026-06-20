@@ -1,3 +1,13 @@
+---
+command: "update tag"
+description: "Update tag color/comments — update tag <name> color <color> [comments <text>]"
+usage: "update tag <name> color|comments <value>"
+feature_flag: update_objects
+category: objects
+scope: folder
+api: "PUT /config/objects/v1/tags/{id}"
+---
+
 # update tag
 
 **Category:** objects

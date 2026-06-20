@@ -22,6 +22,7 @@
 **Summary:** Create a service account  
 **Operation ID:** `post-iam-v1-service_accounts`  
 **Tags:** ServiceAccounts  
+**Body schema:** `service_account_create`  
 **Response codes:** 201
 
 ### `DELETE /iam/v1/service_accounts/{id}`
@@ -43,6 +44,7 @@
 **Summary:** Update a service account  
 **Operation ID:** `put-iam-v1-service_accounts-id`  
 **Tags:** ServiceAccounts  
+**Body schema:** `service_account_update`  
 **Response codes:** 202
 
 ### `POST /iam/v1/service_accounts/{id}/operations/reset`

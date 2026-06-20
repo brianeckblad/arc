@@ -1,3 +1,12 @@
+---
+command: "show local-user-group"
+description: "Show local user groups in the active folder"
+feature_flag: local_users
+category: identity
+scope: folder
+api: "GET /config/identity/v1/local-user-groups"
+---
+
 # show local-user-group
 
 **Category:** identity

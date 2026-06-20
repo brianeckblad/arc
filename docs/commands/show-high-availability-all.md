@@ -1,3 +1,12 @@
+---
+command: "show high-availability all"
+description: "Show full HA configuration from the active folder"
+feature_flag: show_high_availability
+category: network
+scope: folder
+api: "GET /config/network/v1/ha"
+---
+
 # show high-availability all
 
 Show full HA status

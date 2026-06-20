@@ -1,3 +1,13 @@
+---
+command: "set address-group"
+description: "Create address group — set address-group <name> static <m1> [m2] | dynamic filter '<expr>'"
+usage: "set address-group <name> static|dynamic <value> [description <text>] [tag <name>]"
+feature_flag: create_address_group
+category: objects
+scope: folder
+api: "POST /config/objects/v1/address-groups"
+---
+
 # set address-group
 
 Create an address group in the active SCM folder.

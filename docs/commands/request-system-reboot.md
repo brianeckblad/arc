@@ -1,3 +1,13 @@
+---
+command: "request system reboot"
+description: "Reboot a managed device (CAUTION: device will restart)"
+usage: "request system reboot  (use --remote)"
+feature_flag: request_system_reboot
+category: operations
+scope: device
+api: "(live device state — SSH via --remote)"
+---
+
 # request system reboot
 
 **Category:** operations

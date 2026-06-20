@@ -1,3 +1,12 @@
+---
+command: "show log system"
+description: "Show live system log — use --remote for live device data"
+feature_flag: show_log_system
+category: operations
+scope: device
+api: "(live device state — SSH via --remote)"
+---
+
 # show log system
 
 Show system log (last 20 entries)

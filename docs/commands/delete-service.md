@@ -1,3 +1,13 @@
+---
+command: "delete service"
+description: "Delete a service object — delete service <name>"
+usage: "delete service <name>"
+feature_flag: delete_objects
+category: objects
+scope: folder
+api: "DELETE /config/objects/v1/services/{id}"
+---
+
 # delete service
 
 **Category:** objects

@@ -1,3 +1,13 @@
+---
+command: "set url-category"
+description: "Create a custom URL category — set url-category <name> type url-list list <url1>"
+usage: "set url-category <name> type url-list list <url1> [description <text>]"
+feature_flag: create_url_category
+category: security
+scope: folder
+api: "POST /config/security/v1/url-categories"
+---
+
 # set url-category
 
 **Category:** security

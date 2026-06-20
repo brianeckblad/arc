@@ -17,6 +17,9 @@ class PromptMixin:
         folder    = self._state.folder or "Shared"
         at_shared = folder.lower() == "shared"
         prompt_tail = " # " if self._state.configure_mode else " > "
+        # Development mode marker — makes the hidden mode visible so operators
+        # always know when work-in-progress (dev) commands are exposed.
+        dev_seg = "<sep>:</sep><dev>dev</dev>" if getattr(self, "_dev_mode", False) else ""
 
         if self._state.device:
             name = self._state.device.get("hostname") or self._state.device.get("name") or "device"
@@ -26,6 +29,7 @@ class PromptMixin:
                     f"<arc>arc</arc>"
                     f"<sep>:</sep><device>{name}</device>"
                     f"<sep>:</sep><ctx>device</ctx>"
+                    f"{dev_seg}"
                     f"<arrow>{prompt_tail}</arrow>"
                 )
             # Device selected and in a specific folder — show both
@@ -33,6 +37,7 @@ class PromptMixin:
                 f"<arc>arc</arc>"
                 f"<sep>:</sep><device>{name}</device>"
                 f"<sep>:</sep><folder>{folder}</folder>"
+                f"{dev_seg}"
                 f"<arrow>{prompt_tail}</arrow>"
             )
 
@@ -41,6 +46,7 @@ class PromptMixin:
             return HTML(
                 f"<arc>arc</arc>"
                 f"<sep>:</sep><ctx>global</ctx>"
+                f"{dev_seg}"
                 f"<arrow>{prompt_tail}</arrow>"
             )
 
@@ -48,6 +54,7 @@ class PromptMixin:
         return HTML(
             f"<arc>arc</arc>"
             f"<sep>:</sep><folder>{folder}</folder>"
+            f"{dev_seg}"
             f"<arrow>{prompt_tail}</arrow>"
         )
 

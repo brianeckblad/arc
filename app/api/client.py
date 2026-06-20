@@ -302,6 +302,48 @@ class SCMClient:
         return self._get_setup(path, params)
 
     # ------------------------------------------------------------------
+    # Generic folder-scoped config GET — powers auto-generated `show` commands
+    # ------------------------------------------------------------------
+
+    def get_config(
+        self,
+        domain: str,
+        path: str,
+        folder: str = "Shared",
+        params: Optional[dict] = None,
+    ) -> Any:
+        """GET a folder-scoped config collection from any NGFW config domain.
+
+        *domain* is one of ``objects`` / ``security`` / ``network`` / ``identity``;
+        *path* is the resource path under that domain's ``/config/<domain>/v1``
+        base (e.g. ``"/addresses"``).  The active ``folder`` is sent as the
+        ``?folder=`` query parameter.  Returns the response's ``data`` list when
+        present, otherwise the raw JSON.
+
+        This is the single entry point used by the auto-generated ``show
+        <resource>`` commands (see app/commands/generated.py) so ARC can expose
+        every list endpoint in the pulled SCM specs without a hand-written
+        method per resource.
+        """
+        base = {
+            "objects": self.OBJECTS_URL,
+            "security": self.SECURITY_URL,
+            "network": self.NETWORK_URL,
+            "identity": self.IDENTITY_URL,
+            "setup": self.SETUP_URL,
+        }.get(domain)
+        if base is None:
+            raise SCMError(f"Unknown config domain: {domain!r}")
+        query = dict(params or {})
+        query.setdefault("folder", folder)
+        resp = self._http.get(f"{base}{path}", headers=self._headers(), params=query)
+        resp.raise_for_status()
+        data = resp.json()
+        if isinstance(data, dict) and isinstance(data.get("data"), list):
+            return data["data"]
+        return data
+
+    # ------------------------------------------------------------------
     # TSG switching
     # ------------------------------------------------------------------
 

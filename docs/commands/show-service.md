@@ -1,3 +1,12 @@
+---
+command: "show service"
+description: "Show service objects in the active folder"
+feature_flag: show_service
+category: objects
+scope: folder
+api: "GET /config/objects/v1/services"
+---
+
 # show service
 
 Show service objects

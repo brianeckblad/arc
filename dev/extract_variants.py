@@ -55,7 +55,7 @@ def find_type_variants(schema: dict, depth: int = 0) -> list[dict]:
 def main() -> None:
     spec_files = sorted(glob.glob(str(ROOT / "docs/scm-api/specs/ngfw-*.yaml")))
     if not spec_files:
-        print("No spec files found. Run: python dev/update_scm_docs.py")
+        print("No spec files found. Run: python dev/docsupdate.py")
         return
 
     total = 0

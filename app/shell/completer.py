@@ -2,6 +2,134 @@
 from __future__ import annotations
 
 from app.shell._base import *  # noqa: F401,F403  (shared spine namespace)
+from app.settings import command_structure
+
+
+
+# ── Usage-string parser — drives argument tab completion ─────────────────────
+#
+# A command's `usage` (from its docs/commands/<slug>.md front-matter) is parsed
+# into an ordered list of "slots" the user fills in after the command, plus the
+# trailing optional `[keyword <value>]` pairs.  Example:
+#
+#   "set address <name> ip-netmask|ip-range|ip-wildcard|fqdn <value>
+#       [description <text>] [tag <name>]"
+#
+#   required = [ ('free', None),                       # <name>
+#               ('options', ['ip-netmask', ...]),      # the type choice
+#               ('free', None) ]                       # <value>
+#   optional = ['description', 'tag']
+#
+# So after `set address myaddr ` Tab offers the type choices; after the value,
+# Tab offers `description` / `tag`.
+
+def _parse_usage(usage: str, command_key: str) -> tuple[list[tuple[str, list | None]], list[str]]:
+    """Parse a usage string into (required_slots, optional_keywords).
+
+    Each required slot is a ``(kind, value)`` pair where *kind* is:
+      - ``"options"`` → one of a fixed set of choices (``value`` is the list)
+      - ``"free"``    → a free user value; ``value`` is the placeholder (e.g. ``<name>``)
+      - ``"literal"`` → a fixed keyword that must be typed verbatim
+    """
+    body = usage
+    if body.lower().startswith(command_key.lower()):
+        body = body[len(command_key):]
+    tokens = body.split()
+    required: list[tuple[str, list | None]] = []
+    optional: list[str] = []
+    i = 0
+    while i < len(tokens):
+        tok = tokens[i]
+        if tok.startswith("["):
+            group = [tok]
+            while not tokens[i].endswith("]") and i < len(tokens) - 1:
+                i += 1
+                group.append(tokens[i])
+            words = " ".join(group).strip("[]").split()
+            # A keyword option is "[<keyword> <value>]" — keyword then a <placeholder>.
+            # Repeat groups like "[svc2 ...]" are values, not keywords — skip them.
+            if len(words) >= 2 and words[1].startswith("<") and not words[0].startswith("<"):
+                optional.append(words[0].lower())
+            i += 1
+            continue
+        if "|" in tok and "<" not in tok:
+            required.append(("options", [o.lower() for o in tok.split("|")]))
+        elif tok.startswith("<"):
+            required.append(("free", [tok]))      # keep the placeholder text
+        else:
+            required.append(("literal", [tok.lower()]))
+        i += 1
+    return required, optional
+
+
+def _usage_options(usage: str, command_key: str, typed: list[str]) -> list[tuple[str, str]]:
+    """Return (token, display_meta) completions for the slot after *typed* args.
+
+    When the current slot is a free value (e.g. ``<name>``) but a *later* slot is
+    a fixed choice (e.g. the ``ip-netmask|ip-range|…`` type), the choices are
+    surfaced immediately so the operator sees the meaningful options right after
+    the command — they just type the name first, then pick one.
+    """
+    required, optional = _parse_usage(usage, command_key)
+    n = len(typed)
+    if n < len(required):
+        kind, val = required[n]
+        if kind == "options":
+            return [(o, "type") for o in (val or [])]
+        if kind == "literal":
+            return [(val[0], "keyword")]
+        # Free value slot.  Look ahead to the next *options* slot and show those
+        # choices, prefixed with a hint about what to type for this free slot.
+        placeholder = (val or ["<value>"])[0]
+        for kind2, val2 in required[n + 1:]:
+            if kind2 == "options":
+                hint = f"type {placeholder} then choose"
+                return [(o, hint) for o in (val2 or [])]
+            if kind2 == "free":
+                break  # two free values in a row — can't usefully guess
+        return []  # free value with no upcoming choices
+    # Past the required slots → trailing optional [keyword <value>] pairs.
+    consumed = typed[len(required):]
+    if len(consumed) % 2 == 0:  # at a keyword position
+        used = {t.lower() for t in consumed[::2]}
+        return [(k, "optional") for k in optional if k not in used]
+    return []  # at a value position
+
+
+def _tokenize_partial(text: str) -> tuple[list[str], str]:
+    """Split *text* for completion, honouring quotes, tracking the in-progress token.
+
+    Returns ``(completed_tokens, partial)`` where *completed_tokens* are fully
+    entered tokens (quotes stripped) and *partial* is the token currently being
+    typed — empty when the cursor sits at a fresh boundary (a space outside any
+    quote).  An unterminated quote keeps everything after it in *partial*, so
+    ``set address "this is`` stays on the name slot rather than wrongly advancing.
+    """
+    tokens: list[str] = []
+    buf = ""
+    quote: str | None = None
+    in_token = False
+    for ch in text:
+        if quote is not None:
+            in_token = True
+            if ch == quote:
+                quote = None
+            else:
+                buf += ch
+        elif ch in ('"', "'"):
+            quote = ch
+            in_token = True
+        elif ch.isspace():
+            if in_token:
+                tokens.append(buf)
+                buf = ""
+                in_token = False
+        else:
+            buf += ch
+            in_token = True
+    if in_token:
+        return tokens, buf  # in-progress (also covers an open-quote partial)
+    return tokens, ""
 
 
 class ArcCompleter(Completer):
@@ -239,16 +367,139 @@ class ArcCompleter(Completer):
             return
 
 
-        # ---- Default: ARC command + built-in completion ----
-        # Trim trailing space before prefix matching so that typing "show address "
-        # (with a space) still matches "show address-group" for Tab completion.
+        # ---- Argument completion for a fully-typed command ----
+        # Once the user has finished a command word, Tab offers its sub-commands
+        # and its usage option keywords — NOT a different command that merely
+        # shares a prefix (e.g. `set address ` must not autofill `address-group`).
+        #
+        # Quote-aware here: a value with spaces is one token when quoted, so
+        # `set address "this is a test" ` correctly lands on the *type* slot.
+        qtokens, qpartial = _tokenize_partial(text)
+        qparts = qtokens + ([qpartial] if qpartial else [])
+        at_boundary = qpartial == ""
+        matched_key = self._match_complete_command(qparts, at_boundary)
+        if matched_key is not None:
+            yield from self._complete_arguments(matched_key, qparts, at_boundary, qpartial)
+            return
+
+        # ---- Default: command-name prefix completion (still typing the command) ----
+        text_trim = text.rstrip(" ")
         include_remote_suffix = " --" in text
-        text_trim = text.rstrip(" ")  # e.g. "show address " → "show address"
+        full_is_command = text_trim in COMMANDS
         for name in sorted(self._all_commands(include_remote_suffix=include_remote_suffix)):
-            if name.startswith(text_trim) and name != text_trim:
-                # Replace from the start of the last typed word.
-                # start_position: how many chars to delete before inserting the completion.
-                yield Completion(name, start_position=-len(text))
+            if name == text_trim:
+                continue
+            if full_is_command:
+                # The typed text is already a complete command — only offer true
+                # sub-commands (`K <more>`), never prefix-siblings.
+                if not name.startswith(text_trim + " "):
+                    continue
+            elif not name.startswith(text_trim):
+                continue
+            yield Completion(name, start_position=-len(text))
+
+        # When the typed text is itself a complete command but has no trailing
+        # space yet, also surface its first argument slot (with a leading space)
+        # so `set address` + Tab reveals what comes next instead of nothing.
+        # Sub-command continuations are already offered by the prefix loop above,
+        # so here we emit only the argument options.
+        if full_is_command and not text.endswith(" "):
+            for opt in self._arg_options(text_trim, []):
+                text_ins = opt["text"]
+                display = opt.get("display") or text_ins
+                if text_ins == "":
+                    yield Completion(" ", start_position=0,
+                                     display=display, display_meta=opt["meta"])
+                else:
+                    yield Completion(" " + text_ins, start_position=0,
+                                     display=display, display_meta=opt["meta"])
+
+    def _match_complete_command(self, parts: list[str], ends_with_space: bool) -> str | None:
+        """Return the longest complete command key the user has fully entered.
+
+        Returns the key only when the cursor is in the *argument* region — either
+        a trailing space after the command, or extra tokens beyond it.  When the
+        text is exactly the command with no trailing space, returns None so the
+        default branch can still offer sub-commands.
+        """
+        lowered = [p.lower() for p in parts]
+        for n in range(len(parts), 0, -1):
+            key = " ".join(lowered[:n])
+            if key in COMMANDS:
+                if n < len(parts) or ends_with_space:
+                    return key
+                return None
+        return None
+
+    def _complete_arguments(self, key: str, qparts: list[str], at_boundary: bool, partial: str = ""):
+        """Yield completions for the argument region of a complete command.
+
+        *qparts* are quote-aware tokens (a quoted value with spaces is one token);
+        *at_boundary* is True when the cursor is positioned to start a new token
+        (so *partial* is empty), otherwise *partial* is the in-progress token.
+
+        Combines sub-command next-tokens (e.g. `show interface` → `all`) with the
+        command's argument options.  Argument options come from the per-command
+        structure file when present (`settings/command-structure.csv`), else from
+        parsing the command's usage string.  Required value slots yield a single
+        non-inserting hint (e.g. `<name>`) so Tab never returns a silent result.
+        """
+        key_tokens = key.split()
+        after = qparts[len(key_tokens):]
+        if at_boundary:
+            typed = [t.lower() for t in after]
+            partial = ""
+        else:
+            typed = [t.lower() for t in after[:-1]] if after else []
+            partial = (after[-1].lower() if after else "")
+
+        offered: set[str] = set()
+
+        # 1. Sub-command next tokens — keys that extend this command by more tokens.
+        for ckey in COMMANDS:
+            if ckey == key or not ckey.startswith(key + " "):
+                continue
+            sub = ckey.split()[len(key_tokens):]
+            if len(typed) < len(sub) and sub[:len(typed)] == typed:
+                nxt = sub[len(typed)]
+                if nxt.startswith(partial) and nxt not in offered:
+                    offered.add(nxt)
+                    yield Completion(nxt, start_position=-len(partial),
+                                     display_meta="sub-command")
+
+        # 2. Argument options for the current slot (structure file, then usage).
+        for opt in self._arg_options(key, typed):
+            text_ins = opt["text"]
+            display = opt.get("display") or text_ins
+            if text_ins == "":
+                # Non-inserting hint (e.g. <name>) — selecting it leaves the line
+                # unchanged but the menu still shows what to enter.
+                yield Completion("", start_position=0,
+                                 display=display, display_meta=opt["meta"])
+                continue
+            if not text_ins.startswith(partial) or text_ins in offered:
+                continue
+            offered.add(text_ins)
+            yield Completion(text_ins, start_position=-len(partial),
+                             display=display, display_meta=opt["meta"])
+
+    def _arg_options(self, key: str, typed: list[str]) -> list[dict]:
+        """Resolve next-slot argument options: structure file first, usage fallback.
+
+        Returns a list of ``{text, display, meta}`` records.  Always non-None so a
+        required value slot shows a hint rather than an empty (silent) result.
+        """
+        spec = command_structure.arg_spec(key)
+        if spec is not None:
+            return command_structure.completion_options(spec, typed)
+        cmd = COMMANDS.get(key)
+        if cmd and cmd.usage:
+            return [
+                {"text": opt, "display": opt, "meta": meta}
+                for opt, meta in _usage_options(cmd.usage, key, typed)
+            ]
+        return []
+
 
     def _all_commands(self, include_remote_suffix: bool) -> list[str]:
         builtins = list(_SHELL_BUILTINS)

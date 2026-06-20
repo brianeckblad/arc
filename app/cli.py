@@ -350,7 +350,7 @@ def auth_migrate(
     ARC version.  It is safe to run multiple times.
     """
     from app.config import (
-        _KEYCHAIN_SERVICE, _LEGACY_KEY_SCM_BEARER, _LEGACY_KEY_SCM_SECRET,
+        _LEGACY_KEY_SCM_BEARER, _LEGACY_KEY_SCM_SECRET,
         _LEGACY_KEY_SSH_PASSWORD, _KEY_SCM_BEARER, _KEY_SCM_SECRET,
         _KEY_SSH_PASSWORD, _keychain_get, _keychain_set, _keychain_delete,
         list_profiles,
@@ -358,7 +358,6 @@ def auth_migrate(
 
     profiles = list_profiles()
     migrated: list[str] = []
-    skipped: list[str] = []
 
     for p in profiles:
         pname = p["name"]
@@ -469,7 +468,6 @@ def auth_test(
         console.print(f"\n[dim]Testing profile:[/dim] [bold]{target}[/bold]")
 
     cfg = load_config(profile=target)
-    all_ok = True
 
     # ── 1. Keychain ──────────────────────────────────────────────────────────
     console.print("\n[bold cyan]1. OS Keychain[/bold cyan]")
@@ -515,7 +513,6 @@ def auth_test(
             "    • client_id + client_secret + tsg_id  (recommended — service account flow)\n"
             "    • OR a pre-issued bearer token"
         )
-        all_ok = False
         console.print()
         raise typer.Exit(1)
 
@@ -553,7 +550,6 @@ def auth_test(
             console.print("  [green]✓[/green] Bearer token accepted by SCMClient")
     except Exception as exc:
         console.print(f"  [red]✗[/red]  SCM authentication failed: {exc}")
-        all_ok = False
         console.print()
         raise typer.Exit(1) from exc
 
@@ -616,7 +612,6 @@ def auth_test(
     tot_count    = len(probe_results)
 
     if not any_ok:
-        all_ok = False
         err_codes = {note for _, ok, note in probe_results if not ok}
         is_forbidden    = any("403" in n for n in err_codes)
         is_unauthorized = any("401" in n for n in err_codes)
@@ -739,6 +734,13 @@ def config_generate(
 # ---------------------------------------------------------------------------
 
 _COMMAND_STUB_TEMPLATE = """\
+---
+command: "{key}"
+description: "{description}"
+category: {category}
+scope: {scope}
+---
+
 # {key}
 
 **Category:** {category}
@@ -830,7 +832,11 @@ def _build_docs_bundle() -> int:
         # of the user-facing browser bundle so the docs portal stays light.
         if rel.startswith("scm-api/"):
             continue
-        pages[rel] = md_path.read_text(encoding="utf-8")
+        # Strip YAML front-matter (structured help fields) so the portal shows
+        # only the readable body, matching the in-shell `help <command>` view.
+        from app.settings.command_help import parse_front_matter
+        _meta, body = parse_front_matter(md_path.read_text(encoding="utf-8"))
+        pages[rel] = body
 
     js_entries = ",\n".join(
         f"  {json.dumps(key)}: {json.dumps(value)}"
@@ -871,6 +877,7 @@ def _build_stub(key: str, cmd) -> str:
     return _COMMAND_STUB_TEMPLATE.format(
         key=key,
         category=cmd.category,
+        scope=cmd.scope,
         description=cmd.description,
         api_note=api_note,
         ssh_note=ssh_note,

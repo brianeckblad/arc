@@ -208,7 +208,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_packet_tracer,
         ssh_command=_ssh_packet_tracer,
         render="raw",
-        feature_flag="test_security_policy_match",
+        feature_flag="packet_tracer",
     ),
     "test security-policy-match": CommandDef(
         description=(
@@ -221,7 +221,7 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_packet_tracer,
         ssh_command=_ssh_packet_tracer,
         render="raw",
-        feature_flag="test_security_policy_match",
+        feature_flag="packet_tracer",
     ),
 }
 

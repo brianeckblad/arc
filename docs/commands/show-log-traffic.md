@@ -1,3 +1,12 @@
+---
+command: "show log traffic"
+description: "Show live traffic log — use --remote for live device data"
+feature_flag: show_log_traffic
+category: operations
+scope: device
+api: "(live device state — SSH via --remote)"
+---
+
 # show log traffic
 
 Show traffic log (last 20 entries)

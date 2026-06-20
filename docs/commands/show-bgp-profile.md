@@ -1,3 +1,12 @@
+---
+command: "show bgp-profile"
+description: "Show BGP routing profiles (configuration) in the active folder"
+feature_flag: bgp_routing
+category: network
+scope: folder
+api: "GET /config/network/v1/bgp-address-family-profiles"
+---
+
 # show bgp-profile
 
 **Category:** network

@@ -51,7 +51,7 @@ without scanning the whole codebase. One word replaces a paragraph.
 | `method <name>` | read one method | Look up name in `dev/CODE_MAP.md`, read just that range |
 | `debug` | start the debug protocol | Use the debug template; read only files the error names |
 | `ship <flag>` | enable a feature for all | Flip the flag to `true` in `settings/features.json`; run smoke |
-| `docsupdate` | pull + self-heal docs | Run `dev/update_scm_docs.py`; read `docs/scm-api/CHANGES.md`; follow `dev/DOCS_AGENT.md` |
+| `docsupdate` | pull + self-heal docs | Run `dev/docsupdate.py`; read `docs/scm-api/CHANGES.md`; follow `dev/DOCS_AGENT.md` |
 | `docs agent` | enter docs mode | Read `dev/DOCS_AGENT.md`; pull docs, report changes, update affected API calls only |
 
 ---
@@ -116,7 +116,7 @@ notes: <anything you already know changed on pan.dev>
 | Say this | Agent reads first | Usually edits | Validation |
 |---|---|---|---|
 | `add scm command` | `docs/COMMAND_PATTERNS.md` (pattern 1), `dev/API_INDEX.md` for resource | command module + `app/api/client.py` if method missing + docs page | `python dev/smoke_test.py --only 1,2,3` |
-| `add feature-flagged command` | `app/features.py`, `docs/COMMAND_PATTERNS.md` | `app/features.py`, command module | `python dev/smoke_test.py --file app/features.py` then `--only 1,2,3` |
+| `add feature-flagged command` | `app/settings/features.py`, `docs/COMMAND_PATTERNS.md` | `app/settings/features.py`, command module | `python dev/smoke_test.py --file app/settings/features.py` then `--only 1,2,3` |
 | `add device command` | `docs/COMMAND_PATTERNS.md` (pattern 4), `dev/API_INDEX.md` SSH column | `operations.py`, docs page | `python dev/smoke_test.py --only 1,2,3` |
 | `add shell builtin` | `app/shell_catalog.py`, `dev/CODE_MAP.md` | `shell_catalog.py`, one `_cmd_*`, `_dispatch()` | `python dev/smoke_test.py --file app/shell_catalog.py` |
 | `change help text` | `app/shell_catalog.py` for SHELL help, command module for registered commands | small catalog/module only | `python dev/smoke_test.py --only 8` |
@@ -124,8 +124,8 @@ notes: <anything you already know changed on pan.dev>
 | `change renderer` | `docs/RENDER_CATALOG.md` (find matching render= key), then `app/utils/formatter.py` | formatter + `_render` dispatch | `python dev/smoke_test.py --file app/utils/formatter.py` |
 | `debug API 4xx` | `app/api/client.py`, `dev/API_INDEX.md` | client method or handler params | targeted smoke + reproduce command |
 | `debug tab completion` | `dev/CODE_MAP.md` (`ArcCompleter.get_completions`) | completer only | `python dev/smoke_test.py --file app/shell/<file>.py` |
-| `debug feature hidden` | `app/features.py`, command `feature_flag=` | feature flag default/local config | `python dev/smoke_test.py --file app/features.py` |
-| `update docs` / `docs agent` | `dev/DOCS_AGENT.md`, then `docs/scm-api/CHANGES.md` | `dev/scm_sources.json` (auto), `app/api/client.py` for removed endpoints | `python dev/update_scm_docs.py --self-test` |
+| `debug feature hidden` | `app/settings/features.py`, command `feature_flag=` | feature flag default/local config | `python dev/smoke_test.py --file app/settings/features.py` |
+| `update docs` / `docs agent` | `dev/DOCS_AGENT.md`, then `docs/scm-api/CHANGES.md` | `dev/scm_sources.json` (auto), `app/api/client.py` for removed endpoints | `python dev/docsupdate.py --self-test` |
 
 ---
 
@@ -142,8 +142,9 @@ notes: <anything you already know changed on pan.dev>
 | Change API endpoint | `app/api/client.py` | same |
 | Change output rendering | `app/utils/formatter.py` + `app/shell/execution.py _render()` | same |
 | Config / auth changes | `app/config.py`, `app/cli.py` | same |
-| Theme / UI | `app/theme.py`, `settings/theme.json`, `app/shell/prompt.py _styled()` | same |
-| Feature flags | `app/features.py` + `settings/features.json` | same |
+| Theme / UI | `app/settings/theme.py`, `settings/theme.json`, `app/shell/prompt.py _styled()` | same |
+| Feature flags | `app/settings/features.py` + `settings/features.json` | same |
+| Command help (description + usage) | `docs/commands/<slug>.md` front-matter → `python dev/generate_command_docs.py` to add/refresh | same |
 
 ---
 
@@ -160,7 +161,7 @@ When you see an error during development, this table points to the 1–2 most li
 | `KeyboardInterrupt` during SSH | `app/ssh/manager.py` paramiko session, `dev/CODE_MAP.md` (`_cmd_connect` range) | SSH timeout or ctrl-C during interactive mode |
 | Tab completion returns empty | `app/shell/completer.py` (use `dev/CODE_MAP.md` for `_cmd_cd`/`_cmd_folder`), `dev/smoke_test.py` section 8 | Cache not populated or completer not wired |
 | `feature_flag='...' not recognized` | `settings/features.json` (flag key missing/typo) | Flag name not in features.json or typo |
-| Theme colour not showing | `settings/theme.json`, `app/theme.py` THEME_KEYS, `dev/smoke_test.py` section 10 | Theme key not in THEME_KEYS or JSON has bad value |
+| Theme colour not showing | `settings/theme.json`, `app/settings/theme.py` THEME_KEYS, `dev/smoke_test.py` section 10 | Theme key not in THEME_KEYS or JSON has bad value |
 | Inline help `?` shows wrong list | `app/shell_catalog.py` SHELL_HELP_ROWS, `dev/smoke_test.py` section 9 | Builtin help entry missing or command not registered in right scope |
 | `render='unknown'` error | `docs/RENDER_CATALOG.md`, `app/utils/formatter.py`, `app/shell/execution.py _render()` | Render key not in catalog; add formatter function + dispatch case |
 
@@ -260,31 +261,36 @@ python dev/smoke_test.py --file app/shell_catalog.py
 
 ---
 
-## Feature Flags — Enable/Disable Commands (JSON-first)
+## Feature Flags — Enable/Disable Commands (JSON-first, three states)
 
-`settings/features.json` is the single source of truth. Add a command to the
-registry but keep it hidden until tested.
+`settings/features.json` is the single source of truth. Each flag is
+`true` (on for everyone), `"dev"` (under development — hidden until development
+mode), or `false` (off for everyone).
 
 ```text
 # 1. Gate the CommandDef
 'show nat-rules': CommandDef(..., feature_flag='nat_rules')
 
-# 2. Add the flag to settings/features.json
-{ "nat_rules": false }
+# 2. Add the flag to settings/features.json while building it
+{ "nat_rules": "dev" }
 
-# 3. Toggle for one session (inside ARC, not saved):
-feature enable nat_rules        # or: ARC_FEATURE_NAT_RULES=1 python run.py
+# 3. Reveal dev commands for testing: type the hidden `dev` command
+dev                              # toggles development mode (prompt → arc:global:dev >)
+#    or start with: ARC_DEV_MODE=1 python run.py
+#    one flag for a session:  feature enable|disable|dev nat_rules
 
 # 4. When ready to ship: set it true in settings/features.json
 { "nat_rules": true }
 ```
 
-There is no `FeatureFlags` dataclass — `app/features.py` just reads the JSON
-into a `dict[str, bool]`. A flag absent from the file is treated as `false`.
+There is no `FeatureFlags` dataclass — `app/settings/features.py` reads the JSON
+into a `dict[str, str]` state map (`"on"|"dev"|"off"`). A flag absent from the
+file is treated as `off`. Gating uses `is_enabled(flags, flag, dev_mode)` — pass
+`self._dev_mode` at every call site.
 
-
-When a flag is OFF: command hidden from `?`, blocked at execution with an
-actionable message. Empty `feature_flag=""` (default) = always enabled.
+When a flag is hidden (OFF, or DEV outside development mode): command hidden from
+`?`, blocked at execution with an actionable message. Empty `feature_flag=""`
+(default) = always enabled.
 
 ---
 
@@ -296,11 +302,12 @@ tiny file instead of the whole CLI:
 | String file | Owns | Edit when |
 |---|---|---|
 | `app/shell_catalog.py` | builtin command names + SHELL `?` help rows | adding/renaming builtin metadata |
-| `app/features.py` | feature flags + local/env override loader | gating unfinished commands |
+| `app/settings/features.py` | feature flags + local/env override loader | gating unfinished commands |
 | `app/commands/<module>.py` | registered command handlers + `CommandDef`s | adding SCM/device commands |
 | `app/api/client.py` | SCM HTTP methods | endpoint path/query changes |
 | `app/utils/formatter.py` | output renderers | display changes |
-| `app/theme.py` + `settings/theme.json` | color roles | theme changes |
+| `app/settings/theme.py` + `settings/theme.json` | color roles | theme changes |
+| `app/settings/command_help.py` + `docs/commands/*.md` front-matter | per-command description + usage | rewording command help text |
 
 **Section jumps:** the shell lives in `app/shell/*.py` — never read a file whole. `dev/CODE_MAP.md`
 lists the exact, always-current line range of every method (smoke section 10
@@ -312,7 +319,7 @@ fails if it drifts):
 read_file("app/shell/navigation.py", offset=..., limit=...)
 ```
 
-Regenerate after editing any 300+ line file: `python dev/gen_code_map.py`
+Regenerate after editing any 300+ line file: `python dev/generate_code_map.py`
 
 The **pre-commit hook** (`.git/hooks/pre-commit`) auto-regenerates `CODE_MAP.md`
 whenever any `app/*.py` file is staged.  Install it once after cloning:
@@ -376,7 +383,7 @@ Quick spot-check — common unimplemented resources worth adding:
 | `sdwan-rules` | network/v1 | LRCUD | `show sdwan traffic` |
 | `application-groups` | objects/v1 | LRCUD | `show objects application-group` |
 
-Refresh full index: `python dev/gen_api_index.py`
+Refresh full index: `python dev/generate_api_index.py`
 
 ---
 
@@ -385,10 +392,10 @@ Refresh full index: `python dev/gen_api_index.py`
 Full playbook: `dev/DOCS_AGENT.md`. Common commands:
 
 ```bash
-python dev/update_scm_docs.py            # pull all docs, self-heal moved paths, write CHANGES.md
-python dev/update_scm_docs.py --check     # report drift/relocations, write nothing
-python dev/update_scm_docs.py --list-remote   # live pan.dev spec paths
-python dev/update_scm_docs.py --self-test     # offline tests (no network)
+python dev/docsupdate.py            # pull all docs, self-heal moved paths, write CHANGES.md
+python dev/docsupdate.py --check     # report drift/relocations, write nothing
+python dev/docsupdate.py --list-remote   # live pan.dev spec paths
+python dev/docsupdate.py --self-test     # offline tests (no network)
 ```
 
 - Source paths live in `dev/scm_sources.json` (auto-updated when pan.dev renames files).
@@ -426,11 +433,12 @@ python dev/smoke_test.py --file app/shell/prompt.py       # auto-selects relevan
 | 3 | registry integrity | any `commands/*.py` — adding/changing a `CommandDef` |
 | 4 | arg parser | `registry._parse_args()` |
 | 5 | token optimizations | `app/commands/registry.py` — `KEYWORD_PARAMS` constant |
-| 6 | config types | `app/config.py` / `app/features.py` |
+| 6 | config types | `app/config.py` / `app/settings/features.py` |
 | 7 | formatter | `app/utils/formatter.py` — new render function |
 | 8 | banner alignment | `app/shell/prompt.py _print_startup_help()` |
 | 9 | inline help / builtins | `app/shell_catalog.py` or `app/shell/help.py` |
-| 10 | theme | `app/theme.py`, `settings/theme.json` |
+| 10 | theme | `app/settings/theme.py`, `settings/theme.json` |
+| 10 | command help front-matter | `docs/commands/*.md`, `app/settings/command_help.py` — fails if a command doc lacks front-matter; run `python dev/generate_command_docs.py` |
 | 11 | code map freshness | any 300+ line file — fails if `dev/CODE_MAP.md` is stale |
 
 ---
@@ -441,8 +449,10 @@ python dev/smoke_test.py --file app/shell/prompt.py       # auto-selects relevan
 |---|---|
 | `app/commands/*.py` | `python dev/smoke_test.py --only 1,2,3` |
 | `app/shell_catalog.py` | `python dev/smoke_test.py --file app/shell_catalog.py` |
-| `app/shell/*.py` (or any 300+ line file) | `python dev/gen_code_map.py && python dev/smoke_test.py --file app/shell/<file>.py` |
-| `app/features.py` | `python dev/smoke_test.py --file app/features.py` |
+| `app/shell/*.py` (or any 300+ line file) | `python dev/generate_code_map.py && python dev/smoke_test.py --file app/shell/<file>.py` |
+| `app/settings/features.py` | `python dev/smoke_test.py --file app/settings/features.py` |
+| `app/commands/*.py` (new command) | `python dev/generate_command_docs.py && python dev/smoke_test.py --only 1,2,3,10` |
+| `docs/commands/*.md` front-matter | `python dev/smoke_test.py --file app/settings/command_help.py` |
 | `app/utils/formatter.py` | `python dev/smoke_test.py --file app/utils/formatter.py` |
 | before commit | `python dev/smoke_test.py` (pre-commit auto-refreshes `dev/CODE_MAP.md`) |
 

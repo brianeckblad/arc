@@ -1,3 +1,12 @@
+---
+command: "show dos-protection-profile"
+description: "Show DoS protection profiles in the active folder"
+feature_flag: dos_protection
+category: security
+scope: folder
+api: "GET /config/security/v1/dos-protection-profiles"
+---
+
 # show dos-protection-profile
 
 **Category:** security

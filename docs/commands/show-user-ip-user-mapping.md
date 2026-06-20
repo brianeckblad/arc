@@ -1,3 +1,12 @@
+---
+command: "show user ip-user-mapping"
+description: "Show live user-to-IP mapping from device — use --remote"
+feature_flag: local_users
+category: identity
+scope: device
+api: "(live device state — SSH via --remote)"
+---
+
 # show user ip-user-mapping
 
 **Category:** identity

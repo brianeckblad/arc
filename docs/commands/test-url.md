@@ -1,3 +1,13 @@
+---
+command: "test url"
+description: "Test URL categorization (use --remote)"
+usage: "test url <url>"
+feature_flag: test_url
+category: network
+scope: device
+api: "(live device state — SSH via --remote)"
+---
+
 # test url
 
 **Category:** network

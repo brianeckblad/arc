@@ -1,0 +1,11 @@
+# command-structure.csv — the ORDER of fields for each "set <object>" command.
+#
+# Format:  <object>,<field>,<field>,...   (just the field names, in order)
+# Reorder a command by moving its field names left/right. That is all you edit here.
+# Everything else (which fields are choices, the choices themselves, the hints,
+# which are required) comes from the API/field library in code — never this file.
+#
+# You do NOT need quotes around values with spaces — ARC works out where each
+# field ends from the structure below (quotes still work for rare edge cases).
+# Lines starting with # are comments.
+address,name,type,value,description,tag

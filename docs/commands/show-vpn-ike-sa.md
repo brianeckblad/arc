@@ -1,3 +1,12 @@
+---
+command: "show vpn ike-sa"
+description: "Show live IKE security associations from device — use --remote"
+feature_flag: ipsec_vpn
+category: network
+scope: device
+api: "(live device state — SSH via --remote)"
+---
+
 # show vpn ike-sa
 
 **Category:** network

@@ -1,3 +1,12 @@
+---
+command: "show schedule"
+description: "Show schedules in the active folder"
+feature_flag: schedules
+category: objects
+scope: folder
+api: "GET /config/objects/v1/schedules"
+---
+
 # show schedule
 
 **Category:** objects

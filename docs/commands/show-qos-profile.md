@@ -1,3 +1,12 @@
+---
+command: "show qos-profile"
+description: "Show QoS profiles in the active folder"
+feature_flag: qos
+category: network
+scope: folder
+api: "GET /config/network/v1/qos-profiles"
+---
+
 # show qos-profile
 
 **Category:** network

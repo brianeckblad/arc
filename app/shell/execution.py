@@ -7,14 +7,22 @@ from app.shell._base import *  # noqa: F401,F403  (shared spine namespace)
 class ExecutionMixin:
     def _execute_api(self, key: str, cmd_def: CommandDef, args: dict) -> None:
         # Feature flag check — block before any other validation.
-        if not is_enabled(self._features, cmd_def.feature_flag):
+        if not is_enabled(self._features, cmd_def.feature_flag, self._dev_mode):
             flag = cmd_def.feature_flag
-            console.print(
-                f"[yellow]Feature not enabled:[/yellow] [bold]{key}[/bold]\n"
-                f"  Flag [bold]{flag}[/bold] is currently off.\n"
-                f"  To enable: add [bold]{{\"{flag}\": true}}[/bold] to [bold]settings/features.json[/bold]\n"
-                f"  or set env var [bold]ARC_FEATURE_{flag.upper()}=1[/bold]"
-            )
+            if feature_state(self._features, flag) == "dev":
+                # Under development — revealed by development mode, not by editing JSON.
+                console.print(
+                    f"[yellow]Under development:[/yellow] [bold]{key}[/bold]\n"
+                    f"  Flag [bold]{flag}[/bold] is marked [magenta]dev[/magenta].\n"
+                    f"  Type [bold]dev[/bold] to enter development mode, then retry."
+                )
+            else:
+                console.print(
+                    f"[yellow]Feature not enabled:[/yellow] [bold]{key}[/bold]\n"
+                    f"  Flag [bold]{flag}[/bold] is currently off.\n"
+                    f"  To enable: set [bold]\"{flag}\": true[/bold] in [bold]settings/features.json[/bold]\n"
+                    f"  or set env var [bold]ARC_FEATURE_{flag.upper()}=on[/bold]"
+                )
             return
 
         if key == "commit" and not self._state.configure_mode:

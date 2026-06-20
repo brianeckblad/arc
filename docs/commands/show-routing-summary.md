@@ -1,3 +1,12 @@
+---
+command: "show routing summary"
+description: "Show virtual routers / routing profiles in the active folder"
+feature_flag: show_routing
+category: network
+scope: folder
+api: "GET /config/network/v1/virtual-routers"
+---
+
 # show routing summary
 
 Show routing summary

@@ -1,3 +1,12 @@
+---
+command: "show snippets global"
+description: "List ALL snippets regardless of device or folder context"
+feature_flag: show_snippets
+category: setup
+scope: global
+api: "GET /config/setup/v1/snippets"
+---
+
 # show snippets global
 
 **Category:** setup

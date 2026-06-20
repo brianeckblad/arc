@@ -144,6 +144,8 @@ def _parse_cli_args() -> tuple[set[int], bool]:
             return base | {8, 9} | map_check, quiet
         if name in ("theme.py", "theme.json"):
             return base | {10}, quiet
+        if name == "command_help.py":
+            return base | {3, 10}, quiet
         if name in ("config.py", "features.py"):
             return base | {6} | map_check, quiet
         if name == "registry.py":
@@ -181,7 +183,8 @@ def test_imports() -> None:
     modules = [
         "app",
         "app.config",
-        "app.features",
+        "app.settings.features",
+        "app.settings.command_help",
         "app.commands.base",
         "app.commands.setup",
         "app.commands.objects",
@@ -195,7 +198,8 @@ def test_imports() -> None:
         "app.shell_catalog",
         "app.ssh.manager",
         "app.utils.formatter",
-        "app.theme",
+        "app.settings.theme",
+        "app.settings.cli_structure",
         "app.docs",
     ]
 
@@ -276,6 +280,33 @@ def test_registry() -> None:
                 f"match_command({tokens!r})",
                 f"expected {expected_key!r}, got {matched_key!r}",
             )
+
+    # 3g — 100% NGFW coverage: the generated resource catalog is in sync with the
+    #      pulled specs.  Every folder-scoped list endpoint must be covered by an
+    #      explicit command or an auto-generated one.  Drift = a new pan.dev
+    #      endpoint with no command; run: python dev/generate_resource_catalog.py
+    import importlib.util as _ilu
+    gen_path = ROOT / "dev" / "generate_resource_catalog.py"
+    spec_mod = _ilu.spec_from_file_location("generate_resource_catalog", gen_path)
+    try:
+        module = _ilu.module_from_spec(spec_mod)
+        spec_mod.loader.exec_module(module)  # type: ignore[union-attr]
+        fresh = module._build_catalog()
+        from app.commands.resource_catalog import CATALOG as _CATALOG
+        fresh_cmds = {e["command"] for e in fresh}
+        have_cmds = {e["command"] for e in _CATALOG}
+        if fresh_cmds == have_cmds:
+            ok(f"resource catalog covers all spec endpoints ({len(have_cmds)} auto-generated)")
+        else:
+            missing = sorted(fresh_cmds - have_cmds)
+            fail(
+                f"{len(missing)} spec endpoint(s) not in resource_catalog.py",
+                "Run: python dev/generate_resource_catalog.py  (" + ", ".join(missing[:5]) + ")",
+            )
+    except ModuleNotFoundError:
+        ok("resource catalog check skipped (PyYAML not installed)")
+    except Exception as exc:  # noqa: BLE001
+        fail("resource catalog coverage check raised", str(exc))
 
 
 # ---------------------------------------------------------------------------
@@ -376,7 +407,7 @@ def test_config() -> None:
         fail(f"ArcConfig.profile_name expected 'default', got {cfg.profile_name!r}")
 
     # 6f — load_features() returns a dict and is_enabled works
-    from app.features import load_features, is_enabled
+    from app.settings.features import load_features, is_enabled, feature_state
     try:
         loaded = load_features()
         if isinstance(loaded, dict):
@@ -393,6 +424,58 @@ def test_config() -> None:
         ok("is_enabled(flags, '') → True (no flag = always enabled)")
     else:
         fail("is_enabled(flags, '') should be True for empty flag name")
+
+    # 6g.1 — three-state semantics: on / dev / off
+    sample = {"flag_on": "on", "flag_dev": "dev", "flag_off": "off"}
+    checks = [
+        ("on",  "flag_on",  False, True),
+        ("on",  "flag_on",  True,  True),
+        ("dev", "flag_dev", False, False),   # hidden outside development mode
+        ("dev", "flag_dev", True,  True),    # revealed in development mode
+        ("off", "flag_off", False, False),
+        ("off", "flag_off", True,  False),   # off stays off even in dev mode
+    ]
+    state_ok = all(is_enabled(sample, name, dev) is expect for _, name, dev, expect in checks)
+    if state_ok and feature_state(sample, "flag_dev") == "dev":
+        ok("feature flags honor on / dev / off (dev gated by development mode)")
+    else:
+        fail("3-state feature flag semantics are incorrect")
+
+    # 6g.2 — values in settings/features.json are valid (true | false | \"dev\")
+    bad = {k: v for k, v in flags.items() if v not in ("on", "dev", "off")}
+    if bad:
+        fail("settings/features.json has flags with invalid state", str(bad))
+    else:
+        ok(f"all {len(flags)} feature flags use a valid state (on/dev/off)")
+
+    # 6g.3 — settings/features.json is *valid JSON*.  A syntax error makes
+    #         load_features() silently return {} → every command vanishes.  Parse
+    #         it directly (not via load_features) so corruption is caught loudly.
+    import json as _json
+    features_file = ROOT / "settings" / "features.json"
+    try:
+        raw_features = _json.loads(features_file.read_text(encoding="utf-8"))
+        ok("settings/features.json is valid JSON")
+    except Exception as exc:
+        raw_features = None
+        fail("settings/features.json is NOT valid JSON — all commands would disappear", str(exc))
+
+    # 6g.4 — every command's feature_flag exists in features.json.  A mangled key
+    #         (e.g. 'show devices' instead of 'show_devices') silently turns the
+    #         command off.  This catches that the way `feature show` cannot.
+    if raw_features is not None:
+        from app.commands.registry import COMMANDS as _COMMANDS_FOR_FLAGS
+        json_keys = {k for k in raw_features if not k.startswith("_")}
+        cmd_flags = {c.feature_flag for c in _COMMANDS_FOR_FLAGS.values() if c.feature_flag}
+        missing_flags = sorted(cmd_flags - json_keys)
+        if missing_flags:
+            fail(
+                f"{len(missing_flags)} command flag(s) missing from settings/features.json "
+                "(those commands are silently off)",
+                ", ".join(missing_flags[:8]),
+            )
+        else:
+            ok(f"all {len(cmd_flags)} command feature flags are present in features.json")
 
     # 6h — CommandDef.feature_flag field exists
     from app.commands.base import CommandDef
@@ -628,6 +711,76 @@ def test_inline_help_alignment() -> None:
     else:
         fail("shell_help_rows() returned empty normal or configure-mode list")
 
+    # 9e — Usage-driven tab completion: a command's usage parses into the option
+    #      tokens the completer offers (so `set address` guides through its args).
+    from app.shell.completer import _usage_options
+    addr_usage = COMMANDS["set address"].usage if "set address" in COMMANDS else ""
+    if addr_usage:
+        after_name = [o for o, _ in _usage_options(addr_usage, "set address", ["myaddr"])]
+        after_value = [o for o, _ in _usage_options(addr_usage, "set address", ["myaddr", "ip-netmask", "1.2.3.4"])]
+        if "ip-netmask" in after_name and "fqdn" in after_name and "tag" in after_value:
+            ok("usage-driven completion: set address offers type choices then description/tag")
+        else:
+            fail("usage-driven completion broken for set address",
+                 f"after_name={after_name} after_value={after_value}")
+    else:
+        fail("set address has no usage string — tab completion cannot guide it")
+
+    # 9f — Command-structure file (settings/command-structure.csv) drives the
+    #      slot-by-slot completion for `set address`, and tokenization is
+    #      quote-aware so a name with spaces ("this is a test") stays one token.
+    from app.settings import command_structure as _cs
+    from app.shell.completer import _tokenize_partial
+
+    _cs.invalidate_cache()
+    spec = _cs.arg_spec("set address")
+    if spec and [a["name"] for a in spec] == ["name", "type", "value", "description", "tag"]:
+        ok("command-structure.csv: set address args ordered name→type→value→description→tag")
+    else:
+        fail("command-structure.csv did not load set address args in order",
+             f"spec={spec}")
+
+    toks, partial = _tokenize_partial('set address "this is a test" ')
+    if toks == ["set", "address", "this is a test"] and partial == "":
+        ok("quote-aware tokenizer keeps a spaced name as one token")
+    else:
+        fail("quote-aware tokenizer broke on a quoted name",
+             f"tokens={toks} partial={partial!r}")
+
+    # 9g — Greedy string parsing: the app figures out field boundaries so the
+    #      operator never needs quotes for a multi-word name or description.
+    if spec:
+        parsed = _cs.parse(spec, ["my", "web", "host", "fqdn", "api.example.com",
+                                  "description", "primary", "edge", "node"])
+        if (parsed.get("name") == "my web host"
+                and parsed.get("type") == "fqdn"
+                and parsed.get("value") == "api.example.com"
+                and parsed.get("description") == "primary edge node"):
+            ok("structure parse: greedy multi-word name + description without quotes")
+        else:
+            fail("greedy structure parse did not split fields correctly", f"parsed={parsed}")
+
+        # 9h — A required value slot shows a clear 'Enter …' message, never empty.
+        opts = _cs.completion_options(spec, ["web1", "fqdn"])
+        if opts and opts[0]["text"] == "" and opts[0]["display"].lower().startswith("enter "):
+            ok("structure completion: value slot shows an 'Enter …' message")
+        else:
+            fail("value slot did not surface an 'Enter …' hint", f"opts={opts}")
+
+        # 9i — Cisco-style context help: `<command> ?` lists only the next syntax
+        #      options for the slot the operator is on.
+        at_type = [r["token"] for r in _cs.help_options(spec, ["web1"])]
+        at_value = [r["token"] for r in _cs.help_options(spec, ["web1", "fqdn"])]
+        at_kw = [r["token"] for r in _cs.help_options(spec, ["web1", "fqdn", "1.2.3.4"])]
+        if (at_type == ["ip-netmask", "ip-range", "ip-wildcard", "fqdn"]
+                and at_value == ["<value>"]
+                and at_kw == ["description", "tag"]):
+            ok("context help: ? lists choices → variable → keywords by slot")
+        else:
+            fail("context help options wrong",
+                 f"type={at_type} value={at_value} kw={at_kw}")
+
+
 
 # ---------------------------------------------------------------------------
 # 10. Theme system
@@ -636,7 +789,7 @@ def test_inline_help_alignment() -> None:
 def test_theme() -> None:
     section("10. Theme system")
 
-    from app.theme import ArcTheme, THEME_KEYS, load_theme
+    from app.settings.theme import ArcTheme, THEME_KEYS, load_theme
 
     # 9a — ArcTheme default-constructs
     try:
@@ -682,10 +835,40 @@ def test_theme() -> None:
     else:
         ok("banner.txt correctly under settings/ only")
 
+    # 9f — every command has a non-empty description after the doc front-matter
+    #      is applied, and every command's docs/commands/<slug>.md carries help
+    #      front-matter (the single source of truth for `?` and `help`).
+    from app.commands.registry import COMMANDS
+    from app.settings.command_help import description_overrides, usage_overrides
+
+    blank = [k for k, c in COMMANDS.items() if not (c.description or "").strip()]
+    if blank:
+        fail(f"{len(blank)} command(s) have a blank description", ", ".join(sorted(blank)[:5]))
+    else:
+        ok(f"All {len(COMMANDS)} commands have a non-empty description")
+
+    missing_fm = sorted(set(COMMANDS) - set(description_overrides()))
+    if missing_fm:
+        fail(
+            f"{len(missing_fm)} command doc(s) missing help front-matter",
+            "Run: python dev/generate_command_docs.py  (" + ", ".join(missing_fm[:5]) + ")",
+        )
+    else:
+        ok(f"All {len(COMMANDS)} command docs carry help front-matter")
+
+    # 9g — usage front-matter applies onto CommandDef.usage (`<command> ?` syntax)
+    usages = usage_overrides()
+    if usages and all(COMMANDS[k].usage == v for k, v in usages.items() if k in COMMANDS):
+        ok(f"{len(usages)} command usage line(s) loaded from doc front-matter")
+    elif not usages:
+        ok("no command usage front-matter set (optional)")
+    else:
+        fail("usage front-matter did not apply onto CommandDef.usage")
+
 
 # ---------------------------------------------------------------------------
 # 10. Code map freshness
-#     dev/CODE_MAP.md is generated by dev/gen_code_map.py and gives agents the
+#     dev/CODE_MAP.md is generated by dev/generate_code_map.py and gives agents the
 #     exact line range of every method in large files. If it drifts, agents read
 #     the wrong lines. This check fails when the map is stale so it cannot rot.
 # ---------------------------------------------------------------------------
@@ -693,24 +876,24 @@ def test_theme() -> None:
 def test_code_map() -> None:
     section("11. Code map freshness")
 
-    gen = ROOT / "dev" / "gen_code_map.py"
+    gen = ROOT / "dev" / "generate_code_map.py"
     code_map = ROOT / "dev" / "CODE_MAP.md"
 
     if not gen.exists():
-        fail("dev/gen_code_map.py is missing")
+        fail("dev/generate_code_map.py is missing")
         return
-    ok("dev/gen_code_map.py exists")
+    ok("dev/generate_code_map.py exists")
 
     if not code_map.exists():
-        fail("dev/CODE_MAP.md is missing — run: python dev/gen_code_map.py")
+        fail("dev/CODE_MAP.md is missing — run: python dev/generate_code_map.py")
         return
     ok("dev/CODE_MAP.md exists")
 
     # Re-run the generator's --check mode in-process to detect drift.
     import importlib.util
-    spec = importlib.util.spec_from_file_location("gen_code_map", gen)
+    spec = importlib.util.spec_from_file_location("generate_code_map", gen)
     if spec is None or spec.loader is None:
-        fail("Could not load dev/gen_code_map.py for drift check")
+        fail("Could not load dev/generate_code_map.py for drift check")
         return
     module = importlib.util.module_from_spec(spec)
     try:
@@ -722,7 +905,7 @@ def test_code_map() -> None:
         else:
             fail(
                 "dev/CODE_MAP.md is STALE",
-                "Run: python dev/gen_code_map.py  (large file line ranges changed)",
+                "Run: python dev/generate_code_map.py  (large file line ranges changed)",
             )
     except Exception as exc:
         fail("Code map drift check raised", str(exc))

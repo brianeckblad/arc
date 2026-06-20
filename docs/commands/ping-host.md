@@ -1,3 +1,13 @@
+---
+command: "ping host"
+description: "Ping a host from a managed device (use --remote)"
+usage: "ping host <ip>"
+feature_flag: ping
+category: operations
+scope: device
+api: "(live device state — SSH via --remote)"
+---
+
 # ping host
 
 Ping a host — ping host <ip>

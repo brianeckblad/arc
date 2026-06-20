@@ -1,3 +1,12 @@
+---
+command: "show devices"
+description: "List all SCM-managed devices"
+feature_flag: show_devices
+category: setup
+scope: global
+api: "GET /config/setup/v1/devices"
+---
+
 # show devices
 
 List all managed devices

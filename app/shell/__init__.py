@@ -40,10 +40,19 @@ class ArcShell(
         # Prefix to restore in the next prompt after a '?' context-help lookup.
         # e.g. "show ?" prints help then re-seeds the prompt with "show ".
         self._pending_default: str = ""
+        # The command prefix a single '?' last gave brief help for.  Pressing '?'
+        # again on the same prefix escalates to full help (the typed-`??` gesture).
+        self._last_q_prefix: str | None = None
 
         # Feature flags — loaded once at startup; apply to all command dispatch.
-        # Edit settings/features.json or set ARC_FEATURE_<NAME>=1 env vars to enable.
-        self._features: dict[str, bool] = load_features()
+        # Each flag is "on" / "dev" / "off".  Edit settings/features.json or set
+        # ARC_FEATURE_<NAME>=on|dev|off env vars.
+        self._features: dict[str, str] = load_features()
+
+        # Development mode reveals "dev" (under-construction) commands.  Off by
+        # default; toggled by the hidden `dev` command, or pre-enabled in CI/CD
+        # with ARC_DEV_MODE=1.  Session-only — never written to disk.
+        self._dev_mode: bool = dev_mode_from_env()
 
         # Build clients
         self._scm: Optional[SCMClient] = None
@@ -64,7 +73,7 @@ class ArcShell(
             auto_suggest=AutoSuggestFromHistory(),
             completer=ArcCompleter(self),
             complete_while_typing=False,
-            key_bindings=_make_key_bindings(),
+            key_bindings=_make_key_bindings(self),
             style=PROMPT_STYLE,
         )
 

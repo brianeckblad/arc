@@ -1,3 +1,12 @@
+---
+command: "show nat-rules"
+description: "Show NAT rules in the active folder"
+feature_flag: nat_rules
+category: network
+scope: folder
+api: "GET /config/network/v1/nat-rules"
+---
+
 # show nat-rules
 
 **Category:** network

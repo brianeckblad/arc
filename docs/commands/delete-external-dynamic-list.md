@@ -1,3 +1,13 @@
+---
+command: "delete external-dynamic-list"
+description: "Delete an EDL — delete external-dynamic-list <name>"
+usage: "delete external-dynamic-list <name>"
+feature_flag: delete_objects
+category: objects
+scope: folder
+api: "DELETE /config/objects/v1/external-dynamic-lists/{id}"
+---
+
 # delete external-dynamic-list
 
 Delete a **external-dynamic-list** object by name from the active SCM folder.

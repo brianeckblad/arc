@@ -1,3 +1,13 @@
+---
+command: "delete url-category"
+description: "Delete a URL category — delete url-category <name>"
+usage: "delete url-category <name>"
+feature_flag: delete_security
+category: security
+scope: folder
+api: "DELETE /config/security/v1/url-categories/{id}"
+---
+
 # delete url-category
 
 **Category:** security

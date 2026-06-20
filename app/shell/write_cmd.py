@@ -52,7 +52,7 @@ class WriteMixin:
             if candidate_key in COMMANDS:
                 cmd_def = COMMANDS[candidate_key]
                 flag = cmd_def.feature_flag
-                if flag and not is_enabled(self._features, flag):
+                if flag and not is_enabled(self._features, flag, self._dev_mode):
                     console.print(
                         f"\n  [bold cyan]{candidate_key}[/bold cyan]  [dim]— {cmd_def.description}[/dim]\n\n"
                         f"  [yellow]Feature not enabled.[/yellow]  Flag: [bold]{flag}[/bold]\n"
@@ -91,7 +91,7 @@ class WriteMixin:
         if candidate_key in COMMANDS:
             cmd_def = COMMANDS[candidate_key]
             flag = cmd_def.feature_flag
-            if flag and not is_enabled(self._features, flag):
+            if flag and not is_enabled(self._features, flag, self._dev_mode):
                 console.print(
                     f"[yellow]Feature not enabled:[/yellow] [bold]{candidate_key}[/bold]\n"
                     f"  Flag [bold]{flag}[/bold] is currently off.\n"

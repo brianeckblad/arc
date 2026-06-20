@@ -1,3 +1,13 @@
+---
+command: "test security-policy-match"
+description: "Test which security rule a packet matches (alias of packet-tracer)"
+usage: "test security-policy-match source <ip> destination <ip> [from <zone>] [to <zone>] [application <app>] [destination-port <n>]"
+feature_flag: packet_tracer
+category: diagnostics
+scope: folder
+api: "(client-side simulation of the folder rule base)"
+---
+
 # test security-policy-match
 
 Test security policy match — test security-policy-match source <ip> destination <ip> application <app> protocol <n> destination-port <n>
