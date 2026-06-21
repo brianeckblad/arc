@@ -12,6 +12,8 @@ api: "POST /config/objects/v1/addresses"
 
 Create an address object in the active SCM folder.
 
+**Requires:** Configure mode — type `configure` to enter configure mode before using this command.
+
 **Source:** `POST /config/objects/v1/addresses`  
 **Schema:** addresses.addresses_create (see `docs/scm-api/specs/ngfw-objects.yaml`)  
 **Feature flag:** `create_address` — enable with `feature enable create_address`

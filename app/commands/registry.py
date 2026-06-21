@@ -79,7 +79,7 @@ for _key, _cmd in COMMANDS.items():
 KEYWORD_PARAMS: set[str] = {
     "id", "name", "host", "source", "destination", "application",
     "protocol", "destination-port", "description", "count",
-    "source-user", "category", "service", "to", "from",
+    "source-user", "category", "service", "to", "from", "json", "file",
 }
 
 

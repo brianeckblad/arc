@@ -18,11 +18,12 @@ specs** rather than hand-maintained, and to keep the codebase honest.
 ```
 docsupdate  →  python dev/docsupdate.py
                  │  (pulls + parses the vendor OpenAPI specs, self-healing)
-                 ├─► dev/generate_api_index.py        → dev/API_INDEX.md
                  ├─► dev/generate_resource_catalog.py → app/commands/resource_catalog.py
-                 └─► dev/generate_command_docs.py     → docs/commands/*.md front-matter
-                                                    + docs/commands/index.md
-                                                    + docs/commands/api-reference.md
+                 ├─► dev/generate_feature_flags.py    → settings/features.json
+                 ├─► dev/generate_command_docs.py     → docs/commands/*.md front-matter
+                 │                                  + docs/commands/index.md
+                 │                                  + docs/commands/api-reference.md
+                 └─► dev/generate_api_index.py        → dev/API_INDEX.md
 
 pre-commit hook (.git/hooks/pre-commit, installed by dev/install_hooks.sh)
                  ├─► python dev/generate_code_map.py  → dev/CODE_MAP.md  (when app/*.py staged)
@@ -30,13 +31,12 @@ pre-commit hook (.git/hooks/pre-commit, installed by dev/install_hooks.sh)
 
 manual / on-demand
                  ├─► python dev/scaffold.py "show bgp routes" network   (new command stub)
-                 ├─► python dev/generate_code_map.py                         (after big edits)
-                 └─► python dev/extract_variants.py                     (ad-hoc spec analysis)
+                 └─► python dev/generate_code_map.py                         (after big edits)
 ```
 
 **Key fact:** `docsupdate.py` is the orchestrator. It calls
-`generate_api_index.py`, `generate_resource_catalog.py`, and `generate_command_docs.py` (in that
-order, via subprocess) after a successful pull. It does **not** call
+`generate_resource_catalog.py`, `generate_feature_flags.py`, `generate_command_docs.py`,
+and `generate_api_index.py` (in that order, via subprocess) after a successful pull. It does **not** call
 `generate_code_map.py` or `smoke_test.py` — those belong to the pre-commit flow.
 
 ---
@@ -45,15 +45,15 @@ order, via subprocess) after a successful pull. It does **not** call
 
 | Script | What it does | Run by | Outputs |
 |---|---|---|---|
-| **`docsupdate.py`** | Orchestrator for `docsupdate`. Pulls every NGFW OpenAPI spec + conceptual guide from the vendor's public GitHub repo, **self-heals** renamed source paths (searches the live tree, updates `scm_sources.json`, records the move), and writes the local mirror. Then chains the three generators below. | `docsupdate` trigger / manual | `docs/scm-api/specs/*.yaml` + `*.md`, `guides/*.md`, `index.md`, `MANIFEST.md`, `CHANGES.md` |
+| **`docsupdate.py`** | Orchestrator for `docsupdate`. Pulls every SCM OpenAPI spec + conceptual guide from the vendor's public GitHub repo, **self-heals** renamed source paths, discovers new spec files, updates `scm_sources.json`, and writes the local mirror. Then chains the generators below. | `docsupdate` trigger / manual | `docs/scm-api/specs/*.yaml`/`*.json` + `*.md`, `guides/*.md`, `index.md`, `MANIFEST.md`, `CHANGES.md` |
 | **`generate_api_index.py`** | Condenses all pulled specs into one compact endpoint table so agents don't read raw YAML. | `docsupdate.py`; manual | `dev/API_INDEX.md` |
-| **`generate_resource_catalog.py`** | Reads `docs/scm-api/specs/ngfw-*.yaml`, finds every folder-scoped list `GET`, subtracts endpoints already covered by an explicit `show` command (via each doc's front-matter `api:`), and writes the remainder. The factory in `app/commands/generated.py` turns each into an always-on `show <resource>` command. **100% NGFW coverage with zero hand code.** | `docsupdate.py`; manual; `--check` in smoke §3 | `app/commands/resource_catalog.py` |
+| **`generate_resource_catalog.py`** | Reads every pulled OpenAPI spec and writes generated command metadata for `GET`, `POST`, `PUT`/`PATCH`, and `DELETE`. The factory in `app/commands/generated.py` turns entries into feature-gated `show` / `set` / `update` / `delete` commands. | `docsupdate.py`; manual; `--check` in smoke §3 | `app/commands/resource_catalog.py` |
+| **`generate_feature_flags.py`** | Regenerates `settings/features.json` from the generated endpoint catalog plus explicit command flags. Existing states are preserved; newly discovered flags default to `false`. | `docsupdate.py`; manual; `--check` in smoke §6 | `settings/features.json` |
 | **`generate_command_docs.py`** | Ensures every registered command has YAML front-matter in `docs/commands/<slug>.md` (adds it without clobbering a human-edited body), then rebuilds the command index + API reference. Front-matter is the single source of truth for `?`/`help`. | `docsupdate.py`; manual; `--check` in smoke §10 | `docs/commands/*.md`, `index.md`, `api-reference.md` |
 | **`generate_code_map.py`** | Maps method → line-range for files ≥ ~300 lines so agents read only the needed range. | pre-commit hook (when `app/*.py` staged); manual after big edits; drift-checked by smoke §11 | `dev/CODE_MAP.md` |
 | **`smoke_test.py`** | Fast structural test suite (11 sections: syntax, imports, registry integrity, arg parser, config, formatter, banner, inline-help/builtin alignment, theme, command-doc coverage, code-map freshness). No network/auth/mocks. Supports `--only N,…` and `--file <path>`. | pre-commit hook; manual (run after any `app/` change) | exit 0/1 |
 | **`scaffold.py`** | Generates a new command's handler stub + `CommandDef` entry + doc file from one line. | manual | new files under `app/commands/` + `docs/commands/` |
 | **`install_hooks.sh`** | Installs the git pre-commit hook (auto-refresh `CODE_MAP.md` + run smoke). Run once per clone. | manual (once) | `.git/hooks/pre-commit` |
-| **`extract_variants.py`** | **Ad-hoc, not wired into any flow.** One-off helper that lists `oneOf`/`anyOf` type variants across the specs — used originally to decide which `set` commands need subtype docs. Safe to delete; kept as an occasional diagnostic. | manual only | stdout |
 
 ## Data & generated files in `dev/`
 
@@ -97,6 +97,7 @@ These generators write into the app/docs tree (that is intentional — the outpu
 ship with ARC; only the generators are dev-only):
 
 - `app/commands/resource_catalog.py` ← `generate_resource_catalog.py` (auto-generated; do not hand-edit)
+- `settings/features.json` ← `generate_feature_flags.py` (generated; edit flag values only)
 - `docs/commands/*.md`, `index.md`, `api-reference.md` ← `generate_command_docs.py`
 - `docs/scm-api/**` ← `docsupdate.py`
 - `dev/API_INDEX.md`, `dev/CODE_MAP.md` ← their generators

@@ -144,6 +144,13 @@ class ArcCompleter(Completer):
     def __init__(self, shell: "ArcShell") -> None:
         self._shell = shell
 
+    def _command_visible(self, key: str) -> bool:
+        """Return True when a registered command is visible in this shell mode."""
+        command_def = COMMANDS.get(key)
+        if command_def is None:
+            return False
+        return is_enabled(self._shell._features, command_def.feature_flag, self._shell._dev_mode)
+
     def get_completions(self, document, complete_event):
         raw = document.text_before_cursor.lstrip()
         # Normalize internal whitespace: multiple spaces and tabs → single space.
@@ -226,11 +233,19 @@ class ArcCompleter(Completer):
         if first == "feature" and has_arg_space:
             second = parts[1].lower() if len(parts) > 1 else ""
             if len(parts) <= 2:
-                # Complete subcommands: show, enable, disable, help
-                for sub in ("show", "enable", "disable", "help"):
+                # Complete subcommands: show, enable, disable, dev, help
+                for sub in ("show", "enable", "disable", "dev", "help"):
                     if sub.startswith(partial_arg.lower()):
                         yield Completion(sub, start_position=-len(partial_arg))
-            elif second in ("enable", "disable") and len(parts) <= 3:
+            elif second == "show" and len(parts) <= 3:
+                partial_filter = parts[2] if len(parts) > 2 else ""
+                for option in ("on", "off", "dev"):
+                    if option.startswith(partial_filter.lower()):
+                        yield Completion(option, start_position=-len(partial_filter), display_meta="filter")
+                for flag in sorted(self._shell._features):
+                    if flag.startswith(partial_filter.lower()):
+                        yield Completion(flag, start_position=-len(partial_filter), display_meta="feature")
+            elif second in ("enable", "disable", "dev") and len(parts) <= 3:
                 # Complete feature flag names from settings/features.json
                 flag_dict = self._shell._features
                 partial_flag = parts[2] if len(parts) > 2 else ""
@@ -385,7 +400,7 @@ class ArcCompleter(Completer):
         # ---- Default: command-name prefix completion (still typing the command) ----
         text_trim = text.rstrip(" ")
         include_remote_suffix = " --" in text
-        full_is_command = text_trim in COMMANDS
+        full_is_command = text_trim in COMMANDS and self._command_visible(text_trim)
         for name in sorted(self._all_commands(include_remote_suffix=include_remote_suffix)):
             if name == text_trim:
                 continue
@@ -425,7 +440,7 @@ class ArcCompleter(Completer):
         lowered = [p.lower() for p in parts]
         for n in range(len(parts), 0, -1):
             key = " ".join(lowered[:n])
-            if key in COMMANDS:
+            if key in COMMANDS and self._command_visible(key):
                 if n < len(parts) or ends_with_space:
                     return key
                 return None
@@ -458,6 +473,8 @@ class ArcCompleter(Completer):
         # 1. Sub-command next tokens — keys that extend this command by more tokens.
         for ckey in COMMANDS:
             if ckey == key or not ckey.startswith(key + " "):
+                continue
+            if not self._command_visible(ckey):
                 continue
             sub = ckey.split()[len(key_tokens):]
             if len(typed) < len(sub) and sub[:len(typed)] == typed:
@@ -493,7 +510,7 @@ class ArcCompleter(Completer):
         if spec is not None:
             return command_structure.completion_options(spec, typed)
         cmd = COMMANDS.get(key)
-        if cmd and cmd.usage:
+        if cmd and cmd.usage and self._command_visible(key):
             return [
                 {"text": opt, "display": opt, "meta": meta}
                 for opt, meta in _usage_options(cmd.usage, key, typed)
@@ -503,7 +520,7 @@ class ArcCompleter(Completer):
 
     def _all_commands(self, include_remote_suffix: bool) -> list[str]:
         builtins = list(_SHELL_BUILTINS)
-        commands = list(COMMANDS.keys())
+        commands = [key for key in COMMANDS if self._command_visible(key)]
         if not include_remote_suffix:
             return builtins + commands
         with_remote = [f"{c} --remote" for c in commands]

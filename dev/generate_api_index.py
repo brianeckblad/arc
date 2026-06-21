@@ -18,10 +18,12 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 ROOT       = Path(__file__).resolve().parent.parent
 SPECS_DIR  = ROOT / "docs" / "scm-api" / "specs"
 OUT_FILE   = ROOT / "dev" / "API_INDEX.md"
+COMMAND_DOCS_DIR = ROOT / "docs" / "commands"
 
 # ---------------------------------------------------------------------------
 # Known ARC CLI commands (from app.commands.registry.COMMANDS).
@@ -49,6 +51,62 @@ _ARC_COMMANDS: dict[str, str] = {
     "jobs":                     "show jobs all / show jobs id",
     "config-versions":          "commit",
 }
+
+
+def _strip_known_prefixes(path: str) -> str:
+    for prefix in (
+        "/config/objects/v1",
+        "/config/security/v1",
+        "/config/setup/v1",
+        "/config/network/v1",
+        "/config/identity/v1",
+        "/config/device/v1",
+        "/config/setup/device-onboarding/v1",
+        "/config/operations/v1",
+        "/operations/v1",
+        "/auth/v1",
+        "/iam/v1",
+        "/tenancy/v1",
+        "/subscription/v1",
+    ):
+        if path.startswith(prefix):
+            return path[len(prefix):].lstrip("/")
+    return path.lstrip("/")
+
+
+def _resource_key(path_or_url: str) -> str:
+    parsed = urlparse(path_or_url)
+    path = parsed.path if parsed.scheme else path_or_url
+    resource = _strip_known_prefixes(path)
+    resource = resource.split("/{")[0]
+    resource = resource.split(":")[0]
+    parts = [p for p in resource.split("/") if p and p not in {"operations"}]
+    if len(parts) >= 2 and parts[1].lower().startswith("v") and parts[1][1:].replace(".", "").isdigit():
+        parts = parts[2:]
+    return "/".join(parts)
+
+
+def _front_matter_commands() -> dict[str, list[str]]:
+    """Return resource path → command names from docs/commands front-matter."""
+    try:
+        from app.settings.command_help import parse_front_matter
+    except Exception:  # noqa: BLE001
+        return {}
+    mapping: dict[str, list[str]] = {}
+    for doc in COMMAND_DOCS_DIR.glob("*.md"):
+        meta, _body = parse_front_matter(doc.read_text(encoding="utf-8"))
+        command = str(meta.get("command") or "").strip()
+        api = str(meta.get("api") or "").strip()
+        if not command or not api or api.startswith("("):
+            continue
+        parts = api.split()
+        if len(parts) < 2:
+            continue
+        key = _resource_key(parts[-1])
+        if not key:
+            continue
+        mapping.setdefault(key, []).append(command)
+    return mapping
 
 # SSH command vocabulary (PAN-OS operational CLI → for --remote execution)
 _SSH_MAP: dict[str, str] = {
@@ -140,6 +198,7 @@ def _parse_spec(yaml_path: Path) -> dict:
 
 def _build_index(specs: list[dict]) -> str:
     """Build the compact markdown index."""
+    doc_commands = _front_matter_commands()
     lines: list[str] = [
         "# ARC API Index — Compact Endpoint Reference",
         "<!--",
@@ -174,10 +233,18 @@ def _build_index(specs: list[dict]) -> str:
         for resource, methods in sorted(resources.items()):
             methods_str = _methods_str(methods)
 
-            # Look up ARC implementation
+            # Look up ARC implementation from generated command docs first,
+            # then fall back to the small hand-written legacy map.
             arc_cmd = "—"
+            resource_key = _resource_key(resource)
+            if resource_key in doc_commands:
+                commands = sorted(set(doc_commands[resource_key]))
+                arc_cmd = "✓ " + " / ".join(commands[:3])
+                if len(commands) > 3:
+                    arc_cmd += f" / +{len(commands) - 3} more"
+
             for key, cmd in _ARC_COMMANDS.items():
-                if key in resource:
+                if arc_cmd == "—" and key in resource:
                     arc_cmd = f"✓ {cmd}"
                     break
 

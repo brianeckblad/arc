@@ -2,24 +2,57 @@
 <!-- Gitignored. Read by all agents at session start. Updated automatically. -->
 
 ## Current Work
-**Goal:** Rename dev/ scripts to clearer, command-like names + post-feature cleanup.
+**Goal:** Expand SCM OpenAPI-derived endpoint coverage and regenerate feature flags.
 **Branch:** main
 **Status:** done
 
 **Recent progress:**
-- Renamed dev scripts (kept in dev/) so runnable ones read like commands:
-  - `update_scm_docs.py` → `docsupdate.py` (matches the `docsupdate` trigger word)
-  - `gen_api_index.py` → `generate_api_index.py`
-  - `gen_resource_catalog.py` → `generate_resource_catalog.py`
-  - `gen_command_docs.py` → `generate_command_docs.py`
-  - `gen_code_map.py` → `generate_code_map.py`
-  - kept: `scaffold.py`, `smoke_test.py`, `install_hooks.sh`, `extract_variants.py`
-  Updated all 28 referencing files (AGENTS/copilot, README.dev, dev/README, prompt,
-  settings/README, RENDER_CATALOG, smoke loads + messages, docsupdate subprocess
-  strings, install_hooks + installed .git/hooks/pre-commit, generated headers).
-- Verified: docsupdate --self-test 11/11; generate_resource_catalog/--check &
-  generate_command_docs/--check pass; smoke 136/136; zero old-name references left.
-- Earlier this turn: dead-code cleanup (ruff-audited) + dev/README.md added.
+- Expanded `dev/docsupdate.py` + `dev/scm_sources.json` beyond the old NGFW subset to pull Cloud NGFW, ADNSR, CDU/G, CIE-DSS, incidents, NGTS TLS Protect, Posture Management, SASE, IAM, subscription, tenancy, auth, NGFW config, and NGFW operations specs.
+- Added future-spec discovery to `dev/docsupdate.py`: with `mirror_all_specs=true`, it now scans the live pan.dev OpenAPI tree and adds brand-new SCM spec files to the source registry automatically, not just endpoints inside already-known specs.
+- Fixed docsupdate raw GitHub URL encoding so source paths with spaces (for example `Posture APIs-updated.yaml`) download correctly.
+- Reworked `dev/generate_resource_catalog.py` from GET-only NGFW list coverage into a full operation catalog for GET/POST/PUT/PATCH/DELETE. Generated commands map to `show` / `set` / `update` / `delete`, are shortened to fit inline help, and are feature-gated.
+- Added `dev/generate_feature_flags.py`; `settings/features.json` is now generated from the endpoint catalog + explicit `CommandDef.feature_flag` values. Current result: 1,090 flags, all default `false`.
+- Updated `dev/generate_feature_flags.py` so `settings/features.json` is readable: top-level acronym glossary, category sections, one compact resource label per feature (for example `_ngts_cert_requests`: `Next-Generation Trust Security: cert_requests` or `_tenancy_tenant_service_groups`: `Tenant Service Groups / tenancy: tenant_service_groups`), and flags directly underneath in `show` → `set/create` → `update` → `delete` order. Removed numbered `_feature_0559` / `_action_*` generated-comment clutter and verbose source/action summaries. Existing states are preserved; newly discovered flags default `false`.
+- Updated `app/commands/generated.py` so generated commands are real `CommandDef`s with generic API execution. GET works directly; generated write commands accept `json <payload>` or `file <path>` and still require configure mode via existing shell guards.
+- Clarified `settings/command-structure.csv` is curated-only, not a full list of generated commands. It currently covers the friendly `set address` parser; generated OpenAPI commands use `CommandDef.usage` fallback for Tab/help.
+- Fixed generated write command usage to `json|file <payload-or-path>` so generic set/update commands tab-complete payload mode correctly without CSV rows. Updated `dev/generate_command_docs.py` so generated command front-matter refreshes from `resource_catalog.py` and cannot keep stale usage overrides.
+- Hid disabled feature commands from the end-user shell path. Disabled commands are filtered out of shorthand expansion, tab completion, command docs, structured help, `help all`, and dispatch. If typed manually (for example `set address ...` while `create_address=false`), ARC now treats it as `Unknown command` instead of exposing the feature flag or configure-mode hint.
+- Updated the `feature` command UX: `feature show on|off|dev|<name>` filters flags by state or name; `show feature on|off|dev|<name>` is an alias. `feature enable|disable|dev <flag>` now writes the change to `settings/features.json` immediately instead of being session-only. Tab completion includes `feature show` filters and `feature dev`.
+- Ran stale-component cleanup: updated stale docs/instructions that still described generated commands as ungated/always-on show-only coverage (`docs/architecture.md`, `dev/DOCS_AGENT.md`, `dev/README.md`, `README.dev.md`, `AGENTS.md`, `.github/copilot-instructions.md`, `prompt.md`, smoke comments). Removed obsolete orphan `dev/extract_variants.py` (hard-coded old `ngfw-*.yaml` subset and documented safe to delete). Removed unreachable code in `app/utils/formatter.py` and unused locals/imports in `dev/scaffold.py` / `dev/smoke_test.py`. Added a ruff per-file ignore for the intentional `app/shell/_base.py` re-export spine.
+- Added `SCMClient.request_api()` for catalog-derived generic requests and added `json`/`file` parser keywords.
+- Updated `dev/generate_command_docs.py` and `dev/generate_api_index.py` so command docs/API index derive generated endpoint mappings from `resource_catalog.py` + command front-matter instead of stale static tables.
+- Ran expanded `python dev/docsupdate.py`: pulled 42 specs, regenerated catalog/docs/features/API index. Final generated state: 1,040 generated endpoint entries, 1,135 registered commands, 1,090 feature flags.
+- Validation: `get_errors` clean for edited app files (known shell mixin/star-import IDE noise ignored); `python -m py_compile dev/docsupdate.py`, `python dev/docsupdate.py --self-test`, `python dev/docsupdate.py --check`, `python dev/generate_feature_flags.py --check`, `python dev/generate_command_docs.py --check`, `python -m ruff check app dev --select F401,F841,F821`, and `python dev/smoke_test.py` pass. Full smoke: 139/139. Runtime checks: disabled `set address ...` returns `Unknown command`; feature enable/disable writes to `settings/features.json` and test restores the original file.
+
+**Key decisions:**
+- New endpoint/command feature flags default to `false` (fail closed) as requested.
+- Explicit hand-written commands still override generated commands; generated commands cover the long tail and stay hidden until enabled.
+- Write commands are generated, but safe generic execution requires raw JSON/file payload because endpoint-specific body builders still belong in curated command modules.
+
+**Files in play:**
+- `dev/docsupdate.py`, `dev/scm_sources.json` — expanded upstream spec sources + URL encoding + generation chain.
+- `dev/generate_resource_catalog.py`, `app/commands/resource_catalog.py`, `app/commands/generated.py` — spec operation catalog and generated commands.
+- `dev/generate_feature_flags.py`, `settings/features.json`, `docs/commands/features.md` — generated feature defaults, descriptions, glossary, and feature-first ordering.
+- `dev/generate_command_docs.py`, `dev/generate_api_index.py`, `docs/commands/*`, `dev/API_INDEX.md`, `docs/scm-api/*` — regenerated docs/index/reference.
+- `app/api/client.py`, `app/commands/registry.py` — generic API request and parser payload keywords.
+- `settings/command-structure.csv`, `app/settings/command_structure.py`, `app/commands/generated.py`, `dev/smoke_test.py` — curated structured parser docs + generated usage fallback validation.
+
+**Open questions / blockers:**
+- None for this pass. Future refinement: add curated body builders/argument schemas for high-priority generated write commands instead of raw JSON payloads.
+
+---
+
+## Previous Work
+
+**Goal:** Enforce configure mode requirement for write operations (set/update/delete).
+**Status:** done
+
+**Recent progress:**
+- Added configure-mode enforcement for set/update/delete commands in `app/shell/dispatch.py`.
+- All three write verbs now check `self._state.configure_mode` before processing.
+- Clear error message: "The {verb} command is only available in configure mode. Type configure to enter configure mode."
+- Verified: smoke 71/71 (targeted 1,2,3); interactive tests confirm blocking works outside configure mode and commands work inside configure mode.
+- This implements context-aware mode enforcement as documented in AGENTS.md "Everything is context-aware by default" and "Configure mode owns all write/change operations".
 
 **dev/ now:** docsupdate.py · generate_{api_index,resource_catalog,command_docs,code_map}.py
 · scaffold.py · smoke_test.py · install_hooks.sh · extract_variants.py (orphan).

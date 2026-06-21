@@ -1,26 +1,24 @@
 #!/usr/bin/env python3
-"""Generate app/commands/resource_catalog.py from the pulled SCM specs.
+"""Generate app/commands/resource_catalog.py from every pulled SCM OpenAPI spec.
 
-ARC aims for **100% coverage** of NGFW config list endpoints: every folder-scoped
-``GET`` collection in the pulled OpenAPI specs should be reachable as a
-``show <resource>`` command.  Hand-writing a method + handler per resource does
-not scale, so instead:
+The catalog is ARC's endpoint coverage ledger.  Each GET/POST/PUT/PATCH/DELETE
+operation becomes command metadata with a deterministic feature flag:
 
-  1. This script reads ``docs/scm-api/specs/ngfw-*.yaml`` and extracts every
-     folder-scoped collection ``GET`` endpoint.
-  2. It subtracts the resources already covered by an explicit ``show`` command
-     (matched via each command doc's front-matter ``api:`` path).
-  3. The remainder is written to ``app/commands/resource_catalog.py`` — and the
-     generic factory in ``app/commands/generated.py`` turns each into a real
-     (ungated, always-on) ``show <resource>`` command.
+* GET    → ``show <resource>`` / ``show_<resource>``
+* POST   → ``set <resource>`` / ``create_<resource>``
+* PUT    → ``update <resource>`` / ``update_<resource>``
+* PATCH  → ``update <resource>`` / ``update_<resource>``
+* DELETE → ``delete <resource>`` / ``delete_<resource>``
 
-Run on every ``docsupdate`` so new pan.dev endpoints become commands
-automatically.  ``--check`` reports drift (new uncovered endpoints) without
-writing, and is used by the smoke test.
+Generated commands are feature-gated and default OFF in ``settings/features.json``.
+Explicit hand-written commands still win; this generator skips default NGFW
+endpoints already covered by command doc front-matter and prefixes non-default
+families (for example ``cloudngfw`` / ``sase`` / ``iam``) to avoid collisions.
 """
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -30,37 +28,177 @@ sys.path.insert(0, str(REPO_ROOT))
 SPECS_DIR = REPO_ROOT / "docs" / "scm-api" / "specs"
 COMMAND_DOCS_DIR = REPO_ROOT / "docs" / "commands"
 CATALOG_FILE = REPO_ROOT / "app" / "commands" / "resource_catalog.py"
+HTTP_METHODS = {"get", "post", "put", "patch", "delete"}
 
-# Folder-scoped NGFW config domains we auto-expose (spec file → domain key used
-# by SCMClient.get_config).  Device-settings and live-ops are intentionally not
-# folder-scoped collections and are handled by explicit commands.
-_DOMAIN_SPECS = {
-    "objects": "ngfw-objects.yaml",
-    "security": "ngfw-security.yaml",
-    "network": "ngfw-network.yaml",
-    "identity": "ngfw-identity.yaml",
+_ACTION_BY_METHOD = {
+    "get": "show",
+    "post": "set",
+    "put": "update",
+    "patch": "update",
+    "delete": "delete",
 }
 
-_DOMAIN_BASE_PATH = {
-    "objects": "/config/objects/v1",
-    "security": "/config/security/v1",
-    "network": "/config/network/v1",
-    "identity": "/config/identity/v1",
+_FLAG_BY_METHOD = {
+    "get": "show",
+    "post": "create",
+    "put": "update",
+    "patch": "update",
+    "delete": "delete",
 }
 
+_VERSION_TOKEN = re.compile(r"^v\d+(?:\.\d+)?$", re.IGNORECASE)
+_PATH_PARAM = re.compile(r"{([^}]+)}")
 
-def _collection_paths(spec: dict) -> list[str]:
-    """Return folder-scoped collection GET paths (no path parameters)."""
-    out = []
-    for path, ops in (spec.get("paths") or {}).items():
-        if "get" not in {k.lower() for k in ops} or "{" in path:
+_ABBREVIATIONS = {
+    "advanced-device-objects": "adv-device-objs",
+    "approvalrules": "approval",
+    "bgp-address-family-profiles": "bgp-af-profiles",
+    "bgp-redistribution-profiles": "bgp-redist-profiles",
+    "bgp-route-map-redistributions": "bgp-routemap-redist",
+    "certificateinstances": "cert-instances",
+    "certificates": "certs",
+    "connection-sources": "conn-sources",
+    "certificateinstancesearch": "cert-instance-search",
+    "certificateissuingtemplates": "cert-templates",
+    "certificaterequests": "cert-requests",
+    "certificaterequestssearch": "cert-request-search",
+    "credentialmanagerconfigurations": "credential-configs",
+    "device-context-segments": "device-contexts",
+    "distributedissuers": "dist-issuers",
+    "domainssynchronization": "domains-sync",
+    "expirationnotifications": "exp-notifications",
+    "expirationreports": "exp-reports",
+    "forwarding-profile-regional-and-custom-proxies": "fp-custom-proxies",
+    "forwarding-profile-destinations": "fp-destinations",
+    "forwarding-profile-source-applications": "fp-source-apps",
+    "forwarding-profile-user-locations": "fp-user-locations",
+    "globalprotect-match-list": "gp-match-list",
+    "interface-management-profiles": "if-mgmt-profiles",
+    "intermediatecertificates": "intermediate-certs",
+    "inventorymonitoringconfig": "inventory-monitoring",
+    "misconfigured-domains": "bad-domains",
+    "network-packet-broker-profiles": "npb-profiles",
+    "network-packet-broker-rules": "npb-rules",
+    "remote-networks-license-info": "rn-license-info",
+    "revocations": "revokes",
+    "route-path-access-lists": "route-path-acls",
+    "sdwan-error-correction-profiles": "sdwan-error-profiles",
+    "sdwan-path-quality-profiles": "sdwan-path-profiles",
+    "sdwan-saas-quality-profiles": "sdwan-saas-profiles",
+    "sdwan-traffic-distribution-profiles": "sdwan-traffic-profiles",
+    "tenantconfiguration": "tenant-config",
+    "trusted-certificate-authorities": "trusted-cas",
+    "vulnerability-protection-profiles": "vuln-profiles",
+    "vulnerability-protection-signatures": "vuln-signatures",
+    "verify-update": "verify",
+    "wildfire-anti-virus-profiles": "wildfire-profiles",
+    "zone-protection-profiles": "zone-profiles",
+}
+
+_NOISE_BY_SPEC_PREFIX = {
+    "adnsr": {"adns-resolver", "config"},
+    "cdug": {"directory-sync"},
+    "ciedss": {"cie", "directory-sync"},
+    "ngts": {"tlsprotect", "outagedetection"},
+    "posture": {"posture", "checks"},
+}
+
+_DOMAIN_NOISE = {"identity", "network", "objects", "operations", "security", "setup"}
+
+
+def _load_yaml(path: Path) -> dict:
+    import yaml
+
+    return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+
+
+def _category_prefix(spec_key: str) -> str:
+    """Return a command prefix for non-default product/API families."""
+    if spec_key.startswith("ngfw-") or spec_key in {"auth", "tenancy", "iam-service-accounts"}:
+        return ""
+    if spec_key.startswith("cloudngfw-"):
+        return "cngfw"
+    return spec_key.split("-")[0]
+
+
+def _category(spec_key: str) -> str:
+    if spec_key.startswith("ngfw-"):
+        return spec_key.removeprefix("ngfw-")
+    return spec_key.split("-")[0]
+
+
+def _normalize_token(token: str) -> str:
+    token = token.strip().strip(":").replace("_", "-")
+    token = re.sub(r"[^a-zA-Z0-9-]+", "-", token)
+    token = re.sub(r"-+", "-", token).strip("-")
+    token = token.lower()
+    return _ABBREVIATIONS.get(token, token)
+
+
+def _resource_tokens(spec_key: str, path: str, method: str) -> list[str]:
+    """Build readable command tokens from an OpenAPI path."""
+    raw_parts = [part for part in path.strip("/").split("/") if part]
+
+    # Drop leading product/version path prefixes for APIs whose server URL does
+    # not include them, e.g. /iam/v1/service_accounts -> service-accounts.
+    while raw_parts and (raw_parts[0] in {"auth", "iam", "tenancy", "subscription"}):
+        raw_parts.pop(0)
+        if raw_parts and _VERSION_TOKEN.match(raw_parts[0]):
+            raw_parts.pop(0)
+    if raw_parts and _VERSION_TOKEN.match(raw_parts[0]):
+        raw_parts.pop(0)
+
+    tokens: list[str] = []
+    path_has_params = False
+    noise = set()
+    for prefix, noise_tokens in _NOISE_BY_SPEC_PREFIX.items():
+        if spec_key.startswith(prefix):
+            noise.update(noise_tokens)
+
+    for part in raw_parts:
+        base, sep, action = part.partition(":")
+        if _PATH_PARAM.fullmatch(base):
+            path_has_params = True
+        elif base != "operations" and not _VERSION_TOKEN.match(base):
+            normalized = _normalize_token(base)
+            if normalized and normalized not in noise:
+                tokens.append(normalized)
+        if sep and action:
+            normalized_action = _normalize_token(action)
+            if normalized_action:
+                tokens.append(normalized_action)
+
+    # /{id}/operations/reset style paths should expose the operation name, not
+    # the literal implementation bucket "operations".
+    if "operations" in raw_parts:
+        tail = _normalize_token(raw_parts[-1].split(":")[-1])
+        if tail and tail not in tokens and not _PATH_PARAM.fullmatch(raw_parts[-1]):
+            tokens.append(tail)
+
+    if spec_key.startswith(("cloudngfw-", "sase-")) and tokens and tokens[0] in _DOMAIN_NOISE:
+        tokens.pop(0)
+
+    if method == "get" and path_has_params:
+        tokens.append("id")
+    return tokens or ["root"]
+
+
+def _path_params(path: str) -> list[str]:
+    return _PATH_PARAM.findall(path)
+
+
+def _query_params(spec: dict, path_item: dict, operation: dict) -> list[str]:
+    params = []
+    for entry in list(path_item.get("parameters") or []) + list(operation.get("parameters") or []):
+        if not isinstance(entry, dict) or "$ref" in entry:
             continue
-        out.append(path)
-    return sorted(out)
+        if entry.get("in") == "query" and entry.get("name"):
+            params.append(str(entry["name"]))
+    return sorted(set(params))
 
 
-def _covered_collection_paths() -> set[str]:
-    """Full paths already listed by an explicit ``show`` command (front-matter)."""
+def _covered_default_signatures() -> set[str]:
+    """Method/path signatures already covered by explicit default NGFW commands."""
     from app.settings.command_help import parse_front_matter
 
     covered: set[str] = set()
@@ -69,45 +207,77 @@ def _covered_collection_paths() -> set[str]:
         if not text.startswith("---"):
             continue
         meta, _ = parse_front_matter(text)
-        command = str(meta.get("command", ""))
         api = str(meta.get("api", ""))
-        if not command.startswith("show ") or "/config/" not in api:
+        if "/config/" not in api:
             continue
-        # api looks like "GET /config/objects/v1/addresses" — keep the path,
-        # drop the method and any trailing /{id}.
-        path = api.split()[-1]
-        path = path.split("/{")[0].rstrip("/")
-        covered.add(path)
+        parts = api.split()
+        if len(parts) < 2:
+            continue
+        method = parts[0].lower()
+        path = parts[-1].rstrip("/")
+        # Drop known base prefixes so it matches spec-local paths.
+        for prefix in (
+            "/config/objects/v1",
+            "/config/security/v1",
+            "/config/setup/v1",
+            "/config/network/v1",
+            "/config/identity/v1",
+            "/config/device/v1",
+            "/config/operations/v1",
+            "/operations/v1",
+        ):
+            if path.startswith(prefix):
+                path = path[len(prefix):] or "/"
+                break
+        covered.add(f"{method.upper()} {path}")
     return covered
 
 
 def _build_catalog() -> list[dict]:
-    """Return uncovered {command, domain, path, category} entries from the specs."""
-    import yaml
-
-    covered = _covered_collection_paths()
+    """Return generated operation entries from every pulled OpenAPI spec."""
+    covered = _covered_default_signatures()
     entries: list[dict] = []
     seen_commands: set[str] = set()
-    for domain, spec_name in _DOMAIN_SPECS.items():
-        spec_path = SPECS_DIR / spec_name
-        if not spec_path.exists():
-            continue
-        spec = yaml.safe_load(spec_path.read_text(encoding="utf-8")) or {}
-        base = _DOMAIN_BASE_PATH[domain]
-        for resource_path in _collection_paths(spec):
-            full_path = base + resource_path
-            if full_path in covered:
+    seen_operations: set[tuple[str, str, str]] = set()
+    for spec_path in sorted(SPECS_DIR.glob("*.yaml")):
+        spec_key = spec_path.stem
+        spec = _load_yaml(spec_path)
+        base_url = (spec.get("servers") or [{}])[0].get("url", "")
+        prefix = _category_prefix(spec_key)
+        category = _category(spec_key)
+        for path, path_item in (spec.get("paths") or {}).items():
+            if not isinstance(path_item, dict):
                 continue
-            command = "show " + resource_path.strip("/").replace("/", " ")
-            if command in seen_commands:
-                continue
-            seen_commands.add(command)
-            entries.append({
-                "command": command,
-                "domain": domain,
-                "path": resource_path,
-                "category": domain,
-            })
+            for method, operation in path_item.items():
+                method = method.lower()
+                if method not in HTTP_METHODS or not isinstance(operation, dict):
+                    continue
+                operation_signature = (method, base_url, path)
+                if operation_signature in seen_operations:
+                    continue
+                seen_operations.add(operation_signature)
+                if spec_key.startswith("ngfw-") and f"{method.upper()} {path.rstrip('/')}" in covered:
+                    continue
+                tokens = _resource_tokens(spec_key, path, method)
+                command_tokens = [prefix] + tokens if prefix else tokens
+                command = f"{_ACTION_BY_METHOD[method]} {' '.join(command_tokens)}"
+                if command in seen_commands:
+                    command = f"{_ACTION_BY_METHOD[method]} {spec_key.replace('cloudngfw', 'cngfw').replace('-', ' ')} {' '.join(tokens)}"
+                seen_commands.add(command)
+                resource_flag = "_".join(command_tokens)
+                feature_flag = f"{_FLAG_BY_METHOD[method]}_{resource_flag}".replace("-", "_")
+                entries.append({
+                    "command": command,
+                    "method": method.upper(),
+                    "base_url": base_url,
+                    "path": path,
+                    "path_params": _path_params(path),
+                    "query_params": _query_params(spec, path_item, operation),
+                    "feature_flag": feature_flag,
+                    "category": category,
+                    "spec": spec_key,
+                    "summary": str(operation.get("summary") or "").strip(),
+                })
     return sorted(entries, key=lambda e: e["command"])
 
 
@@ -115,9 +285,9 @@ def _render(entries: list[dict]) -> str:
     lines = [
         '"""Auto-generated NGFW resource catalog — DO NOT EDIT BY HAND.',
         "",
-        "Generated by ``dev/generate_resource_catalog.py`` from the pulled SCM specs.",
-        "Each entry becomes a generic, always-on ``show <resource>`` command via",
-        "``app/commands/generated.py``.  Regenerate with:",
+        "Generated by ``dev/generate_resource_catalog.py`` from the pulled SCM OpenAPI specs.",
+        "Each entry becomes a feature-gated generated command via ``app/commands/generated.py``.",
+        "Regenerate with:",
         "    python dev/generate_resource_catalog.py   (runs automatically on docsupdate)",
         '"""',
         "",
@@ -126,10 +296,7 @@ def _render(entries: list[dict]) -> str:
         "CATALOG: list[dict] = [",
     ]
     for e in entries:
-        lines.append(
-            f'    {{"command": {e["command"]!r}, "domain": {e["domain"]!r}, '
-            f'"path": {e["path"]!r}, "category": {e["category"]!r}}},'
-        )
+        lines.append(f"    {e!r},")
     lines.append("]")
     lines.append("")
     return "\n".join(lines)
@@ -156,8 +323,7 @@ def main() -> int:
         return 0
 
     CATALOG_FILE.write_text(rendered, encoding="utf-8")
-    print(f"Wrote app/commands/resource_catalog.py — {len(entries)} auto-generated "
-          "show command(s) for uncovered NGFW config endpoints")
+    print(f"Wrote app/commands/resource_catalog.py — {len(entries)} generated endpoint command(s)")
     return 0
 
 

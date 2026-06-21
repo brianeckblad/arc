@@ -21,20 +21,23 @@
 
 The agent instructions describe architecture and coding rules. The `docs/` folder is the user manual. ARC reads Markdown from `docs/` at runtime and renders it in the CLI.
 
-## API coverage — 100%, always
+## API coverage — generated and feature-gated
 
-ARC's goal is full coverage of the NGFW configuration API: **every folder-scoped
-list endpoint in the SCM specs is reachable as a `show <resource>` command.**
+ARC's goal is broad coverage of the pulled SCM OpenAPI surface: generated command
+metadata is created for `GET`, `POST`, `PUT`/`PATCH`, and `DELETE` operations.
 
-- Curated commands (e.g. `show address`, `show security policy`) have rich
-  formatting and live in `app/commands/*.py`.
-- Every *other* list endpoint is exposed automatically as a generic, always-on
-  `show <resource>` command — generated from the pulled specs, so nothing is
-  missing and nothing is hand-maintained per resource.
-- When the API specs are refreshed (`arc docs` / the `docsupdate` workflow), new
-  endpoints become commands automatically.
+- Curated commands (e.g. `show address`, `set address`, `show security policy`)
+  have rich formatting/friendly argument parsing and live in `app/commands/*.py`.
+- Generated commands cover the long tail from `app/commands/resource_catalog.py`.
+  `GET` maps to `show`, `POST` maps to `set`, `PUT`/`PATCH` maps to `update`, and
+  `DELETE` maps to `delete`.
+- Generated commands are feature-gated through `settings/features.json` and new
+  flags default to `false`, so API surface stays hidden until intentionally
+  enabled.
+- When the API specs are refreshed (`docsupdate`), new endpoints become generated
+  commands, command docs, API-index entries, and feature flags automatically.
 
-So if Palo Alto adds a new object/policy/network/identity resource to the API,
-`show <that-resource>` works after the next docs refresh — you do not wait for a
-code change. Run `?` or `help commands` to see the full list.
+So if Palo Alto adds a new API resource, ARC learns about it after the next docs
+refresh. Enable the relevant feature flag when you are ready for operators to see
+the generated command.
 

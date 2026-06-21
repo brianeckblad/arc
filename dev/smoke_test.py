@@ -50,7 +50,7 @@ import sys
 import time
 import traceback
 from pathlib import Path
-from typing import Any
+from types import SimpleNamespace
 
 # Ensure the project root is on sys.path so `import app.*` works when the
 # script is invoked from any directory (e.g. `python dev/smoke_test.py`).
@@ -207,7 +207,7 @@ def test_imports() -> None:
         try:
             importlib.import_module(mod)
             ok(mod)
-        except Exception as exc:
+        except Exception:
             fail(mod, traceback.format_exc(limit=3).strip())
 
 
@@ -281,10 +281,11 @@ def test_registry() -> None:
                 f"expected {expected_key!r}, got {matched_key!r}",
             )
 
-    # 3g — 100% NGFW coverage: the generated resource catalog is in sync with the
-    #      pulled specs.  Every folder-scoped list endpoint must be covered by an
-    #      explicit command or an auto-generated one.  Drift = a new pan.dev
-    #      endpoint with no command; run: python dev/generate_resource_catalog.py
+    # 3g — Generated endpoint coverage: the generated resource catalog is in sync
+    #      with the pulled specs.  GET/POST/PUT/PATCH/DELETE operations are covered
+    #      by explicit commands or feature-gated generated command metadata.
+    #      Drift = a new pan.dev endpoint with no command metadata; run:
+    #      python dev/generate_resource_catalog.py
     import importlib.util as _ilu
     gen_path = ROOT / "dev" / "generate_resource_catalog.py"
     spec_mod = _ilu.spec_from_file_location("generate_resource_catalog", gen_path)
@@ -369,7 +370,7 @@ def test_token_optimizations() -> None:
 def test_config() -> None:
     section("6. Config types")
 
-    from app.config import ArcConfig, SSHConfig, SCMConfig
+    from app.config import ArcConfig, SCMConfig
 
     # 5a — Default-construct without errors
     try:
@@ -497,7 +498,7 @@ def test_formatter() -> None:
 
     # 6a — _kv_table with sample data
     try:
-        t = formatter._kv_table({"hostname": "fw01", "serial": "007200123456"}, title="Test")
+        formatter._kv_table({"hostname": "fw01", "serial": "007200123456"}, title="Test")
         ok("_kv_table() returns Rich Table")
     except Exception as exc:
         fail("_kv_table()", str(exc))
@@ -505,14 +506,14 @@ def test_formatter() -> None:
     # 6b — _list_table with sample rows
     try:
         rows = [{"name": "obj1", "type": "ip-netmask", "value": "10.0.0.0/8"}]
-        t = formatter._list_table(rows, title="Addresses")
+        formatter._list_table(rows, title="Addresses")
         ok("_list_table() returns Rich Table")
     except Exception as exc:
         fail("_list_table()", str(exc))
 
     # 6c — _list_table with empty rows (edge case — should not raise)
     try:
-        t = formatter._list_table([], title="Empty")
+        formatter._list_table([], title="Empty")
         ok("_list_table([]) handles empty list")
     except Exception as exc:
         fail("_list_table([]) raised unexpectedly", str(exc))
@@ -524,7 +525,7 @@ def test_formatter() -> None:
             {"name": "Production", "id": "2", "parent": "Shared"},
         ]
         devices: list[dict] = []
-        tree = formatter.format_folder_tree(folders, devices)
+        formatter.format_folder_tree(folders, devices)
         ok("format_folder_tree() returns Rich Tree")
     except Exception as exc:
         fail("format_folder_tree()", str(exc))
@@ -567,8 +568,6 @@ def test_banner_alignment() -> None:
     shell_src = (APP / "shell" / "prompt.py").read_text(encoding="utf-8")
 
     # Extract live banner lines from source
-    live_matches = _BANNER_PATTERN.findall(shell_src)
-
     # Filter to only the banner block (inside _print_banner method)
     # We use the section between the console.print( containing cd <device>
     start_marker = '"  [cyan]cd <device>[/cyan]'
@@ -726,6 +725,42 @@ def test_inline_help_alignment() -> None:
     else:
         fail("set address has no usage string — tab completion cannot guide it")
 
+    generated_write = next(
+        (
+            (key, cmd.usage)
+            for key, cmd in COMMANDS.items()
+            if key.startswith(("set ", "update ")) and "json|file" in cmd.usage
+        ),
+        None,
+    )
+    if generated_write:
+        key, usage = generated_write
+        payload_options = [o for o, _ in _usage_options(usage, key, [])]
+        if {"json", "file"}.issubset(payload_options):
+            ok(f"generated write usage fallback: {key!r} offers json|file")
+        else:
+            fail("generated write usage fallback missing json|file", f"key={key} options={payload_options}")
+    else:
+        fail("No generated set/update command exposes json|file usage fallback")
+
+    # Disabled feature commands must not appear in user-facing tab completion.
+    from app.shell.completer import ArcCompleter
+    hidden_shell = SimpleNamespace(_features={"create_address": "off"}, _dev_mode=False)
+    hidden_completer = ArcCompleter(hidden_shell)
+    hidden_commands = hidden_completer._all_commands(include_remote_suffix=False)
+    if "set address" not in hidden_commands:
+        ok("disabled feature command hidden from completion: set address")
+    else:
+        fail("disabled feature command leaked into completion", "set address was offered while create_address=off")
+
+    visible_shell = SimpleNamespace(_features={"create_address": "on"}, _dev_mode=False)
+    visible_completer = ArcCompleter(visible_shell)
+    visible_commands = visible_completer._all_commands(include_remote_suffix=False)
+    if "set address" in visible_commands:
+        ok("enabled feature command appears in completion: set address")
+    else:
+        fail("enabled feature command missing from completion", "set address was hidden while create_address=on")
+
     # 9f — Command-structure file (settings/command-structure.csv) drives the
     #      slot-by-slot completion for `set address`, and tokenization is
     #      quote-aware so a name with spaces ("this is a test") stays one token.
@@ -793,7 +828,7 @@ def test_theme() -> None:
 
     # 9a — ArcTheme default-constructs
     try:
-        t = ArcTheme()
+        ArcTheme()
         ok("ArcTheme() constructs with defaults")
     except Exception as exc:
         fail("ArcTheme() construction failed", str(exc))

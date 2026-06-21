@@ -15,7 +15,12 @@ class HelpMixin:
         lowered = [t.lower() for t in prefix_tokens]
         for count in range(len(lowered), 0, -1):
             key = " ".join(lowered[:count])
-            if key in COMMANDS and command_structure.arg_spec(key) is not None:
+            cmd_def = COMMANDS.get(key)
+            if (
+                cmd_def is not None
+                and self._is_command_available(key, cmd_def)
+                and command_structure.arg_spec(key) is not None
+            ):
                 return key, prefix_tokens[count:]
         return None, []
 
@@ -176,13 +181,16 @@ class HelpMixin:
 
         Called by  `<command> help`  and  `help <topic>`.
         """
-        # 1. Try docs/ Markdown page (covers commands, aliases, general topics).
-        if render_help_topic(console, topic):
-            return
-
-        # 2. Exact registry match — print description inline.
+        # 1. Exact registry match. Disabled feature commands are treated as not
+        # available, even if a generated Markdown page exists on disk.
         if topic in COMMANDS:
             cmd_def = COMMANDS[topic]
+            if not self._is_command_available(topic, cmd_def):
+                console.print(
+                    f"\n[yellow]No docs found for:[/yellow] [bold]{topic}[/bold]\n"
+                    "  Type [bold]?[/bold] for available commands.\n"
+                )
+                return
             api_note = (
                 "  [dim](API only — no SSH equivalent)[/dim]"
                 if cmd_def.ssh_command is None
@@ -193,6 +201,10 @@ class HelpMixin:
                 "  Append [bold]--remote[/bold] to run via SSH instead of the SCM API.\n"
             )
             self._print_context_hint_for(topic)
+            return
+
+        # 2. Try docs/ Markdown page (covers built-ins and general topics).
+        if render_help_topic(console, topic):
             return
 
         # 3. Nothing found.
@@ -218,8 +230,14 @@ class HelpMixin:
         ))
 
         for category, keys in sorted(CATEGORIES.items()):
+            available_keys = [
+                key for key in sorted(keys)
+                if self._is_command_available(key, COMMANDS[key])
+            ]
+            if not available_keys:
+                continue
             console.print(f"\n[bold yellow]{category.upper()}[/bold yellow]")
-            for k in sorted(keys):
+            for k in available_keys:
                 cmd = COMMANDS[k]
                 scope_tag = (
                     "  [dim][global][/dim]" if cmd.scope == "global"

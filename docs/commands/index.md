@@ -5,12 +5,196 @@ Use `help <command>` to open detailed docs for a command.
 - `commit` — Push candidate config to managed devices
 - `delete address` — Delete an address object — delete address <name>
 - `delete address-group` — Delete an address group — delete address-group <name>
+- `delete adnsr bad-domains` — Delete a misconfigured domain
+- `delete adnsr ca-certs` — Delete an EDL CA certificate
+- `delete adnsr conn-sources` — Delete a Connection Source
+- `delete adnsr conn-sources subnets` — Delete a Connection Source Subnet
+- `delete adnsr custom-fqdns` — Delete a Custom FQDN
+- `delete adnsr edls` — Delete an EDL definition
+- `delete adnsr internal-domains` — Delete a custom internal domain
+- `delete adnsr profiles` — Delete a profile
+- `delete aggregate-interfaces` — Delete an Aggregate Interface
+- `delete authentication-settings` — Delete authentication settings
+- `delete auto-vpn-clusters` — Delete an Auto VPN cluster
+- `delete bgp-af-profiles` — Delete a BGP address family profile
+- `delete bgp-auth-profiles` — Delete a BGP authentication profile
+- `delete bgp-filtering-profiles` — Delete a BGP filtering profile
+- `delete bgp-redist-profiles` — Delete a BGP redistribution profile
+- `delete bgp-route-maps` — Delete a BGP route map
+- `delete bgp-routemap-redist` — Delete a BGP route map redistribution
+- `delete cdug cloud-dug-definition group` — Delete Cloud Dynamic User Groups
+- `delete cngfw address-groups` — Delete an address group
+- `delete cngfw addresses` — Delete an address
+- `delete cngfw adv-device-objs` — Delete advanced device objects by names
+- `delete cngfw anti-spyware-profiles` — Delete an anti-spyware profile
+- `delete cngfw anti-spyware-signatures` — Delete an anti-spyware signature
+- `delete cngfw app-override-rules` — Delete an application override rule
+- `delete cngfw application-filters` — Delete an application filter
+- `delete cngfw application-groups` — Delete an application group
+- `delete cngfw applications` — Delete an application
+- `delete cngfw authentication-portals` — Delete an authentication portal
+- `delete cngfw authentication-profiles` — Delete an authentication profile
+- `delete cngfw authentication-rules` — Delete an authentication rule
+- `delete cngfw authentication-sequences` — Delete an authentication sequence
+- `delete cngfw auto-tag-actions` — Delete an Auto-Tag action
+- `delete cngfw certificate-profiles` — Delete a certificate profile
+- `delete cngfw certs` — Delete a certificate
+- `delete cngfw config-versions candidate` — Delete a candidate configuration
+- `delete cngfw data-filtering-profiles` — Delete Data Filtering Profile by ID
+- `delete cngfw data-objects` — Delete Data Object by ID
+- `delete cngfw decryption-exclusions` — Delete a decryption exclusion
+- `delete cngfw decryption-profiles` — Delete a decryption profile
+- `delete cngfw decryption-rules` — Delete a decryption rule
+- `delete cngfw device-contexts` — Delete device context segments by name
+- `delete cngfw dns-security-profiles` — Delete a DNS security profile
+- `delete cngfw dos-protection-profiles` — Delete a DoS protection profile
+- `delete cngfw dos-protection-rules` — Delete a DoS protection rule
+- `delete cngfw dynamic-user-groups` — Delete a Dynamic User Group
+- `delete cngfw external-dynamic-lists` — Delete an External Dynamic List
+- `delete cngfw file-blocking-profiles` — Delete a file blocking profile
+- `delete cngfw folders` — Delete a folder
+- `delete cngfw hip-objects` — Delete a HIP object
+- `delete cngfw hip-profiles` — Delete a HIP profile
+- `delete cngfw http-header-profiles` — Delete an HTTP header profile
+- `delete cngfw http-server-profiles` — Delete a HTTP server profile
+- `delete cngfw kerberos-server-profiles` — Delete a Kerberos server profile
+- `delete cngfw labels` — Delete a label
+- `delete cngfw ldap-server-profiles` — Delete an LDAP server profile
+- `delete cngfw local-user-groups` — Delete a local user group
+- `delete cngfw local-users` — Delete a local user
+- `delete cngfw log-forwarding-profiles` — Delete a log forwarding profile
+- `delete cngfw mfa-servers` — Delete an MFA server
+- `delete cngfw objects adv-device-objs` — Delete an advanced device object
+- `delete cngfw objects device-contexts` — Delete a device context segment
+- `delete cngfw ocsp-responders` — Delete an OCSP responder
+- `delete cngfw onboarding-rules` — Delete an onboarding rule
+- `delete cngfw profile-groups` — Delete a profile group
+- `delete cngfw properties` — Delete a property
+- `delete cngfw quarantined-devices` — Delete a quarantined device
+- `delete cngfw radius-server-profiles` — Delete a RADIUS server profile
+- `delete cngfw regions` — Delete a region
+- `delete cngfw saml-server-profiles` — Delete a SAML server profile
+- `delete cngfw scep-profiles` — Delete a SCEP profile
+- `delete cngfw schedules` — Delete a schedule
+- `delete cngfw security-rules` — Delete a security rule
+- `delete cngfw service-groups` — Delete a service group
+- `delete cngfw services` — Delete a service
+- `delete cngfw site-groups` — Delete a site group
+- `delete cngfw sites` — Delete a site
+- `delete cngfw snippet-categories` — Delete a snippet category
+- `delete cngfw snippets` — Delete a snippet
+- `delete cngfw ssl-decryption-settings` — DELETE Ssl Decryption Settings
+- `delete cngfw subscribed-tenants` — Delete a subscribed tenant
+- `delete cngfw syslog-server-profiles` — Delete a syslog server profile
+- `delete cngfw tacacs-server-profiles` — Delete a TACACS server profile
+- `delete cngfw tags` — Delete a tag
+- `delete cngfw tls-service-profiles` — Delete a TLS service profile
+- `delete cngfw trusts` — Delete a Trust
+- `delete cngfw url-access-profiles` — Delete a URL access profile
+- `delete cngfw url-admin-override` — Delete a url admin override
+- `delete cngfw url-categories` — Delete a custom URL Category
+- `delete cngfw variables` — Delete a variable
+- `delete cngfw vuln-profiles` — Delete a vulnerability protection profile
+- `delete cngfw vuln-signatures` — Delete a vulnerability protection signature
+- `delete cngfw wildfire-profiles` — Delete a WildFire and anti-virus profile
+- `delete config-match-list` — Delete a config match list entry
+- `delete content-id-settings` — Delete Content-ID settings
+- `delete device-redistribution-collector` — Delete device redistribution collector settings
+- `delete dhcp-interfaces` — Delete a DHCP interface
+- `delete dns-proxies` — Delete a DNS proxy
+- `delete ethernet-interfaces` — Delete an ethernet interface
 - `delete external-dynamic-list` — Delete an EDL — delete external-dynamic-list <name>
+- `delete general-settings` — Delete general settings
+- `delete gp-match-list` — Delete a globalprotect match list entry
+- `delete ha-configurations` — Delete high availability configurations
+- `delete hipmatch-match-list` — Delete a hipmatch match list entry
+- `delete iam access-policies` — Delete an access policy
+- `delete iam custom-roles` — Delete a custom role
+- `delete if-mgmt-profiles` — Delete an interface management profile
+- `delete ike-crypto-profiles` — Delete an IKE crypto profile
+- `delete ike-gateways` — Delete an IKE gateway
+- `delete ipsec-crypto-profiles` — Delete an IPsec crypto profile
+- `delete ipsec-tunnels` — Delete an IPsec tunnel
+- `delete iptag-match-list` — Delete an iptag match list entry
+- `delete layer2-subinterfaces` — Delete a layer 2 subinterface
+- `delete layer3-subinterfaces` — Delete a layer 3 subinterface
+- `delete link-tags` — Delete a link tag
+- `delete lldp-profiles` — Delete an LLDP profile
+- `delete logical-routers` — Delete a logical router
+- `delete loopback-interfaces` — Delete a loopback interface
+- `delete management-interface` — Delete management interface settings
+- `delete motd-banner-settings` — Delete login banner settings
+- `delete nat-rules` — Delete a NAT rule
+- `delete ngts cert-requests approval` — Delete certificate request workflow approval rule
+- `delete ngts cert-templates` — Remove an issuing template
+- `delete ngts certs revokes approval` — Delete certificate revocation workflow approval ru
+- `delete ngts credential-configs` — Delete a Credential Manager Service configuration
+- `delete ngts credentials` — Delete shared credentials
+- `delete ngts dist-issuers configurations` — Remove an Issuer configuration
+- `delete ngts dist-issuers policies` — Remove a Workload Issuance policy
+- `delete ngts dist-issuers subcaproviders` — Remove a Sub CA provider
+- `delete ngts edgeworkers` — Delete Satellite Worker
+- `delete ngts integrationservices` — Remove a service
+- `delete ngts machineidentities` — Remove a machine identity
+- `delete ngts machines` — Delete a machine
+- `delete ngts plugins` — Delete a local plugin
+- `delete ngts plugins disablements` — Remove plugin disablement
+- `delete ngts serviceaccounts` — Deletes a Service Account
+- `delete ngts tags` — Delete tag by name
+- `delete ngts tags values` — Delete a tag value
+- `delete ngts tlsprotect credentials` — Delete shared credential by ID
+- `delete npb-profiles` — Delete a Network Packet Broker Profile
+- `delete npb-rules` — Delete a Network Packet Broker Rule
+- `delete ospf-auth-profiles` — Delete an OSPF authentication profile
+- `delete pbf-rules` — Delete a PBF rule
+- `delete posture root` — Delete Posture Check
+- `delete qos-policy-rules` — Delete a QoS policy rule
+- `delete qos-profiles` — Delete a QoS profile
+- `delete route-access-lists` — Delete a route access list
+- `delete route-community-lists` — Delete a route community list
+- `delete route-path-acls` — Delete a route path access list
+- `delete route-prefix-lists` — Delete a route prefix list
+- `delete sase agent-profiles` — Delete a GlobalProtect agent profile
+- `delete sase authentication-settings` — Delete a GlobalProtect authentication setting
+- `delete sase bandwidth-allocations` — Delete a bandwidth allocation
+- `delete sase forwarding-profiles` — Delete a GlobalProtect forwarding profile
+- `delete sase fp-custom-proxies` — Delete a GlobalProtect regional and custom proxy
+- `delete sase fp-destinations` — Delete a GlobalProtect destination
+- `delete sase fp-source-apps` — Delete a GlobalProtect source application
+- `delete sase fp-user-locations` — Delete a GlobalProtect user location
+- `delete sase infrastructure-settings` — Delete a GlobalProtect infrastructure setting
+- `delete sase internal-dns-servers` — Delete an internal DNS server
+- `delete sase remote-networks` — Delete a remote network
+- `delete sase service-connection-groups` — Delete a service connection group
+- `delete sase service-connections` — Delete a service connection
+- `delete sase sites` — Delete a site
+- `delete sase traffic-steering-rules` — Delete a traffic steering rule
+- `delete sase tunnel-profiles` — Delete a GlobalProtect tunnel setting
+- `delete sdwan-error-profiles` — Delete an SD-WAN error correction profile
+- `delete sdwan-path-profiles` — Delete an SD-WAN path quality profile
+- `delete sdwan-rules` — Delete an SD-WAN rule
+- `delete sdwan-saas-profiles` — Delete an SD-WAN SaaS quality profile
+- `delete sdwan-traffic-profiles` — Delete an SD-WAN traffic distribution profile
 - `delete security-rule` — Delete a security rule — delete security-rule <name>
 - `delete service` — Delete a service object — delete service <name>
+- `delete service-accounts` — Delete a service account
 - `delete service-group` — Delete a service group — delete service-group <name>
+- `delete service-route` — Delete service route settings
+- `delete service-settings` — Delete service settings
+- `delete session-settings` — Delete session settings
+- `delete session-timeouts` — Delete session settings
+- `delete system-match-list` — Delete a system match list entry
 - `delete tag` — Delete a tag — delete tag <name>
+- `delete tcp-settings` — Delete TCP settings
+- `delete tenant-service-groups` — Delete a tenant service group
+- `delete tunnel-interfaces` — Delete a tunnel interface
+- `delete update-schedule` — Delete update schedule settings
 - `delete url-category` — Delete a URL category — delete url-category <name>
+- `delete userid-match-list` — Delete a userid match list entry
+- `delete vlan-interfaces` — Delete a VLAN interface
+- `delete vpn-settings` — Delete VPN settings
+- `delete zone-profiles` — Delete a zone protection profile
+- `delete zones` — Delete a security zone
 - `packet-tracer` — Trace a packet through the folder's security rule base
 - `ping host` — Ping a host from a managed device (use --remote)
 - `request system reboot` — Reboot a managed device (CAUTION: device will restart)
@@ -18,156 +202,938 @@ Use `help <command>` to open detailed docs for a command.
 - `request system software check` — Check available software updates (use --remote for live data)
 - `set address` — Create address — set address <name> ip-netmask|ip-range|ip-wildcard|fqdn <value>
 - `set address-group` — Create address group — set address-group <name> static <m1> [m2] | dynamic filter '<expr>'
+- `set adnsr bad-domains` — Create a misconfigured domain
+- `set adnsr ca-certs upload` — Upload an EDL CA certificate from file
+- `set adnsr conn-sources` — Create a Connection Source
+- `set adnsr conn-sources subnets` — Create a Connection Source subnet
+- `set adnsr conn-sources subnets verify` — Verify a subnet for a connection source
+- `set adnsr custom-fqdns` — Create a Custom FQDN
+- `set adnsr edls` — Create an EDL definition
+- `set adnsr internal-domains` — Create a custom internal domain
+- `set adnsr profiles` — Create a profile
+- `set aggregate-interfaces` — Create an Aggregate Interface
+- `set authentication-settings` — Create authentication settings
+- `set auto-vpn-clusters` — Create an Auto VPN cluster
+- `set auto-vpn-push` — Push Auto VPN configs
+- `set bgp-af-profiles` — Create a BGP address family profile
+- `set bgp-auth-profiles` — Create a BGP authentication profile
+- `set bgp-filtering-profiles` — Create a BGP filtering profile
+- `set bgp-redist-profiles` — Create a BGP redistribution profile
+- `set bgp-route-maps` — Create a BGP route map
+- `set bgp-routemap-redist` — Create a BGP route map redistribution
+- `set cdug cloud-dug-definition` — Create Cloud Dynamic User Groups
+- `set ciedss cache-groups` — Fetch group information from the CIE Directory Sync Service across multiple scenarios.
+- `set ciedss cache-users` — Fetch user information from the CIE Directory Sync Service across multiple scenarios.
+- `set ciedss connection update-secret` — Update directory connection client secret
+- `set cngfw address-groups` — Create an address group
+- `set cngfw addresses` — Create an address
+- `set cngfw adv-device-objs` — Create an advanced device object
+- `set cngfw anti-spyware-profiles` — Create an anti-spyware profile
+- `set cngfw anti-spyware-signatures` — Create an anti-spyware signature
+- `set cngfw app-override-rules` — Create an application override rule
+- `set cngfw app-override-rules move` — Move an application override rule
+- `set cngfw application-filters` — Create an application filter
+- `set cngfw application-groups` — Create an application group
+- `set cngfw applications` — Create an application
+- `set cngfw authentication-portals` — Create an authentication portal
+- `set cngfw authentication-profiles` — Create an authentication profile
+- `set cngfw authentication-rules` — Create an authentication rule
+- `set cngfw authentication-rules move` — Move an authentication rule
+- `set cngfw authentication-sequences` — Create an authentication sequence
+- `set cngfw auto-tag-actions` — Create an auto-tag action
+- `set cngfw certificate-profiles` — Create a certificate profile
+- `set cngfw certs` — Generate a certificate
+- `set cngfw certs export` — Export a certificate
+- `set cngfw certs import` — Import a certificate
+- `set cngfw config-versions candidate push` — Push the candidate configuration
+- `set cngfw config-versions load` — Load config version
+- `set cngfw data-filtering-profiles` — Create Data Filtering Profile
+- `set cngfw data-objects` — Create Data Object
+- `set cngfw decryption-exclusions` — Create a decryption exclusion
+- `set cngfw decryption-profiles` — Create a decryption profile
+- `set cngfw decryption-rules` — Create a decryption rule
+- `set cngfw decryption-rules move` — Move a decryption rule
+- `set cngfw device-contexts` — Create a device context segment
+- `set cngfw dns-security-profiles` — Create a DNS security profile
+- `set cngfw dos-protection-profiles` — Create a DoS protection profile
+- `set cngfw dos-protection-rules` — Create a DoS protection rule
+- `set cngfw dynamic-user-groups` — Create a Dynamic User Group
+- `set cngfw external-dynamic-lists` — Create an External Dynamic List
+- `set cngfw file-blocking-profiles` — Create a file blocking profiles
+- `set cngfw folders` — Create a folder
+- `set cngfw hip-objects` — Create a HIP object
+- `set cngfw hip-profiles` — Create a HIP profile
+- `set cngfw http-header-profiles` — Create an HTTP header profile
+- `set cngfw http-server-profiles` — Create a HTTP server profile
+- `set cngfw kerberos-server-profiles` — Create a Kerberos server profile
+- `set cngfw labels` — Create a label
+- `set cngfw ldap-server-profiles` — Create an LDAP server profile
+- `set cngfw local-user-groups` — Create a local user group
+- `set cngfw local-users` — Create a local user
+- `set cngfw log-forwarding-profiles` — Create a log forwarding profile
+- `set cngfw mfa-servers` — Create an MFA server
+- `set cngfw ocsp-responders` — Create an OCSP responder
+- `set cngfw onboarding-rules` — Create an onboarding rule
+- `set cngfw onboarding-rules move` — Move an onboarding rule
+- `set cngfw profile-groups` — Create a profile group
+- `set cngfw properties` — Create a property
+- `set cngfw quarantined-devices` — Create a quarantined device
+- `set cngfw radius-server-profiles` — Create a RADIUS server profile
+- `set cngfw regions` — Create a region
+- `set cngfw saml-server-profiles` — Create a SAML server profile
+- `set cngfw scep-profiles` — Create a SCEP profile
+- `set cngfw schedules` — Create a schedule
+- `set cngfw security-rules` — Create a security rule
+- `set cngfw security-rules move` — Move a security rule
+- `set cngfw service-groups` — Create a service group
+- `set cngfw services` — Create a service
+- `set cngfw shared-snippets load` — Load Shared Snippets
+- `set cngfw site-groups` — Create a site group
+- `set cngfw sites` — Create sites
+- `set cngfw snippet-audit-logs` — Create snippet audit logs configuration
+- `set cngfw snippet-snapshots` — Save Snippet Snapshots
+- `set cngfw snippet-snapshots compare` — Compare Snippet Snapshots
+- `set cngfw snippet-snapshots convert` — Convert Snippet Snapshots
+- `set cngfw snippet-snapshots diff` — Diff Snippet Snapshots
+- `set cngfw snippet-snapshots load` — Load Snippet Snapshots
+- `set cngfw snippet-snapshots publish` — Publish Snippet Snapshots
+- `set cngfw snippet-snapshots updates` — Update Snippet Snapshots
+- `set cngfw snippets` — Create a snippet
+- `set cngfw ssl-decryption-settings` — POST Ssl Decryption Settings
+- `set cngfw subscribed-tenants` — Create Subscribed Tenant
+- `set cngfw syslog-server-profiles` — Create a syslog server profile
+- `set cngfw tacacs-server-profiles` — Create a TACACS server profile
+- `set cngfw tags` — Create a tag
+- `set cngfw tls-service-profiles` — Create a TLS service profile
+- `set cngfw trust-validations` — Validates Trust
+- `set cngfw trusts` — Create a trust
+- `set cngfw url-access-profiles` — Create a URL access profile
+- `set cngfw url-admin-override` — Add URL Admin Override
+- `set cngfw url-categories` — Create a custom URL category
+- `set cngfw variables` — Create a variable
+- `set cngfw vuln-profiles` — Create a vulnerability protection profile
+- `set cngfw vuln-signatures` — Create a vulnerability protection signature
+- `set cngfw wildfire-profiles` — Create a WildFire and anti-virus profile
+- `set config-match-list` — Create a config match list entry
+- `set content-id-settings` — Create Content-ID settings
+- `set device-redistribution-collector` — Create device redistribution collector settings
+- `set dhcp-interfaces` — Create a DHCP interface
+- `set dns-proxies` — Create a DNS proxy
+- `set ethernet-interfaces` — Create an ethernet interface
 - `set external-dynamic-list` — Create EDL — set external-dynamic-list <name> type ip|domain|url url <fetch-url>
+- `set general-settings` — Create general settings
+- `set gp-match-list` — Create a globalprotect match list entry
+- `set ha-configurations` — Create high availability configurations
+- `set hipmatch-match-list` — Create a hipmatch match list entry
+- `set iam access-policies` — Assign an access policy
+- `set iam custom-roles` — Create a custom role
+- `set iam sso-users` — Create an SSO account
+- `set if-mgmt-profiles` — Create a interface management profiles
+- `set ike-crypto-profiles` — Create an IKE crypto profile
+- `set ike-gateways` — Create an IKE gateway
+- `set incidents incidents search` — Incidents List Search
+- `set ipsec-crypto-profiles` — Create an IPsec crypto profile
+- `set ipsec-tunnels` — Create an IPsec tunnel
+- `set iptag-match-list` — Create an iptag match list entry
+- `set jobs bgp-policy-export` — Initiate a job for BGP Policy Export from device(s)
+- `set jobs device-interfaces` — Initiate a job to retrieve network interfaces from device(s)
+- `set jobs device-rules` — Initiate a job to retrieve rules on one or more device(s)
+- `set jobs dns-proxy` — Initiate a job to retrieve the dns proxy table from device(s)
+- `set jobs fib-table` — Initiate a job to retrieve FIB table from device(s)
+- `set jobs logging-service-forwarding-status` — Initiate a job to request logging service forwarding status for device(s)
+- `set jobs route-table` — Initiate a job to retrieve route table from device(s)
+- `set layer2-subinterfaces` — Create a layer 2 subinterface
+- `set layer3-subinterfaces` — Create a layer 3 subinterface
+- `set link-tags` — Create a link tag
+- `set lldp-profiles` — Create an LLDP profile
+- `set logical-routers` — Create a logical router
+- `set loopback-interfaces` — Create a loopback interface
+- `set management-interface` — Create management interface settings
+- `set motd-banner-settings` — Create login banner settings
+- `set nat-rules` — Create a NAT rule
+- `set ngts activitylogsearch` — Retrieve count and activity log entries
+- `set ngts activitylogsearch export` — Export filtered event log data to
+- `set ngts autorenewal trigger` — Attempt to initiate the certificate renewal
+- `set ngts cert-instance-search` — Retrieve certificate instance data matching search
+- `set ngts cert-instances validation` — Request validation for a set of
+- `set ngts cert-request-search` — Get the details of certificate requests
+- `set ngts cert-requests` — Create a certificate request
+- `set ngts cert-requests approval` — Approve or reject pending certificate request
+- `set ngts cert-requests approval bulk` — Approve or reject multiple pending approval
+- `set ngts cert-requests resubmission` — Resubmit a certificate request
+- `set ngts cert-requests validation` — Validate a certificate request
+- `set ngts cert-templates` — Add an issuing template
+- `set ngts cert-templates domains-sync` — Synchronize issuing templates domains with CA
+- `set ngts certificatesearch` — Retrieve certificate data matching search criteria
+- `set ngts certs` — Import a set of raw certificates
+- `set ngts certs deletion` — Delete a set of retired certificates
+- `set ngts certs imports` — Import a list of certificates and
+- `set ngts certs recovery` — Recover a set of certificates
+- `set ngts certs retirement` — Retire certificates
+- `set ngts certs revokes approval` — Create an approval rule for certificate
+- `set ngts certs validation` — Request validation for a set of
+- `set ngts credential-configs` — Add a set of Credential Manager
+- `set ngts credential-configs test` — Test the connection to a privileged
+- `set ngts credentials` — Add a set of new shared
+- `set ngts credentials test` — Test the access to shared credential
+- `set ngts dist-issuers configurations` — Create a new Issuer configuration
+- `set ngts dist-issuers policies` — Create a new Workload Issuance policy
+- `set ngts dist-issuers subcaproviders` — Create a new Sub CA provider
+- `set ngts edgeinstances update` — Trigger manual update of Satellite Instance
+- `set ngts edgeworkers` — Create Satellite Worker
+- `set ngts edgeworkers pair` — Pair Satellite Worker with Satellite Instance
+- `set ngts exp-reports trigger` — Attempt to initiate the certificate reports
+- `set ngts integrationservices` — Add a service
+- `set ngts machineidentities` — Add a machine identity to a
+- `set ngts machineidentities workflows` — Initiate a machine workflow
+- `set ngts machineidentitysearch` — Get the details of machine identities
+- `set ngts machines` — Add a machine
+- `set ngts machines batchprovisionings abort` — Abort active batch provisioning for a
+- `set ngts machines discovery abort` — Abort machine discovery
+- `set ngts machines workflows` — Initiate the workflow
+- `set ngts machinesearch` — Get the details of machines matching
+- `set ngts pairingcodes satellite` — Create Pairing Code for Satellite Instance
+- `set ngts plugins` — Create a local plugin
+- `set ngts plugins disablements` — Disable a plugin
+- `set ngts recoverycodes satellite` — Create Recovery Code for Satellite Instance
+- `set ngts serviceaccounts` — Creates a Service Account
+- `set ngts tags` — Create a tag
+- `set ngts tags creation` — Create tags in bulk
+- `set ngts tags deletion` — Delete tags in bulk
+- `set ngts tags values` — Create tag values
+- `set ngts tagsassignment aggregates` — Bulk operation to retrieve number of
+- `set ngts tlsprotect cert-requests approval` — Create an approval rule for certificate
+- `set ngts tlsprotect credential-configs test` — Test the connection to an external
+- `set npb-profiles` — Create a new Network Packet Broker Profile
+- `set npb-rules` — Create a new Network Packet Broker Rule
+- `set oauth2 access-token` — Create an access token
+- `set oauth2 userinfo` — Retrieve oAuth oAuth 2.0 claims
+- `set ospf-auth-profiles` — Create an OSPF authentication profile
+- `set pbf-rules` — Create a PBF rule
+- `set posture batch-delete` — Batch Delete Posture Checks
+- `set posture batch-upsert` — Batch Upsert Posture Checks
+- `set posture clone` — Clone Posture Check
+- `set posture reports config-file-upload` — Initiate a Configuration Upload
+- `set posture root` — Create Posture Check
+- `set qos-policy-rules` — Create a QoS policy rule
+- `set qos-policy-rules move` — Move a QoS policy rule
+- `set qos-profiles` — Create a QoS profile
+- `set route-access-lists` — Create a route access list
+- `set route-community-lists` — Create a route community list
+- `set route-path-acls` — Create a route path access list
+- `set route-prefix-lists` — Create a route prefix list
+- `set sase agent-profiles` — Create a GlobalProtect agent profile
+- `set sase authentication-settings` — Create a GlobalProtect authentication setting
+- `set sase authentication-settings move` — Move a GlobalProtect authentication setting
+- `set sase bandwidth-allocations` — Create a bandwidth allocation
+- `set sase enable` — Create application defaults
+- `set sase forwarding-profiles` — Create a GlobalProtect forwarding profile
+- `set sase fp-custom-proxies` — Create a GlobalProtect regional and custom proxy
+- `set sase fp-destinations` — Create a GlobalProtect destination
+- `set sase fp-source-apps` — Create a GlobalProtect source application
+- `set sase fp-user-locations` — Create a GlobalProtect user location
+- `set sase infrastructure-settings` — Create a GlobalProtect infrastructure setting
+- `set sase internal-dns-servers` — Create a internal DNS server
+- `set sase mobileagent enable` — Enable GlobalProtect
+- `set sase remote-networks` — Create a remote network
+- `set sase service-connection-groups` — Create a service connection group
+- `set sase service-connections` — Create a service connection
+- `set sase sites` — Create a site
+- `set sase traffic-steering-rules` — Create a traffic steering rule
+- `set sase tunnel-profiles` — Create a GlobalProtect tunnel setting
+- `set sdwan-error-profiles` — Create an SD-WAN error correction profile
+- `set sdwan-path-profiles` — Create an SD-WAN path quality profile
+- `set sdwan-rules` — Create an SD-WAN rule
+- `set sdwan-saas-profiles` — Create an SD-WAN SaaS quality profile
+- `set sdwan-traffic-profiles` — Create an SD-WAN traffic distribution profile
 - `set service` — Create service — set service <name> tcp|udp port <n> [source-port <n>]
+- `set service-accounts` — Create a service account
+- `set service-accounts reset` — Reset a service account
 - `set service-group` — Create service group — set service-group <name> members <svc1> [svc2 ...]
+- `set service-route` — Create service route settings
+- `set service-settings` — Create service settings
+- `set session-settings` — Create session settings
+- `set session-timeouts` — Create session timeouts settings
+- `set subscription instances` — Create an instance
+- `set system-match-list` — Create a system match list entry
 - `set tag` — Create tag — set tag <name> [color red|green|blue|...] [comments <text>]
+- `set tcp-settings` — Create TCP settings
+- `set tenant-service-groups` — Create a tenant service group
+- `set tenant-service-groups list-ancestors` — List tenant service group ancestors
+- `set tenant-service-groups list-children` — List tenant service group children
+- `set tunnel-interfaces` — Create a tunnel interface
+- `set update-schedule` — Create update schedule settings
 - `set url-category` — Create a custom URL category — set url-category <name> type url-list list <url1>
+- `set userid-match-list` — Create a userid match list entry
+- `set vlan-interfaces` — Create a VLAN interface
+- `set vpn-settings` — Create VPN settings
+- `set zone-profiles` — Create a zone protection profile
+- `set zones` — Create a security zone
 - `show address` — Show address objects in the active folder
 - `show address-group` — Show address groups in the active folder
-- `show advanced-device-objects` — Show advanced device objects in the active folder
+- `show adnsr bad-domains` — List misconfigured domains
+- `show adnsr bad-domains id` — Get a misconfigured domain
+- `show adnsr ca-certs` — List EDL CA certificates
+- `show adnsr ca-certs download id` — Download an EDL CA certificate as PEM file
+- `show adnsr ca-certs id` — Get an EDL CA certificate
+- `show adnsr conn-sources` — List Connection Sources
+- `show adnsr conn-sources id` — Get a Connection Source
+- `show adnsr conn-sources subnets` — List Subnets
+- `show adnsr conn-sources subnets id` — Get a Connection Source Subnet
+- `show adnsr custom-fqdns` — List Custom FQDNs
+- `show adnsr custom-fqdns id` — Get a custom fqdn
+- `show adnsr edls` — List EDL definitions
+- `show adnsr edls id` — Get an EDL definition
+- `show adnsr internal-domains` — List internal domains
+- `show adnsr internal-domains id` — Get an internal domain
+- `show adnsr profiles` — List profiles
+- `show adnsr profiles categories` — Get profile categories
+- `show adnsr profiles id` — Get a profile
+- `show adnsr resolver-info` — Get resolver information
 - `show aggregate-interfaces` — Show aggregate interfaces in the active folder
+- `show aggregate-interfaces id` — Get an Aggregate Interface
 - `show anti-spyware-profile` — Show anti-spyware profiles in the active folder
-- `show anti-spyware-signatures` — Show anti spyware signatures in the active folder
 - `show app-override-rules` — Show application override rules in the active folder
 - `show application-filter` — Show application filters in the active folder
 - `show application-group` — Show application groups in the active folder
-- `show applications` — Show applications in the active folder
 - `show arp` — Show live ARP table from device — use --remote
-- `show authentication-portals` — Show authentication portals in the active folder
 - `show authentication-profile` — Show authentication profiles in the active folder
 - `show authentication-rules` — Show authentication rules in the active folder
-- `show authentication-sequences` — Show authentication sequences in the active folder
-- `show auto-tag-actions` — Show auto tag actions in the active folder
+- `show authentication-settings` — List authentication settings
+- `show authentication-settings id` — Get existing authentication settings
 - `show auto-vpn-clusters` — Show auto vpn clusters in the active folder
+- `show auto-vpn-clusters id` — Get an Auto VPN cluster
 - `show auto-vpn-monitor` — Show auto vpn monitor in the active folder
 - `show auto-vpn-settings` — Show auto vpn settings in the active folder
+- `show bgp-af-profiles id` — Get a BGP address family profile
 - `show bgp-auth-profiles` — Show bgp auth profiles in the active folder
+- `show bgp-auth-profiles id` — Get a BGP authentication profile
 - `show bgp-filtering-profiles` — Show bgp filtering profiles in the active folder
+- `show bgp-filtering-profiles id` — Get a BGP filtering profile
 - `show bgp-profile` — Show BGP routing profiles (configuration) in the active folder
-- `show bgp-redistribution-profiles` — Show bgp redistribution profiles in the active folder
-- `show bgp-route-map-redistributions` — Show bgp route map redistributions in the active folder
+- `show bgp-redist-profiles` — List BGP redistribution profiles
+- `show bgp-redist-profiles id` — Get a BGP redistribution profile
 - `show bgp-route-maps` — Show bgp route maps in the active folder
+- `show bgp-route-maps id` — Get a BGP route map
+- `show bgp-routemap-redist` — List BGP route map redistributions
+- `show bgp-routemap-redist id` — Get a BGP route map redistribution
+- `show cdug cloud-dug-definition category` — Retrieve Dynamic Group Categories
+- `show cdug cloud-dug-definition group` — Retrieve Cloud Dynamic User Groups
+- `show cdug user-attr-values` — Retrieve User Attribute Values
 - `show certificate-profile` — Show certificate profiles in the active folder
-- `show certificates` — Show certificates in the active folder
+- `show ciedss domains` — Fetch domains from the CIE Directory Sync Service
+- `show cngfw address-groups` — List address groups
+- `show cngfw address-groups id` — Get an address group
+- `show cngfw addresses` — List addresses
+- `show cngfw addresses id` — Get an address
+- `show cngfw adv-device-objs` — List advanced device objects
+- `show cngfw adv-device-objs id` — Get an advanced device object
+- `show cngfw anti-spyware-profiles` — List anti-spyware profiles
+- `show cngfw anti-spyware-profiles id` — Get an anti-spyware profile
+- `show cngfw anti-spyware-signatures` — List anti-spyware signatures
+- `show cngfw anti-spyware-signatures id` — Get an anti-spyware signature
+- `show cngfw app-override-rules` — List application override rules
+- `show cngfw app-override-rules id` — Get an application override rule
+- `show cngfw application-filters` — List application filters
+- `show cngfw application-filters id` — Get an application filter
+- `show cngfw application-groups` — List application groups
+- `show cngfw application-groups id` — Get an application group
+- `show cngfw applications` — List applications
+- `show cngfw applications id` — Get the application by id
+- `show cngfw authentication-portals` — List authentication portals
+- `show cngfw authentication-portals id` — Get an authentication portal
+- `show cngfw authentication-profiles` — List authentication profiles
+- `show cngfw authentication-profiles id` — Get an authentication profile
+- `show cngfw authentication-rules` — List authentication rules
+- `show cngfw authentication-rules id` — Get an authentication rule
+- `show cngfw authentication-sequences` — List authentication sequences
+- `show cngfw authentication-sequences id` — Get an authentication sequence
+- `show cngfw auto-tag-actions` — List auto-tag actions
+- `show cngfw certificate-profiles` — List certificate profiles
+- `show cngfw certificate-profiles id` — Get a certificate profile
+- `show cngfw certs` — List certificates
+- `show cngfw certs id` — Get a certificate
+- `show cngfw config-versions` — List configuration versions
+- `show cngfw config-versions id` — Get config by version
+- `show cngfw config-versions running` — Get running configuration versions
+- `show cngfw data-filtering-profiles` — List Data Filtering Profiles
+- `show cngfw data-filtering-profiles id` — Get Data Filtering Profile by ID
+- `show cngfw data-objects` — List Data Objects
+- `show cngfw data-objects id` — Get Data Object by ID
+- `show cngfw decryption-exclusions` — List decryption exclusions
+- `show cngfw decryption-exclusions id` — Get a decryption exclusion
+- `show cngfw decryption-profiles` — List decryption profiles
+- `show cngfw decryption-profiles id` — Get a decryption profile
+- `show cngfw decryption-rules` — List decryption rules
+- `show cngfw decryption-rules id` — Get a decryption rule
+- `show cngfw device-contexts` — List device context segments
+- `show cngfw device-contexts id` — Get a device context segment
+- `show cngfw devices` — List devices
+- `show cngfw devices id` — Get a device
+- `show cngfw dns-security-profiles` — List DNS security profiles
+- `show cngfw dns-security-profiles id` — Get a DNS security profile
+- `show cngfw dos-protection-profiles` — List DoS protection profiles
+- `show cngfw dos-protection-profiles id` — Get a DoS protection profile
+- `show cngfw dos-protection-rules` — List DoS protection rules
+- `show cngfw dos-protection-rules id` — Get a DoS protection rule
+- `show cngfw dynamic-user-groups` — List Dynamic User Groups
+- `show cngfw dynamic-user-groups id` — Get a Dynamic User Group
+- `show cngfw external-dynamic-lists` — List External Dynamic Lists
+- `show cngfw external-dynamic-lists id` — Get an External Dynamic List
+- `show cngfw file-blocking-profiles` — List file blocking profiles
+- `show cngfw file-blocking-profiles id` — Get a file blocking profile
+- `show cngfw folders` — List folders
+- `show cngfw folders id` — Get a folder
+- `show cngfw hip-objects` — List HIP objects
+- `show cngfw hip-objects id` — Get a HIP object
+- `show cngfw hip-profiles` — List HIP profiles
+- `show cngfw hip-profiles id` — Get a HIP profile
+- `show cngfw http-header-profiles` — List HTTP header profiles
+- `show cngfw http-header-profiles id` — Get an HTTP header profile
+- `show cngfw http-server-profiles` — List HTTP server profiles
+- `show cngfw http-server-profiles id` — Get a HTTP server profile
+- `show cngfw jobs` — List jobs
+- `show cngfw jobs id` — Get a job
+- `show cngfw kerberos-server-profiles` — List Kerberos server profiles
+- `show cngfw kerberos-server-profiles id` — Get a Kerberos server profile
+- `show cngfw labels` — List labels
+- `show cngfw labels id` — Get a label
+- `show cngfw ldap-server-profiles` — List LDAP server profiles
+- `show cngfw ldap-server-profiles id` — Get an LDAP server profile
+- `show cngfw local-user-groups` — List local user groups
+- `show cngfw local-user-groups id` — Get a local user group
+- `show cngfw local-users` — List local users
+- `show cngfw local-users id` — Get a local user
+- `show cngfw log-forwarding-profiles` — List log forwarding profiles
+- `show cngfw log-forwarding-profiles id` — Get a log forwarding profile
+- `show cngfw mfa-servers` — List MFA servers
+- `show cngfw mfa-servers id` — Get an MFA server
+- `show cngfw ocsp-responders` — List OCSP responders
+- `show cngfw ocsp-responders id` — Get an OCSP responder
+- `show cngfw onboarding-rules` — List onboarding rules
+- `show cngfw onboarding-rules id` — Get an onboarding rule
+- `show cngfw profile-groups` — List profile groups
+- `show cngfw profile-groups id` — Get a profile group
+- `show cngfw properties` — List properties
+- `show cngfw properties id` — Get a property
+- `show cngfw quarantined-devices` — List quarantined devices
+- `show cngfw radius-server-profiles` — List RADIUS server profiles
+- `show cngfw radius-server-profiles id` — Get a RADIUS server profile
+- `show cngfw regions` — List regions
+- `show cngfw regions id` — Get a region
+- `show cngfw saas-tenant-restrictions` — Get Saas Tenant Restrictions
+- `show cngfw saml-server-profiles` — List SAML server profiles
+- `show cngfw saml-server-profiles id` — Get a SAML server profile
+- `show cngfw scep-profiles` — List SCEP profiles
+- `show cngfw scep-profiles id` — Get a SCEP profile
+- `show cngfw schedules` — List schedules
+- `show cngfw schedules id` — Get a schedule
+- `show cngfw security-rules` — List security rules
+- `show cngfw security-rules id` — Get a security rule
+- `show cngfw service-groups` — List service groups
+- `show cngfw service-groups id` — Get the service group by id
+- `show cngfw services` — List services
+- `show cngfw services id` — Get a service
+- `show cngfw shared-snippets` — Get Shared Snippets
+- `show cngfw site-groups` — List site groups
+- `show cngfw site-groups id` — Get a site group
+- `show cngfw sites` — List sites
+- `show cngfw sites id` — Get a site
+- `show cngfw snippet-audit-logs id` — Get a snippet audit logs
+- `show cngfw snippet-categories` — List snippets categories
+- `show cngfw snippet-categories id` — Get a snippet category
+- `show cngfw snippets` — List snippets
+- `show cngfw snippets id` — Get a snippet
+- `show cngfw ssl-decryption-settings` — GET Ssl Decryption Settings
+- `show cngfw subscribed-tenants id` — Get Subscribed Tenants
+- `show cngfw syslog-server-profiles` — List syslog server profiles
+- `show cngfw syslog-server-profiles id` — Get a syslog server profile
+- `show cngfw tacacs-server-profiles` — List TACACS server profiles
+- `show cngfw tacacs-server-profiles id` — Get a TACACS server profile
+- `show cngfw tags` — List tags
+- `show cngfw tags id` — Get a tag
+- `show cngfw tls-service-profiles` — List TLS service profiles
+- `show cngfw tls-service-profiles id` — Get a TLS service profile
+- `show cngfw trusted-cas` — List trusted certificate authorities
+- `show cngfw trusted-tenant-overview` — Trusted Tenants Overview
+- `show cngfw trusted-tenants` — Trusted Tenants With Snippets
+- `show cngfw url-access-profiles` — List URL access profiles
+- `show cngfw url-access-profiles id` — Get a URL access profile
+- `show cngfw url-admin-override` — URL Admin Override
+- `show cngfw url-categories` — List custom URL categories
+- `show cngfw url-categories id` — Get a custom URL category
+- `show cngfw url-filtering-categories` — List custom URL categories
+- `show cngfw variables` — List variables
+- `show cngfw variables id` — Get a variables
+- `show cngfw vuln-profiles` — List vulnerability protection profiles
+- `show cngfw vuln-profiles id` — Get a vulnerability protection profile
+- `show cngfw vuln-signatures` — List vulnerability protection signatures
+- `show cngfw vuln-signatures id` — Get a vulnerability protection signature
+- `show cngfw wildfire-profiles` — List Wildfire and anti-virus profiles
+- `show cngfw wildfire-profiles id` — Get a WildFire and anti-virus profile
 - `show config-match-list` — Show config match list in the active folder
-- `show data-filtering-profiles` — Show data filtering profiles in the active folder
-- `show data-objects` — Show data objects in the active folder
-- `show decryption-exclusions` — Show decryption exclusions in the active folder
+- `show config-match-list id` — Get a config match list entry
+- `show content-id-settings` — List Content-ID settings
+- `show content-id-settings id` — Get existing Content-ID settings
 - `show decryption-profile` — Show decryption profiles in the active folder
 - `show decryption-rules` — Show decryption rules in the active folder
 - `show device` — Show detail for a device (or 'show device' when cd'd in)
+- `show device jobs id` — Retrieve job status and results, running on a device
 - `show device snippets` — Show snippets attached to a device
-- `show device-context-segments` — Show device context segments in the active folder
+- `show device-redistribution-collector` — List device redistribution collector settings
+- `show device-redistribution-collector id` — Get existing device redistribution collector settings
 - `show devices` — List all SCM-managed devices
 - `show dhcp-interfaces` — Show dhcp interfaces in the active folder
+- `show dhcp-interfaces id` — Get a DHCP interface
+- `show dns-proxies id` — Get a DNS proxy
 - `show dns-proxy` — Show DNS proxy configurations in the active folder
-- `show dns-security-profiles` — Show dns security profiles in the active folder
 - `show dos-protection-profile` — Show DoS protection profiles in the active folder
 - `show dos-protection-rules` — Show DoS protection rules in the active folder
-- `show dynamic-user-groups` — Show dynamic user groups in the active folder
+- `show ethernet-interfaces id` — Get an ethernet interface
 - `show external-dynamic-list` — Show external dynamic lists (EDLs) in the active folder
-- `show file-blocking-profiles` — Show file blocking profiles in the active folder
-- `show globalprotect-match-list` — Show globalprotect match list in the active folder
+- `show general-settings` — List general settings
+- `show general-settings id` — Get existing general settings
+- `show gp-match-list` — List globalprotect match list entries
+- `show gp-match-list id` — Get a globalprotect match list entry
+- `show ha-configurations` — List high availability configurations
+- `show ha-configurations id` — Get existing high availability configurations
+- `show ha-devices` — List high availability devices
 - `show high-availability all` — Show full HA configuration from the active folder
 - `show high-availability state` — Show HA state summary from the active folder
 - `show hip-object` — Show GlobalProtect HIP objects in the active folder
 - `show hip-profile` — Show GlobalProtect HIP profiles in the active folder
 - `show hipmatch-match-list` — Show hipmatch match list in the active folder
-- `show http-header-profiles` — Show http header profiles in the active folder
-- `show http-server-profiles` — Show http server profiles in the active folder
+- `show hipmatch-match-list id` — Get a hipmatch match list entry
+- `show iam access-policies` — List all access policies
+- `show iam access-policies id` — Get an access policy
+- `show iam custom-roles` — List custom roles
+- `show iam custom-roles id` — Get a Custom Role
+- `show iam permission-sets` — List permission sets
+- `show iam permission-sets id` — Get a permission set
+- `show iam permissions` — List all access permissions
+- `show iam permissions id` — Get a permission
+- `show iam roles` — List all roles
+- `show iam roles id` — Get a role
+- `show iam sso-users` — Verify a user account
+- `show if-mgmt-profiles` — List interface management profiles
+- `show if-mgmt-profiles id` — Get an interface management profile
 - `show ike-crypto-profiles` — Show ike crypto profiles in the active folder
+- `show ike-crypto-profiles id` — Get an IKE crypto profile
 - `show ike-gateway` — Show IKE gateway configurations (VPN) in the active folder
+- `show ike-gateways id` — Get an IKE gateway
+- `show incidents incidents details id` — Incidents Details
 - `show interface` — Show a specific interface in the active folder
 - `show interface all` — Show all interfaces in the active folder
-- `show interface-management-profiles` — Show interface management profiles in the active folder
 - `show ipsec-crypto-profiles` — Show ipsec crypto profiles in the active folder
+- `show ipsec-crypto-profiles id` — Get an IPsec crypto profile
 - `show ipsec-tunnel` — Show IPsec tunnel configurations in the active folder
+- `show ipsec-tunnels id` — Get an IPsec tunnel
 - `show iptag-match-list` — Show iptag match list in the active folder
+- `show iptag-match-list id` — Get an iptag match list entry
 - `show jobs all` — Show all SCM jobs (TSG-wide)
 - `show jobs id` — Show a specific SCM job by ID
-- `show kerberos-server-profiles` — Show kerberos server profiles in the active folder
 - `show layer2-subinterfaces` — Show layer2 subinterfaces in the active folder
+- `show layer2-subinterfaces id` — Get a layer 2 subinterface
 - `show layer3-subinterfaces` — Show layer3 subinterfaces in the active folder
-- `show ldap-server-profiles` — Show ldap server profiles in the active folder
+- `show layer3-subinterfaces id` — Get a layer 3 subinterface
 - `show link-tags` — Show link tags in the active folder
+- `show link-tags id` — Get a link tag
 - `show lldp-profiles` — Show lldp profiles in the active folder
+- `show lldp-profiles id` — Get an LLDP profile
+- `show local-config download` — Download local configuration file
+- `show local-config versions` — List local configuration versions for a device
 - `show local-user` — Show local users in the active folder
 - `show local-user-group` — Show local user groups in the active folder
 - `show log system` — Show live system log — use --remote for live device data
 - `show log traffic` — Show live traffic log — use --remote for live device data
 - `show log-forwarding-profile` — Show log forwarding profiles in the active folder
 - `show logical-routers` — Show logical routers in the active folder
+- `show logical-routers id` — Get a logical router
 - `show loopback-interfaces` — Show loopback interfaces in the active folder
+- `show loopback-interfaces id` — Get a loopback interface
+- `show management-interface` — List management interface settings
+- `show management-interface id` — Get existing management interface settings
 - `show mfa-server` — Show MFA server profiles in the active folder
+- `show motd-banner-settings` — List login banner settings
+- `show motd-banner-settings id` — Get existing login banner settings
 - `show nat-rules` — Show NAT rules in the active folder
-- `show network_packet_broker_profiles` — Show network_packet_broker_profiles in the active folder
-- `show network_packet_broker_rules` — Show network_packet_broker_rules in the active folder
-- `show ocsp-responders` — Show ocsp responders in the active folder
+- `show nat-rules id` — Get a NAT rule
+- `show ngts activitytypes` — Retrieve types of activities used for
+- `show ngts autorenewal status` — Get the current certificate auto-renewal monitorin
+- `show ngts autorenewal tenant-config` — Retrieve the monitoring configuration
+- `show ngts cert-instances` — Retrieve Certificate Instances
+- `show ngts cert-instances id` — Get a certificate installation details
+- `show ngts cert-requests` — Get the details of all certificate
+- `show ngts cert-requests approval` — Get all approval rules
+- `show ngts cert-requests approval id` — Retrieve approval rule by id
+- `show ngts cert-requests approvalrequests id` — Retrieve approval request for specific certificate
+- `show ngts cert-requests id` — Get a certificate request details
+- `show ngts cert-templates` — Get the details of issuing templates
+- `show ngts cert-templates id` — Get an issuing template details
+- `show ngts certs` — Retrieve all certificate data
+- `show ngts certs contents id` — Download a certificate
+- `show ngts certs id` — Get a certificate details
+- `show ngts certs imports id` — Retrieve import details
+- `show ngts certs revokes approval` — Get all certificate revocation approval rules
+- `show ngts certs revokes approval id` — Retrieve certificate revocation approval rule by
+- `show ngts credential-configs` — Retrieves a set of Credential Manager
+- `show ngts credential-configs id` — Retrieves a Credential Manager Service configurati
+- `show ngts credentials` — Retrieves credentials for a company
+- `show ngts credentials id` — Retrieves shared credential by ID
+- `show ngts dist-issuers configurations` — Get the details of all Issuer
+- `show ngts dist-issuers configurations id` — Get configurations details for a specific
+- `show ngts dist-issuers intermediate-certs` — Get the details of all Issuer
+- `show ngts dist-issuers policies` — Get the details of all Workload
+- `show ngts dist-issuers policies id` — Get a Workload Issuance policy details
+- `show ngts dist-issuers subcaproviders` — Get the details of all Sub
+- `show ngts dist-issuers subcaproviders id` — Get a Sub CA provider details
+- `show ngts edgeencryptionkeys` — Retrieve Satellite Encryption Keys
+- `show ngts edgeencryptionkeys id` — Retrieve SatelliteEncryption Key By Id
+- `show ngts edgeinstances` — Retrieve Satellite Instances
+- `show ngts edgeinstances id` — Retrieve Satellite Instance By Id
+- `show ngts edgeworkers` — Retrieve Satellite Workers
+- `show ngts exp-notifications tenant-config` — Retrieve the certificate expiration notification c
+- `show ngts exp-reports tenant-config` — Retrieve the certificate expiration reports config
+- `show ngts integrationservices` — Get a list of services
+- `show ngts integrationservices id` — Get service details
+- `show ngts inventory-monitoring id` — Get the details of the current
+- `show ngts machineidentities` — Get the details of all machine
+- `show ngts machineidentities id` — Get a machine identity details
+- `show ngts machines` — Get the details of all machines
+- `show ngts machines discovery id` — Get the discovery results for a
+- `show ngts machines id` — Get a machine details
+- `show ngts machinetypes` — List Machine Types
+- `show ngts plugins` — Retrieve all plugins
+- `show ngts plugins disablements` — Retrieve all disabled plugins
+- `show ngts plugins id` — Retrieve plugin by ID
+- `show ngts serviceaccounts` — Retrieves all the Service Accounts the
+- `show ngts serviceaccounts id` — Gets a Service Account
+- `show ngts serviceaccounts scopes` — Retrieves all the Service Accounts Scopes
+- `show ngts tags` — Retrieve all tags
+- `show ngts tags id` — Retrieve tag by name
+- `show ngts tags values` — Retrieve values for all tags
+- `show ngts tags values id` — Retrieve values for a tag
+- `show ngts updatesconfig` — Retrieve Updates configuration
+- `show npb-profiles` — List all Network Packet Broker Profiles
+- `show npb-profiles id` — Get Network Packet Broker Profile by ID
+- `show npb-rules` — List all Network Packet Broker Rules
+- `show npb-rules id` — Get Network Packet Broker Rule by ID
+- `show oauth2 userinfo` — Retrieve oAuth 2.0 claims
 - `show ospf-auth-profiles` — Show ospf auth profiles in the active folder
+- `show ospf-auth-profiles id` — Get an OSPF authentication profile
 - `show pbf-rules` — Show policy-based forwarding rules in the active folder
+- `show pbf-rules id` — Get a PBF rule
+- `show posture id` — Get Posture Check
+- `show posture reports bpa-result id` — Get BPA Processing Status
+- `show posture root` — List Posture Checks
 - `show profile-group` — Show security profile groups in the active folder
 - `show qos-policy-rules` — Show qos policy rules in the active folder
+- `show qos-policy-rules id` — Get a QoS policy rule
 - `show qos-profile` — Show QoS profiles in the active folder
-- `show quarantined-devices` — Show quarantined devices in the active folder
+- `show qos-profiles id` — Get a QoS profile
 - `show radius-server` — Show RADIUS server profiles in the active folder
 - `show region` — Show regions (TSG-wide, no folder filter)
-- `show remote-networks-license-info` — Show remote networks license info in the active folder
+- `show rn-license-info` — Get Remote Networks License Info
 - `show route-access-lists` — Show route access lists in the active folder
+- `show route-access-lists id` — Get a route access list
 - `show route-community-lists` — Show route community lists in the active folder
-- `show route-path-access-lists` — Show route path access lists in the active folder
+- `show route-community-lists id` — Get a route community list
+- `show route-path-acls` — List route path access lists
+- `show route-path-acls id` — Get a route path access list
 - `show route-prefix-lists` — Show route prefix lists in the active folder
+- `show route-prefix-lists id` — Get a route prefix list
 - `show routing bgp` — Show live BGP routing state from device — use --remote
 - `show routing route` — Show static routes in the active folder
 - `show routing summary` — Show virtual routers / routing profiles in the active folder
-- `show saas-tenant-restrictions` — Show saas tenant restrictions in the active folder
-- `show saml-server-profiles` — Show saml server profiles in the active folder
-- `show scep-profiles` — Show scep profiles in the active folder
+- `show sase agent-profiles` — List GlobalProtect agent profiles
+- `show sase agent-versions` — List GlobalProtect agent versions
+- `show sase authentication-settings` — List GlobalProtect authentication settings
+- `show sase bandwidth-allocations` — List bandwidth regions
+- `show sase bgp-routing` — Get BGP routing settings
+- `show sase enable` — Get GlobalProtect enablement status
+- `show sase forwarding-profiles` — List GlobalProtect forwarding profiles
+- `show sase forwarding-profiles id` — Get a GlobalProtect forwarding profile
+- `show sase fp-custom-proxies` — List GlobalProtect regional and custom proxies
+- `show sase fp-custom-proxies id` — Get a GlobalProtect regional and custom proxy
+- `show sase fp-destinations` — List GlobalProtect destinations
+- `show sase fp-destinations id` — Get a GlobalProtect destination
+- `show sase fp-source-apps` — List GlobalProtect source applications
+- `show sase fp-source-apps id` — Get a GlobalProtect source application
+- `show sase fp-user-locations` — List GlobalProtect user locations
+- `show sase fp-user-locations id` — Get a GlobalProtect user location
+- `show sase global-settings` — List GlobalProtect global settings
+- `show sase infrastructure-settings` — List GlobalProtect infrastructure settings
+- `show sase internal-dns-servers` — List internal DNS servers
+- `show sase internal-dns-servers id` — Get an internal DNS server
+- `show sase locations` — List locations
+- `show sase mobileagent locations` — List GlobalProtect locations
+- `show sase remote-networks` — List remote networks
+- `show sase remote-networks id` — Get a remote network
+- `show sase service-connection-groups` — List service connection groups
+- `show sase service-connection-groups id` — Get a service connection group
+- `show sase service-connections` — List service connections
+- `show sase service-connections id` — Get a service connection
+- `show sase shared-infrastructure-settings` — Get shared infrastructure settings
+- `show sase sites` — List sites
+- `show sase sites id` — Get a site
+- `show sase traffic-steering-rules` — List traffic steering rules
+- `show sase traffic-steering-rules id` — Get a traffic steering rule
+- `show sase tunnel-profiles` — List GlobalProtect tunnel settings
 - `show schedule` — Show schedules in the active folder
-- `show sdwan-error-correction-profiles` — Show sdwan error correction profiles in the active folder
-- `show sdwan-path-quality-profiles` — Show sdwan path quality profiles in the active folder
+- `show sdwan-error-profiles` — List SD-WAN error correction profiles
+- `show sdwan-error-profiles id` — Get an SD-WAN error correction profile
+- `show sdwan-path-profiles` — List SD-WAN path quality profiles
+- `show sdwan-path-profiles id` — Get an SD-WAN path quality profile
 - `show sdwan-rules` — Show SD-WAN rules in the active folder
-- `show sdwan-saas-quality-profiles` — Show sdwan saas quality profiles in the active folder
-- `show sdwan-traffic-distribution-profiles` — Show sdwan traffic distribution profiles in the active folder
+- `show sdwan-rules id` — Get an SD-WAN rule
+- `show sdwan-saas-profiles` — List SD-WAN SaaS quality profiles
+- `show sdwan-saas-profiles id` — Get an SD-WAN SaaS quality profile
+- `show sdwan-traffic-profiles` — List SD-WAN traffic distribution profiles
+- `show sdwan-traffic-profiles id` — Get an SD-WAN traffic distribution profile
 - `show security policy` — Show security policy rules in the active folder
 - `show service` — Show service objects in the active folder
+- `show service-accounts` — List all service accounts
+- `show service-accounts id` — Get a service account
 - `show service-group` — Show service groups in the active folder
+- `show service-route` — List service route settings
+- `show service-route id` — Get existing service route settings
+- `show service-settings` — List service settings
+- `show service-settings id` — Get existing service settings
 - `show session all` — Show live session table from device — use --remote
+- `show session-settings` — List session settings
+- `show session-settings id` — Get existing session settings
+- `show session-timeouts` — List session timeouts settings
+- `show session-timeouts id` — Get existing session settings
 - `show snippet` — Show full detail for a snippet
 - `show snippets` — List snippets for the current context  [dim](device → device snippets | folder → folder snippets | Shared → all)[/dim]
 - `show snippets global` — List ALL snippets regardless of device or folder context
-- `show ssl-decryption-settings` — Show ssl decryption settings in the active folder
-- `show syslog-server-profiles` — Show syslog server profiles in the active folder
+- `show subscription instances` — List instances
+- `show subscription licenses` — List license details
 - `show system disk-space` — Show live disk usage — use --remote for live device data
 - `show system info` — Show device info from SCM (model, serial, SW version, IP, status…)
 - `show system resources` — Show live CPU / memory — use --remote for live device data
 - `show system-match-list` — Show system match list in the active folder
-- `show tacacs-server-profiles` — Show tacacs server profiles in the active folder
+- `show system-match-list id` — Get a system match list entry
 - `show tag` — Show tags in the active folder
+- `show tcp-settings` — List TCP settings
+- `show tcp-settings id` — Get existing TCP settings
+- `show tenant-service-groups` — List all tenant service groups
+- `show tenant-service-groups id` — Get a tenant service group
 - `show tls-service-profile` — Show TLS service profiles in the active folder
-- `show trusted-certificate-authorities` — Show trusted certificate authorities in the active folder
 - `show tunnel-interfaces` — Show tunnel interfaces in the active folder
-- `show url-access-profiles` — Show url access profiles in the active folder
-- `show url-admin-override` — Show url admin override in the active folder
+- `show tunnel-interfaces id` — Get a tunnel interface
+- `show update-schedule` — List update schedule settings
+- `show update-schedule id` — Get existing update schedule settings
 - `show url-categories` — Show custom URL categories in the active folder
-- `show url-filtering-categories` — Show url filtering categories in the active folder
 - `show user ip-user-mapping` — Show live user-to-IP mapping from device — use --remote
 - `show userid-match-list` — Show userid match list in the active folder
+- `show userid-match-list id` — Get a userid match list entry
 - `show vlan-interfaces` — Show vlan interfaces in the active folder
+- `show vlan-interfaces id` — Get a VLAN interface
 - `show vpn ike-sa` — Show live IKE security associations from device — use --remote
 - `show vpn tunnel` — Show live VPN tunnel state from device — use --remote
+- `show vpn-settings` — List VPN settings
+- `show vpn-settings id` — Get existing VPN settings
 - `show vulnerability-profile` — Show vulnerability protection profiles in the active folder
-- `show vulnerability-protection-signatures` — Show vulnerability protection signatures in the active folder
 - `show wildfire-profile` — Show WildFire anti-virus profiles in the active folder
 - `show zone` — Show security zones in the active folder
-- `show zone-protection-profiles` — Show zone protection profiles in the active folder
+- `show zone-profiles` — List zone protection profiles
+- `show zone-profiles id` — Get a zone protection profile
+- `show zones id` — Get a security zone
 - `test nat-policy-match` — Test NAT policy match (use --remote)
 - `test security-policy-match` — Test which security rule a packet matches (alias of packet-tracer)
 - `test url` — Test URL categorization (use --remote)
 - `traceroute host` — Traceroute from a managed device (use --remote)
 - `update address` — Update address — update address <name> ip-netmask|fqdn|ip-range|ip-wildcard|description|tag <value>
 - `update address-group` — Update address group — update address-group <name> static <m1>... | dynamic filter '<expr>'
+- `update adnsr bad-domains` — Update a misconfigured domain
+- `update adnsr conn-sources` — Update a Connection Source
+- `update adnsr custom-fqdns` — Update a Custom FQDN
+- `update adnsr edls` — Update an EDL definition
+- `update adnsr internal-domains` — Update a custom internal domain
+- `update adnsr profiles` — Update a profile
+- `update aggregate-interfaces` — Update an Aggregate Interface
+- `update authentication-settings` — Update authentication settings
+- `update auto-vpn-clusters` — Update an Auto VPN cluster
+- `update auto-vpn-settings` — Update Auto VPN settings
+- `update bgp-af-profiles` — Update a BGP address family profile
+- `update bgp-auth-profiles` — Update a BGP authentication profile
+- `update bgp-filtering-profiles` — Update a BGP filtering profile
+- `update bgp-redist-profiles` — Update a BGP redistribution profile
+- `update bgp-route-maps` — Update a BGP route map
+- `update bgp-routemap-redist` — Update a BGP route map redistribution
+- `update cdug cloud-dug-definition group` — Update Cloud Dynamic User Groups
+- `update cngfw address-groups` — Update an address group
+- `update cngfw addresses` — Update an address
+- `update cngfw adv-device-objs` — Update an advanced device object by path
+- `update cngfw anti-spyware-profiles` — Update an anti-spyware profile
+- `update cngfw anti-spyware-signatures` — Update an anti-spyware signature
+- `update cngfw app-override-rules` — Update an application override rule
+- `update cngfw application-filters` — Update an application filter
+- `update cngfw application-groups` — Update an application group
+- `update cngfw applications` — Update an application
+- `update cngfw authentication-portals` — Update an authentication portal
+- `update cngfw authentication-profiles` — Update an authentication profile
+- `update cngfw authentication-rules` — Update an authentication rule
+- `update cngfw authentication-sequences` — Update an authentication sequence
+- `update cngfw auto-tag-actions` — Update an auto-tag action
+- `update cngfw certificate-profiles` — Update a certificate profile
+- `update cngfw data-filtering-profiles` — Update Data Filtering Profile by ID
+- `update cngfw data-objects` — Update Data Object by ID
+- `update cngfw decryption-exclusions` — Update a decryption exclusion
+- `update cngfw decryption-profiles` — Update a decryption profile
+- `update cngfw decryption-rules` — Update a decryption rule
+- `update cngfw device-contexts` — Update a device context segment
+- `update cngfw devices` — Update a device
+- `update cngfw dns-security-profiles` — Update a DNS security profile
+- `update cngfw dos-protection-profiles` — Update a DoS protection profile
+- `update cngfw dos-protection-rules` — Update a DoS protection rule
+- `update cngfw dynamic-user-groups` — Update a Dynamic User Group
+- `update cngfw external-dynamic-lists` — Update an External Dynamic List
+- `update cngfw file-blocking-profiles` — Update a file blocking profile
+- `update cngfw folders` — Update a folder
+- `update cngfw hip-objects` — Update a HIP object
+- `update cngfw hip-profiles` — Update a HIP profile
+- `update cngfw http-header-profiles` — Update an HTTP header profile
+- `update cngfw http-server-profiles` — Update a HTTP server profile
+- `update cngfw kerberos-server-profiles` — Update a Kerberos server profile
+- `update cngfw labels` — Update a label
+- `update cngfw ldap-server-profiles` — Update an LDAP server profile
+- `update cngfw local-user-groups` — Update a local user group
+- `update cngfw local-users` — Update a local user
+- `update cngfw log-forwarding-profiles` — Update a log forwarding profile
+- `update cngfw mfa-servers` — Update an MFA server
+- `update cngfw objects adv-device-objs` — Update an advanced device object
+- `update cngfw ocsp-responders` — Update an OCSP responder
+- `update cngfw onboarding-rules` — Update an onboarding rule
+- `update cngfw profile-groups` — Update a profile group
+- `update cngfw properties` — Update a property
+- `update cngfw radius-server-profiles` — Update a RADIUS server profile
+- `update cngfw regions` — Update a region
+- `update cngfw saas-tenant-restrictions` — Update Saas Tenant Restrictions
+- `update cngfw saml-server-profiles` — Update a SAML server profile
+- `update cngfw scep-profiles` — Update a SCEP profile
+- `update cngfw schedules` — Update a schedule
+- `update cngfw security-rules` — Update a security rule
+- `update cngfw service-groups` — Update a service group
+- `update cngfw services` — Update a service
+- `update cngfw shared-snippets` — Update Shared Snippets
+- `update cngfw site-groups` — Update a site group
+- `update cngfw sites` — Update a site
+- `update cngfw snippets` — Update a snippet
+- `update cngfw ssl-decryption-settings` — PUT Ssl Decryption Settings
+- `update cngfw subscribed-tenants` — Update a subscribed tenant
+- `update cngfw syslog-server-profiles` — Update a syslog server profile
+- `update cngfw tacacs-server-profiles` — Update a TACACS server profile
+- `update cngfw tags` — Update a tag
+- `update cngfw tls-service-profiles` — Update a TLS service profile
+- `update cngfw url-access-profiles` — Update a URL access Profile
+- `update cngfw url-categories` — Update a custom URL category
+- `update cngfw variables` — Update a variable
+- `update cngfw vuln-profiles` — Update an vulnerability protection profile
+- `update cngfw vuln-signatures` — Update a vulnerability protection signature
+- `update cngfw wildfire-profiles` — Update a wildfire and antivirus profile
+- `update config-match-list` — Update a config match list entry
+- `update content-id-settings` — Update Content-ID settings
+- `update device-redistribution-collector` — Update device redistribution collector settings
+- `update dhcp-interfaces` — Update a DHCP interface
+- `update dns-proxies` — Update a DNS proxy
+- `update ethernet-interfaces` — Update an ethernet interface
 - `update external-dynamic-list` — Update EDL url/frequency — update external-dynamic-list <name> url <url>
+- `update general-settings` — Update general settings
+- `update gp-match-list` — Update a globalprotect match list entry
+- `update ha-configurations` — Update high availability configurations
+- `update hipmatch-match-list` — Update a hipmatch match list entry
+- `update iam custom-roles` — Update a Custom Role
+- `update if-mgmt-profiles` — Update an interface management profile
+- `update ike-crypto-profiles` — Update an IKE crypto profile
+- `update ike-gateways` — Update an IKE gateway
+- `update ipsec-crypto-profiles` — Update an IPsec crypto profile
+- `update ipsec-tunnels` — Update an IPsec tunnel
+- `update iptag-match-list` — Update an iptag match list entry
+- `update layer2-subinterfaces` — Update a layer 2 subinterface
+- `update layer3-subinterfaces` — Update a layer 3 subinterface
+- `update link-tags` — Update a link tag
+- `update lldp-profiles` — Update an LLDP profile
+- `update logical-routers` — Update a logical router
+- `update loopback-interfaces` — Update a loopback interface
+- `update management-interface` — Update management interface settings
+- `update motd-banner-settings` — Update login banner settings
+- `update nat-rules` — Update a NAT rule
+- `update ngts autorenewal tenant-config` — Update the monitoring configuration
+- `update ngts cert-requests approval` — Update certificate request workflow approval rule
+- `update ngts cert-templates` — Overwrite an issuing template details
+- `update ngts certs revokes approval` — Update certificate revocation workflow approval ru
+- `update ngts credential-configs` — Update a Credential Manager Service configuration
+- `update ngts credentials` — Update a shared credential
+- `update ngts dist-issuers configurations` — Update an Issuer configuration details
+- `update ngts dist-issuers policies` — Update a Workload Issuance policy details
+- `update ngts dist-issuers subcaproviders` — Update a Sub CA provider details
+- `update ngts edgeinstances` — Update Satellite Instance
+- `update ngts exp-notifications tenant-config` — Update the certificate expiration notification con
+- `update ngts exp-reports tenant-config` — Update the certificate expiration reports configur
+- `update ngts integrationservices` — Update Service properties
+- `update ngts inventory-monitoring` — Updates existing inventory monitoring configuratio
+- `update ngts inventory-monitoring scheduler` — Update inventory monitoring scheduler by type
+- `update ngts machineidentities` — Update a machine identity details
+- `update ngts machines` — Update a machine details
+- `update ngts plugins` — Update a local plugin
+- `update ngts serviceaccounts` — Updates a Service Account
+- `update ngts serviceaccounts credentials` — Updates a Service Account credentials
+- `update ngts serviceaccounts ocitoken` — Regenerate the OCI registry token for
+- `update ngts tagsassignment` — Replace Add Or Delete Tags
+- `update ngts updatesconfig` — Create or Update Configuration
+- `update npb-profiles` — Update Network Packet Broker Profile by ID
+- `update npb-rules` — Update Network Packet Broker Rule by ID
+- `update ospf-auth-profiles` — Update an OSPF authentication profile
+- `update pbf-rules` — Update a PBF rule
+- `update posture root` — Update Posture Check
+- `update qos-policy-rules` — Update a QoS policy rule
+- `update qos-profiles` — Update a QoS profile
+- `update route-access-lists` — Update a route access list
+- `update route-community-lists` — Update a route community list
+- `update route-path-acls` — Update a route path access list
+- `update route-prefix-lists` — Update a route prefix list
+- `update sase agent-profiles` — Update a GlobalProtect agent profile
+- `update sase authentication-settings` — Update a GlobalProtect authentication setting
+- `update sase bandwidth-allocations` — Update a bandwidth allocation
+- `update sase bgp-routing` — Update BGP routing settings
+- `update sase forwarding-profiles` — Update a GlobalProtect forwarding profile
+- `update sase fp-custom-proxies` — Update a GlobalProtect regional and custom proxy
+- `update sase fp-destinations` — Update a GlobalProtect destination
+- `update sase fp-source-apps` — Update a GlobalProtect source application
+- `update sase fp-user-locations` — Update a GlobalProtect user location
+- `update sase global-settings` — Update GlobalProtect global settings
+- `update sase infrastructure-settings` — Update a GlobalProtect infrastructure setting
+- `update sase internal-dns-servers` — Update an internal DNS server
+- `update sase locations` — Select a GlobalProtect location
+- `update sase remote-networks` — Update a remote network
+- `update sase service-connection-groups` — Update a service connection group
+- `update sase service-connections` — Update a service connection
+- `update sase shared-infrastructure-settings` — Update infrastructure settings
+- `update sase sites` — Update a site
+- `update sase traffic-steering-rules` — Update a traffic steering rule
+- `update sase tunnel-profiles` — Update a GlobalProtect tunnel setting
+- `update sdwan-error-profiles` — Update an SD-WAN error correction profile
+- `update sdwan-path-profiles` — Update an SD-WAN path quality profile
+- `update sdwan-rules` — Update an SD-WAN rule
+- `update sdwan-saas-profiles` — Update an SD-WAN SaaS quality profile
+- `update sdwan-traffic-profiles` — Update an SD-WAN traffic distribution profile
 - `update service` — Update service — update service <name> tcp|udp port <n> [source-port <n>]
+- `update service-accounts` — Update a service account
 - `update service-group` — Update service group members — update service-group <name> members <svc1> [svc2...]
+- `update service-route` — Update service route settings
+- `update service-settings` — Update service settings
+- `update session-settings` — Update session settings
+- `update session-timeouts` — Update session settings
+- `update system-match-list` — Update a system match list entry
 - `update tag` — Update tag color/comments — update tag <name> color <color> [comments <text>]
+- `update tcp-settings` — Update TCP settings
+- `update tenant-service-groups` — Update a tenant service group
+- `update tunnel-interfaces` — Update a tunnel interface
+- `update update-schedule` — Update update schedule settings
+- `update userid-match-list` — Update a userid match list entry
+- `update vlan-interfaces` — Update a VLAN interface
+- `update vpn-settings` — Update VPN settings
+- `update zone-profiles` — Update a zone protection profile
+- `update zones` — Update a security zone

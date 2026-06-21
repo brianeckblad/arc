@@ -29,26 +29,29 @@ python dev/docsupdate.py            # apply: download, self-heal moves, write CH
                                          #   front-matter + docs/commands/index.md + api-reference.md)
 ```
 
-## Coverage policy — 100%, always
+## Coverage policy — generated and feature-gated
 
-ARC exposes **every** folder-scoped NGFW config list endpoint in the pulled
-specs as a `show <resource>` command. You never hand-write a method per
-resource:
+ARC generates command metadata for the pulled SCM OpenAPI operations. You never
+hand-write boilerplate for every endpoint:
 
-- `dev/generate_resource_catalog.py` reads `docs/scm-api/specs/ngfw-*.yaml`, subtracts
-  endpoints already covered by an explicit command (matched via each command
-  doc's front-matter `api:` path), and writes `app/commands/resource_catalog.py`.
-- `app/commands/generated.py` turns each catalog entry into a real, **ungated**
-  (always-on) `show <resource>` command that calls `SCMClient.get_config(domain,
-  path, folder)`.
+- `dev/generate_resource_catalog.py` reads every pulled OpenAPI spec and writes
+  `app/commands/resource_catalog.py` entries for `GET`, `POST`, `PUT`/`PATCH`,
+  and `DELETE` operations.
+- `app/commands/generated.py` turns each catalog entry into a real, feature-gated
+  command. `GET` becomes `show`, `POST` becomes `set`, `PUT`/`PATCH` becomes
+  `update`, and `DELETE` becomes `delete`.
+- `dev/generate_feature_flags.py` writes `settings/features.json`; new generated
+  flags default to `false`, so generated commands stay hidden until intentionally
+  enabled.
 - This runs automatically inside `docsupdate`, so a new pan.dev endpoint becomes
-  a command with **zero** manual work.
-- Smoke **section 3** fails if `resource_catalog.py` drifts from the specs
-  (a new endpoint with no command) — run `python dev/generate_resource_catalog.py`.
+  command metadata, docs, API-index rows, and feature flags with **zero** manual
+  boilerplate.
+- Smoke **section 3** fails if `resource_catalog.py` drifts from the specs — run
+  `python dev/generate_resource_catalog.py`.
 
-Scope today: the four folder-scoped config domains (`objects`, `security`,
-`network`, `identity`). Live-ops / device-settings collections that are not
-folder-scoped are still served by explicit commands.
+Curated explicit commands still win over generated commands when they share a key;
+use curated handlers for high-priority commands that need friendly arguments,
+custom rendering, or endpoint-specific request-body builders.
 
 - Source paths live in `dev/scm_sources.json` (editable registry).
 - If a file 404s, the tool searches the live pan.dev tree and **auto-updates**

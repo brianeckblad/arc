@@ -116,7 +116,7 @@ notes: <anything you already know changed on pan.dev>
 | Say this | Agent reads first | Usually edits | Validation |
 |---|---|---|---|
 | `add scm command` | `docs/COMMAND_PATTERNS.md` (pattern 1), `dev/API_INDEX.md` for resource | command module + `app/api/client.py` if method missing + docs page | `python dev/smoke_test.py --only 1,2,3` |
-| `add feature-flagged command` | `app/settings/features.py`, `docs/COMMAND_PATTERNS.md` | `app/settings/features.py`, command module | `python dev/smoke_test.py --file app/settings/features.py` then `--only 1,2,3` |
+| `add feature-flagged command` | `dev/generate_feature_flags.py`, `settings/features.json`, `docs/COMMAND_PATTERNS.md` | command module + run `python dev/generate_feature_flags.py` | `python dev/generate_feature_flags.py --check` then `python dev/smoke_test.py --only 1,2,3,6` |
 | `add device command` | `docs/COMMAND_PATTERNS.md` (pattern 4), `dev/API_INDEX.md` SSH column | `operations.py`, docs page | `python dev/smoke_test.py --only 1,2,3` |
 | `add shell builtin` | `app/shell_catalog.py`, `dev/CODE_MAP.md` | `shell_catalog.py`, one `_cmd_*`, `_dispatch()` | `python dev/smoke_test.py --file app/shell_catalog.py` |
 | `change help text` | `app/shell_catalog.py` for SHELL help, command module for registered commands | small catalog/module only | `python dev/smoke_test.py --only 8` |
@@ -143,7 +143,7 @@ notes: <anything you already know changed on pan.dev>
 | Change output rendering | `app/utils/formatter.py` + `app/shell/execution.py _render()` | same |
 | Config / auth changes | `app/config.py`, `app/cli.py` | same |
 | Theme / UI | `app/settings/theme.py`, `settings/theme.json`, `app/shell/prompt.py _styled()` | same |
-| Feature flags | `app/settings/features.py` + `settings/features.json` | same |
+| Feature flags | `settings/features.json` + `dev/generate_feature_flags.py` + `app/settings/features.py` loader | edit flag values or generator, not the loader for new flags |
 | Command help (description + usage) | `docs/commands/<slug>.md` front-matter → `python dev/generate_command_docs.py` to add/refresh | same |
 
 ---

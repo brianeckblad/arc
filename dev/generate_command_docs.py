@@ -176,10 +176,69 @@ _API: dict[str, str] = {
 }
 
 
+def _generated_api_map() -> dict[str, str]:
+    """Return API notes for commands created from the generated endpoint catalog."""
+    try:
+        from app.commands.resource_catalog import CATALOG
+    except Exception:  # noqa: BLE001 — stale/missing catalog should not block docs
+        return {}
+    out: dict[str, str] = {}
+    for entry in CATALOG:
+        command = str(entry.get("command", ""))
+        method = str(entry.get("method", ""))
+        base_url = str(entry.get("base_url", "")).rstrip("/")
+        path = str(entry.get("path", ""))
+        if command and method and path:
+            out[command] = f"{method} {base_url}{path}"
+    return out
+
+
+def _generated_commands() -> set[str]:
+    """Return command keys created from the generated endpoint catalog."""
+    try:
+        from app.commands.resource_catalog import CATALOG
+    except Exception:  # noqa: BLE001 — stale/missing catalog should not block docs
+        return set()
+    return {str(entry.get("command", "")) for entry in CATALOG if entry.get("command")}
+
+
+def _generated_usage_map() -> dict[str, str]:
+    """Return command → usage for generated endpoint commands.
+
+    This intentionally duplicates the lightweight usage convention from
+    app.commands.generated so docs/front-matter can be refreshed even when the
+    live registry has already loaded stale front-matter overrides.
+    """
+    try:
+        from app.commands.resource_catalog import CATALOG
+    except Exception:  # noqa: BLE001 — stale/missing catalog should not block docs
+        return {}
+    usage: dict[str, str] = {}
+    for entry in CATALOG:
+        command = str(entry.get("command", ""))
+        if not command:
+            continue
+        path_params = " ".join(f"{name} <value>" for name in entry.get("path_params") or [])
+        if command.startswith(("set ", "update ")):
+            parts = [command]
+            if path_params:
+                parts.append(path_params)
+            parts.append("json|file <payload-or-path>")
+            usage[command] = " ".join(parts)
+        elif command.startswith("delete ") and path_params:
+            usage[command] = f"{command} {path_params}"
+        else:
+            usage[command] = command
+    return usage
+
+
 def _api_for(key: str) -> str:
     """Return a human-readable API note for a command."""
     if key in _API:
         return _API[key]
+    generated = _generated_api_map()
+    if key in generated:
+        return generated[key]
     if key in ("packet-tracer", "test security-policy-match"):
         return "(client-side simulation of the folder rule base)"
     cmd = COMMANDS[key]
@@ -192,8 +251,9 @@ def _front_matter(key: str) -> str:
     """Build the YAML front-matter block for a command from the live registry."""
     cmd = COMMANDS[key]
     seed_desc, seed_usage = _SEED.get(key, ("", ""))
+    generated_usage = _generated_usage_map().get(key, "")
     description = seed_desc or cmd.description
-    usage = seed_usage or cmd.usage
+    usage = generated_usage or seed_usage or cmd.usage
     lines = ["---", f"command: {_dq(key)}", f"description: {_dq(description)}"]
     if usage:
         lines.append(f"usage: {_dq(usage)}")
@@ -232,13 +292,18 @@ def ensure_front_matter() -> list[str]:
     updated.  Never overwrites an existing front-matter block (human-owned).
     """
     updated: list[str] = []
+    generated = _generated_commands()
     for key in COMMANDS:
         path = _doc_path(key)
         body = path.read_text(encoding="utf-8") if path.exists() else f"# {key}\n"
         meta, stripped_body = parse_front_matter(body)
-        if meta.get("command"):
-            continue  # already has front-matter — leave it alone
-        path.write_text(_front_matter(key) + "\n" + stripped_body, encoding="utf-8")
+        new_front_matter = _front_matter(key)
+        if meta.get("command") and key not in generated:
+            continue  # human-owned front-matter — leave it alone
+        existing_front_matter = body[: body.find("---", 3) + 3] + "\n" if body.startswith("---") else ""
+        if meta.get("command") and existing_front_matter == new_front_matter:
+            continue
+        path.write_text(new_front_matter + "\n" + stripped_body, encoding="utf-8")
         updated.append(key)
     return updated
 

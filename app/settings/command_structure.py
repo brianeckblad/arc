@@ -1,8 +1,9 @@
 """Loader for the per-command argument *order* that drives Tab completion.
 
-The user-facing file is intentionally tiny: ``settings/command-structure.csv``
-lists, for each object, just the **fields in the order you type them** — nothing
-else.  One row per ``set <object>`` command::
+The user-facing file is intentionally tiny and curated:
+``settings/command-structure.csv`` lists, for selected friendly commands, just
+the **fields in the order you type them** — nothing else.  One row per curated
+``set <object>`` command::
 
     # object,field,field,...
     address,name,type,value,description,tag
@@ -17,6 +18,11 @@ The loader compiles each row into the internal shape the completer consumes: an
 ordered list of arg dicts with keys ``name``, ``kind`` (``value`` | ``choice`` |
 ``keyword``), ``required`` (bool), ``choices`` (list), ``choice_hints`` (dict),
 ``hint`` and optional ``value_hint``.
+
+Generated OpenAPI commands are intentionally **not** all copied into this CSV.
+They use each command's ``usage`` string instead (for example generic writes
+offer ``json|file <payload-or-path>``).  Add a CSV row only when a command has a
+curated, human-friendly parser that is better than the generic generated form.
 
 An advanced ``settings/command-structure.json`` (fully-specified arg dicts) is
 still read as a fallback when no CSV exists.  Any missing/malformed file leaves

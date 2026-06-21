@@ -22,11 +22,16 @@ class DispatchMixin:
         if not tokens:
             return False
 
+        def _feature_visible(command_def: CommandDef) -> bool:
+            """Return True when a registered command's feature flag is visible."""
+            return is_enabled(self._features, command_def.feature_flag, self._dev_mode)
+
         # Cisco-style shorthand expansion:
         #   e            -> exit
         #   sh sec pol   -> show security policy
         # Expansion occurs only when a prefix resolves to exactly one command.
-        phrases = [[b] for b in _SHELL_BUILTINS if b != "?"] + [k.split() for k in COMMANDS]
+        visible_command_keys = [k for k, v in COMMANDS.items() if _feature_visible(v)]
+        phrases = [[b] for b in _SHELL_BUILTINS if b != "?"] + [k.split() for k in visible_command_keys]
 
         # Detect a trailing help trigger: '?' (brief, context-sensitive) or
         # '??' (full help).  Both are appended by the '?' key binding.
@@ -49,6 +54,13 @@ class DispatchMixin:
         # e.g. "cd help" shows docs instead of treating "help" as a device name.
         if len(tokens) >= 2 and tokens[-1].lower() == "help":
             topic = " ".join(tokens[:-1]).lower()
+            topic_cmd = COMMANDS.get(topic)
+            if topic_cmd is not None and not _feature_visible(topic_cmd):
+                console.print(
+                    f"\n[yellow]No docs found for:[/yellow] [bold]{topic}[/bold]\n"
+                    "  Type [bold]?[/bold] for available commands.\n"
+                )
+                return False
             self._cmd_help_docs(topic)
             return False
 
@@ -161,6 +173,26 @@ class DispatchMixin:
             return False
 
         if cmd in ("set", "delete", "update"):
+            matched_write: tuple[str, CommandDef, dict] | None = None
+            if len(tokens) >= 2 and tokens[1].lower() not in ("?", "folder"):
+                key, cmd_def, cmd_args = match_command(tokens)
+                if key is not None:
+                    if not _feature_visible(cmd_def):
+                        console.print(
+                            f"[red]Unknown command:[/red] [bold]{' '.join(tokens)}[/bold]  "
+                            "— type [bold]?[/bold] or [bold]help[/bold] for available commands."
+                        )
+                        return False
+                    matched_write = (key, cmd_def, cmd_args)
+
+            # Write operations require configure mode
+            if not self._state.configure_mode:
+                console.print(
+                    f"[yellow]The {cmd} command is only available in configure mode.[/yellow]\n"
+                    "  Type [bold]configure[/bold] to enter configure mode."
+                )
+                return False
+
             # Bare verb ? — show available commands for that verb
             if len(tokens) >= 2 and tokens[1] == "?":
                 if cmd == "set":
@@ -170,14 +202,13 @@ class DispatchMixin:
                 return False
 
             # Route set/delete/update to registry if subcommand is not a builtin
-            if len(tokens) >= 2 and tokens[1].lower() not in ("?", "folder"):
-                key, cmd_def, cmd_args = match_command(tokens)
-                if key is not None:
-                    if remote:
-                        self._execute_remote(key, cmd_def, cmd_args)
-                    else:
-                        self._execute_api(key, cmd_def, cmd_args)
-                    return False
+            if matched_write is not None:
+                key, cmd_def, cmd_args = matched_write
+                if remote:
+                    self._execute_remote(key, cmd_def, cmd_args)
+                else:
+                    self._execute_api(key, cmd_def, cmd_args)
+                return False
             if cmd == "set":
                 self._cmd_set(tokens[1:])
                 return False
@@ -227,9 +258,14 @@ class DispatchMixin:
             self._cmd_folder([])
             return False
 
+        # Convenience alias: show feature [on|off|dev|<name>]
+        if cmd == "show" and len(tokens) > 1 and tokens[1].lower() in ("feature", "features"):
+            self._cmd_feature(["show"] + tokens[2:])
+            return False
+
         # ---- Registry commands ----
         key, cmd_def, args = match_command(tokens)
-        if key is None:
+        if key is None or not _feature_visible(cmd_def):
             console.print(
                 f"[red]Unknown command:[/red] [bold]{' '.join(tokens)}[/bold]  "
                 "— type [bold]?[/bold] or [bold]help[/bold] for available commands."

@@ -59,9 +59,10 @@ import json
 import subprocess
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 # ── Constants ────────────────────────────────────────────────────────────────
 
@@ -88,10 +89,21 @@ DEFAULT_SOURCES: dict[str, Any] = {
     "settings": {
         "specs_root": "openapi-specs/scm",
         "guides_root": "products/scm/docs",
+        "mirror_all_specs": True,
         "mirror_all_guides": True,
         "discovery_min_score": 0.55,
     },
     "specs": {
+        "adnsr": "openapi-specs/scm/config/adnsr/adnsr.yaml",
+        "cdug": "openapi-specs/scm/config/cdug/cdug.yaml",
+        "ciedss": "openapi-specs/scm/config/ciedss/CIE-DSS-R2.yaml",
+        "cloudngfw-identity": "openapi-specs/scm/config/cloudngfw/identity/identity-services-march.yaml",
+        "cloudngfw-objects": "openapi-specs/scm/config/cloudngfw/objects/objects-june.yaml",
+        "cloudngfw-operations": "openapi-specs/scm/config/cloudngfw/operations/config-operations-march.yaml",
+        "cloudngfw-security": "openapi-specs/scm/config/cloudngfw/security/security-services.yaml",
+        "cloudngfw-setup": "openapi-specs/scm/config/cloudngfw/setup/config-setup-feb-v1.yaml",
+        "cloudngfw-device-onboarding": "openapi-specs/scm/config/cloudngfw/setup/device-onboarding/device-onboarding-updated.yaml",
+        "incidents": "openapi-specs/scm/config/incidents/Unified_SCM_Incident.yaml",
         "ngfw-objects": "openapi-specs/scm/config/ngfw/objects/objects_v1.3_feb.yaml",
         "ngfw-security": "openapi-specs/scm/config/ngfw/security/security-services-R2-2026.yaml",
         "ngfw-setup": "openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml",
@@ -101,11 +113,41 @@ DEFAULT_SOURCES: dict[str, Any] = {
         "ngfw-device": "openapi-specs/scm/config/ngfw/device/device-settings_April.yaml",
         "ngfw-identity": "openapi-specs/scm/config/ngfw/identity/identity-services-march.yaml",
         "ngfw-device-onboarding": "openapi-specs/scm/config/ngfw/setup/device-onboarding/device-onboarding-updated.yaml",
+        "ngts-tlsprotect": "openapi-specs/scm/config/ngts/tlsprotect-cloud.json",
+        "posture-management": "openapi-specs/scm/config/posture-management/Posture APIs-updated.yaml",
+        "sase-deployment": "openapi-specs/scm/config/sase/deployment/deployment-services-march.yaml",
+        "sase-identity": "openapi-specs/scm/config/sase/identity/identity-services-march.yaml",
+        "sase-mobileagent": "openapi-specs/scm/config/sase/mobileagent/mobile-agent-feb-v1.yaml",
+        "sase-network-configurations": "openapi-specs/scm/config/sase/network configurations/network-services-R2-2026.yaml",
+        "sase-network": "openapi-specs/scm/config/sase/network/network-services.yaml",
+        "sase-objects": "openapi-specs/scm/config/sase/objects/objects-june.yaml",
+        "sase-operations": "openapi-specs/scm/config/sase/operations/config-operations-march.yaml",
+        "sase-security": "openapi-specs/scm/config/sase/security/security-services-R2-2026.yaml",
+        "sase-setup": "openapi-specs/scm/config/sase/setup/config-setup-feb-v1.yaml",
+        "sase-device-onboarding": "openapi-specs/scm/config/sase/setup/device-onboarding/device-onboarding-updated.yaml",
         "auth": "openapi-specs/scm/auth/AuthService.yaml",
+        "iam-access-policies": "openapi-specs/scm/iam/AccessPolicies.yaml",
+        "iam-custom-roles": "openapi-specs/scm/iam/CustomRoles.yaml",
+        "iam-permission-sets": "openapi-specs/scm/iam/PermissionSets.yaml",
+        "iam-permissions": "openapi-specs/scm/iam/Permissions.yaml",
+        "iam-roles": "openapi-specs/scm/iam/Roles.yaml",
         "tenancy": "openapi-specs/scm/tenancy/TenantServiceGroup.yaml",
         "iam-service-accounts": "openapi-specs/scm/iam/ServiceAccounts.yaml",
+        "iam-user-accounts": "openapi-specs/scm/iam/UserAccounts.yaml",
+        "subscription-instance": "openapi-specs/scm/subscription/Instance.yaml",
+        "subscription-licenses": "openapi-specs/scm/subscription/Licenses.yaml",
     },
     "spec_domains": {
+        "adnsr": "adnsr",
+        "cdug": "cdug",
+        "ciedss": "ciedss",
+        "cloudngfw-identity": "identity",
+        "cloudngfw-objects": "objects",
+        "cloudngfw-operations": "operations",
+        "cloudngfw-security": "security",
+        "cloudngfw-setup": "setup",
+        "cloudngfw-device-onboarding": "device-onboarding",
+        "incidents": "incidents",
         "ngfw-objects": "objects",
         "ngfw-security": "security",
         "ngfw-setup": "setup",
@@ -115,9 +157,29 @@ DEFAULT_SOURCES: dict[str, Any] = {
         "ngfw-device": "device",
         "ngfw-identity": "identity",
         "ngfw-device-onboarding": "device-onboarding",
+        "ngts-tlsprotect": "ngts",
+        "posture-management": "posture-management",
+        "sase-deployment": "deployment",
+        "sase-identity": "identity",
+        "sase-mobileagent": "mobileagent",
+        "sase-network-configurations": "network",
+        "sase-network": "network",
+        "sase-objects": "objects",
+        "sase-operations": "operations",
+        "sase-security": "security",
+        "sase-setup": "setup",
+        "sase-device-onboarding": "device-onboarding",
         "auth": "auth",
+        "iam-access-policies": "iam",
+        "iam-custom-roles": "iam",
+        "iam-permission-sets": "iam",
+        "iam-permissions": "iam",
+        "iam-roles": "iam",
         "tenancy": "tenancy",
         "iam-service-accounts": "iam",
+        "iam-user-accounts": "iam",
+        "subscription-instance": "subscription",
+        "subscription-licenses": "subscription",
     },
     "guides": {
         "home": "products/scm/docs/home.md",
@@ -159,12 +221,26 @@ def load_sources() -> dict[str, Any]:
         print(f"  ⚠ could not read {SOURCES_FILE.name} ({exc}); using built-in defaults")
         return json.loads(json.dumps(DEFAULT_SOURCES))
 
+    changed = False
+
     # Backfill any missing top-level keys from defaults.
     for key, default in DEFAULT_SOURCES.items():
-        data.setdefault(key, default)
+        if key not in data:
+            data[key] = default
+            changed = True
     data.setdefault("settings", {})
     for key, default in DEFAULT_SOURCES["settings"].items():
-        data["settings"].setdefault(key, default)
+        if key not in data["settings"]:
+            data["settings"][key] = default
+            changed = True
+    for section in ("specs", "spec_domains", "guides"):
+        data.setdefault(section, {})
+        for key, default in DEFAULT_SOURCES[section].items():
+            if key not in data[section]:
+                data[section][key] = default
+                changed = True
+    if changed:
+        save_sources(data)
     return data
 
 
@@ -180,6 +256,11 @@ def save_sources(sources: dict[str, Any]) -> None:
 
 def _raw_base(sources: dict[str, Any]) -> str:
     return f"https://raw.githubusercontent.com/{sources['repo']}/{sources['branch']}"
+
+
+def _raw_url(sources: dict[str, Any], path: str) -> str:
+    """Return a raw GitHub URL, escaping spaces and other path characters."""
+    return f"{_raw_base(sources)}/{urllib.parse.quote(path, safe='/')}"
 
 
 def _tree_api(sources: dict[str, Any]) -> str:
@@ -230,6 +311,90 @@ def list_remote_specs(sources: dict[str, Any]) -> list[str]:
         p for p in fetch_tree(sources)
         if p.startswith(specs_root + "/") and (p.endswith(".yaml") or p.endswith(".json"))
     )
+
+
+def _slug_token(text: str) -> str:
+    """Normalize a source-path token into a stable registry key segment."""
+    token = text.rsplit(".", 1)[0].lower().replace("_", "-").replace(" ", "-")
+    token = "".join(ch if ch.isalnum() or ch == "-" else "-" for ch in token)
+    while "--" in token:
+        token = token.replace("--", "-")
+    return token.strip("-") or "spec"
+
+
+def _spec_key_for_path(path: str, specs_root: str, existing_keys: set[str]) -> str:
+    """Return a compact, stable key for a newly discovered OpenAPI spec path."""
+    rel = path[len(specs_root) + 1:] if path.startswith(specs_root + "/") else path
+    parts = rel.split("/")
+    basename = _slug_token(parts[-1])
+
+    if parts[:1] == ["config"] and len(parts) >= 3:
+        product = _slug_token(parts[1])
+        domain = _slug_token(parts[2])
+        if product == "ngfw-operations":
+            base_key = "ngfw-operations"
+        elif domain == "setup" and len(parts) >= 4 and _slug_token(parts[3]) == "device-onboarding":
+            base_key = f"{product}-device-onboarding"
+        else:
+            base_key = f"{product}-{domain}"
+    elif parts[:1] == ["auth"]:
+        base_key = "auth"
+    elif parts[:1] == ["tenancy"]:
+        base_key = "tenancy"
+    elif parts[:1] in (["iam"], ["subscription"]):
+        base_key = f"{_slug_token(parts[0])}-{basename}"
+    else:
+        base_key = basename
+
+    candidate = base_key
+    suffix = basename
+    if candidate in existing_keys:
+        candidate = f"{base_key}-{suffix}"
+    index = 2
+    while candidate in existing_keys:
+        candidate = f"{base_key}-{suffix}-{index}"
+        index += 1
+    return candidate
+
+
+def _domain_for_spec_path(path: str, specs_root: str) -> str:
+    """Return a discovery hint/domain label for a spec path."""
+    rel = path[len(specs_root) + 1:] if path.startswith(specs_root + "/") else path
+    parts = rel.split("/")
+    if parts[:1] == ["config"] and len(parts) >= 3:
+        if _slug_token(parts[1]) == "ngfw-operations":
+            return "ngfw-operations"
+        if _slug_token(parts[2]) == "setup" and len(parts) >= 4:
+            return _slug_token(parts[3])
+        return _slug_token(parts[2])
+    if parts:
+        return _slug_token(parts[0])
+    return "scm"
+
+
+def discover_all_specs(sources: dict[str, Any]) -> dict[str, str]:
+    """Add any remote SCM OpenAPI specs missing from the source registry.
+
+    Existing entries remain stable so generated filenames do not churn.  New
+    pan.dev spec files are assigned deterministic keys and included in this run.
+    """
+    settings = cast(dict[str, Any], sources["settings"])
+    specs_root = str(settings["specs_root"])
+    specs_map = cast(dict[str, str], sources.setdefault("specs", {}))
+    domains_map = cast(dict[str, str], sources.setdefault("spec_domains", {}))
+    known_paths = {str(value) for value in specs_map.values()}
+    existing_keys = {str(key) for key in specs_map}
+    discovered: dict[str, str] = {}
+    for remote_path in list_remote_specs(sources):
+        path = str(remote_path)
+        if path in known_paths:
+            continue
+        key = str(_spec_key_for_path(path, specs_root, existing_keys))
+        existing_keys.add(key)
+        specs_map[key] = path
+        domains_map[key] = _domain_for_spec_path(path, specs_root)
+        discovered[key] = path
+    return discovered
 
 
 # ── Auto-discovery of relocated files ────────────────────────────────────────
@@ -297,7 +462,7 @@ def _fetch_with_discovery(
     found, the registry dict (and *relocated* log) are updated in place; the
     caller persists the registry after the run.
     """
-    url = f"{_raw_base(sources)}/{path}"
+    url = _raw_url(sources, path)
     try:
         return _fetch_bytes(url), path
     except urllib.error.HTTPError as exc:
@@ -315,7 +480,7 @@ def _fetch_with_discovery(
 
     print(f"    > relocation: {path}\n                  ->  {new_path}")
     try:
-        raw = _fetch_bytes(f"{_raw_base(sources)}/{new_path}")
+        raw = _fetch_bytes(_raw_url(sources, new_path))
     except (urllib.error.URLError, urllib.error.HTTPError) as exc:
         print(f"    ✗ discovered path also failed: {exc}")
         return None, path
@@ -731,12 +896,13 @@ def _download_guides(
 ) -> list[str]:
     """Download guide docs (curated + discovered).  Returns names pulled OK."""
     pulled_names: list[str] = []
+    settings = cast(dict[str, Any], sources["settings"])
 
     for name, doc_path in guide_map.items():
         print(f"  ↓ guide:{name:<28} {doc_path}")
         raw, _eff_path = _fetch_with_discovery(
             sources, "guides", name, doc_path,
-            domain_hint=None, root=sources["settings"]["guides_root"], ext=".md",
+            domain_hint=None, root=str(settings["guides_root"]), ext=".md",
             pulled_on=pulled_on, relocated=relocated,
         )
         if raw is None:
@@ -761,8 +927,19 @@ def update(check_only: bool = False, mirror_all: Optional[bool] = None) -> int:
     pulled_on = _dt.date.today().isoformat()
 
     sources = load_sources()
+    mirror_all_specs = bool(sources["settings"].get("mirror_all_specs", True))
     if mirror_all is None:
         mirror_all = bool(sources["settings"].get("mirror_all_guides", True))
+
+    discovered_specs: dict[str, str] = {}
+    if mirror_all_specs:
+        discovered_specs = discover_all_specs(sources)
+        if discovered_specs:
+            print(f"  + {len(discovered_specs)} additional OpenAPI spec(s) discovered under {sources['settings']['specs_root']}/")
+            for key, path in sorted(discovered_specs.items()):
+                print(f"    + spec:{key:<23} {path}")
+            if not check_only:
+                save_sources(sources)
 
     try:
         import yaml  # noqa: F401  (presence check only)
@@ -785,7 +962,9 @@ def update(check_only: bool = False, mirror_all: Optional[bool] = None) -> int:
         print(f"  ↓ spec:{category:<23} {spec_path}")
         raw, eff_path = _fetch_with_discovery(
             sources, "specs", category, spec_path,
-            domain_hint=domain_hint, root=specs_root, ext=".yaml",
+            domain_hint=domain_hint,
+            root=specs_root,
+            ext=".json" if spec_path.endswith(".json") else ".yaml",
             pulled_on=pulled_on, relocated=relocated,
         )
         if raw is None:
@@ -833,6 +1012,10 @@ def update(check_only: bool = False, mirror_all: Optional[bool] = None) -> int:
 
     if check_only:
         print("\n  ── check summary ──")
+        if discovered_specs:
+            print("  New OpenAPI specs discovered (run without --check to save/pull):")
+            for key, path in sorted(discovered_specs.items()):
+                print(f"    - {key}: {path}")
         if relocated:
             print("  Relocations detected (run without --check to apply):")
             for item in relocated:
@@ -1003,20 +1186,11 @@ def main(argv: list[str] | None = None) -> int:
     mirror_all = False if args.no_mirror else None
     result = update(check_only=args.check, mirror_all=mirror_all)
 
-    # After a successful update, regenerate the compact API index.
+    # After a successful update, regenerate generated catalogs/docs derived from
+    # the freshly pulled specs.
     if result == 0 and not args.check:
-        print("\nRegenerating compact API index (dev/API_INDEX.md)…")
-        try:
-            subprocess.run(
-                [sys.executable, str(DEV_DIR / "generate_api_index.py")],
-                check=True,
-            )
-        except (subprocess.CalledProcessError, OSError) as exc:
-            print(f"[warn] API index regeneration failed: {exc}", file=sys.stderr)
-
         # Regenerate the auto-coverage resource catalog FIRST: turn every new
-        # folder-scoped list endpoint in the freshly-pulled specs into a generic
-        # `show <resource>` command (100% NGFW config coverage policy).
+        # pulled spec operation into feature-gated generated command metadata.
         print("\nRegenerating NGFW resource catalog (app/commands/resource_catalog.py)…")
         try:
             subprocess.run(
@@ -1025,6 +1199,18 @@ def main(argv: list[str] | None = None) -> int:
             )
         except (subprocess.CalledProcessError, OSError) as exc:
             print(f"[warn] resource-catalog regeneration failed: {exc}", file=sys.stderr)
+
+        # Regenerate feature flags from the generated endpoint catalog plus every
+        # explicit CommandDef.feature_flag.  New API surface defaults OFF so ARC
+        # fails closed until features are intentionally enabled.
+        print("\nRegenerating feature flags (settings/features.json)…")
+        try:
+            subprocess.run(
+                [sys.executable, str(DEV_DIR / "generate_feature_flags.py")],
+                check=True,
+            )
+        except (subprocess.CalledProcessError, OSError) as exc:
+            print(f"[warn] feature-flag regeneration failed: {exc}", file=sys.stderr)
 
         # Regenerate per-command help docs: ensure every command's
         # docs/commands/<slug>.md has help front-matter, and rebuild the command
@@ -1038,6 +1224,17 @@ def main(argv: list[str] | None = None) -> int:
             )
         except (subprocess.CalledProcessError, OSError) as exc:
             print(f"[warn] command-doc regeneration failed: {exc}", file=sys.stderr)
+
+        # Regenerate the compact API index last so the ARC Command column sees
+        # the freshly generated command docs/front-matter.
+        print("\nRegenerating compact API index (dev/API_INDEX.md)…")
+        try:
+            subprocess.run(
+                [sys.executable, str(DEV_DIR / "generate_api_index.py")],
+                check=True,
+            )
+        except (subprocess.CalledProcessError, OSError) as exc:
+            print(f"[warn] API index regeneration failed: {exc}", file=sys.stderr)
 
     return result
 

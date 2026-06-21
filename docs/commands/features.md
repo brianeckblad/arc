@@ -1,9 +1,10 @@
 # feature — Feature Flags
 
 ARC commands are turned on/off by **feature flags** stored in
-**`settings/features.json`**.  This lets you ship an MVP with a handful of
-commands and roll out the rest as they are built and tested — without touching
-any Python.  `settings/features.json` is the single source of truth.
+**`settings/features.json`**.  The file is generated from the pulled OpenAPI
+specs plus explicit ARC commands, then edited by operators to enable the pieces
+they want.  New generated flags default to `false` so API surface fails closed
+until intentionally enabled.
 
 Every flag has **three states**: `true` (on for everyone), `"dev"` (under
 development — hidden until development mode is on), and `false` (off for
@@ -13,9 +14,16 @@ everyone).
 
 ```text
 feature show                 List every flag grouped ON / DEV / OFF
-feature enable <flag>        Set one ON for this session (not saved)
-feature disable <flag>       Set one OFF for this session (not saved)
-feature dev <flag>           Mark one DEV for this session (not saved)
+feature show on              List only enabled flags
+feature show off             List only disabled flags
+feature show dev             List only development flags
+feature show <name>          List flags/commands matching a name fragment
+show feature on              Alias for feature show on
+show feature off             Alias for feature show off
+show feature <name>          Alias for feature show <name>
+feature enable <flag>        Set one ON and save to settings/features.json
+feature disable <flag>       Set one OFF and save to settings/features.json
+feature dev <flag>           Mark one DEV and save to settings/features.json
 feature ?                    Show the sub-command summary
 feature enable ?             List flags not yet ON
 feature disable ?            List flags not yet OFF
@@ -33,8 +41,9 @@ dev                          Toggle development mode (reveal DEV commands)
 | **false** | Those commands are hidden from `?` and blocked for everyone |
 | **absent** | Treated as `false` (safe default — unlisted features are off) |
 
-`feature enable/disable/dev` change the running session only. To make a change
-**permanent**, edit `settings/features.json` and restart ARC.
+`feature enable/disable/dev` update the running session and save immediately to
+`settings/features.json`. Restart ARC in another terminal/session to pick up the
+same persisted state there.
 
 ## Development mode — the hidden `dev` command
 
@@ -54,15 +63,38 @@ or CI, start ARC with `ARC_DEV_MODE=1` to enter development mode immediately.
 
 ## Editing settings/features.json
 
+`settings/features.json` is organized for browsing:
+
+1. A `_GLOSSARY` explains abbreviations such as ADNSR, CDUG, CIE-DSS, cngfw,
+   IAM, NGTS, and SASE.
+2. Flags are grouped by **category**, then **feature/resource**.
+3. Each feature has one readable `_category_resource` label line.
+4. Each feature lists actions in this order: **show**, **set/create**,
+   **update**, **delete**.
+5. Keys beginning with `_` are descriptions/comments and are ignored by ARC.
+
 ```jsonc
 {
-  "_README": "comment keys start with _ and are ignored",
-  "show_address": true,
-  "nat_rules": "dev",
-  "delete_objects": false,
-  "packet_tracer": true
+  "_GLOSSARY": {
+    "adnsr": "Advanced DNS Security Resolver",
+    "cngfw": "Cloud NGFW",
+    "ngts": "Next-Generation Trust Security",
+    "sase": "Secure Access Service Edge"
+  },
+
+  "_section_ngts": "===== Next-Generation Trust Security =====",
+  "_ngts_cert_requests": "Next-Generation Trust Security: cert_requests",
+  "show_ngts_cert_requests": false,
+  "show_ngts_cert_requests_id": false,
+  "create_ngts_cert_requests": false
 }
 ```
+
+Change only the non-underscore flag values (`true`, `"dev"`, or `false`) when
+editing the file manually. The in-shell `feature enable|disable|dev <flag>`
+commands write those same values for you.
+The generated labels are safe to leave alone and will be refreshed by
+`python dev/docsupdate.py`.
 
 One-session override via environment variable (`on` | `dev` | `off`):
 
@@ -73,27 +105,23 @@ ARC_FEATURE_SHOW_ADDRESS=off arc  # force show_address off
 ARC_DEV_MODE=1 arc              # start in development mode (reveal dev commands)
 ```
 
-## MVP defaults (shipped on)
+## Regenerating from pan.dev
 
-| Flag | Commands |
-|------|----------|
-| `show_devices` | show devices / show device / show device snippets |
-| `show_address` | show address |
-| `show_service` | show service |
-| `show_security_policy` | show security policy |
-| `show_snippets` | show snippet / show snippets / show snippets global |
-| `show_system_info` | show system info |
-| `show_jobs` | show jobs all / show jobs id |
-| `packet_tracer` | packet-tracer / test security-policy-match |
+`python dev/docsupdate.py` refreshes the local OpenAPI specs, discovers new SCM
+spec files, regenerates the command catalog, and rewrites `settings/features.json`
+in the feature-first format above. Existing flag states are preserved when the
+same flag still exists; newly discovered flags default to `false`.
 
-Everything else ships as **`"dev"`** (visible in development mode) or **`false`**.
-Run `feature show` to see the full list grouped by state.
+Run `feature show` to see the currently loaded states grouped by ON / DEV / OFF.
 
 ## Adding a new feature (for developers)
 
-1. Set `feature_flag='your_flag'` on the CommandDef in `app/commands/<module>.py`
-2. Add `"your_flag": "dev"` to `settings/features.json` while building it
-3. Flip it to `true` when the command is ready to ship for everyone
+1. For generated OpenAPI commands, run `python dev/docsupdate.py`; the feature
+   flag is created automatically.
+2. For hand-written commands, set `feature_flag='your_flag'` on the `CommandDef`.
+3. Run `python dev/generate_feature_flags.py`; the new flag appears defaulted to
+   `false`.
+4. Edit `settings/features.json` to set the flag to `"dev"` or `true` when ready.
 
 ## Related
 

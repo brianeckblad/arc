@@ -88,14 +88,16 @@ class ConfigureMixin:
 
         Subcommands:
           feature show                 — list all flags grouped ON / DEV / OFF
-          feature enable <flag>        — set a flag ON for this session
-          feature disable <flag>       — set a flag OFF for this session
-          feature dev <flag>           — mark a flag DEV for this session
+          feature show on|off|dev      — list only flags in one state
+          feature show <name>          — list flags matching a name fragment
+          feature enable <flag>        — set a flag ON and save to settings/features.json
+          feature disable <flag>       — set a flag OFF and save to settings/features.json
+          feature dev <flag>           — mark a flag DEV and save to settings/features.json
           feature ?                    — show this usage summary
 
         Flag states: ON (everyone), DEV (only in development mode — see the
         hidden 'dev' command), OFF (hidden for everyone).  Changes take effect
-        immediately but are session-only unless you edit settings/features.json.
+        immediately and are persisted to settings/features.json.
         """
         sub = args[0].lower() if args else "show"
 
@@ -104,10 +106,14 @@ class ConfigureMixin:
             console.print()
             console.print(f"  [bold yellow]feature[/bold yellow]  [dim]— feature flag management[/dim]")
             console.print()
-            console.print(f"  [cyan]feature show[/cyan]           List all flags with ON / DEV / OFF state")
-            console.print(f"  [cyan]feature enable <flag>[/cyan]  Set a flag ON for this session")
-            console.print(f"  [cyan]feature disable <flag>[/cyan] Set a flag OFF for this session")
-            console.print(f"  [cyan]feature dev <flag>[/cyan]     Mark a flag DEV (shown in development mode)")
+            console.print(f"  [cyan]feature show[/cyan]           List all flags grouped ON / DEV / OFF")
+            console.print(f"  [cyan]feature show on[/cyan]        List only enabled flags")
+            console.print(f"  [cyan]feature show off[/cyan]       List only disabled flags")
+            console.print(f"  [cyan]feature show dev[/cyan]       List only development flags")
+            console.print(f"  [cyan]feature show <name>[/cyan]    Show matching feature flag(s)")
+            console.print(f"  [cyan]feature enable <flag>[/cyan]  Set a flag ON and save")
+            console.print(f"  [cyan]feature disable <flag>[/cyan] Set a flag OFF and save")
+            console.print(f"  [cyan]feature dev <flag>[/cyan]     Mark a flag DEV and save")
             console.print(f"  [cyan]feature help[/cyan]           Open full feature flag documentation")
             console.print()
             console.print(f"  [dim]DEV flags appear only after you type [bold]dev[/bold] to enter development mode.[/dim]")
@@ -129,13 +135,52 @@ class ConfigureMixin:
             names = set(self._features) | set(_flag_to_cmds())
             return sorted(names)
 
+        def _persist_feature_state(flag_name: str, state: str) -> None:
+            """Write one feature flag state to settings/features.json and memory."""
+            import json  # Deferred: used only when changing a feature flag.
+
+            from app.paths import FEATURES_FILE
+
+            try:
+                raw = json.loads(FEATURES_FILE.read_text(encoding="utf-8")) if FEATURES_FILE.exists() else {}
+            except (json.JSONDecodeError, OSError) as exc:
+                raise RuntimeError(f"Could not read settings/features.json: {exc}") from exc
+            if not isinstance(raw, dict):
+                raise RuntimeError("settings/features.json must contain a JSON object")
+
+            raw_value: bool | str
+            if state == "on":
+                raw_value = True
+            elif state == "dev":
+                raw_value = "dev"
+            else:
+                raw_value = False
+
+            raw[flag_name] = raw_value
+            try:
+                FEATURES_FILE.write_text(json.dumps(raw, indent=2) + "\n", encoding="utf-8")
+            except OSError as exc:
+                raise RuntimeError(f"Could not write settings/features.json: {exc}") from exc
+            self._features[flag_name] = state
+
+        def _print_feature_rows(title: str, flags: list[str], colour: str, flag_cmds: dict[str, list[str]]) -> None:
+            """Print a compact flag list with command mappings."""
+            console.print(f"\n  [bold {colour}]{title}[/bold {colour}]  [dim]({len(flags)})[/dim]")
+            if not flags:
+                console.print("    [dim]No matching flags.[/dim]")
+                return
+            for flag in flags:
+                state = feature_state(self._features, flag)
+                cmds = ", ".join(sorted(flag_cmds.get(flag, []))) or "—"
+                console.print(f"    {flag:<35} [{colour}]{state}[/{colour}]  [dim]{cmds}[/dim]")
+
         if sub in ("enable", "disable", "dev") and len(args) >= 2 and args[1] == "?":
             flag_cmds = _flag_to_cmds()
             console.print()
             if sub == "enable":
                 candidates = [f for f in _all_flags() if feature_state(self._features, f) != "on"]
                 console.print(f"  [bold yellow]feature enable <flag>[/bold yellow]  [dim]— flags not yet ON[/dim]")
-                console.print(f"  [dim]  Persist by editing settings/features.json[/dim]")
+                console.print(f"  [dim]  Saves immediately to settings/features.json[/dim]")
             elif sub == "dev":
                 candidates = [f for f in _all_flags() if feature_state(self._features, f) != "dev"]
                 console.print(f"  [bold yellow]feature dev <flag>[/bold yellow]  [dim]— flags not yet DEV[/dim]")
@@ -165,6 +210,7 @@ class ConfigureMixin:
             on  = [f for f in names if feature_state(self._features, f) == "on"]
             dev = [f for f in names if feature_state(self._features, f) == "dev"]
             off = [f for f in names if feature_state(self._features, f) == "off"]
+            filter_token = args[1].lower() if len(args) >= 2 else ""
 
             mode = (
                 "[magenta]ON[/magenta]" if self._dev_mode
@@ -174,27 +220,39 @@ class ConfigureMixin:
             console.print(
                 f"  [bold yellow]Feature Flags[/bold yellow]  "
                 f"[dim]— development mode:[/dim] {mode}  "
-                f"[dim](edit settings/features.json to persist)[/dim]"
+                f"[dim](changes save to settings/features.json)[/dim]"
             )
 
-            console.print(f"\n  [bold green]ON[/bold green]  [dim]({len(on)}) — visible to everyone[/dim]")
-            for flag in on:
-                cmds = ", ".join(sorted(flag_cmds.get(flag, []))) or "—"
-                console.print(f"    {flag:<35} [green]on[/green]   [dim]{cmds}[/dim]")
+            if filter_token in ("on", "enabled", "true"):
+                _print_feature_rows("ON — visible to everyone", on, "green", flag_cmds)
+                console.print()
+                return
+            if filter_token in ("off", "disabled", "false"):
+                _print_feature_rows("OFF — hidden for everyone", off, "red", flag_cmds)
+                console.print()
+                return
+            if filter_token in ("dev", "development"):
+                dev_hint = "shown now" if self._dev_mode else "hidden — type 'dev' to reveal"
+                _print_feature_rows(f"DEV — {dev_hint}", dev, "magenta", flag_cmds)
+                console.print()
+                return
+            if filter_token:
+                matches = [
+                    flag for flag in names
+                    if filter_token in flag.lower()
+                    or any(filter_token in cmd.lower() for cmd in flag_cmds.get(flag, []))
+                ]
+                _print_feature_rows(f"MATCHES — {filter_token}", matches, "cyan", flag_cmds)
+                console.print()
+                return
 
+            _print_feature_rows("ON — visible to everyone", on, "green", flag_cmds)
             dev_hint = "shown now" if self._dev_mode else "hidden — type 'dev' to reveal"
-            console.print(f"\n  [bold magenta]DEV[/bold magenta]  [dim]({len(dev)}) — {dev_hint}[/dim]")
-            for flag in dev:
-                cmds = ", ".join(sorted(flag_cmds.get(flag, []))) or "—"
-                console.print(f"    {flag:<35} [magenta]dev[/magenta]  [dim]{cmds}[/dim]")
-
-            console.print(f"\n  [bold red]OFF[/bold red]  [dim]({len(off)}) — hidden for everyone[/dim]")
-            for flag in off:
-                cmds = ", ".join(sorted(flag_cmds.get(flag, []))) or "—"
-                console.print(f"    {flag:<35} [red]off[/red]  [dim]{cmds}[/dim]")
+            _print_feature_rows(f"DEV — {dev_hint}", dev, "magenta", flag_cmds)
+            _print_feature_rows("OFF — hidden for everyone", off, "red", flag_cmds)
 
             console.print()
-            console.print("  [dim]  feature enable <flag>  |  feature disable <flag>  |  feature dev <flag>  |  dev[/dim]")
+            console.print("  [dim]  feature show on|off|dev|<name>  |  feature enable <flag>  |  feature disable <flag>  |  feature dev <flag>[/dim]")
             console.print()
             return
 
@@ -211,20 +269,24 @@ class ConfigureMixin:
                 )
                 return
             new_state = {"enable": "on", "disable": "off", "dev": "dev"}[sub]
-            self._features[flag_name] = new_state   # session-only override
+            try:
+                _persist_feature_state(flag_name, new_state)
+            except RuntimeError as exc:
+                console.print(f"[red]Could not save feature flag:[/red] {exc}")
+                return
             colour = {"on": "green", "dev": "magenta", "off": "red"}[new_state]
             note = ""
             if new_state == "dev" and not self._dev_mode:
                 note = "  [dim](type 'dev' to reveal dev commands)[/dim]"
             console.print(
                 f"  {flag_name}  →  [{colour}]{new_state}[/{colour}]{note}  "
-                f"[dim](session only — edit settings/features.json to persist)[/dim]"
+                f"[dim](saved to settings/features.json)[/dim]"
             )
             return
 
         console.print(
             f"[yellow]Unknown feature subcommand:[/yellow] {sub!r}\n"
-            "  Usage: feature show | feature enable <flag> | feature disable <flag> | feature dev <flag>"
+            "  Usage: feature show [on|off|dev|<name>] | feature enable <flag> | feature disable <flag> | feature dev <flag>"
         )
 
     def _cmd_dev(self, args: list[str]) -> None:

@@ -11,243 +11,814 @@
   SSH col:      PAN-OS operational CLI equivalent for --remote execution
 -->
 
+## Advanced DNS Security Resolver Configuration
+**Base:** `https://api.strata.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/adnsr.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  adns-resolver/v1/ca-certs                   LRCD     ✓ delete adnsr ca-certs / set adnsr ca-certs upload / show adnsr ca-certs / +2 more —
+  adns-resolver/v1/connection-sources         LRCUD    ✓ delete adnsr conn-sources / delete adnsr conn-sources subnets / set adnsr conn-sources / +6 more —
+  adns-resolver/v1/connection-sources/subnets LR       ✓ show adnsr conn-sources subnets          —
+  adns-resolver/v1/custom-fqdns               LRCUD    ✓ delete adnsr custom-fqdns / set adnsr custom-fqdns / show adnsr custom-fqdns / +2 more —
+  adns-resolver/v1/edls                       LRCUD    ✓ delete adnsr edls / set adnsr edls / show adnsr edls / +2 more —
+  adns-resolver/v1/internal-domains           LRCUD    ✓ delete adnsr internal-domains / set adnsr internal-domains / show adnsr internal-domains / +2 more —
+  adns-resolver/v1/misconfigured-domains      LRCUD    ✓ delete adnsr bad-domains / set adnsr bad-domains / show adnsr bad-domains / +2 more —
+  adns-resolver/v1/profiles                   LRCUD    ✓ delete adnsr profiles / set adnsr profiles / show adnsr profiles / +2 more —
+  adns-resolver/v1/profiles/categories        L        ✓ show adnsr profiles categories           —
+  adns-resolver/v1/resolver-info              L        ✓ show adnsr resolver-info                 —
+
 ## Authentication Service API
 **Base:** `https://auth.apps.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/auth.yaml`
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  auth/v1/oauth2/access_token                 C        —                                          —
-  auth/v1/oauth2/userinfo                     LC       —                                          —
+  auth/v1/oauth2/access_token                 C        ✓ set oauth2 access-token                  —
+  auth/v1/oauth2/userinfo                     LC       ✓ set oauth2 userinfo / show oauth2 userinfo —
+
+## CIE - Cloud Dynamic User Group CRUD Operations APIs Mounted on Strata Cloud Manager
+**Base:** ``  |  **Spec:** `docs/scm-api/specs/cdug.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  directory-sync/v1/cloud-dug-definition      C        ✓ set cdug cloud-dug-definition            —
+  directory-sync/v1/cloud-dug-definition/category L        ✓ show cdug cloud-dug-definition category  —
+  directory-sync/v1/cloud-dug-definition/group LUD      ✓ delete cdug cloud-dug-definition group / show cdug cloud-dug-definition group / update cdug cloud-dug-definition group —
+  directory-sync/v1/user-attr-values          L        ✓ show cdug user-attr-values               —
+
+## CIE Directory Sync Service APIs Mounted on Strata Cloud Manger
+**Base:** `https://api.sase.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/ciedss.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  cie/directory-sync/v1/cache-groups          C        ✓ set ciedss cache-groups                  —
+  cie/directory-sync/v1/cache-users           C        ✓ set ciedss cache-users                   —
+  cie/directory-sync/v1/connection/update-secret C        ✓ set ciedss connection update-secret      —
+  cie/directory-sync/v1/domains               L        ✓ show ciedss domains                      —
+
+## Device Onboarding
+**Base:** `https://api.strata.paloaltonetworks.com/config/setup/device-onboarding/v1`  |  **Spec:** `docs/scm-api/specs/cloudngfw-device-onboarding.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  onboarding-rules                            LRCUD    ✓ delete cngfw onboarding-rules / set cngfw onboarding-rules / set cngfw onboarding-rules move / +3 more —
+  properties                                  LRCUD    ✓ delete cngfw properties / set cngfw properties / show cngfw properties / +2 more —
+  site-groups                                 LRCUD    ✓ delete cngfw site-groups / set cngfw site-groups / show cngfw site-groups / +2 more —
+  sites                                       LRCUD    ✓ delete cngfw sites / set cngfw sites / show cngfw sites / +2 more —
+
+## Identity Services
+**Base:** `https://api.strata.paloaltonetworks.com/config/identity/v1`  |  **Spec:** `docs/scm-api/specs/cloudngfw-identity.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  authentication-portals                      LRCUD    ✓ delete cngfw authentication-portals / set cngfw authentication-portals / show cngfw authentication-portals / +2 more —
+  authentication-profiles                     LRCUD    ✓ delete cngfw authentication-profiles / set cngfw authentication-profiles / show authentication-profile / +3 more —
+  authentication-rules                        LRCUD    ✓ delete cngfw authentication-rules / set cngfw authentication-rules / set cngfw authentication-rules move / +4 more —
+  authentication-sequences                    LRCUD    ✓ delete cngfw authentication-sequences / set cngfw authentication-sequences / show cngfw authentication-sequences / +2 more —
+  certificate-profiles                        LRCUD    ✓ delete cngfw certificate-profiles / set cngfw certificate-profiles / show certificate-profile / +3 more —
+  certificates                                LRCD     ✓ delete cngfw certs / set cngfw certs / set cngfw certs export / +7 more —
+  kerberos-server-profiles                    LRCUD    ✓ delete cngfw kerberos-server-profiles / set cngfw kerberos-server-profiles / show cngfw kerberos-server-profiles / +2 more —
+  ldap-server-profiles                        LRCUD    ✓ delete cngfw ldap-server-profiles / set cngfw ldap-server-profiles / show cngfw ldap-server-profiles / +2 more —
+  local-user-groups                           LRCUD    ✓ delete cngfw local-user-groups / set cngfw local-user-groups / show cngfw local-user-groups / +3 more —
+  local-users                                 LRCUD    ✓ delete cngfw local-users / set cngfw local-users / show cngfw local-users / +3 more —
+  mfa-servers                                 LRCUD    ✓ delete cngfw mfa-servers / set cngfw mfa-servers / show cngfw mfa-servers / +3 more —
+  ocsp-responders                             LRCUD    ✓ delete cngfw ocsp-responders / set cngfw ocsp-responders / show cngfw ocsp-responders / +2 more —
+  radius-server-profiles                      LRCUD    ✓ delete cngfw radius-server-profiles / set cngfw radius-server-profiles / show cngfw radius-server-profiles / +3 more —
+  saml-server-profiles                        LRCUD    ✓ delete cngfw saml-server-profiles / set cngfw saml-server-profiles / show cngfw saml-server-profiles / +2 more —
+  scep-profiles                               LRCUD    ✓ delete cngfw scep-profiles / set cngfw scep-profiles / show cngfw scep-profiles / +2 more —
+  tacacs-server-profiles                      LRCUD    ✓ delete cngfw tacacs-server-profiles / set cngfw tacacs-server-profiles / show cngfw tacacs-server-profiles / +2 more —
+  tls-service-profiles                        LRCUD    ✓ delete cngfw tls-service-profiles / set cngfw tls-service-profiles / show cngfw tls-service-profiles / +3 more —
+  trusted-certificate-authorities             L        ✓ show cngfw trusted-cas                   —
+
+## Objects
+**Base:** `https://api.strata.paloaltonetworks.com/config/objects/v1`  |  **Spec:** `docs/scm-api/specs/cloudngfw-objects.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  address-groups                              LRCUD    ✓ delete address-group / delete cngfw address-groups / set address-group / +6 more show objects address-group
+  addresses                                   LRCUD    ✓ delete address / delete cngfw addresses / set address / +6 more show objects address
+  advanced-device-objects                     LRCUD    ✓ delete cngfw adv-device-objs / delete cngfw objects adv-device-objs / set cngfw adv-device-objs / +4 more —
+  application-filters                         LRCUD    ✓ delete cngfw application-filters / set cngfw application-filters / show application-filter / +3 more —
+  application-groups                          LRCUD    ✓ delete cngfw application-groups / set cngfw application-groups / show application-group / +3 more —
+  applications                                LRCUD    ✓ delete cngfw applications / set cngfw applications / show cngfw applications / +2 more —
+  auto-tag-actions                            LCUD     ✓ delete cngfw auto-tag-actions / set cngfw auto-tag-actions / show cngfw auto-tag-actions / +1 more —
+  device-context-segments                     LRCUD    ✓ delete cngfw device-contexts / delete cngfw objects device-contexts / set cngfw device-contexts / +3 more —
+  dynamic-user-groups                         LRCUD    ✓ delete cngfw dynamic-user-groups / set cngfw dynamic-user-groups / show cngfw dynamic-user-groups / +2 more —
+  external-dynamic-lists                      LRCUD    ✓ delete cngfw external-dynamic-lists / delete external-dynamic-list / set cngfw external-dynamic-lists / +6 more —
+  hip-objects                                 LRCUD    ✓ delete cngfw hip-objects / set cngfw hip-objects / show cngfw hip-objects / +3 more —
+  hip-profiles                                LRCUD    ✓ delete cngfw hip-profiles / set cngfw hip-profiles / show cngfw hip-profiles / +3 more —
+  http-server-profiles                        LRCUD    ✓ delete cngfw http-server-profiles / set cngfw http-server-profiles / show cngfw http-server-profiles / +2 more —
+  log-forwarding-profiles                     LRCUD    ✓ delete cngfw log-forwarding-profiles / set cngfw log-forwarding-profiles / show cngfw log-forwarding-profiles / +3 more —
+  quarantined-devices                         LCD      ✓ delete cngfw quarantined-devices / set cngfw quarantined-devices / show cngfw quarantined-devices show system info
+  regions                                     LRCUD    ✓ delete cngfw regions / set cngfw regions / show cngfw regions / +3 more —
+  schedules                                   LRCUD    ✓ delete cngfw schedules / set cngfw schedules / show cngfw schedules / +3 more —
+  service-groups                              LRCUD    ✓ delete cngfw service-groups / delete service-group / set cngfw service-groups / +6 more —
+  services                                    LRCUD    ✓ delete cngfw services / delete service / set cngfw services / +6 more show objects service
+  syslog-server-profiles                      LRCUD    ✓ delete cngfw syslog-server-profiles / set cngfw syslog-server-profiles / show cngfw syslog-server-profiles / +2 more —
+  tags                                        LRCUD    ✓ delete cngfw tags / delete tag / set cngfw tags / +6 more show objects tag
+
+## Config Operations
+**Base:** `https://api.strata.paloaltonetworks.com/config/operations/v1`  |  **Spec:** `docs/scm-api/specs/cloudngfw-operations.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  config-versions                             LRC      ✓ set cngfw config-versions load / show cngfw config-versions / show cngfw config-versions id —
+  config-versions/candidate                   CD       ✓ commit / delete cngfw config-versions candidate / set cngfw config-versions candidate push —
+  config-versions/running                     L        ✓ show cngfw config-versions running       —
+  jobs                                        LR       ✓ show cngfw jobs / show cngfw jobs id / show jobs all / +1 more show jobs processed
+
+## Security Services
+**Base:** `https://api.strata.paloaltonetworks.com/config/security/v1`  |  **Spec:** `docs/scm-api/specs/cloudngfw-security.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  anti-spyware-profiles                       LRCUD    ✓ delete cngfw anti-spyware-profiles / set cngfw anti-spyware-profiles / show anti-spyware-profile / +3 more —
+  anti-spyware-signatures                     LRCUD    ✓ delete cngfw anti-spyware-signatures / set cngfw anti-spyware-signatures / show cngfw anti-spyware-signatures / +2 more —
+  app-override-rules                          LRCUD    ✓ delete cngfw app-override-rules / set cngfw app-override-rules / set cngfw app-override-rules move / +4 more —
+  data-filtering-profiles                     LRCUD    ✓ delete cngfw data-filtering-profiles / set cngfw data-filtering-profiles / show cngfw data-filtering-profiles / +2 more —
+  data-objects                                LRCUD    ✓ delete cngfw data-objects / set cngfw data-objects / show cngfw data-objects / +2 more —
+  decryption-exclusions                       LRCUD    ✓ delete cngfw decryption-exclusions / set cngfw decryption-exclusions / show cngfw decryption-exclusions / +2 more —
+  decryption-profiles                         LRCUD    ✓ delete cngfw decryption-profiles / set cngfw decryption-profiles / show cngfw decryption-profiles / +3 more —
+  decryption-rules                            LRCUD    ✓ delete cngfw decryption-rules / set cngfw decryption-rules / set cngfw decryption-rules move / +4 more —
+  dns-security-profiles                       LRCUD    ✓ delete cngfw dns-security-profiles / set cngfw dns-security-profiles / show cngfw dns-security-profiles / +2 more —
+  dos-protection-profiles                     LRCUD    ✓ delete cngfw dos-protection-profiles / set cngfw dos-protection-profiles / show cngfw dos-protection-profiles / +3 more —
+  dos-protection-rules                        LRCUD    ✓ delete cngfw dos-protection-rules / set cngfw dos-protection-rules / show cngfw dos-protection-rules / +3 more —
+  file-blocking-profiles                      LRCUD    ✓ delete cngfw file-blocking-profiles / set cngfw file-blocking-profiles / show cngfw file-blocking-profiles / +2 more —
+  http-header-profiles                        LRCUD    ✓ delete cngfw http-header-profiles / set cngfw http-header-profiles / show cngfw http-header-profiles / +2 more —
+  profile-groups                              LRCUD    ✓ delete cngfw profile-groups / set cngfw profile-groups / show cngfw profile-groups / +3 more —
+  saas-tenant-restrictions                    LU       ✓ show cngfw saas-tenant-restrictions / update cngfw saas-tenant-restrictions —
+  security-rules                              LRCUD    ✓ delete cngfw security-rules / delete security-rule / set cngfw security-rules / +5 more show security policy
+  ssl-decryption-settings                     LCUD     ✓ delete cngfw ssl-decryption-settings / set cngfw ssl-decryption-settings / show cngfw ssl-decryption-settings / +1 more —
+  url-access-profiles                         LRCUD    ✓ delete cngfw url-access-profiles / set cngfw url-access-profiles / show cngfw url-access-profiles / +2 more —
+  url-admin-override                          LCD      ✓ delete cngfw url-admin-override / delete url-admin-override / set cngfw url-admin-override / +2 more —
+  url-categories                              LRCUD    ✓ delete cngfw url-categories / delete url-category / set cngfw url-categories / +5 more show security url-filtering
+  url-filtering-categories                    L        ✓ show cngfw url-filtering-categories      —
+  vulnerability-protection-profiles           LRCUD    ✓ delete cngfw vuln-profiles / set cngfw vuln-profiles / show cngfw vuln-profiles / +3 more —
+  vulnerability-protection-signatures         LRCUD    ✓ delete cngfw vuln-signatures / set cngfw vuln-signatures / show cngfw vuln-signatures / +2 more —
+  wildfire-anti-virus-profiles                LRCUD    ✓ delete cngfw wildfire-profiles / set cngfw wildfire-profiles / show cngfw wildfire-profiles / +3 more —
+
+## Configuration Setup
+**Base:** `https://api.strata.paloaltonetworks.com/config/setup/v1`  |  **Spec:** `docs/scm-api/specs/cloudngfw-setup.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  devices                                     LRU      ✓ show cngfw devices / show cngfw devices id / show device / +4 more show system info
+  folders                                     LRCUD    ✓ delete cngfw folders / set cngfw folders / show cngfw folders / +2 more —
+  labels                                      LRCUD    ✓ delete cngfw labels / set cngfw labels / show cngfw labels / +2 more —
+  shared-snippets                             LCU      ✓ set cngfw shared-snippets load / show cngfw shared-snippets / update cngfw shared-snippets —
+  snippet-audit-logs                          RC       ✓ set cngfw snippet-audit-logs / show cngfw snippet-audit-logs id —
+  snippet-categories                          LRD      ✓ delete cngfw snippet-categories / show cngfw snippet-categories / show cngfw snippet-categories id —
+  snippet-snapshots                           C        ✓ set cngfw snippet-snapshots / set cngfw snippet-snapshots compare / set cngfw snippet-snapshots convert / +4 more —
+  snippets                                    LRCUD    ✓ delete cngfw snippets / set cngfw snippets / show cngfw snippets / +5 more —
+  subscribed-tenants                          RCUD     ✓ delete cngfw subscribed-tenants / set cngfw subscribed-tenants / show cngfw subscribed-tenants id / +1 more —
+  trust-validations                           C        ✓ set cngfw trust-validations              —
+  trusted-tenant-overview                     L        ✓ show cngfw trusted-tenant-overview       —
+  trusted-tenants                             L        ✓ show cngfw trusted-tenants               —
+  trusts                                      CD       ✓ delete cngfw trusts / set cngfw trusts   —
+  variables                                   LRCUD    ✓ delete cngfw variables / set cngfw variables / show cngfw variables / +2 more —
+
+## Access Policies
+**Base:** `https://api.sase.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/iam-access-policies.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  iam/v1/access_policies                      LRCD     ✓ delete iam access-policies / set iam access-policies / show iam access-policies / +1 more —
+
+## Custom Roles
+**Base:** `https://api.sase.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/iam-custom-roles.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  iam/v1/custom_roles                         LRCUD    ✓ delete iam custom-roles / set iam custom-roles / show iam custom-roles / +2 more —
+
+## Permission Sets
+**Base:** `https://api.sase.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/iam-permission-sets.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  iam/v1/permission_sets                      LR       ✓ show iam permission-sets / show iam permission-sets id —
+
+## Permissions
+**Base:** `https://api.sase.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/iam-permissions.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  iam/v1/permissions                          LR       ✓ show iam permissions / show iam permissions id —
+
+## Roles
+**Base:** `https://api.sase.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/iam-roles.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  iam/v1/roles                                LR       ✓ show iam roles / show iam roles id       —
 
 ## Service Accounts
 **Base:** `https://api.sase.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/iam-service-accounts.yaml`
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  iam/v1/service_accounts                     LRCUD    —                                          —
+  iam/v1/service_accounts                     LRCUD    ✓ delete service-accounts / set service-accounts / set service-accounts reset / +3 more —
+
+## User Accounts
+**Base:** `https://api.sase.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/iam-user-accounts.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  iam/v1/sso_users                            LC       ✓ set iam sso-users / show iam sso-users   —
+
+## Unified Incident Framework APIs
+**Base:** `https://api.strata.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/incidents.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  incidents/v1/details                        R        ✓ show incidents incidents details id      —
+  incidents/v1/search                         C        ✓ set incidents incidents search           —
 
 ## Config Operations
 **Base:** `https://api.strata.paloaltonetworks.com/config/operations/v1`  |  **Spec:** `docs/scm-api/specs/ngfw-config-operations.yaml`
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  config-versions                             LRC      ✓ commit                                   —
-  config-versions/candidate                   CD       ✓ commit                                   —
-  config-versions/running                     L        ✓ commit                                   —
-  jobs                                        LR       ✓ show jobs all / show jobs id             show jobs processed
+  config-versions                             LRC      ✓ set cngfw config-versions load / show cngfw config-versions / show cngfw config-versions id —
+  config-versions/candidate                   CD       ✓ commit / delete cngfw config-versions candidate / set cngfw config-versions candidate push —
+  config-versions/running                     L        ✓ show cngfw config-versions running       —
+  jobs                                        LR       ✓ show cngfw jobs / show cngfw jobs id / show jobs all / +1 more show jobs processed
 
 ## Device Onboarding
 **Base:** `https://api.strata.paloaltonetworks.com/config/setup/device-onboarding/v1`  |  **Spec:** `docs/scm-api/specs/ngfw-device-onboarding.yaml`
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  onboarding-rules                            LRCUD    —                                          —
-  properties                                  LRCUD    —                                          —
-  site-groups                                 LRCUD    —                                          —
-  sites                                       LRCUD    —                                          —
+  onboarding-rules                            LRCUD    ✓ delete cngfw onboarding-rules / set cngfw onboarding-rules / set cngfw onboarding-rules move / +3 more —
+  properties                                  LRCUD    ✓ delete cngfw properties / set cngfw properties / show cngfw properties / +2 more —
+  site-groups                                 LRCUD    ✓ delete cngfw site-groups / set cngfw site-groups / show cngfw site-groups / +2 more —
+  sites                                       LRCUD    ✓ delete cngfw sites / set cngfw sites / show cngfw sites / +2 more —
 
 ## Device Settings
 **Base:** `https://api.strata.paloaltonetworks.com/config/device/v1`  |  **Spec:** `docs/scm-api/specs/ngfw-device.yaml`
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  authentication-settings                     LRCUD    —                                          —
-  content-id-settings                         LRCUD    —                                          —
-  device-redistribution-collector             LRCUD    —                                          —
-  general-settings                            LRCUD    —                                          —
-  ha-configurations                           LRCUD    ✓ show high-availability all / state       —
-  ha-devices                                  L        ✓ show high-availability all / state       show system info
-  management-interface                        LRCUD    —                                          —
-  motd-banner-settings                        LRCUD    —                                          —
-  service-route                               LRCUD    —                                          —
-  service-settings                            LRCUD    —                                          —
-  session-settings                            LRCUD    —                                          —
-  session-timeouts                            LRCUD    —                                          —
-  tcp-settings                                LRCUD    —                                          —
-  update-schedule                             LRCUD    —                                          —
-  vpn-settings                                LRCUD    —                                          —
+  authentication-settings                     LRCUD    ✓ delete authentication-settings / set authentication-settings / show authentication-settings / +2 more —
+  content-id-settings                         LRCUD    ✓ delete content-id-settings / set content-id-settings / show content-id-settings / +2 more —
+  device-redistribution-collector             LRCUD    ✓ delete device-redistribution-collector / set device-redistribution-collector / show device-redistribution-collector / +2 more —
+  general-settings                            LRCUD    ✓ delete general-settings / set general-settings / show general-settings / +2 more —
+  ha-configurations                           LRCUD    ✓ delete ha-configurations / set ha-configurations / show ha-configurations / +2 more —
+  ha-devices                                  L        ✓ show ha-devices                          show system info
+  management-interface                        LRCUD    ✓ delete management-interface / set management-interface / show management-interface / +2 more —
+  motd-banner-settings                        LRCUD    ✓ delete motd-banner-settings / set motd-banner-settings / show motd-banner-settings / +2 more —
+  service-route                               LRCUD    ✓ delete service-route / set service-route / show service-route / +2 more —
+  service-settings                            LRCUD    ✓ delete service-settings / set service-settings / show service-settings / +2 more —
+  session-settings                            LRCUD    ✓ delete session-settings / set session-settings / show session-settings / +2 more —
+  session-timeouts                            LRCUD    ✓ delete session-timeouts / set session-timeouts / show session-timeouts / +2 more —
+  tcp-settings                                LRCUD    ✓ delete tcp-settings / set tcp-settings / show tcp-settings / +2 more —
+  update-schedule                             LRCUD    ✓ delete update-schedule / set update-schedule / show update-schedule / +2 more —
+  vpn-settings                                LRCUD    ✓ delete vpn-settings / set vpn-settings / show vpn-settings / +2 more —
 
 ## Identity Services
 **Base:** `https://api.strata.paloaltonetworks.com/config/identity/v1`  |  **Spec:** `docs/scm-api/specs/ngfw-identity.yaml`
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  authentication-portals                      LRCUD    —                                          —
-  authentication-profiles                     LRCUD    —                                          —
-  authentication-rules                        LRCUD    —                                          —
-  authentication-sequences                    LRCUD    —                                          —
-  certificate-profiles                        LRCUD    —                                          —
-  certificates                                LRCD     —                                          —
-  kerberos-server-profiles                    LRCUD    —                                          —
-  ldap-server-profiles                        LRCUD    —                                          —
-  local-user-groups                           LRCUD    —                                          —
-  local-users                                 LRCUD    —                                          —
-  mfa-servers                                 LRCUD    —                                          —
-  ocsp-responders                             LRCUD    —                                          —
-  radius-server-profiles                      LRCUD    —                                          —
-  saml-server-profiles                        LRCUD    —                                          —
-  scep-profiles                               LRCUD    —                                          —
-  tacacs-server-profiles                      LRCUD    —                                          —
-  tls-service-profiles                        LRCUD    —                                          —
-  trusted-certificate-authorities             L        —                                          —
+  authentication-portals                      LRCUD    ✓ delete cngfw authentication-portals / set cngfw authentication-portals / show cngfw authentication-portals / +2 more —
+  authentication-profiles                     LRCUD    ✓ delete cngfw authentication-profiles / set cngfw authentication-profiles / show authentication-profile / +3 more —
+  authentication-rules                        LRCUD    ✓ delete cngfw authentication-rules / set cngfw authentication-rules / set cngfw authentication-rules move / +4 more —
+  authentication-sequences                    LRCUD    ✓ delete cngfw authentication-sequences / set cngfw authentication-sequences / show cngfw authentication-sequences / +2 more —
+  certificate-profiles                        LRCUD    ✓ delete cngfw certificate-profiles / set cngfw certificate-profiles / show certificate-profile / +3 more —
+  certificates                                LRCD     ✓ delete cngfw certs / set cngfw certs / set cngfw certs export / +7 more —
+  kerberos-server-profiles                    LRCUD    ✓ delete cngfw kerberos-server-profiles / set cngfw kerberos-server-profiles / show cngfw kerberos-server-profiles / +2 more —
+  ldap-server-profiles                        LRCUD    ✓ delete cngfw ldap-server-profiles / set cngfw ldap-server-profiles / show cngfw ldap-server-profiles / +2 more —
+  local-user-groups                           LRCUD    ✓ delete cngfw local-user-groups / set cngfw local-user-groups / show cngfw local-user-groups / +3 more —
+  local-users                                 LRCUD    ✓ delete cngfw local-users / set cngfw local-users / show cngfw local-users / +3 more —
+  mfa-servers                                 LRCUD    ✓ delete cngfw mfa-servers / set cngfw mfa-servers / show cngfw mfa-servers / +3 more —
+  ocsp-responders                             LRCUD    ✓ delete cngfw ocsp-responders / set cngfw ocsp-responders / show cngfw ocsp-responders / +2 more —
+  radius-server-profiles                      LRCUD    ✓ delete cngfw radius-server-profiles / set cngfw radius-server-profiles / show cngfw radius-server-profiles / +3 more —
+  saml-server-profiles                        LRCUD    ✓ delete cngfw saml-server-profiles / set cngfw saml-server-profiles / show cngfw saml-server-profiles / +2 more —
+  scep-profiles                               LRCUD    ✓ delete cngfw scep-profiles / set cngfw scep-profiles / show cngfw scep-profiles / +2 more —
+  tacacs-server-profiles                      LRCUD    ✓ delete cngfw tacacs-server-profiles / set cngfw tacacs-server-profiles / show cngfw tacacs-server-profiles / +2 more —
+  tls-service-profiles                        LRCUD    ✓ delete cngfw tls-service-profiles / set cngfw tls-service-profiles / show cngfw tls-service-profiles / +3 more —
+  trusted-certificate-authorities             L        ✓ show cngfw trusted-cas                   —
 
 ## Network Services
 **Base:** `https://api.strata.paloaltonetworks.com/config/network/v1`  |  **Spec:** `docs/scm-api/specs/ngfw-network.yaml`
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  aggregate-interfaces                        LRCUD    ✓ show interface all                       show interface <name>
-  auto-vpn-clusters                           LRCUD    —                                          —
-  auto-vpn-monitor                            L        —                                          —
-  auto-vpn-push                               C        —                                          —
-  auto-vpn-settings                           LU       —                                          —
-  bgp-address-family-profiles                 LRCUD    —                                          show routing protocol bgp summary
-  bgp-auth-profiles                           LRCUD    —                                          —
-  bgp-filtering-profiles                      LRCUD    —                                          —
-  bgp-redistribution-profiles                 LRCUD    —                                          —
-  bgp-route-map-redistributions               LRCUD    —                                          —
-  bgp-route-maps                              LRCUD    —                                          —
-  config-match-list                           LRCUD    —                                          —
-  dhcp-interfaces                             LRCUD    —                                          show dhcp server lease interface <name>
-  dns-proxies                                 LRCUD    —                                          show dns-proxy dns-signature statistics
-  ethernet-interfaces                         LRCUD    ✓ show interface all / show interface      show interface <name>
-  globalprotect-match-list                    LRCUD    —                                          —
-  hipmatch-match-list                         LRCUD    —                                          —
-  ike-crypto-profiles                         LRCUD    —                                          —
-  ike-gateways                                LRCUD    —                                          show vpn ike-sa
-  interface-management-profiles               LRCUD    —                                          —
-  ipsec-crypto-profiles                       LRCUD    —                                          —
-  ipsec-tunnels                               LRCUD    —                                          show vpn ipsec-sa
-  iptag-match-list                            LRCUD    —                                          —
-  layer2-subinterfaces                        LRCUD    —                                          —
-  layer3-subinterfaces                        LRCUD    —                                          —
-  link-tags                                   LRCUD    ✓ show tag                                 show objects tag
-  lldp-profiles                               LRCUD    —                                          —
-  logical-routers                             LRCUD    —                                          show routing summary
-  loopback-interfaces                         LRCUD    ✓ show interface all                       show interface <name>
-  nat-rules                                   LRCUD    —                                          show running nat-policy
-  network_packet_broker_profiles              LRCUD    —                                          —
-  network_packet_broker_rules                 LRCUD    —                                          —
-  ospf-auth-profiles                          LRCUD    —                                          —
-  pbf-rules                                   LRCUD    —                                          show pbf rule all
-  qos-policy-rules                            LRCUD    —                                          —
-  qos-profiles                                LRCUD    —                                          —
-  remote-networks-license-info                L        —                                          —
-  route-access-lists                          LRCUD    —                                          —
-  route-community-lists                       LRCUD    —                                          —
-  route-path-access-lists                     LRCUD    —                                          —
-  route-prefix-lists                          LRCUD    —                                          —
-  sdwan-error-correction-profiles             LRCUD    —                                          —
-  sdwan-path-quality-profiles                 LRCUD    —                                          —
-  sdwan-rules                                 LRCUD    —                                          show sdwan traffic
-  sdwan-saas-quality-profiles                 LRCUD    —                                          —
-  sdwan-traffic-distribution-profiles         LRCUD    —                                          —
-  system-match-list                           LRCUD    —                                          —
-  tunnel-interfaces                           LRCUD    —                                          —
-  userid-match-list                           LRCUD    —                                          —
-  vlan-interfaces                             LRCUD    —                                          —
-  zone-protection-profiles                    LRCUD    —                                          —
-  zones                                       LRCUD    ✓ show zone                                show zone <name>
+  aggregate-interfaces                        LRCUD    ✓ delete aggregate-interfaces / set aggregate-interfaces / show aggregate-interfaces / +2 more show interface <name>
+  auto-vpn-clusters                           LRCUD    ✓ delete auto-vpn-clusters / set auto-vpn-clusters / show auto-vpn-clusters / +2 more —
+  auto-vpn-monitor                            L        ✓ show auto-vpn-monitor                    —
+  auto-vpn-push                               C        ✓ set auto-vpn-push                        —
+  auto-vpn-settings                           LU       ✓ show auto-vpn-settings / update auto-vpn-settings —
+  bgp-address-family-profiles                 LRCUD    ✓ delete bgp-af-profiles / set bgp-af-profiles / show bgp-af-profiles id / +2 more show routing protocol bgp summary
+  bgp-auth-profiles                           LRCUD    ✓ delete bgp-auth-profiles / set bgp-auth-profiles / show bgp-auth-profiles / +2 more —
+  bgp-filtering-profiles                      LRCUD    ✓ delete bgp-filtering-profiles / set bgp-filtering-profiles / show bgp-filtering-profiles / +2 more —
+  bgp-redistribution-profiles                 LRCUD    ✓ delete bgp-redist-profiles / set bgp-redist-profiles / show bgp-redist-profiles / +2 more —
+  bgp-route-map-redistributions               LRCUD    ✓ delete bgp-routemap-redist / set bgp-routemap-redist / show bgp-routemap-redist / +2 more —
+  bgp-route-maps                              LRCUD    ✓ delete bgp-route-maps / set bgp-route-maps / show bgp-route-maps / +2 more —
+  config-match-list                           LRCUD    ✓ delete config-match-list / set config-match-list / show config-match-list / +2 more —
+  dhcp-interfaces                             LRCUD    ✓ delete dhcp-interfaces / set dhcp-interfaces / show dhcp-interfaces / +2 more show dhcp server lease interface <name>
+  dns-proxies                                 LRCUD    ✓ delete dns-proxies / set dns-proxies / show dns-proxies id / +2 more show dns-proxy dns-signature statistics
+  ethernet-interfaces                         LRCUD    ✓ delete ethernet-interfaces / set ethernet-interfaces / show ethernet-interfaces id / +3 more show interface <name>
+  globalprotect-match-list                    LRCUD    ✓ delete gp-match-list / set gp-match-list / show gp-match-list / +2 more —
+  hipmatch-match-list                         LRCUD    ✓ delete hipmatch-match-list / set hipmatch-match-list / show hipmatch-match-list / +2 more —
+  ike-crypto-profiles                         LRCUD    ✓ delete ike-crypto-profiles / set ike-crypto-profiles / show ike-crypto-profiles / +2 more —
+  ike-gateways                                LRCUD    ✓ delete ike-gateways / set ike-gateways / show ike-gateway / +2 more show vpn ike-sa
+  interface-management-profiles               LRCUD    ✓ delete if-mgmt-profiles / set if-mgmt-profiles / show if-mgmt-profiles / +2 more —
+  ipsec-crypto-profiles                       LRCUD    ✓ delete ipsec-crypto-profiles / set ipsec-crypto-profiles / show ipsec-crypto-profiles / +2 more —
+  ipsec-tunnels                               LRCUD    ✓ delete ipsec-tunnels / set ipsec-tunnels / show ipsec-tunnel / +2 more show vpn ipsec-sa
+  iptag-match-list                            LRCUD    ✓ delete iptag-match-list / set iptag-match-list / show iptag-match-list / +2 more —
+  layer2-subinterfaces                        LRCUD    ✓ delete layer2-subinterfaces / set layer2-subinterfaces / show layer2-subinterfaces / +2 more —
+  layer3-subinterfaces                        LRCUD    ✓ delete layer3-subinterfaces / set layer3-subinterfaces / show layer3-subinterfaces / +2 more —
+  link-tags                                   LRCUD    ✓ delete link-tags / set link-tags / show link-tags / +2 more show objects tag
+  lldp-profiles                               LRCUD    ✓ delete lldp-profiles / set lldp-profiles / show lldp-profiles / +2 more —
+  logical-routers                             LRCUD    ✓ delete logical-routers / set logical-routers / show logical-routers / +2 more show routing summary
+  loopback-interfaces                         LRCUD    ✓ delete loopback-interfaces / set loopback-interfaces / show loopback-interfaces / +2 more show interface <name>
+  nat-rules                                   LRCUD    ✓ delete nat-rules / set nat-rules / show nat-rules / +2 more show running nat-policy
+  network_packet_broker_profiles              LRCUD    ✓ delete npb-profiles / set npb-profiles / show npb-profiles / +2 more —
+  network_packet_broker_rules                 LRCUD    ✓ delete npb-rules / set npb-rules / show npb-rules / +2 more —
+  ospf-auth-profiles                          LRCUD    ✓ delete ospf-auth-profiles / set ospf-auth-profiles / show ospf-auth-profiles / +2 more —
+  pbf-rules                                   LRCUD    ✓ delete pbf-rules / set pbf-rules / show pbf-rules / +2 more show pbf rule all
+  qos-policy-rules                            LRCUD    ✓ delete qos-policy-rules / set qos-policy-rules / set qos-policy-rules move / +3 more —
+  qos-profiles                                LRCUD    ✓ delete qos-profiles / set qos-profiles / show qos-profile / +2 more —
+  remote-networks-license-info                L        ✓ show rn-license-info                     —
+  route-access-lists                          LRCUD    ✓ delete route-access-lists / set route-access-lists / show route-access-lists / +2 more —
+  route-community-lists                       LRCUD    ✓ delete route-community-lists / set route-community-lists / show route-community-lists / +2 more —
+  route-path-access-lists                     LRCUD    ✓ delete route-path-acls / set route-path-acls / show route-path-acls / +2 more —
+  route-prefix-lists                          LRCUD    ✓ delete route-prefix-lists / set route-prefix-lists / show route-prefix-lists / +2 more —
+  sdwan-error-correction-profiles             LRCUD    ✓ delete sdwan-error-profiles / set sdwan-error-profiles / show sdwan-error-profiles / +2 more —
+  sdwan-path-quality-profiles                 LRCUD    ✓ delete sdwan-path-profiles / set sdwan-path-profiles / show sdwan-path-profiles / +2 more —
+  sdwan-rules                                 LRCUD    ✓ delete sdwan-rules / set sdwan-rules / show sdwan-rules / +2 more show sdwan traffic
+  sdwan-saas-quality-profiles                 LRCUD    ✓ delete sdwan-saas-profiles / set sdwan-saas-profiles / show sdwan-saas-profiles / +2 more —
+  sdwan-traffic-distribution-profiles         LRCUD    ✓ delete sdwan-traffic-profiles / set sdwan-traffic-profiles / show sdwan-traffic-profiles / +2 more —
+  system-match-list                           LRCUD    ✓ delete system-match-list / set system-match-list / show system-match-list / +2 more —
+  tunnel-interfaces                           LRCUD    ✓ delete tunnel-interfaces / set tunnel-interfaces / show tunnel-interfaces / +2 more —
+  userid-match-list                           LRCUD    ✓ delete userid-match-list / set userid-match-list / show userid-match-list / +2 more —
+  vlan-interfaces                             LRCUD    ✓ delete vlan-interfaces / set vlan-interfaces / show vlan-interfaces / +2 more —
+  zone-protection-profiles                    LRCUD    ✓ delete zone-profiles / set zone-profiles / show zone-profiles / +2 more —
+  zones                                       LRCUD    ✓ delete zones / set zones / show zone / +2 more show zone <name>
 
 ## Objects
 **Base:** `https://api.strata.paloaltonetworks.com/config/objects/v1`  |  **Spec:** `docs/scm-api/specs/ngfw-objects.yaml`
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  address-groups                              LRCUD    ✓ show address-group                       show objects address-group
-  addresses                                   LRCUD    ✓ show address                             show objects address
-  advanced-device-objects                     LRCUD    —                                          —
-  application-filters                         LRCUD    —                                          —
-  application-groups                          LRCUD    —                                          —
-  applications                                LRCUD    —                                          —
-  auto-tag-actions                            LCUD     —                                          —
-  device-context-segments                     LRCUD    —                                          —
-  dynamic-user-groups                         LRCUD    —                                          —
-  external-dynamic-lists                      LRCUD    ✓ show external-dynamic-list               —
-  hip-objects                                 LRCUD    —                                          —
-  hip-profiles                                LRCUD    —                                          —
-  http-server-profiles                        LRCUD    —                                          —
-  log-forwarding-profiles                     LRCUD    —                                          —
-  quarantined-devices                         LCD      ✓ show devices / show device               show system info
-  regions                                     LRCUD    —                                          —
-  schedules                                   LRCUD    —                                          —
-  service-groups                              LRCUD    —                                          —
-  services                                    LRCUD    ✓ show service                             show objects service
-  syslog-server-profiles                      LRCUD    —                                          —
-  tags                                        LRCUD    ✓ show tag                                 show objects tag
+  address-groups                              LRCUD    ✓ delete address-group / delete cngfw address-groups / set address-group / +6 more show objects address-group
+  addresses                                   LRCUD    ✓ delete address / delete cngfw addresses / set address / +6 more show objects address
+  advanced-device-objects                     LRCUD    ✓ delete cngfw adv-device-objs / delete cngfw objects adv-device-objs / set cngfw adv-device-objs / +4 more —
+  application-filters                         LRCUD    ✓ delete cngfw application-filters / set cngfw application-filters / show application-filter / +3 more —
+  application-groups                          LRCUD    ✓ delete cngfw application-groups / set cngfw application-groups / show application-group / +3 more —
+  applications                                LRCUD    ✓ delete cngfw applications / set cngfw applications / show cngfw applications / +2 more —
+  auto-tag-actions                            LCUD     ✓ delete cngfw auto-tag-actions / set cngfw auto-tag-actions / show cngfw auto-tag-actions / +1 more —
+  device-context-segments                     LRCUD    ✓ delete cngfw device-contexts / delete cngfw objects device-contexts / set cngfw device-contexts / +3 more —
+  dynamic-user-groups                         LRCUD    ✓ delete cngfw dynamic-user-groups / set cngfw dynamic-user-groups / show cngfw dynamic-user-groups / +2 more —
+  external-dynamic-lists                      LRCUD    ✓ delete cngfw external-dynamic-lists / delete external-dynamic-list / set cngfw external-dynamic-lists / +6 more —
+  hip-objects                                 LRCUD    ✓ delete cngfw hip-objects / set cngfw hip-objects / show cngfw hip-objects / +3 more —
+  hip-profiles                                LRCUD    ✓ delete cngfw hip-profiles / set cngfw hip-profiles / show cngfw hip-profiles / +3 more —
+  http-server-profiles                        LRCUD    ✓ delete cngfw http-server-profiles / set cngfw http-server-profiles / show cngfw http-server-profiles / +2 more —
+  log-forwarding-profiles                     LRCUD    ✓ delete cngfw log-forwarding-profiles / set cngfw log-forwarding-profiles / show cngfw log-forwarding-profiles / +3 more —
+  quarantined-devices                         LCD      ✓ delete cngfw quarantined-devices / set cngfw quarantined-devices / show cngfw quarantined-devices show system info
+  regions                                     LRCUD    ✓ delete cngfw regions / set cngfw regions / show cngfw regions / +3 more —
+  schedules                                   LRCUD    ✓ delete cngfw schedules / set cngfw schedules / show cngfw schedules / +3 more —
+  service-groups                              LRCUD    ✓ delete cngfw service-groups / delete service-group / set cngfw service-groups / +6 more —
+  services                                    LRCUD    ✓ delete cngfw services / delete service / set cngfw services / +6 more show objects service
+  syslog-server-profiles                      LRCUD    ✓ delete cngfw syslog-server-profiles / set cngfw syslog-server-profiles / show cngfw syslog-server-profiles / +2 more —
+  tags                                        LRCUD    ✓ delete cngfw tags / delete tag / set cngfw tags / +6 more show objects tag
 
 ## Operations and Troubleshooting
 **Base:** `https://api.strata.paloaltonetworks.com/operations/v1`  |  **Spec:** `docs/scm-api/specs/ngfw-operations.yaml`
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  device/jobs                                 R        ✓ show jobs all / show jobs id             show jobs processed
-  jobs/bgp-policy-export                      C        ✓ show jobs all / show jobs id             show jobs processed
-  jobs/device-interfaces                      C        ✓ show jobs all / show jobs id             show jobs processed
-  jobs/device-rules                           C        ✓ show jobs all / show jobs id             show jobs processed
-  jobs/dns-proxy                              C        ✓ show jobs all / show jobs id             show jobs processed
-  jobs/fib-table                              C        ✓ show jobs all / show jobs id             show jobs processed
-  jobs/logging-service-forwarding-status      C        ✓ show jobs all / show jobs id             show jobs processed
-  jobs/route-table                            C        ✓ show jobs all / show jobs id             show jobs processed
-  local-config/download                       L        —                                          —
-  local-config/versions                       L        —                                          —
+  device/jobs                                 R        ✓ show device jobs id                      show jobs processed
+  jobs/bgp-policy-export                      C        ✓ set jobs bgp-policy-export               show jobs processed
+  jobs/device-interfaces                      C        ✓ set jobs device-interfaces               show jobs processed
+  jobs/device-rules                           C        ✓ set jobs device-rules                    show jobs processed
+  jobs/dns-proxy                              C        ✓ set jobs dns-proxy                       show jobs processed
+  jobs/fib-table                              C        ✓ set jobs fib-table                       show jobs processed
+  jobs/logging-service-forwarding-status      C        ✓ set jobs logging-service-forwarding-status show jobs processed
+  jobs/route-table                            C        ✓ set jobs route-table                     show jobs processed
+  local-config/download                       L        ✓ show local-config download               —
+  local-config/versions                       L        ✓ show local-config versions               —
 
 ## Security Services
 **Base:** `https://api.strata.paloaltonetworks.com/config/security/v1`  |  **Spec:** `docs/scm-api/specs/ngfw-security.yaml`
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  anti-spyware-profiles                       LRCUD    —                                          —
-  anti-spyware-signatures                     LRCUD    —                                          —
-  app-override-rules                          LRCUD    —                                          —
-  data-filtering-profiles                     LRCUD    —                                          —
-  data-objects                                LRCUD    —                                          —
-  decryption-exclusions                       LRCUD    —                                          —
-  decryption-profiles                         LRCUD    —                                          —
-  decryption-rules                            LRCUD    —                                          —
-  dns-security-profiles                       LRCUD    —                                          —
-  dos-protection-profiles                     LRCUD    —                                          —
-  dos-protection-rules                        LRCUD    —                                          —
-  file-blocking-profiles                      LRCUD    —                                          —
-  http-header-profiles                        LRCUD    —                                          —
-  profile-groups                              LRCUD    —                                          —
-  saas-tenant-restrictions                    LU       —                                          —
-  security-rules                              LRCUD    ✓ show security policy                     show security policy
-  ssl-decryption-settings                     LCUD     —                                          —
-  url-access-profiles                         LRCUD    —                                          —
-  url-admin-override                          LCD      —                                          —
-  url-categories                              LRCUD    ✓ show url-categories                      show security url-filtering
-  url-filtering-categories                    L        —                                          —
-  vulnerability-protection-profiles           LRCUD    —                                          —
-  vulnerability-protection-signatures         LRCUD    —                                          —
-  wildfire-anti-virus-profiles                LRCUD    —                                          —
+  anti-spyware-profiles                       LRCUD    ✓ delete cngfw anti-spyware-profiles / set cngfw anti-spyware-profiles / show anti-spyware-profile / +3 more —
+  anti-spyware-signatures                     LRCUD    ✓ delete cngfw anti-spyware-signatures / set cngfw anti-spyware-signatures / show cngfw anti-spyware-signatures / +2 more —
+  app-override-rules                          LRCUD    ✓ delete cngfw app-override-rules / set cngfw app-override-rules / set cngfw app-override-rules move / +4 more —
+  data-filtering-profiles                     LRCUD    ✓ delete cngfw data-filtering-profiles / set cngfw data-filtering-profiles / show cngfw data-filtering-profiles / +2 more —
+  data-objects                                LRCUD    ✓ delete cngfw data-objects / set cngfw data-objects / show cngfw data-objects / +2 more —
+  decryption-exclusions                       LRCUD    ✓ delete cngfw decryption-exclusions / set cngfw decryption-exclusions / show cngfw decryption-exclusions / +2 more —
+  decryption-profiles                         LRCUD    ✓ delete cngfw decryption-profiles / set cngfw decryption-profiles / show cngfw decryption-profiles / +3 more —
+  decryption-rules                            LRCUD    ✓ delete cngfw decryption-rules / set cngfw decryption-rules / set cngfw decryption-rules move / +4 more —
+  dns-security-profiles                       LRCUD    ✓ delete cngfw dns-security-profiles / set cngfw dns-security-profiles / show cngfw dns-security-profiles / +2 more —
+  dos-protection-profiles                     LRCUD    ✓ delete cngfw dos-protection-profiles / set cngfw dos-protection-profiles / show cngfw dos-protection-profiles / +3 more —
+  dos-protection-rules                        LRCUD    ✓ delete cngfw dos-protection-rules / set cngfw dos-protection-rules / show cngfw dos-protection-rules / +3 more —
+  file-blocking-profiles                      LRCUD    ✓ delete cngfw file-blocking-profiles / set cngfw file-blocking-profiles / show cngfw file-blocking-profiles / +2 more —
+  http-header-profiles                        LRCUD    ✓ delete cngfw http-header-profiles / set cngfw http-header-profiles / show cngfw http-header-profiles / +2 more —
+  profile-groups                              LRCUD    ✓ delete cngfw profile-groups / set cngfw profile-groups / show cngfw profile-groups / +3 more —
+  saas-tenant-restrictions                    LU       ✓ show cngfw saas-tenant-restrictions / update cngfw saas-tenant-restrictions —
+  security-rules                              LRCUD    ✓ delete cngfw security-rules / delete security-rule / set cngfw security-rules / +5 more show security policy
+  ssl-decryption-settings                     LCUD     ✓ delete cngfw ssl-decryption-settings / set cngfw ssl-decryption-settings / show cngfw ssl-decryption-settings / +1 more —
+  url-access-profiles                         LRCUD    ✓ delete cngfw url-access-profiles / set cngfw url-access-profiles / show cngfw url-access-profiles / +2 more —
+  url-admin-override                          LCD      ✓ delete cngfw url-admin-override / delete url-admin-override / set cngfw url-admin-override / +2 more —
+  url-categories                              LRCUD    ✓ delete cngfw url-categories / delete url-category / set cngfw url-categories / +5 more show security url-filtering
+  url-filtering-categories                    L        ✓ show cngfw url-filtering-categories      —
+  vulnerability-protection-profiles           LRCUD    ✓ delete cngfw vuln-profiles / set cngfw vuln-profiles / show cngfw vuln-profiles / +3 more —
+  vulnerability-protection-signatures         LRCUD    ✓ delete cngfw vuln-signatures / set cngfw vuln-signatures / show cngfw vuln-signatures / +2 more —
+  wildfire-anti-virus-profiles                LRCUD    ✓ delete cngfw wildfire-profiles / set cngfw wildfire-profiles / show cngfw wildfire-profiles / +3 more —
 
 ## Configuration Setup
 **Base:** `https://api.strata.paloaltonetworks.com/config/setup/v1`  |  **Spec:** `docs/scm-api/specs/ngfw-setup.yaml`
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  devices                                     LRU      ✓ show devices / show device               show system info
-  folders                                     LRCUD    ✓ ls folder / folder create                —
-  labels                                      LRCUD    —                                          —
-  shared-snippets                             LCU      ✓ show high-availability all / state       —
-  snippet-audit-logs                          RC       —                                          —
-  snippet-categories                          LRD      —                                          —
-  snippet-snapshots                           C        —                                          —
-  snippets                                    LRCUD    ✓ show snippet / show snippets             —
-  subscribed-tenants                          RCUD     —                                          —
-  trust-validations                           C        —                                          —
-  trusted-tenant-overview                     L        —                                          —
-  trusted-tenants                             L        —                                          —
-  trusts                                      CD       —                                          —
-  variables                                   LRCUD    —                                          —
+  devices                                     LRU      ✓ show cngfw devices / show cngfw devices id / show device / +4 more show system info
+  folders                                     LRCUD    ✓ delete cngfw folders / set cngfw folders / show cngfw folders / +2 more —
+  labels                                      LRCUD    ✓ delete cngfw labels / set cngfw labels / show cngfw labels / +2 more —
+  shared-snippets                             LCU      ✓ set cngfw shared-snippets load / show cngfw shared-snippets / update cngfw shared-snippets —
+  snippet-audit-logs                          RC       ✓ set cngfw snippet-audit-logs / show cngfw snippet-audit-logs id —
+  snippet-categories                          LRD      ✓ delete cngfw snippet-categories / show cngfw snippet-categories / show cngfw snippet-categories id —
+  snippet-snapshots                           C        ✓ set cngfw snippet-snapshots / set cngfw snippet-snapshots compare / set cngfw snippet-snapshots convert / +4 more —
+  snippets                                    LRCUD    ✓ delete cngfw snippets / set cngfw snippets / show cngfw snippets / +5 more —
+  subscribed-tenants                          RCUD     ✓ delete cngfw subscribed-tenants / set cngfw subscribed-tenants / show cngfw subscribed-tenants id / +1 more —
+  trust-validations                           C        ✓ set cngfw trust-validations              —
+  trusted-tenant-overview                     L        ✓ show cngfw trusted-tenant-overview       —
+  trusted-tenants                             L        ✓ show cngfw trusted-tenants               —
+  trusts                                      CD       ✓ delete cngfw trusts / set cngfw trusts   —
+  variables                                   LRCUD    ✓ delete cngfw variables / set cngfw variables / show cngfw variables / +2 more —
+
+## TLS Protect Cloud API for Strata Cloud Manager
+**Base:** `https://api.strata.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/ngts-tlsprotect.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  outagedetection/v1/certificateinstances     LR       ✓ show ngts cert-instances / show ngts cert-instances id —
+  outagedetection/v1/certificateinstances/validation C        ✓ set ngts cert-instances validation       —
+  outagedetection/v1/certificateinstancesearch C        ✓ set ngts cert-instance-search            —
+  outagedetection/v1/certificaterequests      LRC      ✓ set ngts cert-requests / set ngts cert-requests resubmission / show ngts cert-requests / +1 more —
+  outagedetection/v1/certificaterequests/validation C        ✓ set ngts cert-requests validation        —
+  outagedetection/v1/certificaterequestssearch C        ✓ set ngts cert-request-search             —
+  outagedetection/v1/certificates             LRC      ✓ delete cngfw certs / set cngfw certs / set cngfw certs export / +7 more —
+  outagedetection/v1/certificates/deletion    C        ✓ set ngts certs deletion                  —
+  outagedetection/v1/certificates/recovery    C        ✓ set ngts certs recovery                  —
+  outagedetection/v1/certificates/retirement  C        ✓ set ngts certs retirement                —
+  outagedetection/v1/certificates/validation  C        ✓ set ngts certs validation                —
+  outagedetection/v1/certificatesearch        C        ✓ set ngts certificatesearch               —
+  outagedetection/v1/inventorymonitoringconfig RU       ✓ show ngts inventory-monitoring id / update ngts inventory-monitoring / update ngts inventory-monitoring scheduler —
+  v1/activitylogsearch                        C        ✓ set ngts activitylogsearch               —
+  v1/activitylogsearch/export                 C        ✓ set ngts activitylogsearch export        —
+  v1/activitytypes                            L        ✓ show ngts activitytypes                  —
+  v1/autorenewal/status                       L        ✓ show ngts autorenewal status             —
+  v1/autorenewal/tenantconfiguration          LU       ✓ show ngts autorenewal tenant-config / update ngts autorenewal tenant-config —
+  v1/autorenewal/trigger                      C        ✓ set ngts autorenewal trigger             —
+  v1/certificateissuingtemplates              LRCUD    ✓ delete ngts cert-templates / set ngts cert-templates / show ngts cert-templates / +2 more —
+  v1/certificateissuingtemplates/domainssynchronization C        ✓ set ngts cert-templates domains-sync     —
+  v1/certificaterequests                      C        ✓ set ngts cert-requests approval          —
+  v1/certificaterequests/approval/bulk        C        ✓ set ngts cert-requests approval bulk     —
+  v1/certificaterequests/approvalrequests     R        ✓ show ngts cert-requests approvalrequests id —
+  v1/certificaterequests/approvalrules        LRCUD    ✓ delete ngts cert-requests approval / set ngts tlsprotect cert-requests approval / show ngts cert-requests approval / +2 more —
+  v1/certificates/imports                     RC       ✓ set ngts certs imports / show ngts certs imports id —
+  v1/certificates/revocations/approvalrules   LRCUD    ✓ delete ngts certs revokes approval / set ngts certs revokes approval / show ngts certs revokes approval / +2 more —
+  v1/credentialmanagerconfigurations          LRCUD    ✓ delete ngts credential-configs / set ngts credential-configs / set ngts tlsprotect credential-configs test / +3 more —
+  v1/credentialmanagerconfigurations/test     C        ✓ set ngts credential-configs test         —
+  v1/credentials                              LRCUD    ✓ delete ngts credentials / delete ngts tlsprotect credentials / set ngts credentials / +3 more —
+  v1/credentials/test                         C        ✓ set ngts credentials test                —
+  v1/distributedissuers/configurations        LRCD     ✓ delete ngts dist-issuers configurations / set ngts dist-issuers configurations / show ngts dist-issuers configurations / +2 more —
+  v1/distributedissuers/intermediatecertificates L        ✓ show ngts dist-issuers intermediate-certs —
+  v1/distributedissuers/policies              LRCD     ✓ delete ngts dist-issuers policies / set ngts dist-issuers policies / show ngts dist-issuers policies / +2 more —
+  v1/distributedissuers/subcaproviders        LRCD     ✓ delete ngts dist-issuers subcaproviders / set ngts dist-issuers subcaproviders / show ngts dist-issuers subcaproviders / +2 more —
+  v1/edgeencryptionkeys                       LR       ✓ show ngts edgeencryptionkeys / show ngts edgeencryptionkeys id —
+  v1/edgeinstances                            LRCU     ✓ set ngts edgeinstances update / show ngts edgeinstances / show ngts edgeinstances id / +1 more —
+  v1/edgeworkers                              LCD      ✓ delete ngts edgeworkers / set ngts edgeworkers / set ngts edgeworkers pair / +1 more —
+  v1/expirationnotifications/tenantconfiguration LU       ✓ show ngts exp-notifications tenant-config / update ngts exp-notifications tenant-config —
+  v1/expirationreports/tenantconfiguration    LU       ✓ show ngts exp-reports tenant-config / update ngts exp-reports tenant-config —
+  v1/expirationreports/trigger                C        ✓ set ngts exp-reports trigger             —
+  v1/integrationservices                      LRCD     ✓ delete ngts integrationservices / set ngts integrationservices / show ngts integrationservices / +2 more show objects service
+  v1/machineidentities                        LRCD     ✓ delete ngts machineidentities / set ngts machineidentities / set ngts machineidentities workflows / +3 more —
+  v1/machineidentitysearch                    C        ✓ set ngts machineidentitysearch           —
+  v1/machines                                 LRCD     ✓ delete ngts machines / set ngts machines / set ngts machines batchprovisionings abort / +6 more —
+  v1/machinesearch                            C        ✓ set ngts machinesearch                   —
+  v1/machinetypes                             L        ✓ show ngts machinetypes                   —
+  v1/pairingcodes/satellite                   C        ✓ set ngts pairingcodes satellite          —
+  v1/plugins                                  LRCD     ✓ delete ngts plugins / delete ngts plugins disablements / set ngts plugins / +4 more —
+  v1/plugins/disablements                     L        ✓ show ngts plugins disablements           —
+  v1/recoverycodes/satellite                  C        ✓ set ngts recoverycodes satellite         —
+  v1/serviceaccounts                          LRCUD    ✓ delete ngts serviceaccounts / set ngts serviceaccounts / show ngts serviceaccounts / +4 more —
+  v1/serviceaccounts/scopes                   L        ✓ show ngts serviceaccounts scopes         —
+  v1/tags                                     LRCD     ✓ delete ngts tags / delete ngts tags values / set ngts tags / +4 more show objects tag
+  v1/tags/creation                            C        ✓ set ngts tags creation                   show objects tag
+  v1/tags/deletion                            C        ✓ set ngts tags deletion                   show objects tag
+  v1/tags/values                              L        ✓ show ngts tags values                    show objects tag
+  v1/tagsassignment                           ?        ✓ update ngts tagsassignment               show objects tag
+  v1/tagsassignment/aggregates                C        ✓ set ngts tagsassignment aggregates       show objects tag
+  v1/updatesconfig                            L        ✓ show ngts updatesconfig / update ngts updatesconfig —
+
+## Posture Management and Assessment API: BPA, Custom Checks, and Compliance
+**Base:** `https://api.strata.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/posture-management.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  posture/checks/v1                           LRCUD    ✓ delete posture root / set posture clone / set posture root / +3 more —
+  posture/checks/v1/batch-delete              C        ✓ set posture batch-delete                 —
+  posture/checks/v1/batch-upsert              C        ✓ set posture batch-upsert                 —
+  posture/checks/v1/reports                   R        ✓ show posture reports bpa-result id       —
+  posture/checks/v1/reports/config-file-upload C        ✓ set posture reports config-file-upload   —
+
+## Network Deployment
+**Base:** `https://api.strata.paloaltonetworks.com/config/deployment/v1`  |  **Spec:** `docs/scm-api/specs/sase-deployment.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  bandwidth-allocations                       LCUD     —                                          —
+  bgp-routing                                 LU       —                                          —
+  enable                                      C        —                                          —
+  internal-dns-servers                        LRCUD    —                                          —
+  locations                                   L        —                                          —
+  remote-networks                             LRCUD    —                                          —
+  service-connection-groups                   LRCUD    —                                          —
+  service-connections                         LRCUD    —                                          —
+  shared-infrastructure-settings              LU       ✓ show high-availability all / state       —
+  sites                                       LRCUD    ✓ delete cngfw sites / set cngfw sites / show cngfw sites / +2 more —
+  traffic-steering-rules                      LRCUD    —                                          —
+
+## Device Onboarding
+**Base:** `https://api.strata.paloaltonetworks.com/config/setup/device-onboarding/v1`  |  **Spec:** `docs/scm-api/specs/sase-device-onboarding.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  onboarding-rules                            LRCUD    ✓ delete cngfw onboarding-rules / set cngfw onboarding-rules / set cngfw onboarding-rules move / +3 more —
+  properties                                  LRCUD    ✓ delete cngfw properties / set cngfw properties / show cngfw properties / +2 more —
+  site-groups                                 LRCUD    ✓ delete cngfw site-groups / set cngfw site-groups / show cngfw site-groups / +2 more —
+  sites                                       LRCUD    ✓ delete cngfw sites / set cngfw sites / show cngfw sites / +2 more —
+
+## Identity Services
+**Base:** `https://api.strata.paloaltonetworks.com/config/identity/v1`  |  **Spec:** `docs/scm-api/specs/sase-identity.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  authentication-portals                      LRCUD    ✓ delete cngfw authentication-portals / set cngfw authentication-portals / show cngfw authentication-portals / +2 more —
+  authentication-profiles                     LRCUD    ✓ delete cngfw authentication-profiles / set cngfw authentication-profiles / show authentication-profile / +3 more —
+  authentication-rules                        LRCUD    ✓ delete cngfw authentication-rules / set cngfw authentication-rules / set cngfw authentication-rules move / +4 more —
+  authentication-sequences                    LRCUD    ✓ delete cngfw authentication-sequences / set cngfw authentication-sequences / show cngfw authentication-sequences / +2 more —
+  certificate-profiles                        LRCUD    ✓ delete cngfw certificate-profiles / set cngfw certificate-profiles / show certificate-profile / +3 more —
+  certificates                                LRCD     ✓ delete cngfw certs / set cngfw certs / set cngfw certs export / +7 more —
+  kerberos-server-profiles                    LRCUD    ✓ delete cngfw kerberos-server-profiles / set cngfw kerberos-server-profiles / show cngfw kerberos-server-profiles / +2 more —
+  ldap-server-profiles                        LRCUD    ✓ delete cngfw ldap-server-profiles / set cngfw ldap-server-profiles / show cngfw ldap-server-profiles / +2 more —
+  local-user-groups                           LRCUD    ✓ delete cngfw local-user-groups / set cngfw local-user-groups / show cngfw local-user-groups / +3 more —
+  local-users                                 LRCUD    ✓ delete cngfw local-users / set cngfw local-users / show cngfw local-users / +3 more —
+  mfa-servers                                 LRCUD    ✓ delete cngfw mfa-servers / set cngfw mfa-servers / show cngfw mfa-servers / +3 more —
+  ocsp-responders                             LRCUD    ✓ delete cngfw ocsp-responders / set cngfw ocsp-responders / show cngfw ocsp-responders / +2 more —
+  radius-server-profiles                      LRCUD    ✓ delete cngfw radius-server-profiles / set cngfw radius-server-profiles / show cngfw radius-server-profiles / +3 more —
+  saml-server-profiles                        LRCUD    ✓ delete cngfw saml-server-profiles / set cngfw saml-server-profiles / show cngfw saml-server-profiles / +2 more —
+  scep-profiles                               LRCUD    ✓ delete cngfw scep-profiles / set cngfw scep-profiles / show cngfw scep-profiles / +2 more —
+  tacacs-server-profiles                      LRCUD    ✓ delete cngfw tacacs-server-profiles / set cngfw tacacs-server-profiles / show cngfw tacacs-server-profiles / +2 more —
+  tls-service-profiles                        LRCUD    ✓ delete cngfw tls-service-profiles / set cngfw tls-service-profiles / show cngfw tls-service-profiles / +3 more —
+  trusted-certificate-authorities             L        ✓ show cngfw trusted-cas                   —
+
+## GlobalProtect
+**Base:** `https://api.strata.paloaltonetworks.com/config/mobile-agent/v1`  |  **Spec:** `docs/scm-api/specs/sase-mobileagent.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  agent-profiles                              LCUD     —                                          —
+  agent-versions                              L        —                                          —
+  authentication-settings                     LCUD     ✓ delete authentication-settings / set authentication-settings / show authentication-settings / +2 more —
+  enable                                      LC       —                                          —
+  forwarding-profile-destinations             LRCUD    —                                          —
+  forwarding-profile-regional-and-custom-proxies LRCUD    —                                          —
+  forwarding-profile-source-applications      LRCUD    —                                          —
+  forwarding-profile-user-locations           LRCUD    —                                          —
+  forwarding-profiles                         LRCUD    —                                          —
+  global-settings                             LU       —                                          —
+  infrastructure-settings                     LCUD     —                                          —
+  locations                                   LU       —                                          —
+  tunnel-profiles                             LCUD     —                                          —
+
+## Network Services
+**Base:** `https://api.strata.paloaltonetworks.com/config/network/v1`  |  **Spec:** `docs/scm-api/specs/sase-network-configurations.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  aggregate-interfaces                        LRCUD    ✓ delete aggregate-interfaces / set aggregate-interfaces / show aggregate-interfaces / +2 more show interface <name>
+  auto-vpn-clusters                           LRCUD    ✓ delete auto-vpn-clusters / set auto-vpn-clusters / show auto-vpn-clusters / +2 more —
+  auto-vpn-monitor                            L        ✓ show auto-vpn-monitor                    —
+  auto-vpn-push                               C        ✓ set auto-vpn-push                        —
+  auto-vpn-settings                           LU       ✓ show auto-vpn-settings / update auto-vpn-settings —
+  bgp-address-family-profiles                 LRCUD    ✓ delete bgp-af-profiles / set bgp-af-profiles / show bgp-af-profiles id / +2 more show routing protocol bgp summary
+  bgp-auth-profiles                           LRCUD    ✓ delete bgp-auth-profiles / set bgp-auth-profiles / show bgp-auth-profiles / +2 more —
+  bgp-filtering-profiles                      LRCUD    ✓ delete bgp-filtering-profiles / set bgp-filtering-profiles / show bgp-filtering-profiles / +2 more —
+  bgp-redistribution-profiles                 LRCUD    ✓ delete bgp-redist-profiles / set bgp-redist-profiles / show bgp-redist-profiles / +2 more —
+  bgp-route-map-redistributions               LRCUD    ✓ delete bgp-routemap-redist / set bgp-routemap-redist / show bgp-routemap-redist / +2 more —
+  bgp-route-maps                              LRCUD    ✓ delete bgp-route-maps / set bgp-route-maps / show bgp-route-maps / +2 more —
+  config-match-list                           LRCUD    ✓ delete config-match-list / set config-match-list / show config-match-list / +2 more —
+  dhcp-interfaces                             LRCUD    ✓ delete dhcp-interfaces / set dhcp-interfaces / show dhcp-interfaces / +2 more show dhcp server lease interface <name>
+  dns-proxies                                 LRCUD    ✓ delete dns-proxies / set dns-proxies / show dns-proxies id / +2 more show dns-proxy dns-signature statistics
+  ethernet-interfaces                         LRCUD    ✓ delete ethernet-interfaces / set ethernet-interfaces / show ethernet-interfaces id / +3 more show interface <name>
+  globalprotect-match-list                    LRCUD    ✓ delete gp-match-list / set gp-match-list / show gp-match-list / +2 more —
+  hipmatch-match-list                         LRCUD    ✓ delete hipmatch-match-list / set hipmatch-match-list / show hipmatch-match-list / +2 more —
+  ike-crypto-profiles                         LRCUD    ✓ delete ike-crypto-profiles / set ike-crypto-profiles / show ike-crypto-profiles / +2 more —
+  ike-gateways                                LRCUD    ✓ delete ike-gateways / set ike-gateways / show ike-gateway / +2 more show vpn ike-sa
+  interface-management-profiles               LRCUD    ✓ delete if-mgmt-profiles / set if-mgmt-profiles / show if-mgmt-profiles / +2 more —
+  ipsec-crypto-profiles                       LRCUD    ✓ delete ipsec-crypto-profiles / set ipsec-crypto-profiles / show ipsec-crypto-profiles / +2 more —
+  ipsec-tunnels                               LRCUD    ✓ delete ipsec-tunnels / set ipsec-tunnels / show ipsec-tunnel / +2 more show vpn ipsec-sa
+  iptag-match-list                            LRCUD    ✓ delete iptag-match-list / set iptag-match-list / show iptag-match-list / +2 more —
+  layer2-subinterfaces                        LRCUD    ✓ delete layer2-subinterfaces / set layer2-subinterfaces / show layer2-subinterfaces / +2 more —
+  layer3-subinterfaces                        LRCUD    ✓ delete layer3-subinterfaces / set layer3-subinterfaces / show layer3-subinterfaces / +2 more —
+  link-tags                                   LRCUD    ✓ delete link-tags / set link-tags / show link-tags / +2 more show objects tag
+  lldp-profiles                               LRCUD    ✓ delete lldp-profiles / set lldp-profiles / show lldp-profiles / +2 more —
+  logical-routers                             LRCUD    ✓ delete logical-routers / set logical-routers / show logical-routers / +2 more show routing summary
+  loopback-interfaces                         LRCUD    ✓ delete loopback-interfaces / set loopback-interfaces / show loopback-interfaces / +2 more show interface <name>
+  nat-rules                                   LRCUD    ✓ delete nat-rules / set nat-rules / show nat-rules / +2 more show running nat-policy
+  network_packet_broker_profiles              LRCUD    ✓ delete npb-profiles / set npb-profiles / show npb-profiles / +2 more —
+  network_packet_broker_rules                 LRCUD    ✓ delete npb-rules / set npb-rules / show npb-rules / +2 more —
+  ospf-auth-profiles                          LRCUD    ✓ delete ospf-auth-profiles / set ospf-auth-profiles / show ospf-auth-profiles / +2 more —
+  pbf-rules                                   LRCUD    ✓ delete pbf-rules / set pbf-rules / show pbf-rules / +2 more show pbf rule all
+  qos-policy-rules                            LRCUD    ✓ delete qos-policy-rules / set qos-policy-rules / set qos-policy-rules move / +3 more —
+  qos-profiles                                LRCUD    ✓ delete qos-profiles / set qos-profiles / show qos-profile / +2 more —
+  remote-networks-license-info                L        ✓ show rn-license-info                     —
+  route-access-lists                          LRCUD    ✓ delete route-access-lists / set route-access-lists / show route-access-lists / +2 more —
+  route-community-lists                       LRCUD    ✓ delete route-community-lists / set route-community-lists / show route-community-lists / +2 more —
+  route-path-access-lists                     LRCUD    ✓ delete route-path-acls / set route-path-acls / show route-path-acls / +2 more —
+  route-prefix-lists                          LRCUD    ✓ delete route-prefix-lists / set route-prefix-lists / show route-prefix-lists / +2 more —
+  sdwan-error-correction-profiles             LRCUD    ✓ delete sdwan-error-profiles / set sdwan-error-profiles / show sdwan-error-profiles / +2 more —
+  sdwan-path-quality-profiles                 LRCUD    ✓ delete sdwan-path-profiles / set sdwan-path-profiles / show sdwan-path-profiles / +2 more —
+  sdwan-rules                                 LRCUD    ✓ delete sdwan-rules / set sdwan-rules / show sdwan-rules / +2 more show sdwan traffic
+  sdwan-saas-quality-profiles                 LRCUD    ✓ delete sdwan-saas-profiles / set sdwan-saas-profiles / show sdwan-saas-profiles / +2 more —
+  sdwan-traffic-distribution-profiles         LRCUD    ✓ delete sdwan-traffic-profiles / set sdwan-traffic-profiles / show sdwan-traffic-profiles / +2 more —
+  system-match-list                           LRCUD    ✓ delete system-match-list / set system-match-list / show system-match-list / +2 more —
+  tunnel-interfaces                           LRCUD    ✓ delete tunnel-interfaces / set tunnel-interfaces / show tunnel-interfaces / +2 more —
+  userid-match-list                           LRCUD    ✓ delete userid-match-list / set userid-match-list / show userid-match-list / +2 more —
+  vlan-interfaces                             LRCUD    ✓ delete vlan-interfaces / set vlan-interfaces / show vlan-interfaces / +2 more —
+  zone-protection-profiles                    LRCUD    ✓ delete zone-profiles / set zone-profiles / show zone-profiles / +2 more —
+  zones                                       LRCUD    ✓ delete zones / set zones / show zone / +2 more show zone <name>
+
+## Network Services
+**Base:** `https://api.strata.paloaltonetworks.com/config/network/v1`  |  **Spec:** `docs/scm-api/specs/sase-network.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  aggregate-interfaces                        LRCUD    ✓ delete aggregate-interfaces / set aggregate-interfaces / show aggregate-interfaces / +2 more show interface <name>
+  auto-vpn-clusters                           LRCUD    ✓ delete auto-vpn-clusters / set auto-vpn-clusters / show auto-vpn-clusters / +2 more —
+  auto-vpn-monitor                            L        ✓ show auto-vpn-monitor                    —
+  auto-vpn-push                               C        ✓ set auto-vpn-push                        —
+  auto-vpn-settings                           LU       ✓ show auto-vpn-settings / update auto-vpn-settings —
+  bgp-address-family-profiles                 LRCUD    ✓ delete bgp-af-profiles / set bgp-af-profiles / show bgp-af-profiles id / +2 more show routing protocol bgp summary
+  bgp-auth-profiles                           LRCUD    ✓ delete bgp-auth-profiles / set bgp-auth-profiles / show bgp-auth-profiles / +2 more —
+  bgp-filtering-profiles                      LRCUD    ✓ delete bgp-filtering-profiles / set bgp-filtering-profiles / show bgp-filtering-profiles / +2 more —
+  bgp-redistribution-profiles                 LRCUD    ✓ delete bgp-redist-profiles / set bgp-redist-profiles / show bgp-redist-profiles / +2 more —
+  bgp-route-map-redistributions               LRCUD    ✓ delete bgp-routemap-redist / set bgp-routemap-redist / show bgp-routemap-redist / +2 more —
+  bgp-route-maps                              LRCUD    ✓ delete bgp-route-maps / set bgp-route-maps / show bgp-route-maps / +2 more —
+  config-match-list                           LRCUD    ✓ delete config-match-list / set config-match-list / show config-match-list / +2 more —
+  dhcp-interfaces                             LRCUD    ✓ delete dhcp-interfaces / set dhcp-interfaces / show dhcp-interfaces / +2 more show dhcp server lease interface <name>
+  dns-proxies                                 LRCUD    ✓ delete dns-proxies / set dns-proxies / show dns-proxies id / +2 more show dns-proxy dns-signature statistics
+  ethernet-interfaces                         LRCUD    ✓ delete ethernet-interfaces / set ethernet-interfaces / show ethernet-interfaces id / +3 more show interface <name>
+  globalprotect-match-list                    LRCUD    ✓ delete gp-match-list / set gp-match-list / show gp-match-list / +2 more —
+  hipmatch-match-list                         LRCUD    ✓ delete hipmatch-match-list / set hipmatch-match-list / show hipmatch-match-list / +2 more —
+  ike-crypto-profiles                         LRCUD    ✓ delete ike-crypto-profiles / set ike-crypto-profiles / show ike-crypto-profiles / +2 more —
+  ike-gateways                                LRCUD    ✓ delete ike-gateways / set ike-gateways / show ike-gateway / +2 more show vpn ike-sa
+  interface-management-profiles               LRCUD    ✓ delete if-mgmt-profiles / set if-mgmt-profiles / show if-mgmt-profiles / +2 more —
+  ipsec-crypto-profiles                       LRCUD    ✓ delete ipsec-crypto-profiles / set ipsec-crypto-profiles / show ipsec-crypto-profiles / +2 more —
+  ipsec-tunnels                               LRCUD    ✓ delete ipsec-tunnels / set ipsec-tunnels / show ipsec-tunnel / +2 more show vpn ipsec-sa
+  iptag-match-list                            LRCUD    ✓ delete iptag-match-list / set iptag-match-list / show iptag-match-list / +2 more —
+  layer2-subinterfaces                        LRCUD    ✓ delete layer2-subinterfaces / set layer2-subinterfaces / show layer2-subinterfaces / +2 more —
+  layer3-subinterfaces                        LRCUD    ✓ delete layer3-subinterfaces / set layer3-subinterfaces / show layer3-subinterfaces / +2 more —
+  link-tags                                   LRCUD    ✓ delete link-tags / set link-tags / show link-tags / +2 more show objects tag
+  lldp-profiles                               LRCUD    ✓ delete lldp-profiles / set lldp-profiles / show lldp-profiles / +2 more —
+  logical-routers                             LRCUD    ✓ delete logical-routers / set logical-routers / show logical-routers / +2 more show routing summary
+  loopback-interfaces                         LRCUD    ✓ delete loopback-interfaces / set loopback-interfaces / show loopback-interfaces / +2 more show interface <name>
+  nat-rules                                   LRCUD    ✓ delete nat-rules / set nat-rules / show nat-rules / +2 more show running nat-policy
+  network_packet_broker_profiles              LRCUD    ✓ delete npb-profiles / set npb-profiles / show npb-profiles / +2 more —
+  network_packet_broker_rules                 LRCUD    ✓ delete npb-rules / set npb-rules / show npb-rules / +2 more —
+  ospf-auth-profiles                          LRCUD    ✓ delete ospf-auth-profiles / set ospf-auth-profiles / show ospf-auth-profiles / +2 more —
+  pbf-rules                                   LRCUD    ✓ delete pbf-rules / set pbf-rules / show pbf-rules / +2 more show pbf rule all
+  qos-policy-rules                            LRCUD    ✓ delete qos-policy-rules / set qos-policy-rules / set qos-policy-rules move / +3 more —
+  qos-profiles                                LRCUD    ✓ delete qos-profiles / set qos-profiles / show qos-profile / +2 more —
+  remote-networks-license-info                L        ✓ show rn-license-info                     —
+  route-access-lists                          LRCUD    ✓ delete route-access-lists / set route-access-lists / show route-access-lists / +2 more —
+  route-community-lists                       LRCUD    ✓ delete route-community-lists / set route-community-lists / show route-community-lists / +2 more —
+  route-path-access-lists                     LRCUD    ✓ delete route-path-acls / set route-path-acls / show route-path-acls / +2 more —
+  route-prefix-lists                          LRCUD    ✓ delete route-prefix-lists / set route-prefix-lists / show route-prefix-lists / +2 more —
+  sdwan-error-correction-profiles             LRCUD    ✓ delete sdwan-error-profiles / set sdwan-error-profiles / show sdwan-error-profiles / +2 more —
+  sdwan-path-quality-profiles                 LRCUD    ✓ delete sdwan-path-profiles / set sdwan-path-profiles / show sdwan-path-profiles / +2 more —
+  sdwan-rules                                 LRCUD    ✓ delete sdwan-rules / set sdwan-rules / show sdwan-rules / +2 more show sdwan traffic
+  sdwan-saas-quality-profiles                 LRCUD    ✓ delete sdwan-saas-profiles / set sdwan-saas-profiles / show sdwan-saas-profiles / +2 more —
+  sdwan-traffic-distribution-profiles         LRCUD    ✓ delete sdwan-traffic-profiles / set sdwan-traffic-profiles / show sdwan-traffic-profiles / +2 more —
+  system-match-list                           LRCUD    ✓ delete system-match-list / set system-match-list / show system-match-list / +2 more —
+  tunnel-interfaces                           LRCUD    ✓ delete tunnel-interfaces / set tunnel-interfaces / show tunnel-interfaces / +2 more —
+  userid-match-list                           LRCUD    ✓ delete userid-match-list / set userid-match-list / show userid-match-list / +2 more —
+  vlan-interfaces                             LRCUD    ✓ delete vlan-interfaces / set vlan-interfaces / show vlan-interfaces / +2 more —
+  zone-protection-profiles                    LRCUD    ✓ delete zone-profiles / set zone-profiles / show zone-profiles / +2 more —
+  zones                                       LRCUD    ✓ delete zones / set zones / show zone / +2 more show zone <name>
+
+## Objects
+**Base:** `https://api.strata.paloaltonetworks.com/config/objects/v1`  |  **Spec:** `docs/scm-api/specs/sase-objects.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  address-groups                              LRCUD    ✓ delete address-group / delete cngfw address-groups / set address-group / +6 more show objects address-group
+  addresses                                   LRCUD    ✓ delete address / delete cngfw addresses / set address / +6 more show objects address
+  advanced-device-objects                     LRCUD    ✓ delete cngfw adv-device-objs / delete cngfw objects adv-device-objs / set cngfw adv-device-objs / +4 more —
+  application-filters                         LRCUD    ✓ delete cngfw application-filters / set cngfw application-filters / show application-filter / +3 more —
+  application-groups                          LRCUD    ✓ delete cngfw application-groups / set cngfw application-groups / show application-group / +3 more —
+  applications                                LRCUD    ✓ delete cngfw applications / set cngfw applications / show cngfw applications / +2 more —
+  auto-tag-actions                            LCUD     ✓ delete cngfw auto-tag-actions / set cngfw auto-tag-actions / show cngfw auto-tag-actions / +1 more —
+  device-context-segments                     LRCUD    ✓ delete cngfw device-contexts / delete cngfw objects device-contexts / set cngfw device-contexts / +3 more —
+  dynamic-user-groups                         LRCUD    ✓ delete cngfw dynamic-user-groups / set cngfw dynamic-user-groups / show cngfw dynamic-user-groups / +2 more —
+  external-dynamic-lists                      LRCUD    ✓ delete cngfw external-dynamic-lists / delete external-dynamic-list / set cngfw external-dynamic-lists / +6 more —
+  hip-objects                                 LRCUD    ✓ delete cngfw hip-objects / set cngfw hip-objects / show cngfw hip-objects / +3 more —
+  hip-profiles                                LRCUD    ✓ delete cngfw hip-profiles / set cngfw hip-profiles / show cngfw hip-profiles / +3 more —
+  http-server-profiles                        LRCUD    ✓ delete cngfw http-server-profiles / set cngfw http-server-profiles / show cngfw http-server-profiles / +2 more —
+  log-forwarding-profiles                     LRCUD    ✓ delete cngfw log-forwarding-profiles / set cngfw log-forwarding-profiles / show cngfw log-forwarding-profiles / +3 more —
+  quarantined-devices                         LCD      ✓ delete cngfw quarantined-devices / set cngfw quarantined-devices / show cngfw quarantined-devices show system info
+  regions                                     LRCUD    ✓ delete cngfw regions / set cngfw regions / show cngfw regions / +3 more —
+  schedules                                   LRCUD    ✓ delete cngfw schedules / set cngfw schedules / show cngfw schedules / +3 more —
+  service-groups                              LRCUD    ✓ delete cngfw service-groups / delete service-group / set cngfw service-groups / +6 more —
+  services                                    LRCUD    ✓ delete cngfw services / delete service / set cngfw services / +6 more show objects service
+  syslog-server-profiles                      LRCUD    ✓ delete cngfw syslog-server-profiles / set cngfw syslog-server-profiles / show cngfw syslog-server-profiles / +2 more —
+  tags                                        LRCUD    ✓ delete cngfw tags / delete tag / set cngfw tags / +6 more show objects tag
+
+## Config Operations
+**Base:** `https://api.strata.paloaltonetworks.com/config/operations/v1`  |  **Spec:** `docs/scm-api/specs/sase-operations.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  config-versions                             LRC      ✓ set cngfw config-versions load / show cngfw config-versions / show cngfw config-versions id —
+  config-versions/candidate                   CD       ✓ commit / delete cngfw config-versions candidate / set cngfw config-versions candidate push —
+  config-versions/running                     L        ✓ show cngfw config-versions running       —
+  jobs                                        LR       ✓ show cngfw jobs / show cngfw jobs id / show jobs all / +1 more show jobs processed
+
+## Security Services
+**Base:** `https://api.strata.paloaltonetworks.com/config/security/v1`  |  **Spec:** `docs/scm-api/specs/sase-security.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  anti-spyware-profiles                       LRCUD    ✓ delete cngfw anti-spyware-profiles / set cngfw anti-spyware-profiles / show anti-spyware-profile / +3 more —
+  anti-spyware-signatures                     LRCUD    ✓ delete cngfw anti-spyware-signatures / set cngfw anti-spyware-signatures / show cngfw anti-spyware-signatures / +2 more —
+  app-override-rules                          LRCUD    ✓ delete cngfw app-override-rules / set cngfw app-override-rules / set cngfw app-override-rules move / +4 more —
+  data-filtering-profiles                     LRCUD    ✓ delete cngfw data-filtering-profiles / set cngfw data-filtering-profiles / show cngfw data-filtering-profiles / +2 more —
+  data-objects                                LRCUD    ✓ delete cngfw data-objects / set cngfw data-objects / show cngfw data-objects / +2 more —
+  decryption-exclusions                       LRCUD    ✓ delete cngfw decryption-exclusions / set cngfw decryption-exclusions / show cngfw decryption-exclusions / +2 more —
+  decryption-profiles                         LRCUD    ✓ delete cngfw decryption-profiles / set cngfw decryption-profiles / show cngfw decryption-profiles / +3 more —
+  decryption-rules                            LRCUD    ✓ delete cngfw decryption-rules / set cngfw decryption-rules / set cngfw decryption-rules move / +4 more —
+  dns-security-profiles                       LRCUD    ✓ delete cngfw dns-security-profiles / set cngfw dns-security-profiles / show cngfw dns-security-profiles / +2 more —
+  dos-protection-profiles                     LRCUD    ✓ delete cngfw dos-protection-profiles / set cngfw dos-protection-profiles / show cngfw dos-protection-profiles / +3 more —
+  dos-protection-rules                        LRCUD    ✓ delete cngfw dos-protection-rules / set cngfw dos-protection-rules / show cngfw dos-protection-rules / +3 more —
+  file-blocking-profiles                      LRCUD    ✓ delete cngfw file-blocking-profiles / set cngfw file-blocking-profiles / show cngfw file-blocking-profiles / +2 more —
+  http-header-profiles                        LRCUD    ✓ delete cngfw http-header-profiles / set cngfw http-header-profiles / show cngfw http-header-profiles / +2 more —
+  profile-groups                              LRCUD    ✓ delete cngfw profile-groups / set cngfw profile-groups / show cngfw profile-groups / +3 more —
+  saas-tenant-restrictions                    LU       ✓ show cngfw saas-tenant-restrictions / update cngfw saas-tenant-restrictions —
+  security-rules                              LRCUD    ✓ delete cngfw security-rules / delete security-rule / set cngfw security-rules / +5 more show security policy
+  ssl-decryption-settings                     LCUD     ✓ delete cngfw ssl-decryption-settings / set cngfw ssl-decryption-settings / show cngfw ssl-decryption-settings / +1 more —
+  url-access-profiles                         LRCUD    ✓ delete cngfw url-access-profiles / set cngfw url-access-profiles / show cngfw url-access-profiles / +2 more —
+  url-admin-override                          LCD      ✓ delete cngfw url-admin-override / delete url-admin-override / set cngfw url-admin-override / +2 more —
+  url-categories                              LRCUD    ✓ delete cngfw url-categories / delete url-category / set cngfw url-categories / +5 more show security url-filtering
+  url-filtering-categories                    L        ✓ show cngfw url-filtering-categories      —
+  vulnerability-protection-profiles           LRCUD    ✓ delete cngfw vuln-profiles / set cngfw vuln-profiles / show cngfw vuln-profiles / +3 more —
+  vulnerability-protection-signatures         LRCUD    ✓ delete cngfw vuln-signatures / set cngfw vuln-signatures / show cngfw vuln-signatures / +2 more —
+  wildfire-anti-virus-profiles                LRCUD    ✓ delete cngfw wildfire-profiles / set cngfw wildfire-profiles / show cngfw wildfire-profiles / +3 more —
+
+## Configuration Setup
+**Base:** `https://api.strata.paloaltonetworks.com/config/setup/v1`  |  **Spec:** `docs/scm-api/specs/sase-setup.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  devices                                     LRU      ✓ show cngfw devices / show cngfw devices id / show device / +4 more show system info
+  folders                                     LRCUD    ✓ delete cngfw folders / set cngfw folders / show cngfw folders / +2 more —
+  labels                                      LRCUD    ✓ delete cngfw labels / set cngfw labels / show cngfw labels / +2 more —
+  shared-snippets                             LCU      ✓ set cngfw shared-snippets load / show cngfw shared-snippets / update cngfw shared-snippets —
+  snippet-audit-logs                          RC       ✓ set cngfw snippet-audit-logs / show cngfw snippet-audit-logs id —
+  snippet-categories                          LRD      ✓ delete cngfw snippet-categories / show cngfw snippet-categories / show cngfw snippet-categories id —
+  snippet-snapshots                           C        ✓ set cngfw snippet-snapshots / set cngfw snippet-snapshots compare / set cngfw snippet-snapshots convert / +4 more —
+  snippets                                    LRCUD    ✓ delete cngfw snippets / set cngfw snippets / show cngfw snippets / +5 more —
+  subscribed-tenants                          RCUD     ✓ delete cngfw subscribed-tenants / set cngfw subscribed-tenants / show cngfw subscribed-tenants id / +1 more —
+  trust-validations                           C        ✓ set cngfw trust-validations              —
+  trusted-tenant-overview                     L        ✓ show cngfw trusted-tenant-overview       —
+  trusted-tenants                             L        ✓ show cngfw trusted-tenants               —
+  trusts                                      CD       ✓ delete cngfw trusts / set cngfw trusts   —
+  variables                                   LRCUD    ✓ delete cngfw variables / set cngfw variables / show cngfw variables / +2 more —
+
+## Instances
+**Base:** `https://api.sase.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/subscription-instance.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  subscription/v1/instances                   LC       ✓ set subscription instances / show subscription instances —
+
+## Licenses
+**Base:** `https://api.sase.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/subscription-licenses.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  subscription/v1/licenses                    L        ✓ show subscription licenses               —
 
 ## Tenant Service Group
 **Base:** `https://api.sase.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/tenancy.yaml`
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  tenancy/v1/tenant_service_groups            LRCUD    —                                          —
+  tenancy/v1/tenant_service_groups            LRCUD    ✓ delete tenant-service-groups / set tenant-service-groups / set tenant-service-groups list-ancestors / +4 more —
 
 ---
 

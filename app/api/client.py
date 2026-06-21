@@ -241,7 +241,6 @@ class SCMClient:
         )
         resp.raise_for_status()
         return resp.json()
-        return resp.json()
 
     def _delete_network(self, path: str, params: Optional[dict] = None) -> Any:
         """DELETE from api.strata.paloaltonetworks.com/config/network/v1."""
@@ -338,6 +337,36 @@ class SCMClient:
         query.setdefault("folder", folder)
         resp = self._http.get(f"{base}{path}", headers=self._headers(), params=query)
         resp.raise_for_status()
+        data = resp.json()
+        if isinstance(data, dict) and isinstance(data.get("data"), list):
+            return data["data"]
+        return data
+
+    def request_api(
+        self,
+        base_url: str,
+        method: str,
+        path: str,
+        params: Optional[dict] = None,
+        json: Any = None,
+    ) -> Any:
+        """Execute a catalog-derived SCM API request.
+
+        Inputs come from generated metadata in ``app.commands.resource_catalog``;
+        callers do not pass arbitrary URLs.  This keeps the generic endpoint
+        surface broad enough for spec coverage while still routing only to
+        checked-in pan.dev base URLs.
+        """
+        resp = self._http.request(
+            method.upper(),
+            f"{base_url.rstrip('/')}/{path.lstrip('/')}",
+            headers=self._headers(),
+            params=params or None,
+            json=json,
+        )
+        resp.raise_for_status()
+        if not resp.content:
+            return {}
         data = resp.json()
         if isinstance(data, dict) and isinstance(data.get("data"), list):
             return data["data"]

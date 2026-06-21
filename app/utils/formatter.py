@@ -868,10 +868,6 @@ def format_device_detail(device: dict) -> Table:
         if v:
             t.add_row(k, str(v))
     return t
-    return _kv_table(
-        {k: str(v) for k, v in _flatten(data).items()},
-        title=title,
-    )
 
 
 def format_raw(text: str, title: str = "") -> Panel:

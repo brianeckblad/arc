@@ -17,6 +17,28 @@ cd fw-dallas-01        Change Device in SCM/API context
 pwd                    Show device, mode, and folder
 ```
 
+## Configure mode (write operations)
+
+Write operations (`set`, `update`, `delete`) require configure mode — a Cisco-style
+workflow that separates read-only browsing from configuration changes.
+
+```text
+arc:global > configure
+arc:global # set address web1 fqdn api.example.com
+arc:global # update address web1 description "Updated desc"
+arc:global # delete address old-host
+arc:global # commit
+arc:global # exit
+arc:global >
+```
+
+The prompt changes to `#` when in configure mode. Type `exit` to leave configure mode
+and return to the normal `>` prompt.
+
+**Why configure mode?** It provides a clear visual and operational boundary between
+inspection and mutation, reduces accidental changes, and aligns with familiar
+Cisco/Junos conventions for network operators.
+
 ## API-first command execution
 
 Commands run through SCM/SCM APIs unless you explicitly choose SSH.

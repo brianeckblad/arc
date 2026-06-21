@@ -1,3 +1,13 @@
+---
+command: "delete url-admin-override"
+description: "Delete a url admin override"
+usage: "delete url-admin-override id <value>"
+feature_flag: delete_url_admin_override
+category: security
+scope: global
+api: "DELETE https://api.strata.paloaltonetworks.com/config/security/v1/url-admin-override/{id}"
+---
+
 # delete url-admin-override
 
 Delete a **url-admin-override** object by name from the active SCM folder.

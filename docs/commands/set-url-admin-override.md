@@ -1,3 +1,13 @@
+---
+command: "set url-admin-override"
+description: "Add URL Admin Override"
+usage: "set url-admin-override json <payload>|file <path>"
+feature_flag: create_url_admin_override
+category: security
+scope: global
+api: "POST https://api.strata.paloaltonetworks.com/config/security/v1/url-admin-override"
+---
+
 # set url-admin-override
 
 Create a **url-admin-override** object in the active SCM folder.

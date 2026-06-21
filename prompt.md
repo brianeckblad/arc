@@ -153,26 +153,26 @@ sequence (wire them all to a single `docsupdate` developer action).
     and `CHANGES.md` (added/removed endpoints per domain since last pull).
 - Flags: `--check` (report drift, write nothing), `--list-remote`, `--no-mirror`,
   `--self-test` (offline tests for discovery + diff).
-- After a successful pull, automatically run `generate_api_index.py`,
-  `generate_resource_catalog.py`, and `generate_command_docs.py`.
+- After a successful pull, automatically run `generate_resource_catalog.py`,
+  `generate_feature_flags.py`, `generate_command_docs.py`, and
+  `generate_api_index.py`.
 
-### 3.2 100% coverage — `dev/generate_resource_catalog.py` + `app/commands/generated.py`
+### 3.2 Generated endpoint coverage — `dev/generate_resource_catalog.py` + `app/commands/generated.py`
 
-**Policy: every folder-scoped list endpoint in the pulled specs is reachable as a
-`show <resource>` command — always, with no per-resource code.**
+**Policy: every pulled SCM OpenAPI operation becomes generated command metadata,
+feature-gated by default.**
 
-- `generate_resource_catalog.py` reads `docs/scm-api/specs/ngfw-*.yaml`, extracts every
-  folder-scoped collection `GET` (no path params), **subtracts** resources already
-  covered by an explicit `show` command (matched via each command doc's
-  front-matter `api:` path), and writes `app/commands/resource_catalog.py`
-  (a plain `CATALOG = [{command, domain, path, category}, ...]`; auto-generated,
-  do-not-hand-edit).
-- `app/commands/generated.py` is a factory: it turns each catalog entry into a
-  generic, **ungated** (always-on) `show <resource>` command whose handler calls
-  `SCMClient.get_config(domain, path, folder)` and renders with the generic
-  list-table fallback. Merge it **first** in the registry so explicit commands win.
-- Smoke test **fails** if the catalog drifts from the specs (a new endpoint with no
-  command). Fix is just to re-run the generator.
+- `generate_resource_catalog.py` reads every pulled OpenAPI spec and writes
+  `app/commands/resource_catalog.py` entries for `GET`, `POST`, `PUT`/`PATCH`,
+  and `DELETE` operations.
+- `app/commands/generated.py` is a factory: `GET` becomes `show`, `POST` becomes
+  `set`, `PUT`/`PATCH` becomes `update`, and `DELETE` becomes `delete`. Generic
+  writes use `json|file <payload-or-path>` until a curated command adds friendly
+  arguments.
+- `generate_feature_flags.py` regenerates `settings/features.json`; existing flag
+  states are preserved and newly discovered flags default `false`.
+- Smoke test **fails** if the catalog drifts from the specs. Fix is just to re-run
+  the generator.
 
 ### 3.3 Per-field metadata — the field library
 
@@ -393,8 +393,9 @@ with a clear message.
   development mode), or `false` (off). Keys starting with `_` are comments.
 - A `CommandDef.feature_flag` gates a command in `?` help and at runtime.
 - Development mode (hidden `dev` command, or `ARC_DEV_MODE=1`) reveals `"dev"`
-  commands; prompt shows `:dev`. `feature enable|disable|dev <flag>` changes one
-  flag for the session. Auto-generated coverage commands are intentionally ungated.
+  commands; prompt shows `:dev`. `feature enable|disable|dev <flag>` saves one
+  flag to `settings/features.json`. Generated coverage commands are feature-gated
+  and newly discovered flags default to `false`.
 
 ---
 
@@ -536,9 +537,9 @@ with a clear message.
 Build a Typer + prompt-toolkit + Rich interactive shell for Palo Alto SCM whose
 **entire command surface and help are generated from the vendor's OpenAPI specs**:
 a self-healing spec puller writes a local mirror and a resource catalog; a factory
-turns every folder-scoped list endpoint into an always-on `show <resource>`;
-hand-written commands add shaping where needed; each command's help is one
-front-matter Markdown file; a tiny per-command CSV defines only field *order* while
+turns OpenAPI operations into feature-gated `show` / `set` / `update` / `delete`
+commands; hand-written commands add shaping where needed; each command's help is one
+front-matter Markdown file; a tiny curated per-command CSV defines only field *order* while
 a code-side field library (seeded from spec `oneOf`s) supplies kinds/choices/hints;
 a single `_walk` drives quote-free greedy parsing, structure-aware tab completion,
 and Cisco-style `?`/`??` context help; secrets live in the OS keychain with named

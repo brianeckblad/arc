@@ -745,6 +745,22 @@ COMMANDS: dict[str, CommandDef] = {
 - `render` is a string key into the dispatch table in `ArcShell._render()`. Add a renderer in `formatter.py` for new output types.
 - After adding an entry to a domain module's `COMMANDS`, tab completion picks it up automatically.
 
+#### Generated SCM endpoint coverage — feature-gated by default
+
+Every pulled SCM OpenAPI operation becomes generated command metadata unless an
+explicit curated command already owns that command key:
+
+| Piece | Role |
+|-------|------|
+| `dev/generate_resource_catalog.py` | Reads every pulled OpenAPI spec and writes `GET`/`POST`/`PUT`/`PATCH`/`DELETE` operation metadata to `app/commands/resource_catalog.py`. |
+| `app/commands/generated.py` | Factory turning each catalog entry into a feature-gated command: `GET` → `show`, `POST` → `set`, `PUT/PATCH` → `update`, `DELETE` → `delete`. |
+| `dev/generate_feature_flags.py` | Regenerates `settings/features.json`; existing flag states are preserved and new generated flags default `false`. |
+| `docsupdate` | Runs `generate_resource_catalog.py`, `generate_feature_flags.py`, `generate_command_docs.py`, then `generate_api_index.py`. |
+
+Generated commands are hidden until enabled by feature flags. Generic generated
+write commands use `json|file <payload-or-path>` until a curated command adds
+friendly arguments.
+
 **Adding a command — checklist:**
 
 1. Identify or create the right domain module (`setup.py`, `objects.py`, `security.py`, `network.py`, `operations.py`).

@@ -28,6 +28,36 @@ Consolidated OpenAPI endpoint listings per NGFW config domain. See
 - **[specs/auth.md](specs/auth.md)** — 3 endpoints
 - **[specs/tenancy.md](specs/tenancy.md)** — 7 endpoints
 - **[specs/iam-service-accounts.md](specs/iam-service-accounts.md)** — 6 endpoints
+- **[specs/adnsr.md](specs/adnsr.md)** — 44 endpoints
+- **[specs/cdug.md](specs/cdug.md)** — 6 endpoints
+- **[specs/ciedss.md](specs/ciedss.md)** — 4 endpoints
+- **[specs/cloudngfw-identity.md](specs/cloudngfw-identity.md)** — 88 endpoints
+- **[specs/cloudngfw-objects.md](specs/cloudngfw-objects.md)** — 105 endpoints
+- **[specs/cloudngfw-operations.md](specs/cloudngfw-operations.md)** — 8 endpoints
+- **[specs/cloudngfw-security.md](specs/cloudngfw-security.md)** — 113 endpoints
+- **[specs/cloudngfw-setup.md](specs/cloudngfw-setup.md)** — 47 endpoints
+- **[specs/cloudngfw-device-onboarding.md](specs/cloudngfw-device-onboarding.md)** — 21 endpoints
+- **[specs/incidents.md](specs/incidents.md)** — 2 endpoints
+- **[specs/ngts-tlsprotect.md](specs/ngts-tlsprotect.md)** — 150 endpoints
+- **[specs/posture-management.md](specs/posture-management.md)** — 10 endpoints
+- **[specs/sase-deployment.md](specs/sase-deployment.md)** — 40 endpoints
+- **[specs/sase-identity.md](specs/sase-identity.md)** — 88 endpoints
+- **[specs/sase-mobileagent.md](specs/sase-mobileagent.md)** — 49 endpoints
+- **[specs/sase-network-configurations.md](specs/sase-network-configurations.md)** — 246 endpoints
+- **[specs/sase-network.md](specs/sase-network.md)** — 246 endpoints
+- **[specs/sase-objects.md](specs/sase-objects.md)** — 105 endpoints
+- **[specs/sase-operations.md](specs/sase-operations.md)** — 8 endpoints
+- **[specs/sase-security.md](specs/sase-security.md)** — 113 endpoints
+- **[specs/sase-setup.md](specs/sase-setup.md)** — 47 endpoints
+- **[specs/sase-device-onboarding.md](specs/sase-device-onboarding.md)** — 21 endpoints
+- **[specs/iam-access-policies.md](specs/iam-access-policies.md)** — 4 endpoints
+- **[specs/iam-custom-roles.md](specs/iam-custom-roles.md)** — 5 endpoints
+- **[specs/iam-permission-sets.md](specs/iam-permission-sets.md)** — 2 endpoints
+- **[specs/iam-permissions.md](specs/iam-permissions.md)** — 2 endpoints
+- **[specs/iam-roles.md](specs/iam-roles.md)** — 2 endpoints
+- **[specs/iam-user-accounts.md](specs/iam-user-accounts.md)** — 2 endpoints
+- **[specs/subscription-instance.md](specs/subscription-instance.md)** — 2 endpoints
+- **[specs/subscription-licenses.md](specs/subscription-licenses.md)** — 1 endpoints
 
 ## Guides (`guides/`)
 

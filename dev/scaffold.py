@@ -131,7 +131,6 @@ COMMANDS: dict[str, CommandDef] = {{
 
 def _docs_stub(command: str, module: str, scope: str) -> str:
     """Generate a minimal docs/commands/<slug>.md stub."""
-    slug = _slugify(command)
     ep   = _endpoint_guess(command, module)
     spec_file = _MODULE_SPEC_FILE[module]
     return textwrap.dedent(f"""\
@@ -204,7 +203,6 @@ def main() -> int:
             f"        render={render!r},",
             f"        render={render!r},\n        feature_flag={feature_flag!r},",
         )
-    module_file = APP / "commands" / f"{module}.py"
 
     print("\n" + "=" * 60)
     print(f"PASTE INTO  app/commands/{module}.py")
