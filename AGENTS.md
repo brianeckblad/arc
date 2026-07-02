@@ -28,6 +28,7 @@ the smallest file that owns each concern.
 | `catalog` (builtin names, SHELL help rows) | `app/shell_catalog.py` | same | `--file app/shell_catalog.py` |
 | `feature` / `flag <name>` (turn commands on/dev/off) | `settings/features.json` | same (+ one `CommandDef.feature_flag`) | `--only 1,2,3` |
 | `theme` (colours) | `settings/theme.json`, `app/settings/theme.py` | same | `--only 10` |
+| `terminal` / prefs (pager, width, spinner) | `app/settings/user_prefs.py`, `_cmd_terminal` in `app/shell/configure.py` | same | `--only 4` |
 | `settings` (banner, goodbye, labels — no code) | `settings/` | `settings/banner.txt` etc. | `--only 7,8,9,10` |
 | `argspec` (greedy `set <object>` parsing, slot completion) | `settings/command-structure.json`, `app/settings/command_structure.py` | same | `--only 4` |
 | `auth` (credentials, profiles) | `app/config.py`, `app/cli.py` (auth group) | same | `--file app/config.py` |
@@ -57,7 +58,9 @@ arc/
 │                                    on/dev/off), banner.txt, goodbye.txt, theme.json,
 │                                    cli-structure.yaml, command-structure.json,
 │                                    commands.json (per-command visibility)
-├── config/<os_username>/          ← per-user secrets file (gitignored; keychain-backed)
+├── config/<os_username>/          ← per-user files (gitignored): config.json (secrets,
+│                                    keychain-backed) + preferences.json (terminal
+│                                    length/width/spinner — the `terminal` builtin)
 ├── dev/                           ← generators + smoke suite (see Validation below)
 ├── docs/                          ← user-facing Markdown rendered by `help <topic>`
 │   ├── commands/                  ← hand-written command pages ONLY (+ generated

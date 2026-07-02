@@ -78,7 +78,14 @@ from app.settings.cli_structure import (
     section_label as _section_label,
     verb_description as _verb_description,
 )
-from app.docs import available_help_topics, open_docs_in_browser, render_help_topic
+from app.docs import (
+    available_help_topics,
+    open_docs_in_browser,
+    page_length,
+    render_help_topic,
+    set_page_length,
+)
+from app.settings.user_prefs import UserPrefs, load_prefs, save_prefs
 from app.settings.features import dev_mode_from_env, feature_state, is_enabled, load_features
 from app.settings.commands import load_command_visibility, is_command_visible
 from app.shell_catalog import SHELL_BUILTINS, shell_help_rows
@@ -265,6 +272,11 @@ class ShellState:
     devices_cache: list[dict] = field(default_factory=list)
     # SCM folder names cached at startup for tab completion
     folders_cache: list[str] = field(default_factory=lambda: ["Shared", "Global"])
+    # monotonic timestamps of the last cache refresh — a cd/folder miss on a
+    # stale cache triggers one silent re-fetch before hard-erroring, so a
+    # device onboarded an hour into the session is still found.
+    devices_loaded_at: float = 0.0
+    folders_loaded_at: float = 0.0
     # TSG entries fetched from /iam/v1/tenants — each dict has 'id' and 'display_name'
     tsgs_cache: list[dict] = field(default_factory=list)
 

@@ -4,7 +4,16 @@ from __future__ import annotations
 from app.shell._base import *  # noqa: F401,F403  (shared spine namespace)
 
 
+# A cd/folder miss re-fetches its cache when older than this before erroring.
+_CACHE_MAX_AGE_S = 300
+
+
 class NavigationMixin:
+    @staticmethod
+    def _cache_stale(loaded_at: float) -> bool:
+        """True when a navigation cache is old enough to warrant a re-fetch."""
+        return time.monotonic() - loaded_at > _CACHE_MAX_AGE_S
+
     def _cmd_cd(self, args: list[str]) -> None:
         """Unified context navigation — device or folder.
 
@@ -71,6 +80,11 @@ class NavigationMixin:
             self._refresh_devices()
 
         match = self._find_device(target)
+        # Miss on a stale cache → one silent re-fetch before the hard error,
+        # so devices onboarded after startup are still found.
+        if match is None and self._cache_stale(self._state.devices_loaded_at):
+            self._refresh_devices(silent=True)
+            match = self._find_device(target)
         if match:
             self._state.device = match
             name    = device_display_name(match, target)
@@ -142,6 +156,9 @@ class NavigationMixin:
         """
         if not self._scm:
             return
+        # Stamp the attempt (not just success) so a failing SCM doesn't get
+        # re-hammered on every cache miss for the next few minutes.
+        self._state.devices_loaded_at = time.monotonic()
         try:
             devices = self._scm.get_devices()
             if devices:
@@ -154,6 +171,7 @@ class NavigationMixin:
         """Fetch SCM folder names and populate the cache used by 'folder' tab completion."""
         if not self._scm:
             return
+        self._state.folders_loaded_at = time.monotonic()
         try:
             folders = self._scm.get_folders()
             if folders:
@@ -288,11 +306,16 @@ class NavigationMixin:
         # Validate against the known folder list when the cache is populated.
         # This prevents silently setting a folder that doesn't exist in the
         # active TSG — same principle as cd refusing unknown devices.
-        if (
-            self._state.folders_cache
+        # A miss on a stale cache gets one silent re-fetch first, so folders
+        # created after startup (here or in the SCM UI) are still accepted.
+        cache_meaningful = (
+            bool(self._state.folders_cache)
             and self._state.folders_cache != ["Shared", "Global"]
-            and new_folder not in self._state.folders_cache
-        ):
+        )
+        if cache_meaningful and new_folder not in self._state.folders_cache:
+            if self._cache_stale(self._state.folders_loaded_at):
+                self._refresh_folders(silent=True)
+        if cache_meaningful and new_folder not in self._state.folders_cache:
             active_tsg = active_tsg_label(self._state, self._config)
             console.print(
                 f"[red]Folder '{new_folder}' not found in TSG {active_tsg}.[/red]\n"

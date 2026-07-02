@@ -26,10 +26,17 @@ they become real:
 
 ```text
 commit                             apply + push, print the job ID
-commit watch                       same, then follow the push job until it finishes
+commit check                       re-validate staged changes against current
+                                   SCM state without applying anything
+commit watch                       apply + push, then follow the job until done
 commit description planned-change  attach a description to the push
 commit watch description nightly   watch + description combined
 ```
+
+`commit check` is the Junos-style dry run: each staged change's validation
+re-runs against SCM as it is *now*, catching objects someone else deleted or
+renamed since you staged. Valid entries get their lookups refreshed; failures
+are reported and stay staged for you to fix or `abandon`.
 
 ## Related
 

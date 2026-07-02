@@ -87,10 +87,26 @@ Any output-producing command can be piped through PAN-OS-style filters:
 show devices | match production        # only lines matching (regex, case-insensitive)
 show security policy | except deny     # drop matching lines
 show devices | match PA-4 | count      # chain filters; count matching lines
+show devices | json                    # raw JSON instead of a table (for scripts)
+show devices | json | match serial     # filters apply to the JSON lines
 ```
 
-Filters operate on rendered output lines. Interactive commands
-(`connect`, `remote`, `configure`, `setup`) cannot be filtered.
+Filters operate on rendered output lines (`| json` switches the rendering to
+raw JSON first). Interactive commands (`connect`, `remote`, `configure`,
+`setup`) cannot be filtered.
+
+## Terminal preferences — pager, width, spinner
+
+Per-user settings stored in `config/<user>/preferences.json` and loaded at
+every launch:
+
+```text
+terminal                     # show current settings
+terminal length 24           # page long help/docs output after 24 lines
+terminal length 0            # disable paging (default — use scrollback)
+terminal width 120           # force render width; 0 = auto-detect
+terminal spinner off         # hide the "querying SCM…" spinner
+```
 
 ## Interactive SSH session
 

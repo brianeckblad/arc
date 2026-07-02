@@ -35,6 +35,7 @@ Gateway map (from the OpenAPI ``servers`` field in each spec):
 
 from __future__ import annotations
 
+import time
 from typing import Any, Optional
 
 import httpx
@@ -152,11 +153,17 @@ class SCMClient:
         A 401 mid-session usually means the OAuth token expired: when client
         credentials are configured, re-authenticate once and retry (a loop,
         not recursion, so a swapped-in ``_request`` never re-enters itself).
+
+        A 429 (rate limited) is retried up to 3 times, sleeping for the
+        ``Retry-After`` header value when present and sane, else
+        ``2.0 * attempt`` seconds — always capped at 15s.
         """
         can_reauth = bool(
             self._cfg.client_id and self._cfg.client_secret and self._cfg.tsg_id
         )
-        for attempt in (1, 2):
+        reauthed = False
+        rate_limit_retries = 0
+        while True:
             resp = self._http.request(
                 method,
                 f"{base_url}{path}",
@@ -164,12 +171,76 @@ class SCMClient:
                 params=params,
                 json=json,
             )
-            if resp.status_code == 401 and attempt == 1 and can_reauth:
+            if resp.status_code == 401 and not reauthed and can_reauth:
+                reauthed = True
                 self._authenticate()
+                continue
+            if resp.status_code == 429 and rate_limit_retries < 3:
+                rate_limit_retries += 1
+                delay = 2.0 * rate_limit_retries
+                retry_after = resp.headers.get("Retry-After")
+                if retry_after is not None:
+                    try:
+                        parsed = float(retry_after)
+                        if parsed >= 0:
+                            delay = parsed
+                    except ValueError:
+                        pass
+                time.sleep(min(delay, 15.0))
                 continue
             break
         resp.raise_for_status()
         return resp.json() if resp.content else {}
+
+    # Safety cap on pagination requests per collection (first page included).
+    _MAX_LIST_PAGES = 50
+
+    def _collect_pages(
+        self,
+        base_url: str,
+        path: str,
+        params: Optional[dict],
+        first: dict,
+    ) -> list[dict]:
+        """Follow limit/offset pagination after an already-fetched first page.
+
+        *first* must be a dict whose ``data`` value is a list.  When the
+        server-reported ``total`` exceeds the first page, keep requesting
+        with explicit ``limit``/``offset`` until all ``total`` items are
+        collected, a page comes back empty, or the page-count safety cap is
+        hit (in which case whatever was fetched is returned — no exception).
+        *params* is copied before mutation.
+        """
+        items: list[dict] = list(first["data"])
+        total = first.get("total")
+        if not isinstance(total, int) or total <= len(items):
+            return items
+        limit = first.get("limit")
+        if not isinstance(limit, int) or limit <= 0:
+            limit = len(items) or 200
+        query = dict(params or {})
+        pages = 1  # first page already fetched
+        while len(items) < total and pages < self._MAX_LIST_PAGES:
+            query["limit"] = limit
+            query["offset"] = len(items)
+            page = self._request("GET", base_url, path, params=query)
+            rows = page.get("data") if isinstance(page, dict) else None
+            if not rows:
+                break
+            items.extend(rows)
+            pages += 1
+        return items
+
+    def _list(self, base_url: str, path: str, params: Optional[dict] = None) -> list[dict]:
+        """GET a collection, following limit/offset pagination to fetch ALL items."""
+        # First request deliberately adds no limit/offset — some endpoints
+        # reject them; pagination params only appear on follow-up pages.
+        first = self._request("GET", base_url, path, params=params)
+        if isinstance(first, list):
+            return first
+        if not isinstance(first, dict) or not isinstance(first.get("data"), list):
+            return []
+        return self._collect_pages(base_url, path, params, first)
 
     def get(self, path: str, params: Optional[dict] = None) -> Any:
         """GET against the IAM/sase gateway (api.sase.paloaltonetworks.com)."""
@@ -280,7 +351,7 @@ class SCMClient:
         query.setdefault("folder", folder)
         data = self._request("GET", base, path, params=query)
         if isinstance(data, dict) and isinstance(data.get("data"), list):
-            return data["data"]
+            return self._collect_pages(base, path, query, data)
         return data
 
     def request_api(
@@ -298,14 +369,19 @@ class SCMClient:
         surface broad enough for spec coverage while still routing only to
         checked-in pan.dev base URLs.
         """
+        norm_method = method.upper()
+        norm_base = base_url.rstrip("/")
+        norm_path = f"/{path.lstrip('/')}"
         data = self._request(
-            method.upper(),
-            base_url.rstrip("/"),
-            f"/{path.lstrip('/')}",
+            norm_method,
+            norm_base,
+            norm_path,
             params=params or None,
             json=json,
         )
         if isinstance(data, dict) and isinstance(data.get("data"), list):
+            if norm_method == "GET":
+                return self._collect_pages(norm_base, norm_path, params, data)
             return data["data"]
         return data
 
@@ -386,29 +462,13 @@ class SCMClient:
         Spec: openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml
 
         The endpoint accepts no folder parameter — it returns all devices
-        visible to the token's TSG scope.  Default page limit is 200; this
-        method walks all pages (offset-based) so tenants with more than 200
-        devices are returned in full.
+        visible to the token's TSG scope.  All pages are walked
+        (limit/offset) so tenants with more than one page of devices are
+        returned in full.
         Returns [] on 403 so callers can handle quietly.
         """
-        _PAGE_LIMIT = 200
-        all_devices: list[dict] = []
-        offset = 0
         try:
-            while True:
-                data = self._get_setup(
-                    "/devices",
-                    params={"limit": _PAGE_LIMIT, "offset": offset},
-                )
-                page = data.get("data", [])
-                all_devices.extend(page)
-
-                total = data.get("total", len(all_devices))
-                offset += len(page)
-                # Stop when we have all records or the page came back empty.
-                if not page or offset >= total:
-                    break
-            return all_devices
+            return self._list(self.SETUP_URL, "/devices")
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code == 403:
                 return []
@@ -425,10 +485,9 @@ class SCMClient:
         Falls back to common defaults on any error.
         """
         try:
-            data = self._get_setup("/folders")
             names = [
                 f.get("name", "")
-                for f in data.get("data", [])
+                for f in self._list(self.SETUP_URL, "/folders")
                 if self._is_folder_record(f) and f.get("name")
             ]
             return names if names else ["Shared", "Global"]
@@ -448,8 +507,7 @@ class SCMClient:
         Returns [] on any error so callers can handle gracefully.
         """
         try:
-            data = self._get_setup("/jobs")
-            return data.get("data", [])
+            return self._list(self.SETUP_URL, "/jobs")
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code == 403:
                 return []
@@ -487,8 +545,8 @@ class SCMClient:
         Returns [] on any error so callers can handle gracefully.
         """
         try:
-            data = self._get_setup("/folders")
-            return [f for f in data.get("data", []) if self._is_folder_record(f)]
+            folders = self._list(self.SETUP_URL, "/folders")
+            return [f for f in folders if self._is_folder_record(f)]
         except (httpx.HTTPError, ValueError, TypeError):
             return []
 
@@ -499,8 +557,7 @@ class SCMClient:
         Spec: openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml
         """
         try:
-            data = self._get_setup("/snippets")
-            return data.get("data", [])
+            return self._list(self.SETUP_URL, "/snippets")
         except (httpx.HTTPError, ValueError, TypeError):
             return []
 
@@ -546,10 +603,9 @@ class SCMClient:
         for label, base, path in endpoints:
             try:
                 if base == "objects":
-                    data = self._get_objects(path, params=p)
+                    items = self._list(self.OBJECTS_URL, path, params=p)
                 else:
-                    data = self._get_security(path, params=p)
-                items = data.get("data", [])
+                    items = self._list(self.SECURITY_URL, path, params=p)
                 if items:
                     sections[label] = items
             except httpx.HTTPStatusError as exc:
@@ -568,8 +624,7 @@ class SCMClient:
         snippet list).
         """
         try:
-            data = self._get_setup("/folders")
-            for f in data.get("data", []):
+            for f in self._list(self.SETUP_URL, "/folders"):
                 if self._is_folder_record(f) and f.get("name") == folder_name:
                     return f
             return None
@@ -610,28 +665,23 @@ class SCMClient:
 
     def get_addresses(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/objects/v1/addresses"""
-        data = self._get_objects("/addresses", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.OBJECTS_URL, "/addresses", params={"folder": folder})
 
     def get_address_groups(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/objects/v1/address-groups"""
-        data = self._get_objects("/address-groups", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.OBJECTS_URL, "/address-groups", params={"folder": folder})
 
     def get_services(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/objects/v1/services"""
-        data = self._get_objects("/services", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.OBJECTS_URL, "/services", params={"folder": folder})
 
     def get_tags(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/objects/v1/tags"""
-        data = self._get_objects("/tags", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.OBJECTS_URL, "/tags", params={"folder": folder})
 
     def get_external_dynamic_lists(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/objects/v1/external-dynamic-lists"""
-        data = self._get_objects("/external-dynamic-lists", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.OBJECTS_URL, "/external-dynamic-lists", params={"folder": folder})
 
     # ------------------------------------------------------------------
     # Objects — CREATE / DELETE
@@ -790,72 +840,60 @@ class SCMClient:
 
     def get_security_policy(self, folder: str = "Shared", position: str = "pre") -> list[dict]:
         """pan.dev: GET /config/security/v1/security-rules"""
-        data = self._get_security(
+        return self._list(
+            self.SECURITY_URL,
             "/security-rules",
             params={"folder": folder, "position": position},
         )
-        return data.get("data", [])
 
     def get_url_categories(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/security/v1/url-categories"""
-        data = self._get_security("/url-categories", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.SECURITY_URL, "/url-categories", params={"folder": folder})
 
     def get_dns_security_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/security/v1/dns-security-profiles"""
-        data = self._get_security("/dns-security-profiles", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.SECURITY_URL, "/dns-security-profiles", params={"folder": folder})
 
     # Additional security resources
     def get_decryption_rules(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/security/v1/decryption-rules"""
-        data = self._get_security("/decryption-rules", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.SECURITY_URL, "/decryption-rules", params={"folder": folder})
 
     def get_dos_protection_rules(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/security/v1/dos-protection-rules"""
-        data = self._get_security("/dos-protection-rules", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.SECURITY_URL, "/dos-protection-rules", params={"folder": folder})
 
     def get_dos_protection_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/security/v1/dos-protection-profiles"""
-        data = self._get_security("/dos-protection-profiles", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.SECURITY_URL, "/dos-protection-profiles", params={"folder": folder})
 
     def get_app_override_rules(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/security/v1/app-override-rules"""
-        data = self._get_security("/app-override-rules", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.SECURITY_URL, "/app-override-rules", params={"folder": folder})
 
     def get_decryption_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/security/v1/decryption-profiles"""
-        data = self._get_security("/decryption-profiles", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.SECURITY_URL, "/decryption-profiles", params={"folder": folder})
 
     def get_profile_groups(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/security/v1/profile-groups"""
-        data = self._get_security("/profile-groups", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.SECURITY_URL, "/profile-groups", params={"folder": folder})
 
     def get_anti_spyware_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/security/v1/anti-spyware-profiles"""
-        data = self._get_security("/anti-spyware-profiles", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.SECURITY_URL, "/anti-spyware-profiles", params={"folder": folder})
 
     def get_vulnerability_protection_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/security/v1/vulnerability-protection-profiles"""
-        data = self._get_security("/vulnerability-protection-profiles", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.SECURITY_URL, "/vulnerability-protection-profiles", params={"folder": folder})
 
     def get_wildfire_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/security/v1/wildfire-anti-virus-profiles"""
-        data = self._get_security("/wildfire-anti-virus-profiles", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.SECURITY_URL, "/wildfire-anti-virus-profiles", params={"folder": folder})
 
     def get_url_admin_override(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/security/v1/url-admin-override"""
-        data = self._get_security("/url-admin-override", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.SECURITY_URL, "/url-admin-override", params={"folder": folder})
 
     # ------------------------------------------------------------------
     # Additional Objects
@@ -863,43 +901,35 @@ class SCMClient:
 
     def get_service_groups(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/objects/v1/service-groups"""
-        data = self._get_objects("/service-groups", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.OBJECTS_URL, "/service-groups", params={"folder": folder})
 
     def get_application_groups(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/objects/v1/application-groups"""
-        data = self._get_objects("/application-groups", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.OBJECTS_URL, "/application-groups", params={"folder": folder})
 
     def get_application_filters(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/objects/v1/application-filters"""
-        data = self._get_objects("/application-filters", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.OBJECTS_URL, "/application-filters", params={"folder": folder})
 
     def get_schedules(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/objects/v1/schedules"""
-        data = self._get_objects("/schedules", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.OBJECTS_URL, "/schedules", params={"folder": folder})
 
     def get_regions(self) -> list[dict]:
         """pan.dev: GET /config/objects/v1/regions  (global — no folder filter)"""
-        data = self._get_objects("/regions")
-        return data.get("data", [])
+        return self._list(self.OBJECTS_URL, "/regions")
 
     def get_hip_objects(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/objects/v1/hip-objects"""
-        data = self._get_objects("/hip-objects", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.OBJECTS_URL, "/hip-objects", params={"folder": folder})
 
     def get_hip_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/objects/v1/hip-profiles"""
-        data = self._get_objects("/hip-profiles", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.OBJECTS_URL, "/hip-profiles", params={"folder": folder})
 
     def get_log_forwarding_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/objects/v1/log-forwarding-profiles"""
-        data = self._get_objects("/log-forwarding-profiles", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.OBJECTS_URL, "/log-forwarding-profiles", params={"folder": folder})
 
     # ------------------------------------------------------------------
     # Additional Network
@@ -907,53 +937,43 @@ class SCMClient:
 
     def get_nat_rules(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/nat-rules"""
-        data = self._get_network("/nat-rules", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.NETWORK_URL, "/nat-rules", params={"folder": folder})
 
     def get_pbf_rules(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/pbf-rules"""
-        data = self._get_network("/pbf-rules", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.NETWORK_URL, "/pbf-rules", params={"folder": folder})
 
     def get_ike_gateways(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/ike-gateways"""
-        data = self._get_network("/ike-gateways", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.NETWORK_URL, "/ike-gateways", params={"folder": folder})
 
     def get_ipsec_tunnels(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/ipsec-tunnels"""
-        data = self._get_network("/ipsec-tunnels", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.NETWORK_URL, "/ipsec-tunnels", params={"folder": folder})
 
     def get_bgp_routing_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/bgp-address-family-profiles"""
-        data = self._get_network("/bgp-address-family-profiles", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.NETWORK_URL, "/bgp-address-family-profiles", params={"folder": folder})
 
     def get_dns_proxies(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/dns-proxies"""
-        data = self._get_network("/dns-proxies", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.NETWORK_URL, "/dns-proxies", params={"folder": folder})
 
     def get_qos_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/qos-profiles"""
-        data = self._get_network("/qos-profiles", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.NETWORK_URL, "/qos-profiles", params={"folder": folder})
 
     def get_sdwan_rules(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/sdwan-rules"""
-        data = self._get_network("/sdwan-rules", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.NETWORK_URL, "/sdwan-rules", params={"folder": folder})
 
     def get_tunnel_interfaces(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/tunnel-interfaces"""
-        data = self._get_network("/tunnel-interfaces", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.NETWORK_URL, "/tunnel-interfaces", params={"folder": folder})
 
     def get_vlan_interfaces(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/vlan-interfaces"""
-        data = self._get_network("/vlan-interfaces", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.NETWORK_URL, "/vlan-interfaces", params={"folder": folder})
 
     # ------------------------------------------------------------------
     # Identity  (api.strata.paloaltonetworks.com/config/identity/v1)
@@ -966,43 +986,35 @@ class SCMClient:
 
     def get_authentication_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/identity/v1/authentication-profiles"""
-        data = self._get_identity("/authentication-profiles", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.IDENTITY_URL, "/authentication-profiles", params={"folder": folder})
 
     def get_authentication_rules(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/identity/v1/authentication-rules"""
-        data = self._get_identity("/authentication-rules", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.IDENTITY_URL, "/authentication-rules", params={"folder": folder})
 
     def get_certificate_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/identity/v1/certificate-profiles"""
-        data = self._get_identity("/certificate-profiles", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.IDENTITY_URL, "/certificate-profiles", params={"folder": folder})
 
     def get_local_users(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/identity/v1/local-users"""
-        data = self._get_identity("/local-users", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.IDENTITY_URL, "/local-users", params={"folder": folder})
 
     def get_local_user_groups(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/identity/v1/local-user-groups"""
-        data = self._get_identity("/local-user-groups", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.IDENTITY_URL, "/local-user-groups", params={"folder": folder})
 
     def get_radius_server_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/identity/v1/radius-server-profiles"""
-        data = self._get_identity("/radius-server-profiles", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.IDENTITY_URL, "/radius-server-profiles", params={"folder": folder})
 
     def get_tls_service_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/identity/v1/tls-service-profiles"""
-        data = self._get_identity("/tls-service-profiles", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.IDENTITY_URL, "/tls-service-profiles", params={"folder": folder})
 
     def get_mfa_servers(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/identity/v1/mfa-servers"""
-        data = self._get_identity("/mfa-servers", params={"folder": folder})
-        return data.get("data", [])
+        return self._list(self.IDENTITY_URL, "/mfa-servers", params={"folder": folder})
 
     # ------------------------------------------------------------------
     # Network  (api.strata.paloaltonetworks.com/config/network/v1)
@@ -1017,8 +1029,7 @@ class SCMClient:
         Returns [] on 403/404 so callers degrade gracefully.
         """
         try:
-            data = self._get_network("/ethernet", params={"folder": folder})
-            return data.get("data", [])
+            return self._list(self.NETWORK_URL, "/ethernet", params={"folder": folder})
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code in (403, 404):
                 return []
@@ -1032,8 +1043,7 @@ class SCMClient:
         pan.dev: GET /config/network/v1/aggregate-ethernet?folder=<folder>
         """
         try:
-            data = self._get_network("/aggregate-ethernet", params={"folder": folder})
-            return data.get("data", [])
+            return self._list(self.NETWORK_URL, "/aggregate-ethernet", params={"folder": folder})
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code in (403, 404):
                 return []
@@ -1047,8 +1057,7 @@ class SCMClient:
         pan.dev: GET /config/network/v1/loopback-interfaces?folder=<folder>
         """
         try:
-            data = self._get_network("/loopback-interfaces", params={"folder": folder})
-            return data.get("data", [])
+            return self._list(self.NETWORK_URL, "/loopback-interfaces", params={"folder": folder})
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code in (403, 404):
                 return []
@@ -1063,8 +1072,7 @@ class SCMClient:
         Returns [] on 403/404 so callers degrade gracefully.
         """
         try:
-            data = self._get_network("/zones", params={"folder": folder})
-            return data.get("data", [])
+            return self._list(self.NETWORK_URL, "/zones", params={"folder": folder})
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code in (403, 404):
                 return []
@@ -1079,8 +1087,7 @@ class SCMClient:
         Returns [] on 403/404.
         """
         try:
-            data = self._get_network("/routing/static-routes", params={"folder": folder})
-            return data.get("data", [])
+            return self._list(self.NETWORK_URL, "/routing/static-routes", params={"folder": folder})
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code in (403, 404):
                 return []
@@ -1095,8 +1102,7 @@ class SCMClient:
         Returns [] on 403/404.
         """
         try:
-            data = self._get_network("/virtual-routers", params={"folder": folder})
-            return data.get("data", [])
+            return self._list(self.NETWORK_URL, "/virtual-routers", params={"folder": folder})
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code in (403, 404):
                 return []

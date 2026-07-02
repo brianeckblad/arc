@@ -71,13 +71,19 @@ class ExecutionMixin:
                 return
 
             # Spinner while the API call runs — skipped when output is being
-            # captured for a pipe filter or the console is not a terminal
-            # (rich Live displays don't nest under capture).
-            if getattr(self, "_piping", False) or not console.is_terminal:
-                data = cmd_def.api_handler(ctx, args)
-            else:
+            # captured for a pipe filter, the console is not a terminal (rich
+            # Live displays don't nest under capture), or the user turned it
+            # off (`terminal spinner off`).
+            use_spinner = (
+                console.is_terminal
+                and not getattr(self, "_piping", False)
+                and getattr(getattr(self, "_prefs", None), "spinner", True)
+            )
+            if use_spinner:
                 with console.status("[dim]querying SCM…[/dim]", spinner="dots"):
                     data = cmd_def.api_handler(ctx, args)
+            else:
+                data = cmd_def.api_handler(ctx, args)
             self._render(key, cmd_def, data)
         except httpx.HTTPStatusError as exc:
             status = exc.response.status_code
@@ -165,6 +171,16 @@ class ExecutionMixin:
         return ssh_command(args)
 
     def _render(self, key: str, cmd_def: CommandDef, data) -> None:  # noqa: C901
+        # `<command> | json` — emit the raw data for scripts, skipping tables.
+        if getattr(self, "_render_as_json", False):
+            import json as _json
+            try:
+                text = _json.dumps(data, indent=2, default=str, sort_keys=False)
+            except (TypeError, ValueError):
+                text = _json.dumps(str(data))
+            console.print(text, markup=False, highlight=False)
+            return
+
         render_hint = cmd_def.render
 
         # Unwrap log tuple

@@ -359,6 +359,33 @@ def test_arg_parser() -> None:
     else:
         fail("parse_output_filters chain wrong", repr(filters))
 
+    filters, _ = parse_output_filters("json | match serial")
+    if filters == [("json", ""), ("match", "serial")]:
+        ok("parse_output_filters: json render filter parsed")
+    else:
+        fail("parse_output_filters json wrong", repr(filters))
+
+    # 4d — user preferences round-trip (config/<user>/preferences.json)
+    from app.settings import user_prefs as _up
+
+    prefs = _up.UserPrefs(terminal_length=24, terminal_width=120, spinner=False)
+    original_file = _up.PREFS_FILE
+    _up.PREFS_FILE = ROOT / "dev" / ".smoke_prefs_test.json"
+    try:
+        if _up.save_prefs(prefs) and _up.load_prefs() == prefs:
+            ok("user_prefs: save/load round-trip preserves values")
+        else:
+            fail("user_prefs round-trip mismatch", repr(_up.load_prefs()))
+        _up.PREFS_FILE.write_text('{"terminal_length": "junk", "unknown_key": 1}')
+        loaded = _up.load_prefs()
+        if loaded.terminal_length == 0 and loaded.spinner is True:
+            ok("user_prefs: malformed values and unknown keys tolerated")
+        else:
+            fail("user_prefs did not tolerate malformed file", repr(loaded))
+    finally:
+        _up.PREFS_FILE.unlink(missing_ok=True)
+        _up.PREFS_FILE = original_file
+
     bad, error = parse_output_filters("frobnicate x")
     if bad is None and "unknown filter" in error:
         ok("parse_output_filters: rejects unknown filter with hint")

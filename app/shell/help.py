@@ -235,8 +235,12 @@ class HelpMixin:
             self._print_shell_builtins()
             console.print()
         
-        # Always use pager for full help (it's long)
-        with console.pager(styles=True):
+        # Page the full reference only when the user enabled paging
+        # (`terminal length <n>`; 0 = print everything).
+        if page_length() > 0:
+            with console.pager(styles=True):
+                _print_full_help()
+        else:
             _print_full_help()
 
     def _cmd_show_write_help(self, verb: str) -> None:

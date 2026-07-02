@@ -42,8 +42,9 @@ def parse_output_filters(spec: str) -> tuple[list[tuple[str, str]] | None, str]:
     """Parse a pipe filter chain into ``[(op, pattern), …]``.
 
     Supported (PAN-OS / Cisco vocabulary): ``match``/``include`` <pattern>,
-    ``except``/``exclude`` <pattern>, ``count``.  Returns ``(None, error)``
-    on a malformed spec.
+    ``except``/``exclude`` <pattern>, ``count``, and ``json`` (render the
+    command's data as JSON instead of tables — for scripts).  Returns
+    ``(None, error)`` on a malformed spec.
     """
     filters: list[tuple[str, str]] = []
     for segment in spec.split("|"):
@@ -57,8 +58,10 @@ def parse_output_filters(spec: str) -> tuple[list[tuple[str, str]] | None, str]:
             filters.append(("match" if op in ("match", "include") else "except", parts[1].strip()))
         elif op == "count":
             filters.append(("count", ""))
+        elif op == "json":
+            filters.append(("json", ""))
         else:
-            return None, f"unknown filter '{op}' — supported: match <pat> | except <pat> | count"
+            return None, f"unknown filter '{op}' — supported: match <pat> | except <pat> | count | json"
     return filters, ""
 
 
@@ -86,12 +89,19 @@ class DispatchMixin:
             console.print(f"[yellow]'{first}' is interactive — output filters don't apply.[/yellow]")
             return False
 
+        # `| json` renders the command's DATA as JSON instead of tables;
+        # any remaining match/except/count filters then apply to those lines.
+        json_mode = any(op == "json" for op, _ in filters)
+        filters = [f for f in filters if f[0] != "json"]
+
         self._piping = True
+        self._render_as_json = json_mode
         try:
             with console.capture() as capture:
                 should_exit = self._dispatch(head)
         finally:
             self._piping = False
+            self._render_as_json = False
 
         lines = capture.get().splitlines()
         for op, pattern in filters:
@@ -293,6 +303,11 @@ class DispatchMixin:
         # ---- abandon (configure mode): discard locally staged changes ----
         if cmd == "abandon":
             self._cmd_abandon(tokens[1:])
+            return False
+
+        # ---- terminal: per-user pager/width/spinner preferences ----
+        if cmd == "terminal":
+            self._cmd_terminal(tokens[1:])
             return False
 
         # ---- commit (configure mode): apply staged changes, then push ----

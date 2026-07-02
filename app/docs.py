@@ -41,6 +41,8 @@ SHELL_TOPICS = {
     # Feature flags builtin
     "feature":      "commands/features.md",
     "features":     "commands/features.md",
+    # Per-user terminal preferences builtin
+    "terminal":     "commands/terminal.md",
 }
 
 GENERAL_TOPICS = {
@@ -131,13 +133,30 @@ def synthesize_command_help(key: str) -> str:
     return "\n".join(lines)
 
 
+# Pager behavior — set once at shell startup from the user's preferences file
+# (`terminal length <n>` persists it). 0 = paging disabled: print everything
+# and rely on terminal scrollback. There is no terminal-size auto-detection.
+_PAGE_LENGTH = 0
+
+
+def set_page_length(lines: int) -> None:
+    """Set the pager threshold (0 disables paging). Called from shell startup."""
+    global _PAGE_LENGTH
+    _PAGE_LENGTH = max(0, int(lines))
+
+
+def page_length() -> int:
+    """Current pager threshold in lines (0 = paging disabled)."""
+    return _PAGE_LENGTH
+
+
 def render_help_topic(console: Console, topic: str, use_pager: bool = True) -> bool:
     """Render a Markdown help topic inside the ARC shell.
 
     Args:
         console: Rich console for output
         topic: Topic name to render
-        use_pager: If True, automatically paginate long documentation
+        use_pager: If False, never page (regardless of `terminal length`)
 
     Returns True when a document was found and printed; False otherwise.
     """
@@ -158,12 +177,11 @@ def render_help_topic(console: Console, topic: str, use_pager: bool = True) -> b
     # by `?`).  Strip it so only the human-readable body is rendered here.
     _meta, markdown_text = parse_front_matter(markdown_text)
     
-    # Count lines to decide if we need pagination
-    # Rough estimate: 1 line of markdown ≈ 1 terminal line
+    # Page only when the user set a terminal length (`terminal length <n>`)
+    # and the document exceeds it. 1 line of markdown ≈ 1 terminal line.
     line_count = len(markdown_text.split('\n'))
-    terminal_height = console.size.height
-    needs_pager = line_count > (terminal_height - 5) if terminal_height else False
-    
+    needs_pager = _PAGE_LENGTH > 0 and line_count > _PAGE_LENGTH
+
     def _print_doc():
         console.print()
         console.print(Panel(Markdown(markdown_text), title=f"Help: {topic or 'overview'}", border_style="cyan"))

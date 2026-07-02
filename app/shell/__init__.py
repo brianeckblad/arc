@@ -62,6 +62,13 @@ class ArcShell(
         # Load CLI theme (colours for ? help, banner, etc.)
         self._theme: ArcTheme = load_theme()
 
+        # Per-user preferences (config/<user>/preferences.json) — pager length,
+        # render width, spinner. Changed at runtime via the `terminal` command.
+        self._prefs: UserPrefs = load_prefs()
+        set_page_length(self._prefs.terminal_length)
+        if self._prefs.terminal_width > 0:
+            console.width = self._prefs.terminal_width
+
         # Print banner before init so the logo appears above the SCM connection line.
         self._print_banner()
         self._print_startup_help()

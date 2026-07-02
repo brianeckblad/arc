@@ -6,6 +6,15 @@ import platform  # For OS detection in setup wizard
 from app.shell._base import *  # noqa: F401,F403  (shared spine namespace)
 
 
+def _prefs_file_label() -> str:
+    """Repo-relative path of the preferences file, for display."""
+    from app.settings.user_prefs import PREFS_FILE
+    try:
+        return str(PREFS_FILE.relative_to(PREFS_FILE.parents[2]))
+    except (ValueError, IndexError):
+        return str(PREFS_FILE)
+
+
 def capture_write_ops(scm, handler, ctx, args) -> list[dict]:
     """Run a write handler against a recording client and capture its mutations.
 
@@ -80,8 +89,9 @@ class ConfigureMixin:
             )
             return
         detail = str(args.get("name") or (args.get("_positional") or [""])[0] or "").strip()
+        # args are kept so `commit check` can re-run validation later.
         self._state.staged_ops.append(
-            {"command": key, "detail": detail, "folder": ctx.folder, "ops": ops}
+            {"command": key, "detail": detail, "folder": ctx.folder, "args": args, "ops": ops}
         )
         shown = f"{key} {detail}".strip()
         console.print(
@@ -143,6 +153,9 @@ class ConfigureMixin:
         Both accept a trailing ``description <text>``.
         """
         tokens = list(args)
+        if tokens and tokens[0].lower() == "check":
+            self._commit_check()
+            return
         watch = bool(tokens) and tokens[0].lower() == "watch"
         if watch:
             tokens.pop(0)
@@ -203,6 +216,51 @@ class ConfigureMixin:
                 "(or use [bold]commit watch[/bold] next time)[/dim]"
             )
 
+    def _commit_check(self) -> None:
+        """Re-validate every staged change against CURRENT SCM state (Junos-style).
+
+        The world can change between staging and commit — a colleague may have
+        deleted the object your update targets. Each entry's handler is re-run
+        through the recording client (fresh GETs, no mutations); entries that
+        still validate get their captured ops refreshed (ids re-resolved),
+        failures are reported and left staged for the operator to fix or abandon.
+        """
+        staged = self._state.staged_ops
+        if not staged:
+            console.print("[dim]No staged changes to check.[/dim]")
+            return
+        if not self._scm:
+            console.print("[red]SCM not connected — cannot validate.[/red]")
+            return
+        failures = 0
+        for index, entry in enumerate(staged, 1):
+            label = f"{entry['command']} {entry['detail']}".strip()
+            cmd_def = COMMANDS.get(entry["command"])
+            if cmd_def is None or cmd_def.api_handler is None:
+                failures += 1
+                console.print(f"  [red]✗[/red] {index}/{len(staged)}  {label} — command no longer registered")
+                continue
+            ctx = ExecutionContext(
+                scm=self._scm, ssh=self._ssh, config=self._config,
+                device=self._state.device, folder=entry["folder"],
+                tsg_id=self._state.tsg_id,
+            )
+            try:
+                entry["ops"] = capture_write_ops(
+                    self._scm, cmd_def.api_handler, ctx, entry.get("args") or {}
+                )
+                console.print(f"  [green]✓[/green] {index}/{len(staged)}  {label}")
+            except Exception as exc:  # noqa: BLE001 — each failure reported individually
+                failures += 1
+                console.print(f"  [red]✗[/red] {index}/{len(staged)}  {label} — {exc}")
+        if failures:
+            console.print(
+                f"[yellow]commit check: {failures} of {len(staged)} staged change(s) no longer valid.[/yellow]\n"
+                "  Fix or [bold]abandon[/bold] before committing."
+            )
+        else:
+            console.print(f"[green]commit check: all {len(staged)} staged change(s) valid.[/green]")
+
     def _watch_job(self, job_id: str, timeout_s: int = 900) -> None:
         """Poll a push job every few seconds until it finishes (or timeout)."""
         deadline = time.monotonic() + timeout_s
@@ -260,6 +318,60 @@ class ConfigureMixin:
                 console.print("[dim]Staying in configure mode.[/dim]")
                 return False
             console.print("[dim]Type commit, abandon, or cancel.[/dim]")
+
+    def _cmd_terminal(self, args: list[str]) -> None:
+        """Per-user terminal preferences — persisted to config/<user>/preferences.json.
+
+        terminal                     show current settings
+        terminal length <n>          page long output after n lines (0 = never page)
+        terminal width <n>           force render width in columns (0 = auto)
+        terminal spinner on|off      toggle the "querying SCM…" spinner
+        """
+        p = self._prefs
+
+        if not args or args[0] == "?":
+            length_note = str(p.terminal_length) if p.terminal_length else "0  (paging disabled)"
+            width_note = str(p.terminal_width) if p.terminal_width else "0  (auto-detect)"
+            console.print(
+                f"\n  [bold]terminal settings[/bold]  [dim]{'(stored in ' + str(_prefs_file_label()) + ')'}[/dim]\n\n"
+                f"    length   {length_note}\n"
+                f"    width    {width_note}\n"
+                f"    spinner  {'on' if p.spinner else 'off'}\n\n"
+                "  [dim]terminal length <n>  |  terminal width <n>  |  terminal spinner on|off[/dim]\n"
+            )
+            return
+
+        sub = args[0].lower()
+        if sub in ("length", "width"):
+            if len(args) < 2 or not args[1].isdigit():
+                console.print(f"[yellow]Usage:[/yellow] terminal {sub} <n>   [dim](0 = {'disable paging' if sub == 'length' else 'auto-detect'})[/dim]")
+                return
+            value = int(args[1])
+            if sub == "length":
+                p.terminal_length = value
+                set_page_length(value)
+                note = f"paging after {value} lines" if value else "paging disabled"
+            else:
+                p.terminal_width = value
+                console.width = value if value > 0 else None
+                note = f"render width {value} columns" if value else "auto-detect width"
+        elif sub == "spinner":
+            state = (args[1].lower() if len(args) > 1 else "").strip()
+            if state not in ("on", "off"):
+                console.print("[yellow]Usage:[/yellow] terminal spinner on|off")
+                return
+            p.spinner = state == "on"
+            note = f"spinner {state}"
+        else:
+            console.print(
+                f"[yellow]Unknown terminal setting:[/yellow] [bold]{sub}[/bold]\n"
+                "  terminal length <n>  |  terminal width <n>  |  terminal spinner on|off"
+            )
+            return
+
+        saved = save_prefs(p)
+        suffix = "" if saved else "  [yellow](could not write preferences.json — applies to this session only)[/yellow]"
+        console.print(f"[green]✓[/green] {note}{suffix}")
 
     def _cmd_cli(self, args: list[str]) -> None:
         """Read/write CLI theme settings (configure mode only)."""
