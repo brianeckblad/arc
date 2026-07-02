@@ -58,6 +58,14 @@ class PromptMixin:
             f"<arrow>{prompt_tail}</arrow>"
         )
 
+    def _help_cell(self, name: str, width: int = _HELP_CMD_WIDTH) -> str:
+        """Left-pad *name* to the help command column and apply the theme style.
+
+        Every help/`?` listing renders its command column through this one
+        helper so all sections align on the same visual column.
+        """
+        return self._styled(f"{name:<{width}}", self._theme.command_name)
+
     @staticmethod
     def _styled(text: str, style: str) -> str:
         """Wrap *text* in a Rich markup tag for *style*.

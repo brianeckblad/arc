@@ -55,7 +55,7 @@ class HelpMixin:
         width = max((len(row["token"]) for row in rows), default=4)
         width = max(width, 12)
         for row in rows:
-            token_cell = self._styled(f"{row['token']:<{width}}", t.command_name)
+            token_cell = self._help_cell(row['token'], width=width)
             description = row.get("description") or ""
             if description:
                 console.print(f"  {token_cell}  {description}")
@@ -95,7 +95,7 @@ class HelpMixin:
                 if exact_available:
                     self._print_inline_usage(exact_key, exact_cmd)
                 for token, desc in options:
-                    token_cell = self._styled(f"{token:<20}", t.command_name)
+                    token_cell = self._help_cell(token, width=20)
                     if desc:
                         console.print(f"  {token_cell} {desc}")
                     else:
@@ -142,7 +142,7 @@ class HelpMixin:
             hint  = _section_label("commands_hint", "type <verb> ? for sub-commands")
             console.print(f"  {self._styled(hdr, sh)}  {self._styled(f'— {hint}', dd)}")
             for verb, desc in root_verbs:
-                cmd_cell  = self._styled(f"{verb:<{_HELP_CMD_WIDTH}}", t.command_name)
+                cmd_cell  = self._help_cell(verb)
                 desc_text = self._styled(desc, t.description) if (desc and t.description) else desc
                 console.print(f"    {cmd_cell} {desc_text}".rstrip())
 
@@ -257,7 +257,7 @@ class HelpMixin:
         console.print()
         if matching:
             for k, desc in sorted(matching):
-                cmd_cell = self._styled(f"{k:<50}", t.command_name)
+                cmd_cell = self._help_cell(k, width=50)
                 console.print(f"    {cmd_cell} {self._styled(desc, dd)}")
         else:
             console.print(f"  [dim]{empty_msg}[/dim]")
@@ -275,7 +275,7 @@ class HelpMixin:
         for row in shell_help_rows(self._state.configure_mode):
             name = row.name
             desc = row.description
-            cmd_cell = self._styled(f"{name:<{_HELP_CMD_WIDTH}}", t.command_name)
+            cmd_cell = self._help_cell(name)
             console.print(f"    {cmd_cell} {desc}")
 
     def _is_command_visible(self, key: str, cmd_def: CommandDef) -> bool:

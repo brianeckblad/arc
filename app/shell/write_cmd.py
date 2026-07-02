@@ -36,7 +36,7 @@ class WriteMixin:
                 ("set folder new subfolder <name>",     "Create a subfolder under the active folder"),
             ]
             for cmd_str, desc in set_ops:
-                cmd_cell = self._styled(f"{cmd_str:<50}", t.command_name)
+                cmd_cell = self._help_cell(cmd_str, width=50)
                 console.print(f"    {cmd_cell} {self._styled(desc, t.description_dim)}")
             console.print()
             console.print(f"  {self._styled('<set command> help  → full docs  |  exit → leave configure mode', t.description_dim)}")
