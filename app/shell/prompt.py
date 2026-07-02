@@ -22,7 +22,7 @@ class PromptMixin:
         dev_seg = "<sep>:</sep><dev>dev</dev>" if getattr(self, "_dev_mode", False) else ""
 
         if self._state.device:
-            name = self._state.device.get("hostname") or self._state.device.get("name") or "device"
+            name = device_display_name(self._state.device)
             if at_shared:
                 # Device selected but still at Shared — show context tier as ':device'
                 return HTML(

@@ -81,7 +81,7 @@ class ExecutionMixin:
             )
             return
 
-        host = str(device.get("ip_address") or device.get("hostname") or "")
+        host = device_ssh_host(device)
         if not host:
             console.print("[red]Cannot determine device IP/hostname for SSH.[/red]")
             return

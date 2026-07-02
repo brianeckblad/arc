@@ -744,8 +744,17 @@ def test_inline_help_alignment() -> None:
         fail("No generated set/update command exposes json|file usage fallback")
 
     # Disabled feature commands must not appear in user-facing tab completion.
+    # The fake shell borrows the real _is_command_visible from HelpMixin so the
+    # test exercises the same canonical visibility check the shell uses.
     from app.shell.completer import ArcCompleter
-    hidden_shell = SimpleNamespace(_features={"create_address": "off"}, _dev_mode=False)
+    from app.shell.help import HelpMixin
+
+    def _fake_shell(features: dict) -> SimpleNamespace:
+        shell = SimpleNamespace(_features=features, _dev_mode=False, _command_visibility={})
+        shell._is_command_visible = HelpMixin._is_command_visible.__get__(shell)
+        return shell
+
+    hidden_shell = _fake_shell({"create_address": "off"})
     hidden_completer = ArcCompleter(hidden_shell)
     hidden_commands = hidden_completer._all_commands(include_remote_suffix=False)
     if "set address" not in hidden_commands:
@@ -753,7 +762,7 @@ def test_inline_help_alignment() -> None:
     else:
         fail("disabled feature command leaked into completion", "set address was offered while create_address=off")
 
-    visible_shell = SimpleNamespace(_features={"create_address": "on"}, _dev_mode=False)
+    visible_shell = _fake_shell({"create_address": "on"})
     visible_completer = ArcCompleter(visible_shell)
     visible_commands = visible_completer._all_commands(include_remote_suffix=False)
     if "set address" in visible_commands:

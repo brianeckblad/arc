@@ -278,25 +278,29 @@ class HelpMixin:
             cmd_cell = self._styled(f"{name:<{_HELP_CMD_WIDTH}}", t.command_name)
             console.print(f"    {cmd_cell} {desc}")
 
-    def _is_command_available(self, key: str, cmd_def: CommandDef) -> bool:
-        """Return True when a registered command is executable in the current context.
-        
-        Enforces:
-        1. Command visibility (settings/commands.json)
-        2. Device/configure mode context requirements
-        3. Feature flag gates (settings/features.json)
+    def _is_command_visible(self, key: str, cmd_def: CommandDef) -> bool:
+        """Single source of truth: does this command exist for this operator?
+
+        Context-independent gates only — settings/commands.json visibility
+        and the feature flag (settings/features.json, honoring dev mode).
+        Dispatch, tab completion, and help must all use this same check so a
+        command can never tab-complete yet be missing from `?` (or vice versa).
         """
-        # Check command visibility first (independent of features)
         if not is_command_visible(key, self._command_visibility):
             return False
-        
+        return is_enabled(self._features, cmd_def.feature_flag, self._dev_mode)
+
+    def _is_command_available(self, key: str, cmd_def: CommandDef) -> bool:
+        """_is_command_visible plus the current-context gates.
+
+        A visible command is still unavailable when it needs a device context
+        (scope="device" with no `cd <device>`) or configure mode (`commit`).
+        """
+        if not self._is_command_visible(key, cmd_def):
+            return False
         if cmd_def.scope == "device" and not self._state.device:
             return False
         if key == "commit" and not self._state.configure_mode:
-            return False
-        # Feature-flagged commands are hidden when the flag is off (or "dev"
-        # while development mode is inactive).
-        if not is_enabled(self._features, cmd_def.feature_flag, self._dev_mode):
             return False
         return True
 
@@ -456,7 +460,7 @@ class HelpMixin:
             return f"  [dim]→ folder: {folder}[/dim]"
 
         if cmd.scope == "device" and device:
-            device_name = device.get("hostname") or device.get("name") or "device"
+            device_name = device_display_name(device)
             return f"  [dim]→ device: {device_name}[/dim]"
 
         return ""

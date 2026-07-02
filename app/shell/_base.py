@@ -102,6 +102,43 @@ _HELP_CMD_WIDTH = 44
 _SHELL_BUILTINS: tuple[str, ...] = SHELL_BUILTINS
 
 
+def device_display_name(device: Optional[dict], fallback: str = "device") -> str:
+    """Best human-readable name for a device inventory entry.
+
+    SCM device records vary by source: SSH-era entries carry ``hostname``,
+    folder inventory carries ``display_name`` / ``name``. Every mixin must
+    render the same name for the same device, so this is the one place that
+    ordering lives.
+    """
+    if not device:
+        return fallback
+    return (
+        device.get("hostname")
+        or device.get("display_name")
+        or device.get("name")
+        or fallback
+    )
+
+
+def device_ssh_host(device: Optional[dict]) -> str:
+    """Address ARC should SSH to for a device entry (IP wins over hostname)."""
+    if not device:
+        return ""
+    return str(device.get("ip_address") or device.get("hostname") or "")
+
+
+def tsg_display(entry: dict) -> tuple[str, str]:
+    """Return ``(tsg_id, display_name)`` for a tenant-service-group entry."""
+    tsg_id = str(entry.get("id") or entry.get("tsg_id") or "")
+    name = str(entry.get("display_name") or entry.get("name") or "")
+    return tsg_id, name
+
+
+def active_tsg_label(state: "ShellState", config: ArcConfig) -> str:
+    """The TSG identifier to show in user-facing messages."""
+    return state.tsg_id or config.scm.tsg_id or "current TSG"
+
+
 def _expand_unambiguous_prefix(tokens: list[str], phrases: list[list[str]]) -> list[str]:
     """Expand command-token prefixes when they resolve to exactly one phrase.
 

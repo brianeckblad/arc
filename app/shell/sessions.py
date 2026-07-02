@@ -35,10 +35,10 @@ class SessionsMixin:
             match = self._find_device(target)
             if match:
                 self._state.device = match
-                name = match.get("hostname") or match.get("name") or target
+                name = device_display_name(match, target)
             elif self._state.devices_cache:
                 # Cache populated — device genuinely not in this TSG.
-                active_tsg = self._state.tsg_id or self._config.scm.tsg_id or "current TSG"
+                active_tsg = active_tsg_label(self._state, self._config)
                 self._state.device = previous_device
                 console.print(
                     f"[red]Device '{target}' not found in TSG {active_tsg}.[/red]\n"
@@ -58,9 +58,9 @@ class SessionsMixin:
                 }
                 name = target
         else:
-            name = self._state.device.get("hostname") or self._state.device.get("name") or "device"
+            name = device_display_name(self._state.device)
 
-        host = self._state.device.get("ip_address") or self._state.device.get("hostname") or ""
+        host = device_ssh_host(self._state.device)
         if not host:
             self._state.device = previous_device
             console.print("[red]Cannot determine SSH target — no IP or hostname for this device.[/red]")

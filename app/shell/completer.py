@@ -145,11 +145,15 @@ class ArcCompleter(Completer):
         self._shell = shell
 
     def _command_visible(self, key: str) -> bool:
-        """Return True when a registered command is visible in this shell mode."""
+        """Return True when a registered command is visible in this shell mode.
+
+        Delegates to the shell's canonical check so completion, help, and
+        dispatch can never disagree about which commands exist.
+        """
         command_def = COMMANDS.get(key)
         if command_def is None:
             return False
-        return is_enabled(self._shell._features, command_def.feature_flag, self._shell._dev_mode)
+        return self._shell._is_command_visible(key, command_def)
 
     def get_completions(self, document, complete_event):
         raw = document.text_before_cursor.lstrip()
@@ -185,7 +189,7 @@ class ArcCompleter(Completer):
                         yield Completion(sub, start_position=-len(partial_arg), display_meta=meta)
                 # Also offer device names directly (backward compat)
                 for device in self._shell._state.devices_cache:
-                    candidate = device.get("hostname") or device.get("name") or ""
+                    candidate = device_display_name(device, "")
                     if candidate and candidate.lower().startswith(partial_arg.lower()):
                         yield Completion(candidate, start_position=-len(partial_arg), display_meta="device")
                 return
@@ -193,7 +197,7 @@ class ArcCompleter(Completer):
             if first == "cd" and second == "device":
                 partial_name = parts[2] if len(parts) > 2 else ""
                 for device in self._shell._state.devices_cache:
-                    candidate = device.get("hostname") or device.get("name") or ""
+                    candidate = device_display_name(device, "")
                     if candidate and candidate.lower().startswith(partial_name.lower()):
                         yield Completion(candidate, start_position=-len(partial_name))
                 return
@@ -206,7 +210,7 @@ class ArcCompleter(Completer):
                 return
             # remote/connect → device names
             for device in self._shell._state.devices_cache:
-                candidate = device.get("hostname") or device.get("name") or ""
+                candidate = device_display_name(device, "")
                 if candidate and candidate.lower().startswith(partial_arg.lower()):
                     yield Completion(candidate, start_position=-len(partial_arg))
             return
@@ -300,8 +304,7 @@ class ArcCompleter(Completer):
             if tsgs:
                 # Cache populated — show real TSG IDs with their display names.
                 for entry in tsgs:
-                    tsg_id = str(entry.get("id") or entry.get("tsg_id") or "")
-                    display_name = str(entry.get("display_name") or entry.get("name") or "")
+                    tsg_id, display_name = tsg_display(entry)
                     if not tsg_id:
                         continue
                     if tsg_id.lower().startswith(partial_arg.lower()):
@@ -326,7 +329,7 @@ class ArcCompleter(Completer):
                 # Completing device name
                 partial_name = parts[2] if len(parts) > 2 else ""
                 for device in self._shell._state.devices_cache:
-                    candidate = device.get("hostname") or device.get("name") or ""
+                    candidate = device_display_name(device, "")
                     if candidate and candidate.lower().startswith(partial_name.lower()):
                         yield Completion(candidate, start_position=-len(partial_name))
                 return

@@ -20,7 +20,7 @@ class NavigationMixin:
             dev = self._state.device
             folder = self._state.folder
             if dev:
-                name = dev.get("hostname") or dev.get("name") or "?"
+                name = device_display_name(dev, "?")
                 console.print(
                     f"[cyan]device:[/cyan] [bold]{name}[/bold]  "
                     f"[cyan]folder:[/cyan] [bold green]{folder}[/bold green]"
@@ -73,7 +73,7 @@ class NavigationMixin:
         match = self._find_device(target)
         if match:
             self._state.device = match
-            name    = match.get("hostname") or match.get("display_name") or match.get("name") or target
+            name    = device_display_name(match, target)
             serial  = match.get("serial_number") or match.get("serial") or match.get("name") or "n/a"
             ip_raw  = match.get("ip_address") or match.get("ip-address") or ""
             ip      = ip_raw if ip_raw and ip_raw.lower() not in ("unknown", "none") else "n/a"
@@ -96,7 +96,7 @@ class NavigationMixin:
             return
 
         if self._state.devices_cache:
-            active_tsg = self._state.tsg_id or self._config.scm.tsg_id or "current TSG"
+            active_tsg = active_tsg_label(self._state, self._config)
             console.print(
                 f"[red]Device '{target}' not found in TSG {active_tsg}.[/red]\n"
                 f"  [dim]Use [bold]show devices[/bold] to see "
@@ -183,7 +183,7 @@ class NavigationMixin:
         """Show current device context, active SCM folder, TSG, and SSH credential status."""
         if self._state.device:
             d = self._state.device
-            name    = d.get("hostname") or d.get("name") or "?"
+            name    = device_display_name(d, "?")
             serial  = d.get("serial_number") or d.get("name") or "n/a"
             ip      = d.get("ip_address") or "n/a"
             model   = d.get("model") or ""
@@ -293,7 +293,7 @@ class NavigationMixin:
             and self._state.folders_cache != ["Shared", "Global"]
             and new_folder not in self._state.folders_cache
         ):
-            active_tsg = self._state.tsg_id or self._config.scm.tsg_id or "current TSG"
+            active_tsg = active_tsg_label(self._state, self._config)
             console.print(
                 f"[red]Folder '{new_folder}' not found in TSG {active_tsg}.[/red]\n"
                 f"  [dim]Available folders: {', '.join(sorted(self._state.folders_cache))}\n"
@@ -305,10 +305,7 @@ class NavigationMixin:
         # Clear device context when switching folder — a device cd'd to in one
         # folder may not be visible or relevant in another.
         if self._state.device:
-            device_name = (
-                self._state.device.get("hostname") or
-                self._state.device.get("name") or "device"
-            )
+            device_name = device_display_name(self._state.device)
             self._state.device = None
             console.print(
                 f"[cyan]SCM folder set to:[/cyan] [bold]{new_folder}[/bold]  "
@@ -439,6 +436,22 @@ class NavigationMixin:
             f"Use [bold]folder {created_name}[/bold] to switch into it.[/dim]"
         )
 
+    def _reset_tenant_context(self, new_tsg: str) -> None:
+        """Point shell state at *new_tsg* and rebuild the navigation caches.
+
+        Device/folder context from the previous tenant is never valid in the
+        new one, so everything cached is dropped and re-fetched.
+        """
+        self._state.tsg_id = new_tsg
+        self._state.device = None
+        self._state.folder = self._config.default_folder
+        self._state.devices_cache = []
+        self._state.folders_cache = ["Shared", "Global"]
+        self._state.tsgs_cache = []
+        self._refresh_devices(silent=True)
+        self._refresh_folders(silent=True)
+        self._refresh_tsgs(silent=True)
+
     def _cmd_tsg(self, args: list[str]) -> None:
         """Switch the active Tenant Services Group (TSG) context.
 
@@ -462,8 +475,7 @@ class NavigationMixin:
                 console.print("\n[bold yellow]Available TSGs[/bold yellow]  "
                               "[dim](Tab after 'tsg ' to complete)[/dim]")
                 for entry in self._state.tsgs_cache:
-                    tsg_id = str(entry.get("id") or entry.get("tsg_id") or "")
-                    name   = str(entry.get("display_name") or entry.get("name") or "")
+                    tsg_id, name = tsg_display(entry)
                     marker = " [green]◀ active[/green]" if tsg_id == active else ""
                     console.print(f"  [cyan]{tsg_id:<20}[/cyan] {name}{marker}")
             else:
@@ -474,8 +486,7 @@ class NavigationMixin:
                 if self._state.tsgs_cache:
                     console.print("\n[bold yellow]Available TSGs[/bold yellow]")
                     for entry in self._state.tsgs_cache:
-                        tsg_id = str(entry.get("id") or entry.get("tsg_id") or "")
-                        name   = str(entry.get("display_name") or entry.get("name") or "")
+                        tsg_id, name = tsg_display(entry)
                         console.print(f"  [cyan]{tsg_id:<20}[/cyan] {name}")
                 else:
                     console.print(
@@ -503,15 +514,7 @@ class NavigationMixin:
             # different TSG. Keep a local context switch so operators can still
             # organize state, but make it explicit that API visibility may not
             # actually change until re-auth with client credentials.
-            self._state.tsg_id = new_tsg
-            self._state.device = None
-            self._state.folder = self._config.default_folder
-            self._state.devices_cache = []
-            self._state.folders_cache = ["Shared", "Global"]
-            self._state.tsgs_cache = []
-            self._refresh_devices(silent=True)
-            self._refresh_folders(silent=True)
-            self._refresh_tsgs(silent=True)
+            self._reset_tenant_context(new_tsg)
             console.print(
                 f"[yellow]⚠[/yellow] Set active TSG to [bold]{new_tsg}[/bold] in bearer-token mode.\n"
                 "  [dim]To fully re-scope API access, configure OAuth client credentials and restart ARC.[/dim]"
@@ -524,18 +527,7 @@ class NavigationMixin:
                 self._scm = SCMClient(self._config.scm)
             self._scm.reauthenticate(new_tsg)
 
-            # Commit new context
-            self._state.tsg_id = new_tsg
-            self._state.device = None
-            self._state.folder = self._config.default_folder
-            self._state.devices_cache = []
-            self._state.folders_cache = ["Shared", "Global"]
-            self._state.tsgs_cache = []
-
-            # Refresh caches for the new tenant scope.
-            self._refresh_devices(silent=True)
-            self._refresh_folders(silent=True)
-            self._refresh_tsgs(silent=True)
+            self._reset_tenant_context(new_tsg)
 
             console.print(
                 f"[green]✓[/green] Switched active TSG to [bold]{new_tsg}[/bold]  "

@@ -237,11 +237,11 @@ format_raw()                             871-872
 format_dict()                            875-876        
 _flatten()                               883-898        Recursively flatten a nested dict into dot-separated key/value pairs.
 
-## `app/shell/navigation.py`  (693 lines)
+## `app/shell/navigation.py`  (685 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class NavigationMixin                    7-692          
+class NavigationMixin                    7-684          
   ._cmd_cd()                             8-62           Unified context navigation — device or folder.
   ._cmd_cd_device()                      64-115         Switch the active SCM/API device context to *target*.
   ._find_device()                        117-133        Find a device in the cache by hostname, serial, name, or IP.
@@ -249,10 +249,11 @@ class NavigationMixin                    7-692
   ._refresh_folders()                    153-163        Fetch SCM folder names and populate the cache used by 'folder' tab com
   ._refresh_tsgs()                       165-180        Fetch TSG entries from SCM IAM and populate the cache used by 'tsg' ta
   ._cmd_pwd()                            182-226        Show current device context, active SCM folder, TSG, and SSH credentia
-  ._cmd_folder()                         228-318        Set or display the active SCM folder context.
-  ._cmd_folder_create()                  320-440        Interactive folder creation: prompt for a parent, confirm, and POST to
-  ._cmd_tsg()                            442-563        Switch the active Tenant Services Group (TSG) context.
-  ._cmd_account()                        565-692        List or switch named credential profiles.
+  ._cmd_folder()                         228-315        Set or display the active SCM folder context.
+  ._cmd_folder_create()                  317-437        Interactive folder creation: prompt for a parent, confirm, and POST to
+  ._reset_tenant_context()               439-453        Point shell state at *new_tsg* and rebuild the navigation caches.
+  ._cmd_tsg()                            455-555        Switch the active Tenant Services Group (TSG) context.
+  ._cmd_account()                        557-684        List or switch named credential profiles.
 
 ## `app/config.py`  (568 lines)
 
@@ -293,21 +294,21 @@ class ConfigureMixin                     9-460
 _setup_bearer_instructions()             467-495        Print bearer-token setup commands for the detected OS.
 _setup_oauth_instructions()              498-530        Print OAuth client credential setup commands for the detected OS.
 
-## `app/shell/completer.py`  (528 lines)
+## `app/shell/completer.py`  (531 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _parse_usage()                           26-62          Parse a usage string into (required_slots, optional_keywords).
 _usage_options()                         65-96          Return (token, display_meta) completions for the slot after *typed* ar
 _tokenize_partial()                      99-132         Split *text* for completion, honouring quotes, tracking the in-progres
-class ArcCompleter                       135-527        Context-aware tab completer.
+class ArcCompleter                       135-530        Context-aware tab completer.
   .__init__()                            144-145        
-  ._command_visible()                    147-152        Return True when a registered command is visible in this shell mode.
-  .get_completions()                     154-430        
-  ._match_complete_command()             432-447        Return the longest complete command key the user has fully entered.
-  ._complete_arguments()                 449-501        Yield completions for the argument region of a complete command.
-  ._arg_options()                        503-518        Resolve next-slot argument options: structure file first, usage fallba
-  ._all_commands()                       521-527        
+  ._command_visible()                    147-156        Return True when a registered command is visible in this shell mode.
+  .get_completions()                     158-433        
+  ._match_complete_command()             435-450        Return the longest complete command key the user has fully entered.
+  ._complete_arguments()                 452-504        Yield completions for the argument region of a complete command.
+  ._arg_options()                        506-521        Resolve next-slot argument options: structure file first, usage fallba
+  ._all_commands()                       524-530        
 
 ## `app/commands/network.py`  (525 lines)
 
@@ -341,11 +342,11 @@ _ssh_test_nat()                          345-353
 _test_url()                              356-363        Test URL categorization — use --remote.  PAN-OS: test url <url>
 _ssh_test_url()                          366-368        
 
-## `app/shell/help.py`  (497 lines)
+## `app/shell/help.py`  (501 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class HelpMixin                          8-495          
+class HelpMixin                          8-499          
   ._match_structured()                   9-25           Find the longest command key (with a structure spec) inside *prefix_to
   ._print_context_help()                 27-44          Print Cisco-style context-sensitive help for a structured command.
   ._render_context_help()                46-64          Render the next-option rows: ``  token   description`` (token column a
@@ -354,14 +355,15 @@ class HelpMixin                          8-495
   ._cmd_help_full()                      198-240        Print the full command reference regardless of context.
   ._cmd_show_write_help()                242-264        Show available delete/update commands in configure mode.
   ._print_shell_builtins()               266-279        Print the shell built-in commands section (shared by inline and full h
-  ._is_command_available()               281-301        Return True when a registered command is executable in the current con
-  ._is_config_command()                  304-308        Return True when a command should appear in configure-mode `?` help.
-  ._root_verb_options()                  310-345        Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
-  ._collapsed_prefix_help_options()      347-402        Return collapsed next-token help options for a command prefix.
-  ._collapsed_tier_help_options()        404-439        Return collapsed bare-tier help options for one scope.
-  ._context_annotation()                 441-462        Return a short inline context note for commands whose output depends o
-  ._print_context_hint_for()             464-468        Print a one-line context note below an exact-match docs result.
-  ._print_inline_usage()                 470-495        Print the description + usage syntax for a complete command in `?` hel
+  ._is_command_visible()                 281-291        Single source of truth: does this command exist for this operator?
+  ._is_command_available()               293-305        _is_command_visible plus the current-context gates.
+  ._is_config_command()                  308-312        Return True when a command should appear in configure-mode `?` help.
+  ._root_verb_options()                  314-349        Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
+  ._collapsed_prefix_help_options()      351-406        Return collapsed next-token help options for a command prefix.
+  ._collapsed_tier_help_options()        408-443        Return collapsed bare-tier help options for one scope.
+  ._context_annotation()                 445-466        Return a short inline context note for commands whose output depends o
+  ._print_context_hint_for()             468-472        Print a one-line context note below an exact-match docs result.
+  ._print_inline_usage()                 474-499        Print the description + usage syntax for a complete command in `?` hel
 
 ## `app/settings/command_structure.py`  (403 lines)
 
@@ -391,13 +393,13 @@ _show_snippets()                         151-220        List snippets scoped to 
 _show_snippets_global()                  223-235        List ALL snippets regardless of device or folder context.
 _show_snippet_detail()                   238-277        Show detail for a named snippet.
 
-## `app/shell/dispatch.py`  (340 lines)
+## `app/shell/dispatch.py`  (332 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class DispatchMixin                      9-339          
-  ._show_command_not_found()             10-65          Show a helpful message when a command is not recognized.
-  ._dispatch()                           67-339         Process one input line.  Returns True when the user wants to exit ARC.
+class DispatchMixin                      9-331          
+  ._show_command_not_found()             10-61          Show a helpful message when a command is not recognized.
+  ._dispatch()                           63-331         Process one input line.  Returns True when the user wants to exit ARC.
 
 ## `app/commands/security.py`  (311 lines)
 

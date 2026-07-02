@@ -36,13 +36,9 @@ class DispatchMixin:
         
         # Try fuzzy matching against available commands
         all_commands = list(_SHELL_BUILTINS) + list(COMMANDS.keys())
-        # Filter to visible commands
-        def _feature_visible(command_def: CommandDef) -> bool:
-            return is_enabled(self._features, command_def.feature_flag, self._dev_mode)
-        
         visible_commands = [
-            cmd for cmd in all_commands 
-            if cmd not in COMMANDS or _feature_visible(COMMANDS[cmd])
+            cmd for cmd in all_commands
+            if cmd not in COMMANDS or self._is_command_visible(cmd, COMMANDS[cmd])
         ]
         
         # Get fuzzy matches
@@ -81,15 +77,11 @@ class DispatchMixin:
         if not tokens:
             return False
 
-        def _feature_visible(command_def: CommandDef) -> bool:
-            """Return True when a registered command's feature flag is visible."""
-            return is_enabled(self._features, command_def.feature_flag, self._dev_mode)
-
         # Cisco-style shorthand expansion:
         #   e            -> exit
         #   sh sec pol   -> show security policy
         # Expansion occurs only when a prefix resolves to exactly one command.
-        visible_command_keys = [k for k, v in COMMANDS.items() if _feature_visible(v)]
+        visible_command_keys = [k for k, v in COMMANDS.items() if self._is_command_visible(k, v)]
         phrases = [[b] for b in _SHELL_BUILTINS if b != "?"] + [k.split() for k in visible_command_keys]
 
         # Detect a trailing help trigger: '?' (brief, context-sensitive).
@@ -113,7 +105,7 @@ class DispatchMixin:
         if len(tokens) >= 2 and tokens[-1].lower() == "help":
             topic = " ".join(tokens[:-1]).lower()
             topic_cmd = COMMANDS.get(topic)
-            if topic_cmd is not None and not _feature_visible(topic_cmd):
+            if topic_cmd is not None and not self._is_command_visible(topic, topic_cmd):
                 console.print(
                     f"\n[yellow]No docs found for:[/yellow] [bold]{topic}[/bold]\n"
                     "  Type [bold]?[/bold] for available commands.\n"
@@ -231,7 +223,7 @@ class DispatchMixin:
             if len(tokens) >= 2 and tokens[1].lower() not in ("?", "folder"):
                 key, cmd_def, cmd_args = match_command(tokens)
                 if key is not None:
-                    if not _feature_visible(cmd_def):
+                    if not self._is_command_visible(key, cmd_def):
                         console.print(
                             f"[red]Unknown command:[/red] [bold]{' '.join(tokens)}[/bold]  "
                             "— type [bold]?[/bold] or [bold]help[/bold] for available commands."
@@ -326,7 +318,7 @@ class DispatchMixin:
 
         # ---- Registry commands ----
         key, cmd_def, args = match_command(tokens)
-        if key is None or not _feature_visible(cmd_def):
+        if key is None or not self._is_command_visible(key, cmd_def):
             # Unknown command - provide helpful suggestions
             self._show_command_not_found(tokens)
             return False
