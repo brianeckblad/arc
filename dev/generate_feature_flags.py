@@ -189,7 +189,36 @@ def _action_summary(action: str, flag_summaries: dict[str, str]) -> str:
     return f"{_ACTION_LABEL[action]}: {shown}"
 
 
-def _flag_file(flag: str, catalog_flag_specs: dict[str, str]) -> str:
+# Curated (hand-written) command flags live in the same glossary file as
+# their spec siblings, so e.g. show_address sits next to the generated
+# ngfw-objects flags. Device-scoped curated commands are live-device (SSH)
+# operations -> they belong with the PAN-OS op families.
+_CURATED_CATEGORY_FILES = {
+    "objects": "scm-ngfw-objects",
+    "security": "scm-ngfw-security",
+    "network": "scm-ngfw-network",
+    "identity": "scm-ngfw-identity",
+    "setup": "scm-ngfw-setup",
+    "operations": "scm-ngfw-setup",      # jobs/commit live in the setup spec
+    "diagnostics": "scm-ngfw-security",  # packet-tracer simulates the rule base
+}
+
+
+def _explicit_flag_meta() -> dict[str, tuple[str, str]]:
+    """flag -> majority (category, scope) across the commands it gates."""
+    from collections import Counter
+
+    from app.commands.registry import COMMANDS
+
+    per_flag: dict[str, Counter] = defaultdict(Counter)
+    for command_def in COMMANDS.values():
+        if command_def.feature_flag:
+            per_flag[command_def.feature_flag][(command_def.category, command_def.scope)] += 1
+    return {flag: counts.most_common(1)[0][0] for flag, counts in per_flag.items()}
+
+
+def _flag_file(flag: str, catalog_flag_specs: dict[str, str],
+               explicit_meta: dict[str, tuple[str, str]]) -> str:
     """Return the glossary file stem that owns *flag*."""
     if flag in catalog_flag_specs:
         return f"scm-{catalog_flag_specs[flag]}"
@@ -197,15 +226,23 @@ def _flag_file(flag: str, catalog_flag_specs: dict[str, str]) -> str:
         return "panos-config"
     if flag.startswith("panos_"):
         return "panos-ops"
+    meta = explicit_meta.get(flag)
+    if meta:
+        category, scope = meta
+        if scope == "device":
+            return "panos-ops"  # curated live-device command (SSH/--remote)
+        mapped = _CURATED_CATEGORY_FILES.get(category)
+        if mapped:
+            return mapped
     return "curated"
 
 
 def _file_readme(stem: str) -> str:
     kind = {
-        "panos-ops": "PAN-OS operational command families (show/clear/request/test/debug...). ",
+        "panos-ops": "PAN-OS operational command families plus curated live-device commands (ping, logs, system state - SSH/--remote). ",
         "panos-config": "PAN-OS device-local config tree — BREAK-GLASS recovery only. "
                         "config_recovery stays on; enable others only when SCM is unreachable. ",
-        "curated": "Hand-written ARC command flags. ",
+        "curated": "Fallback for flags with no derivable domain (normally empty). ",
     }.get(stem, f"Generated SCM command flags for the {stem.removeprefix('scm-')} spec. ")
     return (
         kind + "Values: true | \"dev\" | false (new flags default false — fail closed). "
@@ -224,6 +261,7 @@ def build_feature_files() -> dict[str, dict[str, object]]:
     catalog_flag_specs: dict[str, str] = {
         str(entry["feature_flag"]): str(entry.get("spec", "unknown")) for entry in catalog
     }
+    explicit_meta = _explicit_flag_meta()
 
     groups: dict[tuple[str, str], dict[str, object]] = {}
     catalog_flags: set[str] = set()
@@ -276,7 +314,7 @@ def build_feature_files() -> dict[str, dict[str, object]]:
         by_file: dict[str, list[tuple[str, str]]] = {}
         for action in _ACTION_ORDER:
             for flag in sorted(actions.get(action, {})):
-                by_file.setdefault(_flag_file(flag, catalog_flag_specs), []).append((action, flag))
+                by_file.setdefault(_flag_file(flag, catalog_flag_specs, explicit_meta), []).append((action, flag))
         for stem, action_flags in by_file.items():
             target = _file_map(stem)
             target[_comment_key(category, resource)] = (
@@ -287,7 +325,7 @@ def build_feature_files() -> dict[str, dict[str, object]]:
                 emitted.add(flag)
 
     for flag in sorted(explicit - emitted):
-        target = _file_map(_flag_file(flag, catalog_flag_specs))
+        target = _file_map(_flag_file(flag, catalog_flag_specs, explicit_meta))
         target[flag] = existing_states.get(flag, False)
 
     return files
