@@ -12,6 +12,8 @@ Current keys:
     terminal_width    int   Force a render width in columns. 0 = auto-detect
                             from the terminal (default).
     spinner           bool  Show the "querying SCM…" spinner during API calls.
+    aliases           dict  User-defined command aliases (`alias <name> <expansion>`).
+                            Expanded once per input line — never recursively.
 
 Room to grow (add a field + a `terminal`/future subcommand, nothing else):
 output format defaults, confirmation prompts, history size.
@@ -21,7 +23,7 @@ from __future__ import annotations
 
 import json
 import logging
-from dataclasses import asdict, dataclass, fields
+from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 
 from app.config import CONFIG_DIR
@@ -36,6 +38,7 @@ class UserPrefs:
     terminal_length: int = 0    # 0 = paging disabled
     terminal_width: int = 0     # 0 = auto-detect
     spinner: bool = True
+    aliases: dict[str, str] = field(default_factory=dict)
 
 
 def load_prefs() -> UserPrefs:
@@ -56,6 +59,11 @@ def load_prefs() -> UserPrefs:
                 setattr(prefs, key, bool(value))
             elif isinstance(getattr(prefs, key), int):
                 setattr(prefs, key, max(0, int(value)))
+            elif isinstance(getattr(prefs, key), dict):
+                if isinstance(value, dict):
+                    setattr(prefs, key, {str(k): str(v) for k, v in value.items()})
+                else:
+                    logger.debug("preferences.json: %s must be an object, got %r", key, value)
             else:
                 setattr(prefs, key, value)
         except (TypeError, ValueError):

@@ -365,6 +365,21 @@ def test_arg_parser() -> None:
     else:
         fail("parse_output_filters json wrong", repr(filters))
 
+    # 4b.1 — `| save <file>` op: parsed with its filename, must be last,
+    #        and a bare `save` (no filename) is rejected with a hint.
+    filters, _ = parse_output_filters("match x | save out.txt")
+    if filters == [("match", "x"), ("save", "out.txt")]:
+        ok("parse_output_filters: save op parsed with filename")
+    else:
+        fail("parse_output_filters save wrong", repr(filters))
+    bad_order, order_error = parse_output_filters("save out.txt | match x")
+    bad_bare, bare_error = parse_output_filters("match x | save")
+    if bad_order is None and "last" in order_error and bad_bare is None and "filename" in bare_error:
+        ok("parse_output_filters: save must be last + needs a filename")
+    else:
+        fail("parse_output_filters save validation wrong",
+             f"order={order_error!r} bare={bare_error!r}")
+
     # 4c2 — spec-derived field catalog: every entry is internally consistent
     #       and merged into arg_spec (hand-written command-structure.json wins).
     try:
@@ -442,20 +457,51 @@ def test_arg_parser() -> None:
         else:
             fail("payload builder misbehaved", repr(built))
 
+        # payload builder: schema pattern + max_length constraints enforced at
+        # the prompt; a broken regex in a spec is skipped, never crashes.
+        _constrained_entry = {
+            "args": [
+                {"name": "fqdn", "kind": "value", "required": True, "hint": "",
+                 "pattern": r"^[a-zA-Z0-9_]([a-zA-Z0-9._-])+[a-zA-Z0-9]$", "max_length": 12},
+                {"name": "note", "kind": "keyword", "required": False, "hint": "",
+                 "pattern": r"([unbalanced"},  # invalid regex — must be skipped
+            ],
+            "payload": {"fields": {"fqdn": "fqdn", "note": "note"},
+                        "list_fields": [], "variant": None},
+        }
+        built = _payload_from_fields("set x", _constrained_entry,
+                                     {"fqdn": "a.example", "note": "anything"})
+        pattern_rejected = too_long_rejected = False
+        try:
+            _payload_from_fields("set x", _constrained_entry, {"fqdn": "-bad-"})
+        except ValueError as exc:
+            pattern_rejected = "required format" in str(exc)
+        try:
+            _payload_from_fields("set x", _constrained_entry, {"fqdn": "a.very-long-name.example"})
+        except ValueError as exc:
+            too_long_rejected = "maximum 12" in str(exc)
+        if (built == {"fqdn": "a.example", "note": "anything"}
+                and pattern_rejected and too_long_rejected):
+            ok("payload builder: pattern + max_length enforced, invalid spec regex skipped")
+        else:
+            fail("payload builder constraint validation misbehaved",
+                 f"built={built!r} pattern={pattern_rejected} max_length={too_long_rejected}")
+
     # 4d — user preferences round-trip (config/<user>/preferences.json)
     from app.settings import user_prefs as _up
 
-    prefs = _up.UserPrefs(terminal_length=24, terminal_width=120, spinner=False)
+    prefs = _up.UserPrefs(terminal_length=24, terminal_width=120, spinner=False,
+                          aliases={"slt": "show log traffic"})
     original_file = _up.PREFS_FILE
     _up.PREFS_FILE = ROOT / "dev" / ".smoke_prefs_test.json"
     try:
         if _up.save_prefs(prefs) and _up.load_prefs() == prefs:
-            ok("user_prefs: save/load round-trip preserves values")
+            ok("user_prefs: save/load round-trip preserves values (incl. aliases)")
         else:
             fail("user_prefs round-trip mismatch", repr(_up.load_prefs()))
-        _up.PREFS_FILE.write_text('{"terminal_length": "junk", "unknown_key": 1}')
+        _up.PREFS_FILE.write_text('{"terminal_length": "junk", "unknown_key": 1, "aliases": "junk"}')
         loaded = _up.load_prefs()
-        if loaded.terminal_length == 0 and loaded.spinner is True:
+        if loaded.terminal_length == 0 and loaded.spinner is True and loaded.aliases == {}:
             ok("user_prefs: malformed values and unknown keys tolerated")
         else:
             fail("user_prefs did not tolerate malformed file", repr(loaded))

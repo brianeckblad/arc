@@ -42,9 +42,10 @@ def parse_output_filters(spec: str) -> tuple[list[tuple[str, str]] | None, str]:
     """Parse a pipe filter chain into ``[(op, pattern), …]``.
 
     Supported (PAN-OS / Cisco vocabulary): ``match``/``include`` <pattern>,
-    ``except``/``exclude`` <pattern>, ``count``, and ``json`` (render the
-    command's data as JSON instead of tables — for scripts).  Returns
-    ``(None, error)`` on a malformed spec.
+    ``except``/``exclude`` <pattern>, ``count``, ``json`` (render the
+    command's data as JSON instead of tables — for scripts), and
+    ``save <file>`` (write the filtered output to a file — must be the last
+    op in the chain).  Returns ``(None, error)`` on a malformed spec.
     """
     filters: list[tuple[str, str]] = []
     for segment in spec.split("|"):
@@ -60,8 +61,21 @@ def parse_output_filters(spec: str) -> tuple[list[tuple[str, str]] | None, str]:
             filters.append(("count", ""))
         elif op == "json":
             filters.append(("json", ""))
+        elif op == "save":
+            if len(parts) < 2 or not parts[1].strip():
+                return None, "'save' needs a filename — usage: <command> | save <file>"
+            filters.append(("save", parts[1].strip()))
         else:
-            return None, f"unknown filter '{op}' — supported: match <pat> | except <pat> | count | json"
+            return None, (
+                f"unknown filter '{op}' — supported: "
+                "match <pat> | except <pat> | count | json | save <file>"
+            )
+    for index, (op, _) in enumerate(filters):
+        if op == "save" and index != len(filters) - 1:
+            return None, (
+                "'save' must be the last op — e.g. "
+                "<command> | match <pattern> | save <file>"
+            )
     return filters, ""
 
 
@@ -140,6 +154,8 @@ class DispatchMixin:
             self._render_as_json = False
 
         lines = capture.get().splitlines()
+        counted = False
+        save_target: str | None = None
         for op, pattern in filters:
             if op == "match":
                 lines = [l for l in lines if _line_matches(l, pattern)]
@@ -147,11 +163,138 @@ class DispatchMixin:
                 lines = [l for l in lines if not _line_matches(l, pattern)]
             elif op == "count":
                 total = sum(1 for l in lines if _ANSI_RE.sub("", l).strip())
-                console.print(f"Count: {total} line(s)")
-                return should_exit
+                lines = [f"Count: {total} line(s)"]
+                counted = True
+            elif op == "save":
+                save_target = pattern  # parser guarantees save is the last op
+        if save_target is not None:
+            self._save_pipe_output(lines, save_target)
+            return should_exit
+        if counted:
+            console.print(lines[0])
+            return should_exit
         for line in lines:
             console.file.write(line + "\n")
         return should_exit
+
+    def _save_pipe_output(self, lines: list[str], target: str) -> None:
+        """Write piped output *lines* to *target* as plain UTF-8 text.
+
+        ANSI colour codes are stripped so the file is clean for scripts and
+        diffs. Relative paths resolve against the current working directory;
+        ``~`` expands to the operator's home.
+        """
+        path = Path(target).expanduser()
+        if not path.is_absolute():
+            path = Path.cwd() / path
+        plain = [_ANSI_RE.sub("", l) for l in lines]
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("\n".join(plain) + ("\n" if plain else ""), encoding="utf-8")
+        except OSError as exc:
+            console.print(f"[red]Could not save output:[/red] {exc}")
+            return
+        console.print(f"[green]Saved[/green] {len(plain)} line(s) → [bold]{path}[/bold]")
+
+    def _cmd_history(self, rest: list[str]) -> None:
+        """Print the last N commands from the prompt history (`history [n]`).
+
+        The prompt_toolkit FileHistory format stores one entry per group of
+        ``+``-prefixed lines (multi-line entries have several). Anything else
+        (timestamps, comments) is ignored — parse defensively, never raise.
+        """
+        count = 20
+        if rest:
+            if not rest[0].isdigit() or int(rest[0]) < 1:
+                console.print("[yellow]Usage:[/yellow] history <n>   (n = how many recent commands, default 20)")
+                return
+            count = int(rest[0])
+
+        try:
+            raw = Path(HISTORY_FILE).read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            console.print("[dim]No command history yet.[/dim]")
+            return
+
+        entries: list[str] = []
+        current: list[str] = []
+        for hist_line in raw.splitlines():
+            if hist_line.startswith("+"):
+                current.append(hist_line[1:])
+            elif current:
+                entries.append("\n".join(current))
+                current = []
+        if current:
+            entries.append("\n".join(current))
+
+        if not entries:
+            console.print("[dim]No command history yet.[/dim]")
+            return
+
+        recent = entries[-count:]
+        start_number = len(entries) - len(recent) + 1
+        for offset, entry in enumerate(recent):
+            console.print(f"[dim]{start_number + offset:>5}[/dim]  {entry}")
+
+    def _cmd_alias(self, rest: list[str]) -> None:
+        """User-defined aliases (`alias` / `alias <name> <expansion…>` /
+        `alias delete <name>`) — Junos ``set cli alias`` style, arc-flavored.
+
+        Aliases persist in the per-user preferences file and expand once at
+        the very start of dispatch (single pass — an expansion that begins
+        with another alias name is NOT re-expanded).
+        """
+        aliases = self._prefs.aliases
+
+        if not rest:
+            if not aliases:
+                console.print(
+                    "[dim]No aliases defined.[/dim]  "
+                    "Use [bold]alias <name> <expansion…>[/bold] to create one."
+                )
+                return
+            width = max(len(name) for name in aliases)
+            for name in sorted(aliases):
+                console.print(f"  [cyan]{name:<{width}}[/cyan]  {aliases[name]}")
+            return
+
+        if rest[0].lower() == "delete":
+            if len(rest) < 2:
+                console.print("[yellow]Usage:[/yellow] alias delete <name>")
+                return
+            name = rest[1]
+            if name not in aliases:
+                console.print(f"[yellow]No such alias:[/yellow] [bold]{name}[/bold]")
+                return
+            del aliases[name]
+            save_prefs(self._prefs)
+            console.print(f"[green]Deleted alias[/green] [bold]{name}[/bold]")
+            return
+
+        name = rest[0]
+        expansion = " ".join(rest[1:]).strip()
+        if not expansion:
+            if name in aliases:
+                console.print(f"  [cyan]{name}[/cyan]  {aliases[name]}")
+            else:
+                console.print(
+                    "[yellow]Usage:[/yellow] alias [name] [expansion…]  |  alias delete <name>"
+                )
+            return
+
+        # Refuse names that shadow shell builtins or command first-words
+        # (show/set/delete/…) — an alias must never hijack real syntax.
+        reserved = {b.lower() for b in _SHELL_BUILTINS}
+        reserved.update(key.split()[0].lower() for key in COMMANDS)
+        if name.lower() in reserved:
+            console.print(
+                f"[yellow]'{name}' is a built-in or command word — pick a different alias name.[/yellow]"
+            )
+            return
+
+        aliases[name] = expansion
+        save_prefs(self._prefs)
+        console.print(f"[green]Alias set:[/green] [cyan]{name}[/cyan] → {expansion}")
 
     def _show_command_not_found(self, tokens: list[str]) -> None:
         """Show a helpful message when a command is not recognized.
@@ -230,6 +373,17 @@ class DispatchMixin:
         """Process one input line.  Returns True when the user wants to exit ARC."""
         # Normalize whitespace: collapse tabs and multiple spaces to a single space.
         line = re.sub(r"[ \t]+", " ", line).strip()
+
+        # User-defined alias expansion — single pass, BEFORE watch/pipe parsing
+        # so an alias body may itself contain pipes or a watch prefix. Only the
+        # first token is checked, and the result is never re-expanded: an alias
+        # whose expansion starts with another alias name runs that text as-is.
+        aliases = getattr(getattr(self, "_prefs", None), "aliases", None) or {}
+        if aliases:
+            first_word, _, remainder = line.partition(" ")
+            expansion = aliases.get(first_word)
+            if expansion:
+                line = expansion + (" " + remainder if remainder else "")
 
         # `watch [N] <command>` — re-run every N seconds until Ctrl-C.
         # Parsed before pipe filters so the whole pipeline is re-run each tick.
@@ -355,6 +509,16 @@ class DispatchMixin:
         # ---- find: PAN-OS style command search (find command keyword <x>) ----
         if cmd == "find":
             self._cmd_find(tokens[1:])
+            return False
+
+        # ---- history: last N commands from the prompt history file ----
+        if cmd == "history":
+            self._cmd_history(tokens[1:])
+            return False
+
+        # ---- alias: user-defined command shortcuts (persisted in prefs) ----
+        if cmd == "alias":
+            self._cmd_alias(tokens[1:])
             return False
 
         # ---- commit (configure mode): apply staged changes, then push ----

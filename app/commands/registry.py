@@ -18,6 +18,7 @@ from app.settings.command_help import apply_overrides
 from app.settings import command_structure
 
 # Domain-specific command tables
+from app.commands.config_view import COMMANDS as _CONFIG_VIEW
 from app.commands.identity import COMMANDS as _IDENTITY
 from app.commands.network import COMMANDS as _NETWORK
 from app.commands.objects import COMMANDS as _OBJECTS
@@ -55,6 +56,7 @@ COMMANDS: dict[str, CommandDef] = {
     **_SECURITY,
     **_NETWORK,
     **_OPERATIONS,
+    **_CONFIG_VIEW,
     **_IDENTITY,
     **_PACKET_TRACER,
 }

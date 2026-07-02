@@ -19,12 +19,12 @@ Symbol                                   Lines          Purpose
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
-## `app/api/client.py`  (1209 lines)
+## `app/api/client.py`  (1247 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 class SCMError                           46-47          Raised when SCM authentication or API requests fail.
-class SCMClient                          50-1208        Strata Cloud Manager (SCM) REST API client.
+class SCMClient                          50-1246        Strata Cloud Manager (SCM) REST API client.
   .__init__()                            91-108         
   ._authenticate()                       110-134        Obtain an OAuth token via the client-credentials flow.
   ._headers()                            136-137        
@@ -147,9 +147,13 @@ class SCMClient                          50-1208        Strata Cloud Manager (SC
   .get_ha_config()                       1118-1138      Return HA configuration in the active folder.
   .push_config()                         1145-1165      Push the candidate configuration to managed devices.
   .discard_candidate()                   1167-1175      Discard the TSG's candidate configuration (revert to running config).
-  .ops_job_start()                       1181-1195      Start a live-device operations job; returns the job UUID.
-  .ops_job_status()                      1197-1205      Return a live-device operations job record.
-  .close()                               1207-1208      
+  .get_config_versions()                 1182-1187      List the tenant's configuration versions (newest history first).
+  .get_config_version()                  1189-1194      Return one configuration version record by id.
+  .get_running_config_version()          1196-1201      Return the running configuration version(s) for the tenant.
+  .load_config_version()                 1203-1213      Load *version* as the candidate configuration (rollback).
+  .ops_job_start()                       1219-1233      Start a live-device operations job; returns the job UUID.
+  .ops_job_status()                      1235-1243      Return a live-device operations job record.
+  .close()                               1245-1246      
 
 ## `app/commands/objects.py`  (1110 lines)
 
@@ -173,6 +177,34 @@ _update_external_dynamic_list()          991-1047       Update an existing EDL (
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
+
+## `app/shell/configure.py`  (1032 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+_prefs_file_label()                      10-16          Repo-relative path of the preferences file, for display.
+capture_write_ops()                      19-49          Run a write handler against a recording client and capture its mutatio
+class ConfigureMixin                     52-960         
+  ._cmd_configure()                      53-73          Enter configure mode (Cisco-style).
+  ._stage_write()                        75-102         Validate a configure-mode write and stage it locally (no SCM change).
+  ._cmd_show_pending()                   104-125        List the locally staged configure-mode changes (`show config`).
+  ._cmd_abandon()                        127-147        Discard all locally staged changes (configure mode only).
+  ._rollback_version()                   153-170        Version number of the CURRENT running config (the revert target).
+  ._arm_commit_confirmed()               172-182        
+  ._cancel_commit_confirmed()            184-196        
+  ._commit_confirmed_expired()           198-226        Timer thread: the operator never confirmed — revert and re-push.
+  ._cmd_commit_staged()                  228-327        Apply all staged changes to SCM, then push the candidate to devices.
+  ._commit_check()                       329-372        Re-validate every staged change against CURRENT SCM state (Junos-style
+  ._watch_job()                          374-401        Poll a push job every few seconds until it finishes (or timeout).
+  ._confirm_configure_exit()             403-430        Ask what to do with staged changes when leaving configure mode.
+  ._cmd_terminal()                       432-484        Per-user terminal preferences — persisted to config/<user>/preferences
+  ._cmd_cli()                            486-540        Read/write CLI theme settings (configure mode only).
+  ._cmd_feature()                        542-789        Show or change feature-flag states at runtime.
+  ._cmd_dev()                            791-825        Toggle development mode (hidden command).
+  ._print_dev_status()                   827-841        Print the current development-mode state and the dev-flag count.
+  ._cmd_setup()                          843-960        Interactive credential setup wizard.
+_setup_bearer_instructions()             967-995        Print bearer-token setup commands for the detected OS.
+_setup_oauth_instructions()              998-1030       Print OAuth client credential setup commands for the detected OS.
 
 ## `app/utils/formatter.py`  (947 lines)
 
@@ -214,30 +246,6 @@ format_raw()                             918-919
 format_dict()                            922-923        
 _flatten()                               930-945        Recursively flatten a nested dict into dot-separated key/value pairs.
 
-## `app/shell/configure.py`  (922 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_prefs_file_label()                      9-15           Repo-relative path of the preferences file, for display.
-capture_write_ops()                      18-48          Run a write handler against a recording client and capture its mutatio
-class ConfigureMixin                     51-850         
-  ._cmd_configure()                      52-72          Enter configure mode (Cisco-style).
-  ._stage_write()                        74-101         Validate a configure-mode write and stage it locally (no SCM change).
-  ._cmd_show_pending()                   103-124        List the locally staged configure-mode changes (`show config`).
-  ._cmd_abandon()                        126-146        Discard all locally staged changes (configure mode only).
-  ._cmd_commit_staged()                  148-217        Apply all staged changes to SCM, then push the candidate to devices.
-  ._commit_check()                       219-262        Re-validate every staged change against CURRENT SCM state (Junos-style
-  ._watch_job()                          264-291        Poll a push job every few seconds until it finishes (or timeout).
-  ._confirm_configure_exit()             293-320        Ask what to do with staged changes when leaving configure mode.
-  ._cmd_terminal()                       322-374        Per-user terminal preferences — persisted to config/<user>/preferences
-  ._cmd_cli()                            376-430        Read/write CLI theme settings (configure mode only).
-  ._cmd_feature()                        432-679        Show or change feature-flag states at runtime.
-  ._cmd_dev()                            681-715        Toggle development mode (hidden command).
-  ._print_dev_status()                   717-731        Print the current development-mode state and the dev-flag count.
-  ._cmd_setup()                          733-850        Interactive credential setup wizard.
-_setup_bearer_instructions()             857-885        Print bearer-token setup commands for the detected OS.
-_setup_oauth_instructions()              888-920        Print OAuth client credential setup commands for the detected OS.
-
 ## `app/cli.py`  (877 lines)
 
 Symbol                                   Lines          Purpose
@@ -259,6 +267,22 @@ cliup()                                  820-839        Rebuild the offline brow
 scm_get()                                851-863        Perform a raw GET request against the SCM API.
 run()                                    870-871        
 
+## `app/shell/dispatch.py`  (710 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+split_pipe_line()                        23-38          Split *line* at the first unquoted ``|``.
+parse_output_filters()                   41-79          Parse a pipe filter chain into ``[(op, pattern), …]``.
+_line_matches()                          82-88          Regex match (case-insensitive) with plain-substring fallback.
+class DispatchMixin                      91-709         
+  ._cmd_watch()                          92-126         Re-run *rest* every N seconds until Ctrl-C (`watch [N] <command>`).
+  ._dispatch_piped()                     128-178        Run *head*, filter its captured output through the pipe *spec*.
+  ._save_pipe_output()                   180-197        Write piped output *lines* to *target* as plain UTF-8 text.
+  ._cmd_history()                        199-237        Print the last N commands from the prompt history (`history [n]`).
+  ._cmd_alias()                          239-297        User-defined aliases (`alias` / `alias <name> <expansion…>` /
+  ._show_command_not_found()             299-370        Show a helpful message when a command is not recognized.
+  ._dispatch()                           372-709        Process one input line.  Returns True when the user wants to exit ARC.
+
 ## `app/shell/navigation.py`  (708 lines)
 
 Symbol                                   Lines          Purpose
@@ -277,6 +301,24 @@ class NavigationMixin                    11-707
   ._reset_tenant_context()               462-476        Point shell state at *new_tsg* and rebuild the navigation caches.
   ._cmd_tsg()                            478-578        Switch the active Tenant Services Group (TSG) context.
   ._cmd_account()                        580-707        List or switch named credential profiles.
+
+## `app/shell/completer.py`  (589 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+_parse_usage()                           26-62          Parse a usage string into (required_slots, optional_keywords).
+_usage_options()                         65-99          Return (token, display_meta) completions for the slot after *typed* ar
+_tokenize_partial()                      102-135        Split *text* for completion, honouring quotes, tracking the in-progres
+class ArcCompleter                       138-588        Context-aware tab completer.
+  .__init__()                            147-148        
+  ._command_visible()                    150-159        Return True when a registered command is visible in this shell mode.
+  .get_completions()                     161-436        
+  ._match_complete_command()             438-453        Return the longest complete command key the user has fully entered.
+  ._complete_arguments()                 455-507        Yield completions for the argument region of a complete command.
+  ._object_names()                       522-546        Existing object names in the active folder, cached for a minute.
+  ._dynamic_name_options()               548-560        Live object names for the name slot of `delete X` / `update X`.
+  ._arg_options()                        562-579        Resolve next-slot argument options: structure file first, usage fallba
+  ._all_commands()                       582-588        
 
 ## `app/config.py`  (580 lines)
 
@@ -330,34 +372,53 @@ class HelpMixin                          8-573
   ._print_context_hint_for()             542-546        Print a one-line context note below an exact-match docs result.
   ._print_inline_usage()                 548-573        Print the description + usage syntax for a complete command in `?` hel
 
-## `app/shell/dispatch.py`  (546 lines)
+## `app/commands/operations.py`  (499 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-split_pipe_line()                        23-38          Split *line* at the first unquoted ``|``.
-parse_output_filters()                   41-65          Parse a pipe filter chain into ``[(op, pattern), …]``.
-_line_matches()                          68-74          Regex match (case-insensitive) with plain-substring fallback.
-class DispatchMixin                      77-545         
-  ._cmd_watch()                          78-112         Re-run *rest* every N seconds until Ctrl-C (`watch [N] <command>`).
-  ._dispatch_piped()                     114-154        Run *head*, filter its captured output through the pipe *spec*.
-  ._show_command_not_found()             156-227        Show a helpful message when a command is not recognized.
-  ._dispatch()                           229-545        Process one input line.  Returns True when the user wants to exit ARC.
+_show_system_info()                      15-40          Show what SCM knows about the selected device.
+_show_jobs_id()                          43-52          Fetch a single SCM job by ID — TSG-wide, no folder scope.
+_commit()                                55-73          Push the candidate configuration to managed devices.
+_live_only()                             80-86          Return a clear message explaining why this command needs --remote.
+_pending_show_system_resources()         89-90          
+_pending_show_system_disk_space()        93-94          
+_pending_request_software_check()        97-98          
+_pending_ping()                          101-104        
+_get_sls()                               133-146        Return a cached SLSClient built from the active SCM credentials.
+_parse_log_window()                      149-158        Parse 'Nm' / 'Nh' / 'Nd' into minutes; raise ValueError on bad input.
+_parse_log_args()                        161-188        Parse `show log <type>` keyword pairs from the raw remainder tokens.
+_sls_value()                             191-199        First non-empty field among *names*; unwraps SLS {'value': …} records.
+_sls_time()                              202-210        Render time_generated (epoch seconds or ISO string) as readable UTC.
+_map_sls_row()                           213-243        Map SLS field names onto the columns fmt.format_logs renders.
+_show_log_sls()                          246-276        Build the api_handler for one SLS-backed `show log <type>` command.
+_show_log_detail()                       279-296        Show the FULL SLS record for row <n> of the last log query.
+_ssh_jobs_id()                           303-304        
+_ssh_ping()                              307-310        
+_ssh_commit()                            313-315        
+_request_system_reboot()                 448-460        Request a system reboot — use --remote.  Requires active device contex
+_request_system_shutdown()               463-472        Request a system shutdown — use --remote.  Requires active device cont
 
-## `app/shell/completer.py`  (534 lines)
+## `app/commands/config_view.py`  (462 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_parse_usage()                           26-62          Parse a usage string into (required_slots, optional_keywords).
-_usage_options()                         65-99          Return (token, display_meta) completions for the slot after *typed* ar
-_tokenize_partial()                      102-135        Split *text* for completion, honouring quotes, tracking the in-progres
-class ArcCompleter                       138-533        Context-aware tab completer.
-  .__init__()                            147-148        
-  ._command_visible()                    150-159        Return True when a registered command is visible in this shell mode.
-  .get_completions()                     161-436        
-  ._match_complete_command()             438-453        Return the longest complete command key the user has fully entered.
-  ._complete_arguments()                 455-507        Yield completions for the argument region of a complete command.
-  ._arg_options()                        509-524        Resolve next-slot argument options: structure file first, usage fallba
-  ._all_commands()                       527-533        
+_q()                                     36-45          Return *value* as a CLI token, double-quoted when it contains spaces.
+_join_list()                             48-52          Join a list field into the comma form the set commands accept (tag a,b
+_address_variant_map()                   69-81          api payload field → CLI token, inverted from FIELD_CATALOG's address v
+_address_tokens()                        104-110        ip_netmask/ip_range/ip_wildcard/fqdn value → `<cli-type> <value>`.
+_address_group_tokens()                  113-121        static members → `static m1 m2`; dynamic filter → `dynamic filter "<ex
+_service_tokens()                        124-136        protocol.tcp/udp {port, source_port} → `tcp port <p> [source-port <sp>
+_service_group_tokens()                  139-144        members list → `members svc1 svc2 …`.
+_tag_tokens()                            147-149        Tags carry no positional value — color/comments are keyword fields.
+_edl_tokens()                            152-167        type.{ip|domain|url|imsi|imei} {url, recurring} → `type <t> url <u> [f
+_resolve_resource()                      229-238        Map a user-typed resource word onto a spec-table key (or raise usage).
+format_set_lines()                       241-264        Render *objects* of *resource* as replayable `set <resource> …` lines.
+_defined_in_folder()                     267-276        True when the object is defined in *folder* itself.
+_fetch_format_set()                      279-287        Fetch each resource in the active folder and emit its set lines.
+_show_config_format_set()                297-312        Dump the active folder's config as replayable set commands.
+_show_config_running()                   315-335        Show the running config version — or one resource as set commands.
+_show_config_versions()                  338-359        List SCM config versions, or show one version's full record.
+_load_config_version()                   362-411        Rollback: load a config version as the tenant's candidate config.
 
 ## `app/settings/command_structure.py`  (424 lines)
 
@@ -395,6 +456,25 @@ _test_nat_policy_match()                 233-241        Test NAT policy match �
 _ssh_test_nat()                          244-252        
 _test_url()                              255-262        Test URL categorization — use --remote.  PAN-OS: test url <url>
 _ssh_test_url()                          265-267        
+
+## `app/api/sls.py`  (387 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+class SLSError                           52-53          Raised when SLS authentication, query submission, or polling fails.
+_sql_quote()                             87-89          Return *value* as a single-quoted SQL string literal ('' escaping).
+build_query()                            92-142         Build the SLS SQL statement for a log query.
+class SLSClient                          149-386        Strata Logging Service Query Service v2 client.
+  .__init__()                            166-190        
+  ._authenticate()                       194-213        OAuth client-credentials flow — mirrors SCMClient._authenticate.
+  ._headers()                            215-216        
+  ._request()                            220-275        Send one Query Service request; translate failures into SLSError.
+  .query_start()                         279-292        POST /query/v2/jobs — submit a SQL string (or a raw params dict).
+  .query_poll()                          294-297        GET /query/v2/jobs/{jobId} — return the job record (incl. 'state').
+  .query_results()                       299-327        GET /query/v2/jobResults/{jobId} — collect result rows (paged).
+  .query_cancel()                        329-334        DELETE /query/v2/jobs/{jobId} — best-effort cancel.
+  .wait()                                336-358        Poll until the job reaches a terminal state; return the final record.
+  .query_logs()                          362-386        Run one fleet-wide log query end to end and return the rows.
 
 ## `app/ssh/manager.py`  (370 lines)
 

@@ -506,22 +506,77 @@ class ArcCompleter(Completer):
             yield Completion(text_ins, start_position=-len(partial),
                              display=display, display_meta=opt["meta"])
 
+    # Dynamic value completion — PAN-OS completes EXISTING object names from
+    # config (`delete address <TAB>` lists your addresses). Maps curated
+    # delete/update resources to the SCMClient list getter that names them.
+    _NAME_SOURCES = {
+        "address":               "get_addresses",
+        "address-group":         "get_address_groups",
+        "service":               "get_services",
+        "service-group":         "get_service_groups",
+        "tag":                   "get_tags",
+        "external-dynamic-list": "get_external_dynamic_lists",
+    }
+    _NAME_TTL_S = 60
+
+    def _object_names(self, resource: str) -> list[str]:
+        """Existing object names in the active folder, cached for a minute."""
+        scm = getattr(self._shell, "_scm", None)
+        if scm is None:
+            return []
+        folder = self._shell._state.folder
+        cache = getattr(self, "_name_cache", None)
+        if cache is None:
+            cache = self._name_cache = {}
+        cache_key = (resource, folder)
+        hit = cache.get(cache_key)
+        now = time.monotonic()
+        if hit and now - hit[1] < self._NAME_TTL_S:
+            return hit[0]
+        getter = getattr(scm, self._NAME_SOURCES[resource], None)
+        if getter is None:
+            return []
+        try:
+            objects = getter(folder=folder)
+        except Exception:  # noqa: BLE001 — completion must never raise
+            cache[cache_key] = ([], now)  # negative-cache so Tab doesn't hammer a dead API
+            return []
+        names = [str(o.get("name")) for o in objects if isinstance(o, dict) and o.get("name")]
+        cache[cache_key] = (names[:200], now)
+        return cache[cache_key][0]
+
+    def _dynamic_name_options(self, key: str, typed: list[str]) -> list[dict]:
+        """Live object names for the name slot of `delete X` / `update X`."""
+        parts = key.split()
+        if len(parts) != 2 or parts[0] not in ("delete", "update") or typed:
+            return []
+        resource = parts[1]
+        if resource not in self._NAME_SOURCES:
+            return []
+        folder = self._shell._state.folder
+        return [
+            {"text": name, "display": name, "meta": f"in {folder}"}
+            for name in self._object_names(resource)
+        ]
+
     def _arg_options(self, key: str, typed: list[str]) -> list[dict]:
         """Resolve next-slot argument options: structure file first, usage fallback.
 
         Returns a list of ``{text, display, meta}`` records.  Always non-None so a
         required value slot shows a hint rather than an empty (silent) result.
+        Live object names are offered first when the slot names an existing object.
         """
+        dynamic = self._dynamic_name_options(key, typed)
         spec = command_structure.arg_spec(key)
         if spec is not None:
-            return command_structure.completion_options(spec, typed)
+            return dynamic + command_structure.completion_options(spec, typed)
         cmd = COMMANDS.get(key)
         if cmd and cmd.usage and self._command_visible(key):
-            return [
+            return dynamic + [
                 {"text": opt, "display": opt, "meta": meta}
                 for opt, meta in _usage_options(cmd.usage, key, typed)
             ]
-        return []
+        return dynamic
 
 
     def _all_commands(self, include_remote_suffix: bool) -> list[str]:

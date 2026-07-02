@@ -40,6 +40,9 @@ class ArcShell(
         # Prefix to restore in the next prompt after a '?' context-help lookup.
         # e.g. "show ?" prints help then re-seeds the prompt with "show ".
         self._pending_default: str = ""
+        # commit-confirmed auto-revert state: {"timer", "version", "minutes"}
+        # while a confirmation window is open, else None (see configure.py).
+        self._pending_confirm: dict | None = None
 
         # Feature flags — loaded once at startup; apply to all command dispatch.
         # Each flag is "on" / "dev" / "off".  Edit settings/features.json or set
@@ -192,6 +195,8 @@ class ArcShell(
             try:
                 should_exit = self._dispatch(line)
                 if should_exit:
+                    if self._guard_pending_confirm_on_exit():
+                        continue
                     break
             except Exception as exc:
                 if self._config.debug:
@@ -199,6 +204,37 @@ class ArcShell(
                 console.print(f"[red]Error:[/red] {exc}")
 
         self._cleanup()
+
+    def _guard_pending_confirm_on_exit(self) -> bool:
+        """A commit-confirmed timer dies with the process — force a decision.
+
+        Returns True to CANCEL the exit (stay in the shell).
+        """
+        pending = getattr(self, "_pending_confirm", None)
+        if not pending:
+            return False
+        version = pending.get("version")
+        console.print(
+            f"\n[yellow]⏱ A commit is awaiting confirmation[/yellow] — the auto-revert "
+            f"timer dies when ARC exits.\n"
+            "  [bold]confirm[/bold]  — keep the changes permanently, then exit\n"
+            f"  [bold]revert[/bold]   — load config version {version} + push now, then exit\n"
+            "  [bold]cancel[/bold]   — stay in ARC\n"
+        )
+        while True:
+            answer = console.input("exit (confirm/revert/cancel): ").strip().lower()
+            if answer == "confirm":
+                self._cancel_commit_confirmed()
+                return False
+            if answer == "revert":
+                pending["timer"].cancel()
+                self._pending_confirm = pending  # expired() consumes this
+                self._commit_confirmed_expired()
+                return False
+            if answer in ("cancel", ""):
+                console.print("[dim]Staying in ARC — the timer keeps running.[/dim]")
+                return True
+            console.print("[dim]Type confirm, revert, or cancel.[/dim]")
 
 
 __all__ = ["ArcShell", "ShellState", "console", "ArcCompleter",

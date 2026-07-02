@@ -13,8 +13,12 @@ payloads, while curated hand-written commands still override generated ones.
 from __future__ import annotations
 
 import json
+import logging
+import re
 from pathlib import Path
 from typing import Any, Callable
+
+from rich.markup import escape as _rich_escape
 
 from app.commands.base import CommandDef, ExecutionContext, require_scm
 
@@ -28,13 +32,46 @@ try:
 except Exception:  # noqa: BLE001 — missing/broken field catalog degrades to json|file
     FIELD_CATALOG = {}
 
+logger = logging.getLogger(__name__)
+
+
+def _validate_constraints(command: str, cli_name: str, text: str, meta: dict) -> None:
+    """Enforce schema-declared maxLength/pattern on one CLI field value.
+
+    Raises an actionable ValueError before anything is staged. Spec patterns
+    carry their own anchors (e.g. the fqdn pattern is ^…$), so ``re.search``
+    respects them rather than forcing a full match. A broken pattern in a
+    spec must never crash the CLI — it is skipped with a debug note.
+    """
+    max_length = meta.get("max_length")
+    if isinstance(max_length, int) and max_length > 0 and len(text) > max_length:
+        raise ValueError(
+            f"'{command}': {cli_name} is too long — "
+            f"{len(text)} characters (maximum {max_length})"
+        )
+    pattern = meta.get("pattern")
+    if isinstance(pattern, str) and pattern:
+        try:
+            matched = re.search(pattern, text) is not None
+        except re.error as exc:
+            logger.debug("%s: skipping invalid spec pattern for %s (%s): %r",
+                         command, cli_name, exc, pattern)
+            return
+        if not matched:
+            # Escape the regex so its [character classes] survive Rich markup.
+            raise ValueError(
+                f"'{text}' does not match the required format for {cli_name} "
+                f"[dim](pattern: {_rich_escape(pattern)})[/dim]"
+            )
+
 
 def _payload_from_fields(
     command: str, catalog_entry: dict, args: dict, defaults: dict | None = None
 ) -> dict:
     """Build a request body from structured CLI fields (prompt-time validation).
 
-    Enforces required fields, variant type/value pairing, and enum choices
+    Enforces required fields, variant type/value pairing, enum choices, and
+    schema pattern/maxLength constraints
     with actionable ValueErrors BEFORE anything is staged — the vendor-CLI
     "invalid input" experience, driven by the OpenAPI schema. *defaults*
     supplies context-derived values (e.g. the active folder) for fields the
@@ -77,6 +114,7 @@ def _payload_from_fields(
                 shown = ", ".join(choices[:8]) + (", …" if len(choices) > 8 else "")
                 raise ValueError(f"'{command}': {cli_name} must be one of: {shown}")
             text = match  # accept case-insensitive input, send canonical casing
+        _validate_constraints(command, cli_name, text, meta)
         if cli_name in list_fields:
             body[api_name] = [part.strip() for part in text.split(",") if part.strip()]
         else:

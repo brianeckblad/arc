@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import platform  # For OS detection in setup wizard
+import threading  # commit-confirmed auto-revert timer
 
 from app.shell._base import *  # noqa: F401,F403  (shared spine namespace)
 
@@ -145,17 +146,110 @@ class ConfigureMixin:
         self._state.staged_ops = []
         console.print("[green]✓[/green] Staged changes discarded — SCM was never touched.")
 
+    # ------------------------------------------------------------------
+    # commit confirmed — Junos-style auto-revert safety net
+    # ------------------------------------------------------------------
+
+    def _rollback_version(self) -> int | None:
+        """Version number of the CURRENT running config (the revert target)."""
+        try:
+            data = self._scm._request(
+                "GET", self._scm.OPERATIONS_URL, "/config-versions/running"
+            )
+        except Exception:  # noqa: BLE001 — caller refuses to arm without a target
+            return None
+        records = data.get("data") if isinstance(data, dict) and isinstance(data.get("data"), list) else data
+        if isinstance(records, dict):
+            records = [records]
+        for record in records or []:
+            version = record.get("version")
+            if isinstance(version, int):
+                return version
+            if isinstance(version, str) and version.isdigit():
+                return int(version)
+        return None
+
+    def _arm_commit_confirmed(self, minutes: int, version: int) -> None:
+        self._cancel_commit_confirmed(silent=True)
+        timer = threading.Timer(minutes * 60, self._commit_confirmed_expired)
+        timer.daemon = True
+        self._pending_confirm = {"timer": timer, "version": version, "minutes": minutes}
+        timer.start()
+        console.print(
+            f"[yellow]⏱ commit confirmed:[/yellow] auto-revert to config version "
+            f"[bold]{version}[/bold] in [bold]{minutes} min[/bold] unless you type "
+            "[bold]commit confirm[/bold]."
+        )
+
+    def _cancel_commit_confirmed(self, silent: bool = False) -> bool:
+        pending = getattr(self, "_pending_confirm", None)
+        if not pending:
+            if not silent:
+                console.print("[dim]No commit awaiting confirmation.[/dim]")
+            return False
+        pending["timer"].cancel()
+        self._pending_confirm = None
+        if not silent:
+            console.print(
+                "[green]✓ Commit confirmed[/green] — changes are permanent; auto-revert cancelled."
+            )
+        return True
+
+    def _commit_confirmed_expired(self) -> None:
+        """Timer thread: the operator never confirmed — revert and re-push."""
+        pending = getattr(self, "_pending_confirm", None)
+        if not pending:
+            return
+        self._pending_confirm = None
+        version = pending["version"]
+        console.print(
+            f"\n[red]⏱ commit confirmed EXPIRED[/red] — loading config version "
+            f"[bold]{version}[/bold] and pushing the revert…"
+        )
+        try:
+            self._scm._request(
+                "POST", self._scm.OPERATIONS_URL, "/config-versions:load",
+                json={"version": version},
+            )
+            job = self._scm.push_config(
+                description=f"arc auto-revert to v{version} (commit confirmed expired)"
+            )
+            job_id = job.get("id") or job.get("job_id") or "?"
+            console.print(
+                f"[yellow]Auto-revert push started (job {job_id}).[/yellow] "
+                "Next time: [bold]commit confirm[/bold] within the window."
+            )
+        except Exception as exc:  # noqa: BLE001 — a failed revert must be LOUD
+            console.print(
+                f"[red]AUTO-REVERT FAILED:[/red] {exc}\n"
+                f"  Manual recovery: [bold]load config version {version} confirm[/bold], then [bold]commit[/bold]."
+            )
+
     def _cmd_commit_staged(self, args: list[str]) -> None:
         """Apply all staged changes to SCM, then push the candidate to devices.
 
         ``commit`` — apply + push, print the job ID.
         ``commit watch`` — same, then poll the push job until it finishes.
-        Both accept a trailing ``description <text>``.
+        ``commit confirmed [minutes]`` — push, then AUTO-REVERT to the current
+        running version unless ``commit confirm`` arrives in time (default 10).
+        ``commit confirm`` — make a pending confirmed-commit permanent.
+        ``commit check`` — re-validate staged changes without applying.
+        All accept a trailing ``description <text>``.
         """
         tokens = list(args)
         if tokens and tokens[0].lower() == "check":
             self._commit_check()
             return
+        if tokens and tokens[0].lower() == "confirm":
+            self._cancel_commit_confirmed()
+            return
+        confirmed_minutes = 0
+        if tokens and tokens[0].lower() == "confirmed":
+            tokens.pop(0)
+            confirmed_minutes = 10
+            if tokens and tokens[0].isdigit():
+                confirmed_minutes = max(1, min(120, int(tokens[0])))
+                tokens.pop(0)
         watch = bool(tokens) and tokens[0].lower() == "watch"
         if watch:
             tokens.pop(0)
@@ -166,6 +260,18 @@ class ConfigureMixin:
         if not self._scm:
             console.print("[red]SCM not connected — cannot commit.[/red]")
             return
+
+        # commit confirmed: capture the revert target BEFORE anything changes.
+        rollback_version: int | None = None
+        if confirmed_minutes:
+            rollback_version = self._rollback_version()
+            if rollback_version is None:
+                console.print(
+                    "[red]Cannot determine the current running config version — "
+                    "refusing to arm auto-revert.[/red]\n"
+                    "  Run a plain [bold]commit[/bold], or check [bold]show config versions[/bold]."
+                )
+                return
 
         staged = self._state.staged_ops
         applied = 0
@@ -208,6 +314,10 @@ class ConfigureMixin:
             return
         console.print(fmt.format_jobs([job] if isinstance(job, dict) else job))
         job_id = str(job.get("id") or job.get("job_id") or "") if isinstance(job, dict) else ""
+        # Arm the auto-revert BEFORE watch — the countdown must run while the
+        # operator verifies they still have connectivity to what they changed.
+        if confirmed_minutes and rollback_version is not None:
+            self._arm_commit_confirmed(confirmed_minutes, rollback_version)
         if watch and job_id:
             self._watch_job(job_id)
         elif job_id:

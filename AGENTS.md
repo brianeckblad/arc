@@ -227,6 +227,8 @@ message. `ExecutionContext` fields: `.scm .ssh .config .device .folder .tsg_id`.
   exit-abandon just clears the local queue — SCM is untouched until commit.
   Exception: folder creation is immediate (staged objects may target it).
   `show config` lists the queue. Never add a write path that bypasses staging.
+  `commit confirmed [min]` arms a Junos-style auto-revert (config-versions
+  load + push) cancelled by `commit confirm`; exit forces a decision.
 - Context: `cd <device>` sets `ShellState.device`; `folder <name>` sets the
   `?folder=` param for all SCM calls; `tsg <id>` re-scopes auth and clears
   device/folder/caches (`_reset_tenant_context`).

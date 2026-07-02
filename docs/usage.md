@@ -79,7 +79,7 @@ show routing route
 show security policy
 ```
 
-## Filter output — `| match`, `| except`, `| count`
+## Filter output — `| match`, `| except`, `| count`, `| save`
 
 Any output-producing command can be piped through PAN-OS-style filters:
 
@@ -89,11 +89,43 @@ show security policy | except deny     # drop matching lines
 show devices | match PA-4 | count      # chain filters; count matching lines
 show devices | json                    # raw JSON instead of a table (for scripts)
 show devices | json | match serial     # filters apply to the JSON lines
+show devices | match prod | save inventory.txt   # write the filtered lines to a file
+show devices | json | save devices.json          # save the raw JSON for scripts
 ```
 
 Filters operate on rendered output lines (`| json` switches the rendering to
 raw JSON first). Interactive commands (`connect`, `remote`, `configure`,
 `setup`) cannot be filtered.
+
+`| save <file>` writes the final output to a file as plain UTF-8 text (colour
+codes stripped) and prints the path and line count. Relative paths resolve
+against the directory you launched arc from; `~` expands to your home
+directory. `save` must be the **last** op in the chain.
+
+## Command history — `history [n]`
+
+```text
+history                      # last 20 commands, numbered
+history 50                   # last 50
+history | match address      # find that command you typed an hour ago
+```
+
+## Aliases — `alias`
+
+Junos-style personal shortcuts, stored in `config/<user>/preferences.json`
+and loaded at every launch:
+
+```text
+alias                        # list defined aliases
+alias slt show log traffic   # define: slt → show log traffic
+slt | match deny             # aliases expand first, so they compose with filters
+alias delete slt             # remove it
+```
+
+The first word of the input line is expanded **once** — an alias whose
+expansion begins with another alias name is not re-expanded (no recursion).
+Alias names that collide with shell builtins or command words
+(`show`, `set`, …) are refused.
 
 ## Terminal preferences — pager, width, spinner
 

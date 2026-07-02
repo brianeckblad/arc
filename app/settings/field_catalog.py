@@ -13,8 +13,8 @@ by app/commands/generated.py). Regenerate:
 FIELD_CATALOG: dict[str, dict] = {
     'set adnsr bad-domains': {
         'args': [
-            {'name': 'domain', 'kind': 'value', 'required': True, 'hint': 'e.g. example.com'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'e.g. Description of the misconfigured domain', 'value_hint': 'e.g. Description of the misconfigured domain'},
+            {'name': 'domain', 'kind': 'value', 'required': True, 'hint': 'e.g. example.com', 'max_length': 255},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'e.g. Description of the misconfigured domain', 'value_hint': 'e.g. Description of the misconfigured domain', 'max_length': 256},
         ],
         'payload': {
             'fields': {'domain': 'domain', 'description': 'description'},
@@ -24,9 +24,9 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set adnsr conn-sources': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Name of the connection source'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Name of the connection source', 'max_length': 128},
             {'name': 'profile-id', 'kind': 'value', 'required': True, 'hint': 'Profile ID associated with the connection source'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Description of the connection source', 'value_hint': 'e.g. Description of connection source'},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Description of the connection source', 'value_hint': 'e.g. Description of connection source', 'max_length': 256},
         ],
         'payload': {
             'fields': {'name': 'name', 'profile-id': 'profile_id', 'description': 'description'},
@@ -38,11 +38,11 @@ FIELD_CATALOG: dict[str, dict] = {
         'args': [
             {'name': 'ca-cert-id', 'kind': 'keyword', 'required': False, 'hint': 'e.g. CA Certificate ID(Optional)', 'value_hint': 'e.g. CA Certificate ID(Optional)'},
             {'name': 'is-expansion-enabled', 'kind': 'keyword', 'required': False, 'hint': 'e.g. False', 'value_hint': 'true or false'},
-            {'name': 'name', 'kind': 'keyword', 'required': False, 'hint': 'e.g. EDL Definition name', 'value_hint': 'e.g. EDL Definition name'},
-            {'name': 'password', 'kind': 'keyword', 'required': False, 'hint': 'e.g. password(Optional)', 'value_hint': 'e.g. password(Optional)'},
+            {'name': 'name', 'kind': 'keyword', 'required': False, 'hint': 'e.g. EDL Definition name', 'value_hint': 'e.g. EDL Definition name', 'max_length': 128},
+            {'name': 'password', 'kind': 'keyword', 'required': False, 'hint': 'e.g. password(Optional)', 'value_hint': 'e.g. password(Optional)', 'max_length': 40},
             {'name': 'poll-duration', 'kind': 'keyword', 'required': False, 'hint': 'e.g. DAILY', 'value_hint': 'One of: FIVE_MINUTES, HOURLY, DAILY, WEEKLY, MONTHLY', 'choices': ['FIVE_MINUTES', 'HOURLY', 'DAILY', 'WEEKLY', 'MONTHLY']},
-            {'name': 'url', 'kind': 'keyword', 'required': False, 'hint': 'e.g. https://example.com/edl', 'value_hint': 'e.g. https://example.com/edl'},
-            {'name': 'user', 'kind': 'keyword', 'required': False, 'hint': 'e.g. username(Optional)', 'value_hint': 'e.g. username(Optional)'},
+            {'name': 'url', 'kind': 'keyword', 'required': False, 'hint': 'e.g. https://example.com/edl', 'value_hint': 'e.g. https://example.com/edl', 'max_length': 2048},
+            {'name': 'user', 'kind': 'keyword', 'required': False, 'hint': 'e.g. username(Optional)', 'value_hint': 'e.g. username(Optional)', 'max_length': 40},
         ],
         'payload': {
             'fields': {'ca-cert-id': 'ca_cert_id', 'is-expansion-enabled': 'is_expansion_enabled', 'name': 'name', 'password': 'password', 'poll-duration': 'poll_duration', 'url': 'url', 'user': 'user'},
@@ -52,8 +52,8 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set adnsr internal-domains': {
         'args': [
-            {'name': 'domain', 'kind': 'value', 'required': True, 'hint': 'e.g. internal.company.com'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'e.g. Description of the internal domain', 'value_hint': 'e.g. Description of the internal domain'},
+            {'name': 'domain', 'kind': 'value', 'required': True, 'hint': 'e.g. internal.company.com', 'max_length': 255},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'e.g. Description of the internal domain', 'value_hint': 'e.g. Description of the internal domain', 'max_length': 256},
         ],
         'payload': {
             'fields': {'domain': 'domain', 'description': 'description'},
@@ -63,8 +63,8 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set adnsr profiles': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Profile name'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Description of the profile', 'value_hint': 'e.g. Standard security profile'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Profile name', 'max_length': 128},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Description of the profile', 'value_hint': 'e.g. Standard security profile', 'max_length': 256},
         ],
         'payload': {
             'fields': {'name': 'name', 'description': 'description'},
@@ -143,10 +143,10 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw addresses': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the address object'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the address object', 'max_length': 63},
             {'name': 'type', 'kind': 'choice', 'required': True, 'choices': ['ip-netmask', 'ip-range', 'ip-wildcard', 'fqdn'], 'choice_hints': {'ip-netmask': 'IP address with or without CIDR notation', 'ip-range': 'e.g. 10.0.0.1-10.0.0.4', 'ip-wildcard': 'IP wildcard mask', 'fqdn': 'Fully qualified domain name'}, 'hint': 'Choose the address type'},
             {'name': 'value', 'kind': 'value', 'required': True, 'hint': 'Enter the value for the chosen type'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'The description of the address object', 'value_hint': 'Text value'},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'The description of the address object', 'value_hint': 'Text value', 'max_length': 1023},
             {'name': 'tag', 'kind': 'keyword', 'required': False, 'hint': 'Tags assocaited with the address object', 'value_hint': 'One or more values'},
         ],
         'payload': {
@@ -162,8 +162,8 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw adv-device-objs': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the advanced device object'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'The description of the advanced device object', 'value_hint': 'Text value'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the advanced device object', 'pattern': '^[a-zA-Z\\d\\-_\\. ]+$', 'max_length': 63},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'The description of the advanced device object', 'value_hint': 'Text value', 'max_length': 1023},
         ],
         'payload': {
             'fields': {'name': 'name', 'description': 'description'},
@@ -188,9 +188,9 @@ FIELD_CATALOG: dict[str, dict] = {
     'set cngfw anti-spyware-signatures': {
         'args': [
             {'name': 'threat-id', 'kind': 'value', 'required': True, 'hint': 'threat id range <15000-18000> and <6900001-7000000>'},
-            {'name': 'threatname', 'kind': 'value', 'required': True, 'hint': 'Enter threatname'},
+            {'name': 'threatname', 'kind': 'value', 'required': True, 'hint': 'Enter threatname', 'max_length': 1024},
             {'name': 'bugtraq', 'kind': 'keyword', 'required': False, 'hint': 'Enter bugtraq', 'value_hint': 'One or more values'},
-            {'name': 'comment', 'kind': 'keyword', 'required': False, 'hint': 'Enter comment', 'value_hint': 'Text value'},
+            {'name': 'comment', 'kind': 'keyword', 'required': False, 'hint': 'Enter comment', 'value_hint': 'Text value', 'max_length': 256},
             {'name': 'cve', 'kind': 'keyword', 'required': False, 'hint': 'Enter cve', 'value_hint': 'One or more values'},
             {'name': 'reference', 'kind': 'keyword', 'required': False, 'hint': 'Enter reference', 'value_hint': 'One or more values'},
             {'name': 'vendor', 'kind': 'keyword', 'required': False, 'hint': 'Enter vendor', 'value_hint': 'One or more values'},
@@ -203,8 +203,8 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw app-override-rules': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Enter name'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Enter name', 'pattern': '^[a-zA-Z0-9._-]+$', 'max_length': 63},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value', 'max_length': 1024},
             {'name': 'tag', 'kind': 'keyword', 'required': False, 'hint': 'Enter tag', 'value_hint': 'One or more values'},
             {'name': 'application', 'kind': 'keyword', 'required': False, 'hint': 'Enter application', 'value_hint': 'Text value'},
             {'name': 'destination', 'kind': 'keyword', 'required': False, 'hint': 'Enter destination', 'value_hint': 'One or more values'},
@@ -225,7 +225,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw application-filters': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Alphanumeric string [ 0-9a-zA-Z._-]'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Alphanumeric string [ 0-9a-zA-Z._-]', 'max_length': 31},
             {'name': 'category', 'kind': 'keyword', 'required': False, 'hint': 'Enter category', 'value_hint': 'One or more values'},
             {'name': 'evasive', 'kind': 'keyword', 'required': False, 'hint': 'only True is a valid value', 'value_hint': 'true or false'},
             {'name': 'excessive-bandwidth-use', 'kind': 'keyword', 'required': False, 'hint': 'only True is a valid value', 'value_hint': 'true or false'},
@@ -251,7 +251,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw application-groups': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Alphanumeric string [ 0-9a-zA-Z._-]'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Alphanumeric string [ 0-9a-zA-Z._-]', 'max_length': 31},
             {'name': 'members', 'kind': 'value', 'required': True, 'hint': 'Enter members'},
         ],
         'payload': {
@@ -280,7 +280,7 @@ FIELD_CATALOG: dict[str, dict] = {
         'args': [
             {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the authentication profile'},
             {'name': 'allow-list', 'kind': 'keyword', 'required': False, 'hint': 'The allow_list of the authentication profile', 'value_hint': 'One or more values'},
-            {'name': 'user-domain', 'kind': 'keyword', 'required': False, 'hint': 'Enter user-domain', 'value_hint': 'Text value'},
+            {'name': 'user-domain', 'kind': 'keyword', 'required': False, 'hint': 'Enter user-domain', 'value_hint': 'Text value', 'max_length': 63},
         ],
         'payload': {
             'fields': {'name': 'name', 'allow-list': 'allow_list', 'user-domain': 'user_domain'},
@@ -332,9 +332,9 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw auto-tag-actions': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Alphanumeric string [ 0-9a-zA-Z._-]'},
-            {'name': 'filter', 'kind': 'value', 'required': True, 'hint': 'Tag based filter defining group membership e.g. `tag1 AND tag2 OR tag3`'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Alphanumeric string [ 0-9a-zA-Z._-]', 'max_length': 63},
+            {'name': 'filter', 'kind': 'value', 'required': True, 'hint': 'Tag based filter defining group membership e.g. `tag1 AND tag2 OR tag3`', 'max_length': 2047},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value', 'max_length': 1023},
             {'name': 'quarantine', 'kind': 'keyword', 'required': False, 'hint': 'Enter quarantine', 'value_hint': 'true or false'},
             {'name': 'send-to-panorama', 'kind': 'keyword', 'required': False, 'hint': 'Enter send-to-panorama', 'value_hint': 'true or false'},
         ],
@@ -404,7 +404,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw decryption-profiles': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Must start with alphanumeric char and should contain only alphanemeric, underscore, hyphen, dot or space'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Must start with alphanumeric char and should contain only alphanemeric, underscore, hyphen, dot or space', 'pattern': '^[A-Za-z0-9]{1}[A-Za-z0-9_\\-\\.\\s]{0,}$'},
         ],
         'payload': {
             'fields': {'name': 'name'},
@@ -443,8 +443,8 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw device-contexts': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the device context segment'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'The description of the device context segment', 'value_hint': 'Text value'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the device context segment', 'pattern': '^[a-zA-Z\\d\\-_\\. ]+$', 'max_length': 63},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'The description of the device context segment', 'value_hint': 'Text value', 'max_length': 1023},
         ],
         'payload': {
             'fields': {'name': 'name', 'description': 'description'},
@@ -465,9 +465,9 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw dos-protection-profiles': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Profile name'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Profile name', 'max_length': 31},
             {'name': 'type', 'kind': 'value', 'required': True, 'hint': 'Type', 'value_hint': 'One of: aggregate, classified', 'choices': ['aggregate', 'classified']},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Description', 'value_hint': 'Text value'},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Description', 'value_hint': 'Text value', 'max_length': 255},
         ],
         'payload': {
             'fields': {'name': 'name', 'type': 'type', 'description': 'description'},
@@ -477,8 +477,8 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw dos-protection-rules': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Rule name'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Description', 'value_hint': 'Text value'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Rule name', 'max_length': 31},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Description', 'value_hint': 'Text value', 'max_length': 255},
             {'name': 'tag', 'kind': 'keyword', 'required': False, 'hint': 'List of tags', 'value_hint': 'One or more values'},
             {'name': 'destination', 'kind': 'keyword', 'required': False, 'hint': 'List of destination addresses', 'value_hint': 'One or more values'},
             {'name': 'disabled', 'kind': 'keyword', 'required': False, 'hint': 'Rule disabled?', 'value_hint': 'true or false'},
@@ -499,9 +499,9 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw dynamic-user-groups': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the dynamic address group'},
-            {'name': 'filter', 'kind': 'value', 'required': True, 'hint': 'The tag-based filter for the dynamic user group'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'The description of the dynamic address group', 'value_hint': 'Text value'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the dynamic address group', 'pattern': '^[ a-zA-Z\\d.\\-_]+$', 'max_length': 63},
+            {'name': 'filter', 'kind': 'value', 'required': True, 'hint': 'The tag-based filter for the dynamic user group', 'max_length': 2047},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'The description of the dynamic address group', 'value_hint': 'Text value', 'max_length': 1023},
             {'name': 'tag', 'kind': 'keyword', 'required': False, 'hint': 'Tags associated with the dynamic user group', 'value_hint': 'One or more values'},
         ],
         'payload': {
@@ -512,7 +512,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw external-dynamic-lists': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the external dynamic list'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the external dynamic list', 'pattern': '^[ a-zA-Z\\d.\\-_]+$', 'max_length': 63},
         ],
         'payload': {
             'fields': {'name': 'name'},
@@ -547,8 +547,8 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw hip-objects': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the HIP object'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the HIP object', 'pattern': '^[ a-zA-Z\\d.\\-_]+$', 'max_length': 31},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value', 'max_length': 255},
         ],
         'payload': {
             'fields': {'name': 'name', 'description': 'description'},
@@ -558,9 +558,9 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw hip-profiles': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the HIP profile'},
-            {'name': 'match', 'kind': 'value', 'required': True, 'hint': 'Enter match'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the HIP profile', 'pattern': '^[ a-zA-Z\\d.\\-_]+$', 'max_length': 31},
+            {'name': 'match', 'kind': 'value', 'required': True, 'hint': 'Enter match', 'max_length': 2048},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value', 'max_length': 255},
         ],
         'payload': {
             'fields': {'name': 'name', 'match': 'match', 'description': 'description'},
@@ -581,7 +581,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw http-server-profiles': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the profile'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the profile', 'max_length': 63},
             {'name': 'tag-registration', 'kind': 'keyword', 'required': False, 'hint': 'Register tags on match', 'value_hint': 'true or false'},
         ],
         'payload': {
@@ -603,7 +603,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw local-user-groups': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the local user group'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the local user group', 'pattern': '^[a-zA-Z0-9._-]+$', 'max_length': 31},
             {'name': 'user', 'kind': 'keyword', 'required': False, 'hint': 'The local user group users', 'value_hint': 'One or more values'},
         ],
         'payload': {
@@ -614,8 +614,8 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw local-users': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the local user'},
-            {'name': 'password', 'kind': 'value', 'required': True, 'hint': 'The password of the local user'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the local user', 'max_length': 31},
+            {'name': 'password', 'kind': 'value', 'required': True, 'hint': 'The password of the local user', 'max_length': 63},
             {'name': 'disabled', 'kind': 'keyword', 'required': False, 'hint': 'Is the local user disabled?', 'value_hint': 'true or false'},
         ],
         'payload': {
@@ -637,8 +637,8 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw ocsp-responders': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the OCSP responder profile'},
-            {'name': 'host-name', 'kind': 'value', 'required': True, 'hint': 'The hostname or IP address of the OCSP server'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the OCSP responder profile', 'pattern': '^[a-zA-Z0-9._-]+$', 'max_length': 63},
+            {'name': 'host-name', 'kind': 'value', 'required': True, 'hint': 'The hostname or IP address of the OCSP server', 'max_length': 255},
         ],
         'payload': {
             'fields': {'name': 'name', 'host-name': 'host_name'},
@@ -689,7 +689,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw regions': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the region'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the region', 'pattern': '^[ a-zA-Z\\d._-]+$', 'max_length': 31},
             {'name': 'address', 'kind': 'keyword', 'required': False, 'hint': 'Enter address', 'value_hint': 'One or more values'},
         ],
         'payload': {
@@ -700,7 +700,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw service-groups': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the service group'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the service group', 'pattern': '^[ a-zA-Z\\d.\\-_]+$', 'max_length': 63},
             {'name': 'members', 'kind': 'value', 'required': True, 'hint': 'Enter members'},
             {'name': 'tag', 'kind': 'keyword', 'required': False, 'hint': 'Tags associated with the service group', 'value_hint': 'One or more values'},
         ],
@@ -712,8 +712,8 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw services': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the service'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the service', 'pattern': '^[ a-zA-Z\\d.\\-_]+$', 'max_length': 63},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value', 'max_length': 1023},
             {'name': 'tag', 'kind': 'keyword', 'required': False, 'hint': 'Tags for service object', 'value_hint': 'One or more values'},
         ],
         'payload': {
@@ -860,9 +860,9 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw tags': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the tag'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the tag', 'max_length': 127},
             {'name': 'color', 'kind': 'keyword', 'required': False, 'hint': 'The color of the tag', 'value_hint': 'One of: Red, Green, Blue, Yellow, Copper, Orange, … (41 choices)', 'choices': ['Red', 'Green', 'Blue', 'Yellow', 'Copper', 'Orange', 'Purple', 'Gray', 'Light Green', 'Cyan', 'Light Gray', 'Blue Gray', 'Lime', 'Black', 'Gold', 'Brown', 'Olive', 'Maroon', 'Red-Orange', 'Yellow-Orange', 'Forest Green', 'Turquoise Blue', 'Azure Blue', 'Cerulean Blue', 'Midnight Blue', 'Medium Blue', 'Cobalt Blue', 'Violet Blue', 'Blue Violet', 'Medium Violet', 'Medium Rose', 'Lavender', 'Orchid', 'Thistle', 'Peach', 'Salmon', 'Magenta', 'Red Violet', 'Mahogany', 'Burnt Sienna', 'Chestnut']},
-            {'name': 'comments', 'kind': 'keyword', 'required': False, 'hint': 'The description of the tag', 'value_hint': 'Text value'},
+            {'name': 'comments', 'kind': 'keyword', 'required': False, 'hint': 'The description of the tag', 'value_hint': 'Text value', 'max_length': 1023},
         ],
         'payload': {
             'fields': {'name': 'name', 'color': 'color', 'comments': 'comments'},
@@ -901,7 +901,7 @@ FIELD_CATALOG: dict[str, dict] = {
     'set cngfw url-access-profiles': {
         'args': [
             {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Enter name'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value'},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value', 'max_length': 255},
             {'name': 'alert', 'kind': 'keyword', 'required': False, 'hint': 'Enter alert', 'value_hint': 'One or more values'},
             {'name': 'allow', 'kind': 'keyword', 'required': False, 'hint': 'Enter allow', 'value_hint': 'One or more values'},
             {'name': 'block', 'kind': 'keyword', 'required': False, 'hint': 'Enter block', 'value_hint': 'One or more values'},
@@ -924,8 +924,8 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw url-admin-override': {
         'args': [
-            {'name': 'password', 'kind': 'keyword', 'required': False, 'hint': 'Password for URL admin override', 'value_hint': 'Text value'},
-            {'name': 'ssl-tls-service-profile', 'kind': 'keyword', 'required': False, 'hint': 'SSL TLS service profile', 'value_hint': 'Text value'},
+            {'name': 'password', 'kind': 'keyword', 'required': False, 'hint': 'Password for URL admin override', 'value_hint': 'Text value', 'max_length': 64},
+            {'name': 'ssl-tls-service-profile', 'kind': 'keyword', 'required': False, 'hint': 'SSL TLS service profile', 'value_hint': 'Text value', 'max_length': 255},
         ],
         'payload': {
             'fields': {'password': 'password', 'ssl-tls-service-profile': 'ssl_tls_service_profile'},
@@ -947,7 +947,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw vuln-profiles': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Enter name'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Enter name', 'pattern': '^[a-zA-Z0-9._-]+$'},
             {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value'},
         ],
         'payload': {
@@ -958,7 +958,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set cngfw wildfire-profiles': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Enter name'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Enter name', 'pattern': '^[a-zA-Z0-9._-]+$'},
             {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value'},
             {'name': 'packet-capture', 'kind': 'keyword', 'required': False, 'hint': 'Enter packet-capture', 'value_hint': 'true or false'},
         ],
@@ -970,7 +970,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set config-match-list': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Name of the config match list entry'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Name of the config match list entry', 'max_length': 63},
             {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Description of the config match list entry', 'value_hint': 'Text value'},
             {'name': 'filter', 'kind': 'keyword', 'required': False, 'hint': 'Filter of the config match list entry', 'value_hint': 'Text value'},
             {'name': 'send-email', 'kind': 'keyword', 'required': False, 'hint': 'Send Email List of the config match list entry', 'value_hint': 'One or more values'},
@@ -987,7 +987,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set device-context-segment-association': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the device context segment association'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the device context segment association', 'pattern': '^[a-zA-Z\\d\\-_\\. ]+$', 'max_length': 32},
         ],
         'payload': {
             'fields': {'name': 'name'},
@@ -997,7 +997,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set gp-match-list': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Name of the globalprotect match list entry'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Name of the globalprotect match list entry', 'max_length': 63},
             {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Description of the globalprotect match list entry', 'value_hint': 'Text value'},
             {'name': 'filter', 'kind': 'keyword', 'required': False, 'hint': 'Filter of the globalprotect match list entry', 'value_hint': 'Text value'},
             {'name': 'quarantine', 'kind': 'keyword', 'required': False, 'hint': 'Quarantine Flag of the globalprotect match list entry', 'value_hint': 'true or false'},
@@ -1015,7 +1015,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set hipmatch-match-list': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Name of the hipmatch match list entry'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Name of the hipmatch match list entry', 'max_length': 63},
             {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Description of the hipmatch match list entry', 'value_hint': 'Text value'},
             {'name': 'filter', 'kind': 'keyword', 'required': False, 'hint': 'Filter of the hipmatch match list entry', 'value_hint': 'Text value'},
             {'name': 'quarantine', 'kind': 'keyword', 'required': False, 'hint': 'Quarantine Flag of the hipmatch match list entry', 'value_hint': 'true or false'},
@@ -1089,7 +1089,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set ike-crypto-profiles': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Alphanumeric string begin with letter: [0-9a-zA-Z._-]'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Alphanumeric string begin with letter: [0-9a-zA-Z._-]', 'max_length': 31},
             {'name': 'dh-group', 'kind': 'value', 'required': True, 'hint': 'Enter dh-group'},
             {'name': 'encryption', 'kind': 'value', 'required': True, 'hint': 'Encryption algorithm'},
             {'name': 'hash', 'kind': 'value', 'required': True, 'hint': 'Enter hash'},
@@ -1103,7 +1103,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set iptag-match-list': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Name of the iptag match list entry'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Name of the iptag match list entry', 'max_length': 63},
             {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Description of the iptag match list entry', 'value_hint': 'Text value'},
             {'name': 'filter', 'kind': 'keyword', 'required': False, 'hint': 'Filter of the iptag match list entry', 'value_hint': 'Text value'},
             {'name': 'quarantine', 'kind': 'keyword', 'required': False, 'hint': 'Quarantine Flag of the iptag match list entry', 'value_hint': 'true or false'},
@@ -1194,7 +1194,7 @@ FIELD_CATALOG: dict[str, dict] = {
     'set layer2-subinterfaces': {
         'args': [
             {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'L2 sub-interface name'},
-            {'name': 'vlan-tag', 'kind': 'value', 'required': True, 'hint': 'VLAN tag'},
+            {'name': 'vlan-tag', 'kind': 'value', 'required': True, 'hint': 'VLAN tag', 'pattern': '^([1-9]\\d{0,2}|[1-3]\\d{3}|40[0-8]\\d|409[0-6])$'},
             {'name': 'comment', 'kind': 'keyword', 'required': False, 'hint': 'Description', 'value_hint': 'Text value'},
             {'name': 'parent-interface', 'kind': 'keyword', 'required': False, 'hint': 'Parent interface', 'value_hint': 'Text value'},
         ],
@@ -1206,9 +1206,9 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set link-tags': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the link tag'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the link tag', 'max_length': 63},
             {'name': 'color', 'kind': 'keyword', 'required': False, 'hint': 'The color of the link tag', 'value_hint': 'One of: Red, Green, Blue, Yellow, Copper, Orange, … (41 choices)', 'choices': ['Red', 'Green', 'Blue', 'Yellow', 'Copper', 'Orange', 'Purple', 'Gray', 'Light Green', 'Cyan', 'Light Gray', 'Blue Gray', 'Lime', 'Black', 'Gold', 'Brown', 'Olive', 'Maroon', 'Red-Orange', 'Yellow-Orange', 'Forest Green', 'Turquoise Blue', 'Azure Blue', 'Cerulean Blue', 'Midnight Blue', 'Medium Blue', 'Cobalt Blue', 'Violet Blue', 'Blue Violet', 'Medium Violet', 'Medium Rose', 'Lavender', 'Orchid', 'Thistle', 'Peach', 'Salmon', 'Magenta', 'Red Violet', 'Mahogany', 'Burnt Sienna', 'Chestnut']},
-            {'name': 'comments', 'kind': 'keyword', 'required': False, 'hint': 'Description of the link tag', 'value_hint': 'Text value'},
+            {'name': 'comments', 'kind': 'keyword', 'required': False, 'hint': 'Description of the link tag', 'value_hint': 'Text value', 'max_length': 1024},
         ],
         'payload': {
             'fields': {'name': 'name', 'color': 'color', 'comments': 'comments'},
@@ -1241,9 +1241,9 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set loopback-interfaces': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Loopback Interface name'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Loopback Interface name', 'pattern': '^\\$[a-zA-Z\\d\\-_\\. ]+$'},
             {'name': 'comment', 'kind': 'keyword', 'required': False, 'hint': 'Description for loopback interface', 'value_hint': 'Text value'},
-            {'name': 'default-value', 'kind': 'keyword', 'required': False, 'hint': 'Default interface assignment for loopback interface', 'value_hint': 'e.g. loopback.123'},
+            {'name': 'default-value', 'kind': 'keyword', 'required': False, 'hint': 'Default interface assignment for loopback interface', 'value_hint': 'e.g. loopback.123', 'pattern': '^loopback\\.([1-9][0-9]{0,3})$'},
             {'name': 'interface-management-profile', 'kind': 'keyword', 'required': False, 'hint': 'Interface management profile for loopback interface', 'value_hint': 'e.g. string'},
             {'name': 'mtu', 'kind': 'keyword', 'required': False, 'hint': 'MTU for loopback interface', 'value_hint': 'A number'},
             {'name': 'netflow-profile', 'kind': 'keyword', 'required': False, 'hint': 'Name of Netflow Profile to assign to Interface', 'value_hint': 'Text value'},
@@ -1356,7 +1356,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set ngts dist-issuers configurations': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Name of the configuration'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Name of the configuration', 'max_length': 64},
             {'name': 'policyids', 'kind': 'value', 'required': True, 'hint': 'Array of UUIDs of policies to associate with the new configuration'},
             {'name': 'subcaproviderid', 'kind': 'value', 'required': True, 'hint': 'UUID of Sub CA provider to associate with the new configuration'},
             {'name': 'mintlsversion', 'kind': 'keyword', 'required': False, 'hint': 'Minimum required TLS protocol version', 'value_hint': 'One of: TLS12, TLS13', 'choices': ['TLS12', 'TLS13']},
@@ -1370,20 +1370,20 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set ngts dist-issuers subcaproviders': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Name of the Sub CA provider'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Name of the Sub CA provider', 'max_length': 64},
             {'name': 'caaccountid', 'kind': 'value', 'required': True, 'hint': 'UUID of the CA account used by this Sub CA provider'},
             {'name': 'caproductoptionid', 'kind': 'value', 'required': True, 'hint': 'UUID of the CA product option used by this Sub CA provider'},
             {'name': 'catype', 'kind': 'value', 'required': True, 'hint': 'Type of CA this Sub CA provider works with', 'value_hint': 'One of: MOCKCA, DIGICERT, GLOBALSIGN, BUILTIN, ENTRUST, MICROSOFT, … (10 choices)', 'choices': ['MOCKCA', 'DIGICERT', 'GLOBALSIGN', 'BUILTIN', 'ENTRUST', 'MICROSOFT', 'ACME', 'ZTPKI', 'GLOBALSIGNMSSL', 'TPP']},
-            {'name': 'commonname', 'kind': 'value', 'required': True, 'hint': 'Common name'},
+            {'name': 'commonname', 'kind': 'value', 'required': True, 'hint': 'Common name', 'max_length': 64},
             {'name': 'keyalgorithm', 'kind': 'value', 'required': True, 'hint': 'Key algorithm type', 'value_hint': 'One of: RSA_2048, RSA_3072, RSA_4096, EC_P256, EC_P384, EC_P521, … (7 choices)', 'choices': ['RSA_2048', 'RSA_3072', 'RSA_4096', 'EC_P256', 'EC_P384', 'EC_P521', 'EC_ED25519']},
             {'name': 'validityperiod', 'kind': 'value', 'required': True, 'hint': 'ISO8601 Period Format'},
-            {'name': 'country', 'kind': 'keyword', 'required': False, 'hint': 'Country', 'value_hint': 'e.g. US'},
-            {'name': 'locality', 'kind': 'keyword', 'required': False, 'hint': 'Locality', 'value_hint': 'e.g. San Antonio'},
-            {'name': 'organization', 'kind': 'keyword', 'required': False, 'hint': 'Organization', 'value_hint': 'e.g. Some organization'},
-            {'name': 'organizationalunit', 'kind': 'keyword', 'required': False, 'hint': 'Organizational unit', 'value_hint': 'e.g. Some organizational unit'},
+            {'name': 'country', 'kind': 'keyword', 'required': False, 'hint': 'Country', 'value_hint': 'e.g. US', 'max_length': 64},
+            {'name': 'locality', 'kind': 'keyword', 'required': False, 'hint': 'Locality', 'value_hint': 'e.g. San Antonio', 'max_length': 64},
+            {'name': 'organization', 'kind': 'keyword', 'required': False, 'hint': 'Organization', 'value_hint': 'e.g. Some organization', 'max_length': 64},
+            {'name': 'organizationalunit', 'kind': 'keyword', 'required': False, 'hint': 'Organizational unit', 'value_hint': 'e.g. Some organizational unit', 'max_length': 64},
             {'name': 'sharewithall', 'kind': 'keyword', 'required': False, 'hint': 'Share with all sub-TSGs', 'value_hint': 'true or false'},
             {'name': 'sharedwithsubtsgids', 'kind': 'keyword', 'required': False, 'hint': 'Enter sharedwithsubtsgids', 'value_hint': 'One or more values'},
-            {'name': 'stateorprovince', 'kind': 'keyword', 'required': False, 'hint': 'State or province', 'value_hint': 'e.g. Texas'},
+            {'name': 'stateorprovince', 'kind': 'keyword', 'required': False, 'hint': 'State or province', 'value_hint': 'e.g. Texas', 'max_length': 64},
         ],
         'payload': {
             'fields': {'name': 'name', 'caaccountid': 'caAccountId', 'caproductoptionid': 'caProductOptionId', 'catype': 'caType', 'commonname': 'commonName', 'keyalgorithm': 'keyAlgorithm', 'validityperiod': 'validityPeriod', 'country': 'country', 'locality': 'locality', 'organization': 'organization', 'organizationalunit': 'organizationalUnit', 'sharewithall': 'shareWithAll', 'sharedwithsubtsgids': 'sharedWithSubTsgIds', 'stateorprovince': 'stateOrProvince'},
@@ -1453,18 +1453,18 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set ngts serviceaccounts': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'User friendly name for the given account'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'User friendly name for the given account', 'max_length': 250},
             {'name': 'scopes', 'kind': 'value', 'required': True, 'hint': 'The list of scopes for which the account is authorized'},
             {'name': 'applications', 'kind': 'keyword', 'required': False, 'hint': 'The list of applications for which the account is authorized', 'value_hint': 'One or more values'},
-            {'name': 'audience', 'kind': 'keyword', 'required': False, 'hint': 'The intended audience or recipients of the entity', 'value_hint': 'e.g. Audience'},
+            {'name': 'audience', 'kind': 'keyword', 'required': False, 'hint': 'The intended audience or recipients of the entity', 'value_hint': 'e.g. Audience', 'max_length': 250},
             {'name': 'authenticationtype', 'kind': 'keyword', 'required': False, 'hint': 'Type of authentication used in the scope. Currently supporting two types rsaKey and ociToken', 'value_hint': 'e.g. rsaKey'},
             {'name': 'companyid', 'kind': 'keyword', 'required': False, 'hint': 'The UUID of the company/tenant', 'value_hint': 'Text value'},
             {'name': 'credentiallifetime', 'kind': 'keyword', 'required': False, 'hint': 'The number of days for which the credentials will be valid before expiring and requiring renewal', 'value_hint': 'A number'},
-            {'name': 'issuerurl', 'kind': 'keyword', 'required': False, 'hint': 'The URL of the entity issuer, providing the source or origin', 'value_hint': 'e.g. https://accounts.google.com/'},
-            {'name': 'jwksuri', 'kind': 'keyword', 'required': False, 'hint': 'The URI pointing to the JSON Web Key Set (JWKS) for the entity, facilitating secure authentication', 'value_hint': 'e.g. https://www.googleapis.com/oauth2/v3/certs'},
+            {'name': 'issuerurl', 'kind': 'keyword', 'required': False, 'hint': 'The URL of the entity issuer, providing the source or origin', 'value_hint': 'e.g. https://accounts.google.com/', 'max_length': 250},
+            {'name': 'jwksuri', 'kind': 'keyword', 'required': False, 'hint': 'The URI pointing to the JSON Web Key Set (JWKS) for the entity, facilitating secure authentication', 'value_hint': 'e.g. https://www.googleapis.com/oauth2/v3/certs', 'max_length': 250},
             {'name': 'owner', 'kind': 'keyword', 'required': False, 'hint': 'The UUID of the owning team', 'value_hint': 'Text value'},
-            {'name': 'publickey', 'kind': 'keyword', 'required': False, 'hint': 'The client generated public key', 'value_hint': 'Text value'},
-            {'name': 'subject', 'kind': 'keyword', 'required': False, 'hint': 'The subject of the entity, representing the main topic or title.', 'value_hint': 'e.g. Subject'},
+            {'name': 'publickey', 'kind': 'keyword', 'required': False, 'hint': 'The client generated public key', 'value_hint': 'Text value', 'max_length': 2000},
+            {'name': 'subject', 'kind': 'keyword', 'required': False, 'hint': 'The subject of the entity, representing the main topic or title.', 'value_hint': 'e.g. Subject', 'max_length': 250},
         ],
         'payload': {
             'fields': {'name': 'name', 'scopes': 'scopes', 'applications': 'applications', 'audience': 'audience', 'authenticationtype': 'authenticationType', 'companyid': 'companyId', 'credentiallifetime': 'credentialLifetime', 'issuerurl': 'issuerURL', 'jwksuri': 'jwksURI', 'owner': 'owner', 'publickey': 'publicKey', 'subject': 'subject'},
@@ -1496,7 +1496,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set npb-profiles': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Profile name'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Profile name', 'pattern': '^[a-zA-Z\\d\\-_\\. ]+$', 'max_length': 63},
             {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Profile description', 'value_hint': 'e.g. Network packet broker profile for security monitoring'},
             {'name': 'disable-override', 'kind': 'keyword', 'required': False, 'hint': 'Disable override setting', 'value_hint': 'e.g. no'},
             {'name': 'flow', 'kind': 'keyword', 'required': False, 'hint': 'Flow type', 'value_hint': 'One of: routed, transparent', 'choices': ['routed', 'transparent']},
@@ -1549,7 +1549,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set qos-profiles': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Alphanumeric string begin with letter: [0-9a-zA-Z._-]'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Alphanumeric string begin with letter: [0-9a-zA-Z._-]', 'max_length': 31},
         ],
         'payload': {
             'fields': {'name': 'name'},
@@ -1627,8 +1627,8 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set sase forwarding-profiles': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'alphanumeric string [ 0-9a-zA-Z._-]'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'alphanumeric string [ 0-9a-zA-Z._-]', 'pattern': '^[0-9a-zA-Z._-]+$', 'max_length': 64},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value', 'max_length': 1023},
             {'name': 'definition-method', 'kind': 'keyword', 'required': False, 'hint': 'Enable forwarding rule', 'value_hint': 'One of: rules, pac-file', 'choices': ['rules', 'pac-file']},
         ],
         'payload': {
@@ -1639,8 +1639,8 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set sase fp-custom-proxies': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'alphanumeric string [ 0-9a-zA-Z._-]'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'alphanumeric string [ 0-9a-zA-Z._-]', 'pattern': '^[0-9a-zA-Z._-]+$', 'max_length': 64},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value', 'max_length': 1023},
             {'name': 'fallback-option', 'kind': 'keyword', 'required': False, 'hint': 'Enter fallback-option', 'value_hint': 'One of: fail-open, fail-safe', 'choices': ['fail-open', 'fail-safe']},
             {'name': 'location-preference', 'kind': 'keyword', 'required': False, 'hint': 'Enter location-preference', 'value_hint': 'One of: best-available-pa-location, specific-pa-location', 'choices': ['best-available-pa-location', 'specific-pa-location']},
             {'name': 'type', 'kind': 'keyword', 'required': False, 'hint': 'Enter type', 'value_hint': 'One of: gp-and-pac, ztna-agent', 'choices': ['gp-and-pac', 'ztna-agent']},
@@ -1653,8 +1653,8 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set sase fp-destinations': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'alphanumeric string [ 0-9a-zA-Z._-]'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'alphanumeric string [ 0-9a-zA-Z._-]', 'pattern': '^[0-9a-zA-Z._-]+$', 'max_length': 64},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value', 'max_length': 1023},
         ],
         'payload': {
             'fields': {'name': 'name', 'description': 'description'},
@@ -1664,9 +1664,9 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set sase fp-source-apps': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'alphanumeric string [ 0-9a-zA-Z._-]'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'alphanumeric string [ 0-9a-zA-Z._-]', 'pattern': '^[0-9a-zA-Z._-]+$', 'max_length': 64},
             {'name': 'applications', 'kind': 'value', 'required': True, 'hint': 'List of applications'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value'},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Enter description', 'value_hint': 'Text value', 'max_length': 1023},
         ],
         'payload': {
             'fields': {'name': 'name', 'applications': 'applications', 'description': 'description'},
@@ -1689,7 +1689,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set sase remote-networks': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the remote network'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the remote network', 'max_length': 63},
             {'name': 'folder', 'kind': 'value', 'required': True, 'hint': 'The folder that contains the remote network'},
             {'name': 'license-type', 'kind': 'value', 'required': True, 'hint': 'New customer will only be on aggregate bandwidth licensing'},
             {'name': 'region', 'kind': 'value', 'required': True, 'hint': 'Enter region'},
@@ -1737,13 +1737,13 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set sase sites': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the site'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The name of the site', 'max_length': 63},
             {'name': 'address-line-1', 'kind': 'keyword', 'required': False, 'hint': 'The address in which the site exists', 'value_hint': 'e.g. 2nd Floor, Quay Building, Bagmane Tech Park'},
             {'name': 'address-line-2', 'kind': 'keyword', 'required': False, 'hint': 'The address in which the site exists (continued)', 'value_hint': 'e.g. C V Raman Nagar'},
             {'name': 'city', 'kind': 'keyword', 'required': False, 'hint': 'The city in which the site exists', 'value_hint': 'e.g. Bengaluru'},
             {'name': 'country', 'kind': 'keyword', 'required': False, 'hint': 'The country in which the site exists', 'value_hint': 'e.g. India'},
             {'name': 'latitude', 'kind': 'keyword', 'required': False, 'hint': 'The latitude coordinate for the site', 'value_hint': 'e.g. 12.978150'},
-            {'name': 'license-type', 'kind': 'keyword', 'required': False, 'hint': 'The license type of the site', 'value_hint': 'One of: FWAAS-SITE-25Mbps, FWAAS-SITE-50Mbps, FWAAS-SITE-250Mbps, FWAAS-SITE-1000Mbps, FWAAS-SITE-2500Mbps', 'choices': ['FWAAS-SITE-25Mbps', 'FWAAS-SITE-50Mbps', 'FWAAS-SITE-250Mbps', 'FWAAS-SITE-1000Mbps', 'FWAAS-SITE-2500Mbps']},
+            {'name': 'license-type', 'kind': 'keyword', 'required': False, 'hint': 'The license type of the site', 'value_hint': 'One of: FWAAS-SITE-25Mbps, FWAAS-SITE-50Mbps, FWAAS-SITE-250Mbps, FWAAS-SITE-1000Mbps, FWAAS-SITE-2500Mbps', 'choices': ['FWAAS-SITE-25Mbps', 'FWAAS-SITE-50Mbps', 'FWAAS-SITE-250Mbps', 'FWAAS-SITE-1000Mbps', 'FWAAS-SITE-2500Mbps'], 'max_length': 63},
             {'name': 'longitude', 'kind': 'keyword', 'required': False, 'hint': 'The longitude coordinate for the site', 'value_hint': 'e.g. 77.665340'},
             {'name': 'state', 'kind': 'keyword', 'required': False, 'hint': 'The state in which the site exists', 'value_hint': 'e.g. Karnataka'},
             {'name': 'type', 'kind': 'keyword', 'required': False, 'hint': 'The site type', 'value_hint': 'One of: prisma-sdwan, third-party-branch, third-party-discovered', 'choices': ['prisma-sdwan', 'third-party-branch', 'third-party-discovered']},
@@ -1773,7 +1773,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set sase tunnel-profiles': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Enter name'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Enter name', 'max_length': 31},
             {'name': 'no-direct-access-to-local-network', 'kind': 'keyword', 'required': False, 'hint': 'Enter no-direct-access-to-local-network', 'value_hint': 'true or false'},
             {'name': 'retrieve-framed-ip-address', 'kind': 'keyword', 'required': False, 'hint': 'Enter retrieve-framed-ip-address', 'value_hint': 'true or false'},
             {'name': 'source-user', 'kind': 'keyword', 'required': False, 'hint': 'Enter source-user', 'value_hint': 'One or more values'},
@@ -1786,7 +1786,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set sdwan-traffic-profiles': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Profile name'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Profile name', 'max_length': 31},
             {'name': 'traffic-distribution', 'kind': 'keyword', 'required': False, 'hint': 'Traffic distribution', 'value_hint': 'One of: Best Available Path, Top Down Priority, Weighted Session Distribution', 'choices': ['Best Available Path', 'Top Down Priority', 'Weighted Session Distribution']},
         ],
         'payload': {
@@ -1808,7 +1808,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set system-match-list': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Name of the system match list entry'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Name of the system match list entry', 'max_length': 63},
             {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Description of the system match list entry', 'value_hint': 'Text value'},
             {'name': 'filter', 'kind': 'keyword', 'required': False, 'hint': 'Filter of the system match list entry', 'value_hint': 'Text value'},
             {'name': 'send-email', 'kind': 'keyword', 'required': False, 'hint': 'Send Email List of the system match list entry', 'value_hint': 'One or more values'},
@@ -1839,7 +1839,7 @@ FIELD_CATALOG: dict[str, dict] = {
         'args': [
             {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'L3 sub-interface name for tunnel interface'},
             {'name': 'comment', 'kind': 'keyword', 'required': False, 'hint': 'Description for tunnel interface', 'value_hint': 'Text value'},
-            {'name': 'default-value', 'kind': 'keyword', 'required': False, 'hint': 'Default interface assignment for tunnel interface', 'value_hint': 'e.g. tunnel.123'},
+            {'name': 'default-value', 'kind': 'keyword', 'required': False, 'hint': 'Default interface assignment for tunnel interface', 'value_hint': 'e.g. tunnel.123', 'pattern': '^tunnel\\.([1-9][0-9]{0,3})$'},
             {'name': 'interface-management-profile', 'kind': 'keyword', 'required': False, 'hint': 'Interface management profile for tunnel interface', 'value_hint': 'e.g. string'},
             {'name': 'mtu', 'kind': 'keyword', 'required': False, 'hint': 'MTU for tunnel interface', 'value_hint': 'A number'},
             {'name': 'netflow-profile', 'kind': 'keyword', 'required': False, 'hint': 'Name of Netflow Profile to assign to Interface', 'value_hint': 'Text value'},
@@ -1852,7 +1852,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set userid-match-list': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Name of the userid match list entry'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Name of the userid match list entry', 'max_length': 63},
             {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Description of the userid match list entry', 'value_hint': 'Text value'},
             {'name': 'filter', 'kind': 'keyword', 'required': False, 'hint': 'Filter of the userid match list entry', 'value_hint': 'Text value'},
             {'name': 'quarantine', 'kind': 'keyword', 'required': False, 'hint': 'Quarantine Flag of the userid match list entry', 'value_hint': 'true or false'},
@@ -1870,8 +1870,8 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set zone-profiles': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The profile name'},
-            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'The description of the profile', 'value_hint': 'Text value'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'The profile name', 'max_length': 31},
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'The description of the profile', 'value_hint': 'Text value', 'max_length': 255},
             {'name': 'asymmetric-path', 'kind': 'keyword', 'required': False, 'hint': 'Determine whether to drop or bypass packets that contain out-of-sync ACKs or out-of-window sequence numbers: * `global` — Use system-wide setting that is assigned through TCP Settings or the CLI. * `drop` — Drop packets that contain an asymmetric path. * `bypass` — Bypass scanning on packets that contain an asymmetric path.', 'value_hint': 'One of: global, drop, bypass', 'choices': ['global', 'drop', 'bypass']},
             {'name': 'discard-icmp-embedded-error', 'kind': 'keyword', 'required': False, 'hint': 'Discard ICMP packets that are embedded with an error message.', 'value_hint': 'true or false'},
             {'name': 'fragmented-traffic-discard', 'kind': 'keyword', 'required': False, 'hint': 'Discard fragmented IP packets.', 'value_hint': 'true or false'},
@@ -1907,7 +1907,7 @@ FIELD_CATALOG: dict[str, dict] = {
     },
     'set zones': {
         'args': [
-            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Alphanumeric string begin with letter: [0-9a-zA-Z._-]'},
+            {'name': 'name', 'kind': 'value', 'required': True, 'hint': 'Alphanumeric string begin with letter: [0-9a-zA-Z._-]', 'max_length': 63},
             {'name': 'dos-log-setting', 'kind': 'keyword', 'required': False, 'hint': 'Enter dos-log-setting', 'value_hint': 'Text value'},
             {'name': 'dos-profile', 'kind': 'keyword', 'required': False, 'hint': 'Enter dos-profile', 'value_hint': 'Text value'},
             {'name': 'enable-device-identification', 'kind': 'keyword', 'required': False, 'hint': 'Enter enable-device-identification', 'value_hint': 'true or false'},

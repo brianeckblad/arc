@@ -308,6 +308,14 @@ def _build_entry(entry: dict) -> dict:
             arg["value_hint"] = _value_hint(prop, _prop_type(prop) or "string", choices)
         if choices:
             arg["choices"] = choices
+        # Schema-declared value constraints — enforced at the prompt by
+        # _payload_from_fields (app/commands/generated.py) before staging.
+        pattern = prop.get("pattern")
+        if isinstance(pattern, str) and pattern:
+            arg["pattern"] = pattern
+        max_length = prop.get("maxLength")
+        if isinstance(max_length, int) and not isinstance(max_length, bool) and max_length > 0:
+            arg["max_length"] = max_length
         return arg
 
     required_names = [n for n in fields if n in required]

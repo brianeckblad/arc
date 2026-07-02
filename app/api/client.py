@@ -1175,6 +1175,44 @@ class SCMClient:
         return self._request("DELETE", self.OPERATIONS_URL, "/config-versions/candidate")
 
     # ------------------------------------------------------------------
+    # Config versions — history, running config, rollback
+    # Spec: docs/scm-api/specs/ngfw-config-operations.md
+    # ------------------------------------------------------------------
+
+    def get_config_versions(self) -> list[dict]:
+        """List the tenant's configuration versions (newest history first).
+
+        pan.dev: GET /config/operations/v1/config-versions
+        """
+        return self._list(self.OPERATIONS_URL, "/config-versions")
+
+    def get_config_version(self, version: int | str) -> dict:
+        """Return one configuration version record by id.
+
+        pan.dev: GET /config/operations/v1/config-versions/{version}
+        """
+        return self._request("GET", self.OPERATIONS_URL, f"/config-versions/{version}")
+
+    def get_running_config_version(self) -> Any:
+        """Return the running configuration version(s) for the tenant.
+
+        pan.dev: GET /config/operations/v1/config-versions/running
+        """
+        return self._request("GET", self.OPERATIONS_URL, "/config-versions/running")
+
+    def load_config_version(self, version: int) -> Any:
+        """Load *version* as the candidate configuration (rollback).
+
+        Replaces the tenant's candidate config in SCM immediately — the
+        caller must still `commit` (candidate:push) for devices to change.
+
+        pan.dev: POST /config/operations/v1/config-versions:load  body {"version": n}
+        """
+        return self._request(
+            "POST", self.OPERATIONS_URL, "/config-versions:load", json={"version": version}
+        )
+
+    # ------------------------------------------------------------------
     # Live-device operations over the SCM management tunnel (async jobs)
     # ------------------------------------------------------------------
 

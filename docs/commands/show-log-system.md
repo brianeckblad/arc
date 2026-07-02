@@ -1,15 +1,19 @@
 ---
 command: "show log system"
-description: "Show live system log — use --remote for live device data"
-feature_flag: show_log_system
+description: "Fleet-wide system log via SLS (lags minutes) — --remote for real-time on one device"
+usage: "show log system [last <Nm|Nh|Nd>] [limit <n>]"
+feature_flag: sls_logs
 category: operations
-scope: device
-api: "(live device state — SSH via --remote)"
+scope: global
+api: "SLS Query Service v2 — POST /query/v2/jobs (SQL over firewall.system)"
 ---
 
 # show log system
 
-Show system log (last 20 entries)
+Query the system log **fleet-wide** through the Strata Logging Service (SLS).
+SLS is fleet-wide but ingestion lags minutes behind; use `--remote` for
+real-time on one device. Full record: `show log detail <n>`; filter rendered
+output with `| match <text>`. See `help show log traffic` for the full guide.
 
 ## Category
 
