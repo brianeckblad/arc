@@ -365,6 +365,32 @@ def test_arg_parser() -> None:
     else:
         fail("parse_output_filters accepted an unknown filter")
 
+    # 4c — write staging: GETs pass through (validation), mutations captured
+    from app.shell.configure import capture_write_ops
+
+    passthrough_calls: list[str] = []
+
+    class _FakeSCM:
+        def _request(self, method, base_url, path, *, params=None, json=None):
+            passthrough_calls.append(method)
+            return {"data": [{"name": "web1", "id": "abc"}]}
+
+    def _fake_handler(ctx, args):
+        scm = args["scm"]
+        scm._request("GET", "https://x", "/addresses", params={"folder": "Shared"})
+        scm._request("POST", "https://x", "/addresses", json={"name": "web1"})
+
+    fake = _FakeSCM()
+    ops = capture_write_ops(fake, _fake_handler, None, {"scm": fake})
+    if passthrough_calls == ["GET"] and [o["method"] for o in ops] == ["POST"]:
+        ok("capture_write_ops: GET validated live, POST captured (not sent)")
+    else:
+        fail("capture_write_ops wrong split", f"passthrough={passthrough_calls} ops={ops}")
+    if callable(getattr(fake, "_request", None)) and fake._request.__func__ is _FakeSCM._request:
+        ok("capture_write_ops: real _request restored after staging")
+    else:
+        fail("capture_write_ops did not restore the real _request")
+
 
 # ---------------------------------------------------------------------------
 # 5. Token optimization checks

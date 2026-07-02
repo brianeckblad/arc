@@ -6,6 +6,39 @@ import platform  # For OS detection in setup wizard
 from app.shell._base import *  # noqa: F401,F403  (shared spine namespace)
 
 
+def capture_write_ops(scm, handler, ctx, args) -> list[dict]:
+    """Run a write handler against a recording client and capture its mutations.
+
+    GET requests pass through to SCM unchanged — that is the validation step
+    (name→id resolution, existence checks, folder lookups all really run).
+    POST/PUT/PATCH/DELETE requests are captured instead of sent; the handler
+    receives a synthetic response so it can finish normally.  Returns the
+    captured operations for later replay by ``commit``.
+    """
+    captured: list[dict] = []
+    real_request = scm._request
+
+    def _recording(method, base_url, path, *, params=None, json=None):
+        if method.upper() == "GET":
+            return real_request(method, base_url, path, params=params, json=json)
+        captured.append({
+            "method": method.upper(),
+            "base_url": base_url,
+            "path": path,
+            "params": params,
+            "json": json,
+        })
+        # Synthetic response — enough for handlers that read an id/name back.
+        return {"id": "(staged)", "name": "(staged)"}
+
+    scm._request = _recording
+    try:
+        handler(ctx, args)
+    finally:
+        scm._request = real_request
+    return captured
+
+
 class ConfigureMixin:
     def _cmd_configure(self, args: list[str]) -> None:
         """Enter configure mode (Cisco-style).
@@ -29,24 +62,59 @@ class ConfigureMixin:
         for line in _configure_banner().splitlines():
             console.print(f"[green]{line.strip()}[/green]" if line.strip() else "")
 
-    def _discard_candidate_config(self) -> bool:
-        """Discard the SCM candidate configuration. Returns True on success."""
-        if not self._scm:
-            console.print("[red]SCM not connected — cannot discard the candidate config.[/red]")
-            return False
-        try:
-            self._scm.discard_candidate()
-        except Exception as exc:  # noqa: BLE001 — always tell the operator why
-            console.print(f"[red]Could not discard candidate config:[/red] {exc}")
-            return False
-        self._state.pending_writes = 0
-        console.print(
-            "[green]✓[/green] Candidate configuration discarded — SCM reverted to the running config."
+    def _stage_write(self, key: str, cmd_def: CommandDef, ctx: ExecutionContext, args: dict) -> None:
+        """Validate a configure-mode write and stage it locally (no SCM change).
+
+        Runs the command's real handler against a recording client — read
+        calls pass through (so name→id resolution and existence checks really
+        validate against SCM), mutating calls are captured. The captured
+        operations are replayed later by ``commit``.
+        """
+        if ctx.scm is None:
+            cmd_def.api_handler(ctx, args)  # raises the standard "SCM is not configured"
+            return
+        ops = capture_write_ops(ctx.scm, cmd_def.api_handler, ctx, args)
+        if not ops:
+            console.print(
+                f"[yellow]'{key}' made no configuration change — nothing staged.[/yellow]"
+            )
+            return
+        detail = str(args.get("name") or (args.get("_positional") or [""])[0] or "").strip()
+        self._state.staged_ops.append(
+            {"command": key, "detail": detail, "folder": ctx.folder, "ops": ops}
         )
-        return True
+        shown = f"{key} {detail}".strip()
+        console.print(
+            f"[green]✓[/green] Validated and staged: [bold]{shown}[/bold]  "
+            f"[dim]({len(self._state.staged_ops)} pending — "
+            "show config to review, commit to apply)[/dim]"
+        )
+
+    def _cmd_show_pending(self) -> None:
+        """List the locally staged configure-mode changes (`show config`)."""
+        staged = self._state.staged_ops
+        if not staged:
+            console.print(
+                "[dim]No staged changes. Configure-mode writes queue here until commit.[/dim]"
+            )
+            return
+        rows = [
+            {
+                "#": str(index),
+                "command": f"{entry['command']} {entry['detail']}".strip(),
+                "folder": entry["folder"],
+                "api": "; ".join(f"{op['method']} {op['path']}" for op in entry["ops"]),
+            }
+            for index, entry in enumerate(staged, 1)
+        ]
+        console.print(fmt._list_table(rows, title=f"Staged changes ({len(staged)}) — local, not yet in SCM"))
+        console.print(
+            "[dim]Staged changes are not visible in show output until commit.  "
+            "commit → apply all  |  abandon → discard all[/dim]"
+        )
 
     def _cmd_abandon(self, args: list[str]) -> None:
-        """Discard all staged (uncommitted) SCM changes (configure mode only)."""
+        """Discard all locally staged changes (configure mode only)."""
         del args
         if not self._state.configure_mode:
             console.print(
@@ -54,39 +122,140 @@ class ConfigureMixin:
                 "Enter [bold]configure[/bold] first."
             )
             return
-        console.print(
-            "[yellow]This discards the tenant's ENTIRE candidate configuration[/yellow] — "
-            "including changes staged outside this ARC session (e.g. the SCM web UI)."
-        )
-        answer = console.input("Discard all uncommitted changes? [y/N] ").strip().lower()
-        if answer not in ("y", "yes"):
-            console.print("[dim]Cancelled — candidate config kept.[/dim]")
+        count = len(self._state.staged_ops)
+        if count == 0:
+            console.print("[dim]No staged changes to abandon.[/dim]")
             return
-        self._discard_candidate_config()
+        answer = console.input(
+            f"Discard {count} staged change(s)? They were never sent to SCM. [y/N] "
+        ).strip().lower()
+        if answer not in ("y", "yes"):
+            console.print("[dim]Cancelled — staged changes kept.[/dim]")
+            return
+        self._state.staged_ops = []
+        console.print("[green]✓[/green] Staged changes discarded — SCM was never touched.")
+
+    def _cmd_commit_staged(self, args: list[str]) -> None:
+        """Apply all staged changes to SCM, then push the candidate to devices.
+
+        ``commit`` — apply + push, print the job ID.
+        ``commit watch`` — same, then poll the push job until it finishes.
+        Both accept a trailing ``description <text>``.
+        """
+        tokens = list(args)
+        watch = bool(tokens) and tokens[0].lower() == "watch"
+        if watch:
+            tokens.pop(0)
+        if tokens and tokens[0].lower() == "description":
+            tokens.pop(0)
+        description = " ".join(tokens).strip().strip('"')
+
+        if not self._scm:
+            console.print("[red]SCM not connected — cannot commit.[/red]")
+            return
+
+        staged = self._state.staged_ops
+        applied = 0
+        if staged:
+            total = len(staged)
+            console.print(f"Applying {total} staged change(s) to SCM…")
+            for index, entry in enumerate(staged, 1):
+                label = f"{entry['command']} {entry['detail']}".strip()
+                try:
+                    for op in entry["ops"]:
+                        self._scm._request(
+                            op["method"], op["base_url"], op["path"],
+                            params=op["params"], json=op["json"],
+                        )
+                except Exception as exc:  # noqa: BLE001 — report, keep the rest staged
+                    self._state.staged_ops = staged[index - 1:]
+                    console.print(
+                        f"  [red]✗[/red] {index}/{total}  {label} — {exc}\n"
+                        f"[yellow]{applied} change(s) applied; "
+                        f"{len(self._state.staged_ops)} still staged (push skipped).[/yellow]\n"
+                        "  Fix or [bold]abandon[/bold] the failing change, then commit again."
+                    )
+                    return
+                console.print(f"  [green]✓[/green] {index}/{total}  {label}")
+                applied += 1
+            self._state.staged_ops = []
+        else:
+            console.print("[dim]No staged changes — pushing the existing SCM candidate config.[/dim]")
+
+        folder = self._state.folder
+        folders = [folder] if folder and folder.lower() != "shared" else None
+        try:
+            job = self._scm.push_config(folders=folders, description=description)
+        except Exception as exc:  # noqa: BLE001
+            console.print(
+                f"[red]Push failed:[/red] {exc}\n"
+                f"[yellow]{applied} applied change(s) are in the SCM candidate config — "
+                "run [bold]commit[/bold] again to retry the push.[/yellow]"
+            )
+            return
+        console.print(fmt.format_jobs([job] if isinstance(job, dict) else job))
+        job_id = str(job.get("id") or job.get("job_id") or "") if isinstance(job, dict) else ""
+        if watch and job_id:
+            self._watch_job(job_id)
+        elif job_id:
+            console.print(
+                f"[dim]Track with: [bold]show jobs id {job_id}[/bold]  "
+                "(or use [bold]commit watch[/bold] next time)[/dim]"
+            )
+
+    def _watch_job(self, job_id: str, timeout_s: int = 900) -> None:
+        """Poll a push job every few seconds until it finishes (or timeout)."""
+        deadline = time.monotonic() + timeout_s
+        job: dict = {}
+        try:
+            with console.status(f"[dim]commit job {job_id} running…[/dim]", spinner="dots"):
+                while time.monotonic() < deadline:
+                    job = self._scm.get_job(job_id) or {}
+                    if str(job.get("status", "")).upper() == "FIN":
+                        break
+                    time.sleep(5)
+        except Exception as exc:  # noqa: BLE001 — polling must never crash the shell
+            console.print(f"[yellow]Stopped watching job {job_id}:[/yellow] {exc}")
+            return
+        if str(job.get("status", "")).upper() != "FIN":
+            console.print(
+                f"[yellow]Job {job_id} still running after {timeout_s // 60} min[/yellow] — "
+                f"check later with [bold]show jobs id {job_id}[/bold]"
+            )
+            return
+        result = str(job.get("result", "")).upper()
+        if result == "OK":
+            console.print(f"[green]✓ Commit job {job_id} finished: OK[/green]")
+        else:
+            console.print(
+                f"[red]✗ Commit job {job_id} finished: {result or 'unknown'}[/red] — "
+                f"details: [bold]show jobs id {job_id}[/bold]"
+            )
 
     def _confirm_configure_exit(self) -> bool:
-        """Ask what to do with uncommitted changes when leaving configure mode.
+        """Ask what to do with staged changes when leaving configure mode.
 
-        Returns True when the operator may leave configure mode (changes were
-        committed, abandoned, or there were none); False to stay in it.
+        Returns True when the operator may leave (changes committed, abandoned,
+        or none staged); False to stay in configure mode.
         """
-        count = self._state.pending_writes
+        count = len(self._state.staged_ops)
         if count == 0:
             return True
         console.print(
-            f"\n[yellow]Uncommitted changes:[/yellow] {count} write(s) staged in the SCM candidate config.\n"
-            "  [bold]commit[/bold]   — push the changes to managed devices\n"
-            "  [bold]abandon[/bold]  — discard the candidate config (revert to running)\n"
+            f"\n[yellow]Uncommitted changes:[/yellow] {count} staged locally — nothing has been sent to SCM.\n"
+            "  [bold]commit[/bold]   — apply the changes and push to managed devices\n"
+            "  [bold]abandon[/bold]  — discard the staged changes (SCM untouched)\n"
             "  [bold]cancel[/bold]   — stay in configure mode\n"
         )
         while True:
             answer = console.input("configure exit (commit/abandon/cancel): ").strip().lower()
             if answer == "commit":
-                self._execute_api("commit", COMMANDS["commit"], {})
-                # _execute_api resets pending_writes only when the push succeeded.
-                return self._state.pending_writes == 0
+                self._cmd_commit_staged([])
+                return not self._state.staged_ops
             if answer == "abandon":
-                return self._discard_candidate_config()
+                self._state.staged_ops = []
+                console.print("[green]✓[/green] Staged changes discarded — SCM was never touched.")
+                return True
             if answer in ("cancel", ""):
                 console.print("[dim]Staying in configure mode.[/dim]")
                 return False

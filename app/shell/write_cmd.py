@@ -140,7 +140,6 @@ class WriteMixin:
                 return
             try:
                 self._scm.create_folder(subfolder_name, parent)
-                self._state.pending_writes += 1
                 console.print(
                     f"[green]✓[/green] Folder [bold]{subfolder_name}[/bold] created under [bold]{parent}[/bold]."
                 )
@@ -158,7 +157,6 @@ class WriteMixin:
                 return
             try:
                 self._scm.create_folder(folder_name, parent_name)
-                self._state.pending_writes += 1
                 console.print(
                     f"[green]✓[/green] Folder [bold]{folder_name}[/bold] created under [bold]{parent_name}[/bold]."
                 )

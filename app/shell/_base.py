@@ -252,10 +252,12 @@ class ShellState:
     device: Optional[dict] = None
     folder: str = "Shared"
     configure_mode: bool = False
-    # Successful write operations since the last commit/abandon. Drives the
-    # commit / abandon / cancel prompt when leaving configure mode, so staged
-    # candidate changes are never silently left behind in SCM.
-    pending_writes: int = 0
+    # Configure-mode writes staged LOCALLY — nothing is sent to SCM until
+    # `commit` replays these operations. Each entry:
+    #   {"command": key, "detail": name-ish, "folder": str,
+    #    "ops": [{"method", "base_url", "path", "params", "json"}]}
+    # `abandon` (or exit → abandon) just clears this list; SCM is untouched.
+    staged_ops: list[dict] = field(default_factory=list)
     # Active TSG ID — overrides the value from ArcConfig when set.
     # Useful when a bearer token was issued at the root and the user needs
     # to work within a specific child TSG without re-authenticating.

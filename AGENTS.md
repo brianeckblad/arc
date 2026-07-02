@@ -181,11 +181,20 @@ message. `ExecutionContext` fields: `.scm .ssh .config .device .folder .tsg_id`.
 
 - Errors: `SCMClient` raises (`httpx.HTTPStatusError` etc.) — never swallow into
   `[]`. `_execute_api` converts 401/403/404/network errors into actionable
-  operator messages. Keep it that way.
+  operator messages. A 401 mid-session auto-reauthenticates once (client-creds
+  only) inside `_request`. Keep it that way.
 - Live operational state is not in SCM: those commands print a clear
   "requires live device state — use `--remote`" message, never "translation pending".
 - Configure mode (`configure`, prompt `#`) owns all writes: `set`/`delete`/
   `update`/`commit`/`folder create`/`cli` are blocked outside it.
+- **Writes are STAGED, never executed directly.** `_execute_api` routes
+  set/delete/update through `_stage_write` (configure.py): the handler runs
+  against a recording client (`capture_write_ops` — GETs pass through for real
+  validation, mutations are captured into `ShellState.staged_ops`). `commit`
+  replays the ops then pushes (`commit watch` follows the job); `abandon` /
+  exit-abandon just clears the local queue — SCM is untouched until commit.
+  Exception: folder creation is immediate (staged objects may target it).
+  `show config` lists the queue. Never add a write path that bypasses staging.
 - Context: `cd <device>` sets `ShellState.device`; `folder <name>` sets the
   `?folder=` param for all SCM calls; `tsg <id>` re-scopes auth and clears
   device/folder/caches (`_reset_tenant_context`).

@@ -290,9 +290,25 @@ class DispatchMixin:
                 return False
             return True
 
-        # ---- abandon (configure mode): discard the SCM candidate config ----
+        # ---- abandon (configure mode): discard locally staged changes ----
         if cmd == "abandon":
             self._cmd_abandon(tokens[1:])
+            return False
+
+        # ---- commit (configure mode): apply staged changes, then push ----
+        # `commit --remote` still goes through the registry → SSH path.
+        if cmd == "commit" and self._state.configure_mode and not remote:
+            self._cmd_commit_staged(tokens[1:])
+            return False
+
+        # ---- show config [pending|diff] — review locally staged changes ----
+        if (
+            cmd == "show"
+            and len(tokens) > 1
+            and tokens[1].lower() == "config"
+            and (len(tokens) == 2 or tokens[2].lower() in ("pending", "diff"))
+        ):
+            self._cmd_show_pending()
             return False
 
 

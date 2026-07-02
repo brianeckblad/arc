@@ -2,7 +2,7 @@
 
 Use `help <command>` to open detailed docs for a command.
 
-- `commit` — Push candidate config to managed devices
+- `commit` — Apply staged changes and push to devices
 - `delete address` — Delete an address object — delete address <name>
 - `delete address-group` — Delete an address group — delete address-group <name>
 - `delete adnsr bad-domains` — Delete a misconfigured domain

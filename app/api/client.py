@@ -148,14 +148,26 @@ class SCMClient:
         Sends *method* to ``base_url + path`` with the bearer token, raises
         httpx.HTTPStatusError on 4xx/5xx, and returns the parsed JSON body
         (or {} when the response has no content, e.g. 204 on DELETE).
+
+        A 401 mid-session usually means the OAuth token expired: when client
+        credentials are configured, re-authenticate once and retry (a loop,
+        not recursion, so a swapped-in ``_request`` never re-enters itself).
         """
-        resp = self._http.request(
-            method,
-            f"{base_url}{path}",
-            headers=self._headers(),
-            params=params,
-            json=json,
+        can_reauth = bool(
+            self._cfg.client_id and self._cfg.client_secret and self._cfg.tsg_id
         )
+        for attempt in (1, 2):
+            resp = self._http.request(
+                method,
+                f"{base_url}{path}",
+                headers=self._headers(),
+                params=params,
+                json=json,
+            )
+            if resp.status_code == 401 and attempt == 1 and can_reauth:
+                self._authenticate()
+                continue
+            break
         resp.raise_for_status()
         return resp.json() if resp.content else {}
 

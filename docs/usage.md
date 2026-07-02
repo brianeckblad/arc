@@ -35,22 +35,35 @@ arc:global >
 The prompt changes to `#` when in configure mode. Type `exit` to leave configure mode
 and return to the normal `>` prompt.
 
-**Nothing is left staged silently.** Writes go into SCM's *candidate*
-configuration; they reach devices only on `commit`. If you `exit` configure
-mode with uncommitted changes, ARC asks what to do:
+**Writes are staged locally — SCM is untouched until you commit.** Each
+`set` / `update` / `delete` is validated against SCM (names resolved, objects
+looked up) and then queued locally. Run 50 commands, review them, and nothing
+has changed in SCM yet:
+
+```text
+arc:global # set address web1 fqdn web1.example.com
+✓ Validated and staged: set address web1  (1 pending — show config to review, commit to apply)
+arc:global # show config          # list all staged changes
+arc:global # commit               # apply everything + push to devices
+arc:global # commit watch         # same, then follow the push job to completion
+arc:global # abandon              # discard staged changes — SCM never touched
+```
+
+Because changes stay local until commit, someone else can commit their own
+work elsewhere in the tenant without colliding with your staged queue.
+Folder creation (`set folder`, `folder create`) is the one exception — folders
+are created immediately so staged objects can target them.
+
+If you `exit` configure mode with staged changes, ARC forces a decision:
 
 ```text
 arc:global # exit
 
-Uncommitted changes: 2 write(s) staged in the SCM candidate config.
-  commit   — push the changes to managed devices
-  abandon  — discard the candidate config (revert to running)
+Uncommitted changes: 2 staged locally — nothing has been sent to SCM.
+  commit   — apply the changes and push to managed devices
+  abandon  — discard the staged changes (SCM untouched)
   cancel   — stay in configure mode
 ```
-
-`abandon` (also available as a command in configure mode) discards the
-tenant's **entire** candidate configuration — including changes staged outside
-ARC (e.g. in the SCM web UI) — after a y/N confirmation.
 
 **Why configure mode?** It provides a clear visual and operational boundary between
 inspection and mutation, reduces accidental changes, and aligns with familiar

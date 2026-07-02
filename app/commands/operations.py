@@ -217,15 +217,17 @@ COMMANDS: dict[str, CommandDef] = {
         feature_flag="ping",
     ),
     "commit": CommandDef(
-        description="Push candidate config to managed devices — commit [description <text>]",
+        description="Apply staged changes and push to devices — commit [watch] [description <text>]",
         category="operations",
         scope="folder",
+        # In configure mode the shell intercepts `commit` and runs the staged-
+        # change replay + push (ConfigureMixin._cmd_commit_staged); this handler
+        # covers `commit --remote` (SSH) and any direct API use.
         api_handler=_commit,
         ssh_command=_ssh_commit,
         render="jobs",
         # Intentionally NOT feature-gated: an operator in configure mode must
-        # always be able to commit (or abandon) — disabling commit would strand
-        # staged candidate changes in SCM.
+        # always be able to commit (or abandon) their staged changes.
     ),
 }
 

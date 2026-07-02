@@ -62,6 +62,14 @@ class ExecutionMixin:
             return
 
         try:
+            # Configure-mode writes are STAGED, not executed: the handler runs
+            # against a recording client (GETs pass through for validation;
+            # mutations are captured). `commit` replays them; `abandon` drops
+            # them. SCM is untouched until commit.
+            if key.startswith(("set ", "delete ", "update ")):
+                self._stage_write(key, cmd_def, ctx, args)
+                return
+
             # Spinner while the API call runs — skipped when output is being
             # captured for a pipe filter or the console is not a terminal
             # (rich Live displays don't nest under capture).
@@ -70,11 +78,6 @@ class ExecutionMixin:
             else:
                 with console.status("[dim]querying SCM…[/dim]", spinner="dots"):
                     data = cmd_def.api_handler(ctx, args)
-            # Track staged candidate changes for the configure-exit prompt.
-            if key == "commit":
-                self._state.pending_writes = 0
-            elif key.startswith(("set ", "delete ", "update ")):
-                self._state.pending_writes += 1
             self._render(key, cmd_def, data)
         except httpx.HTTPStatusError as exc:
             status = exc.response.status_code
