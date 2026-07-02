@@ -32,6 +32,11 @@ from app.commands.setup import COMMANDS as _SETUP
 # with the same key always wins.
 from app.commands.generated import COMMANDS as _GENERATED
 
+# PAN-OS CLI hierarchy commands (scraped docs → panos_catalog → CommandDefs).
+# Merged after the OpenAPI-generated set (PAN-OS syntax shadows generic keys)
+# and before the curated modules (hand-written commands always win).
+from app.commands.panos_generated import COMMANDS as _PANOS
+
 # ---------------------------------------------------------------------------
 # Merged command table
 #
@@ -44,6 +49,7 @@ from app.commands.generated import COMMANDS as _GENERATED
 
 COMMANDS: dict[str, CommandDef] = {
     **_GENERATED,
+    **_PANOS,
     **_SETUP,
     **_OBJECTS,
     **_SECURITY,
@@ -154,6 +160,11 @@ def match_command(tokens: list[str]) -> tuple[Optional[str], CommandDef, dict]:
             # required) when this command is described in command-structure.json.
             spec = command_structure.arg_spec(key)
             if spec:
-                return key, cmd_def, command_structure.parse(spec, remainder)
-            return key, cmd_def, _parse_args(remainder)
+                args = command_structure.parse(spec, remainder)
+            else:
+                args = _parse_args(remainder)
+            # Raw tokens after the matched key — lossless SSH passthrough for
+            # PAN-OS op commands (ssh callable re-emits them verbatim).
+            args["_remainder"] = remainder
+            return key, cmd_def, args
     return None, None, {}  # type: ignore[return-value]

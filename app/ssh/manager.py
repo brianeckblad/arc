@@ -176,6 +176,62 @@ class SSHManager:
             self._pool.pop(host, None)
             raise SSHError(f"SSH command failed on {host}: {exc}") from exc
 
+    def run_config_commands(
+        self,
+        host: str,
+        commands: list[str],
+        user: str = "admin",
+        key_path: str = "",
+        password: str = "",
+        port: int = 22,
+        timeout_s: int = 60,
+    ) -> str:
+        """Run PAN-OS *config-mode* commands via a scripted interactive shell.
+
+        PAN-OS `set`/`delete` config commands only work inside `configure`,
+        which `exec_command` cannot enter — so this scripts an interactive
+        channel: wait for prompt → `configure` → each command → `exit`.
+        The operator commits separately (`commit --remote`); nothing here
+        auto-commits. Returns the combined captured output.
+        """
+        import time as _time
+
+        client = self._get_or_connect(host, user, key_path, password, port)
+        try:
+            channel = client.invoke_shell(term="dumb", width=200)
+            channel.settimeout(timeout_s)
+
+            def _read_until_prompt(deadline: float) -> str:
+                chunks: list[str] = []
+                while _time.monotonic() < deadline:
+                    if channel.recv_ready():
+                        chunks.append(channel.recv(65536).decode(errors="replace"))
+                        tail = "".join(chunks[-3:]).rstrip()
+                        # PAN-OS prompts end in '>' (op) or '#' (configure).
+                        if tail.endswith((">", "#")):
+                            break
+                    else:
+                        _time.sleep(0.1)
+                return "".join(chunks)
+
+            deadline = _time.monotonic() + timeout_s
+            _read_until_prompt(deadline)                      # banner + first prompt
+            channel.send("set cli pager off\n")
+            _read_until_prompt(deadline)
+            channel.send("configure\n")
+            _read_until_prompt(deadline)
+            output: list[str] = []
+            for command in commands:
+                channel.send(command + "\n")
+                output.append(_read_until_prompt(deadline))
+            channel.send("exit\n")
+            _read_until_prompt(deadline)
+            channel.close()
+            return "".join(output).strip()
+        except Exception as exc:
+            self._pool.pop(host, None)
+            raise SSHError(f"SSH config session failed on {host}: {exc}") from exc
+
     def close(self, host: str) -> None:
         client = self._pool.pop(host, None)
         if client:
@@ -235,6 +291,10 @@ class SSHManager:
                 "  • See `help config osx` / `help config win` / `help config nix`."
             )
             raise SSHError(_no_creds_hint)
+
+        # Keepalives stretch the pooled session between commands so the
+        # operator 2FAs once per device per sitting, not per command.
+        transport.set_keepalive(30)
 
         # Wrap the authenticated transport in an SSHClient so exec_command works.
         client = paramiko.SSHClient()

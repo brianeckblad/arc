@@ -34,6 +34,8 @@ the smallest file that owns each concern.
 | `auth` (credentials, profiles) | `app/config.py`, `app/cli.py` (auth group) | same | `--file app/config.py` |
 | `scm-api` / `endpoint <resource>` | `dev/API_INDEX.md`; deep dive: `docs/scm-api/specs/<cat>.md` | `app/api/client.py` | full suite |
 | `docsupdate` / docs agent | `dev/DOCS_AGENT.md` | run `python dev/docsupdate.py` | `--self-test` |
+| `panos` (PAN-OS CLI tree: op cmds, break-glass config, live data) | `dev/panos_sources.json` (URLs), `dev/panos_curation.json` (overrides/recovery/scm_map), `app/commands/panos_generated.py` | curation file, or `python dev/panosupdate.py && python dev/generate_panos_catalog.py` | full suite |
+| `watch` (re-run command loop) | `_cmd_watch` in `app/shell/dispatch.py` | same | `--only 1,2` |
 | `scaffold <cmd> <module>` | — | run `python dev/scaffold.py "<cmd>" <module>` | `--only 1,2,3` |
 | `map` / `method <name>` (find code) | `dev/CODE_MAP.md` | — | — |
 | `debug` | error table at the bottom of this file | files the error names | targeted smoke |
@@ -128,6 +130,21 @@ feature-gated command via `resource_catalog.py` + `generated.py`
 commands with the same key shadow generated ones (merged last in registry.py).
 Generated commands have **no doc file** — `help <cmd>` synthesizes a page from
 the CommandDef (`app/docs.py synthesize_command_help`). Never create doc stubs.
+
+**PAN-OS CLI commands** (scraped hierarchy → `dev/panosupdate.py` →
+`docs/panos-cli/` mirrors → `dev/generate_panos_catalog.py` →
+`app/commands/panos_catalog.py` → `panos_generated.py`): the full op tree
+(family flags `panos_<family>`, ALL default off) plus the config tree as
+break-glass recovery (`panos_config_*` off/invisible except
+`panos_config_recovery`). Op commands with an `scm` mapping
+(dev/panos_curation.json `scm_map`) run live-device data through SCM's async
+ops-jobs API (`SCMClient.ops_job_start/_status`, device tunnel, no SSH);
+unmapped ops print `--remote`/`connect` guidance; `--remote` passes the typed
+tokens through losslessly (`args["_remainder"]`). Device-local config runs via
+`SSHManager.run_config_commands` (scripted `configure` channel) and ALWAYS
+prints a drift warning (`_execute_remote`, category "panos-config"). Merge
+order: OpenAPI-generated < PAN-OS < curated. Add new PAN-OS version pages to
+`dev/panos_sources.json`; docsupdate pulls + rebuilds everything.
 
 **Field syntax for generated `set` commands:** `dev/generate_field_library.py`
 reads each POST request-body schema and writes `app/settings/field_catalog.py`

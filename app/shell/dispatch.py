@@ -75,6 +75,42 @@ def _line_matches(line: str, pattern: str) -> bool:
 
 
 class DispatchMixin:
+    def _cmd_watch(self, rest: str) -> bool:
+        """Re-run *rest* every N seconds until Ctrl-C (`watch [N] <command>`).
+
+        Works for API commands and `--remote` alike — the SSH pool keeps the
+        device session alive, so 2FA happens once per device, then refreshes
+        are free.
+        """
+        tokens = rest.split(None, 1)
+        interval = 10
+        if tokens and tokens[0].isdigit():
+            interval = max(2, min(3600, int(tokens[0])))
+            rest = tokens[1] if len(tokens) > 1 else ""
+        command_line = rest.strip()
+        first = command_line.split()[0].lower() if command_line.split() else ""
+        if not first:
+            console.print("[yellow]Usage:[/yellow] watch [seconds] <command>")
+            return False
+        if first in _PIPE_UNSUPPORTED or first == "watch":
+            console.print(f"[yellow]'{first}' is interactive — watch doesn't apply.[/yellow]")
+            return False
+
+        console.print(
+            f"[dim]watch: every {interval}s — [bold]{command_line}[/bold]  (Ctrl-C to stop)[/dim]"
+        )
+        iteration = 0
+        try:
+            while True:
+                iteration += 1
+                console.print(f"[dim]── watch #{iteration} ──[/dim]")
+                if self._dispatch(command_line):
+                    return False  # inner 'exit' stops the watch, not ARC
+                time.sleep(interval)
+        except KeyboardInterrupt:
+            console.print(f"\n[dim]watch stopped after {iteration} run(s).[/dim]")
+        return False
+
     def _dispatch_piped(self, head: str, spec: str) -> bool:
         """Run *head*, filter its captured output through the pipe *spec*."""
         filters, error = parse_output_filters(spec)
@@ -195,6 +231,12 @@ class DispatchMixin:
         # Normalize whitespace: collapse tabs and multiple spaces to a single space.
         line = re.sub(r"[ \t]+", " ", line).strip()
 
+        # `watch [N] <command>` — re-run every N seconds until Ctrl-C.
+        # Parsed before pipe filters so the whole pipeline is re-run each tick.
+        watch_tokens = line.split()
+        if watch_tokens and watch_tokens[0].lower() == "watch" and len(watch_tokens) > 1:
+            return self._cmd_watch(line.split(None, 1)[1])
+
         # PAN-OS style output filtering: <command> | match <pat> | count …
         head, pipe_spec = split_pipe_line(line)
         if pipe_spec is not None:
@@ -216,7 +258,7 @@ class DispatchMixin:
         #   e            -> exit
         #   sh sec pol   -> show security policy
         # Expansion occurs only when a prefix resolves to exactly one command.
-        visible_command_keys = [k for k, v in COMMANDS.items() if self._is_command_visible(k, v)]
+        visible_command_keys = self._visible_command_keys()
         phrases = [[b] for b in _SHELL_BUILTINS if b != "?"] + [k.split() for k in visible_command_keys]
 
         # Detect a trailing help trigger: '?' (brief, context-sensitive).
@@ -328,7 +370,9 @@ class DispatchMixin:
 
 
         # ---- Shell built-ins ----
-        if cmd == "clear":
+        # Bare `clear` clears the terminal; `clear <args>` falls through to the
+        # registry (PAN-OS clear commands, e.g. `clear session all --remote`).
+        if cmd == "clear" and len(tokens) == 1:
             console.clear()
             return False
 

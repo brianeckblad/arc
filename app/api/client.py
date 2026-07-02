@@ -75,6 +75,11 @@ class SCMClient:
     # pan.dev: openapi-specs/scm/config/ngfw/operations/config-operations-march.yaml
     OPERATIONS_URL = "https://api.strata.paloaltonetworks.com/config/operations/v1"
 
+    # pan.dev: openapi-specs/scm/config/ngfw-operations/operations-R2-2026.yaml
+    # Live-device operational data over SCM's device management tunnel
+    # (async jobs: POST jobs/<op> -> poll device/jobs/{id}). No SSH involved.
+    NGFW_OPS_URL = "https://api.strata.paloaltonetworks.com/operations/v1"
+
     # pan.dev: openapi-specs/scm/iam/ServiceAccounts.yaml
     #          openapi-specs/scm/tenancy/TenantServiceGroup.yaml
     IAM_URL = "https://api.sase.paloaltonetworks.com"
@@ -1168,6 +1173,36 @@ class SCMClient:
         pan.dev: DELETE /config/operations/v1/config-versions/candidate
         """
         return self._request("DELETE", self.OPERATIONS_URL, "/config-versions/candidate")
+
+    # ------------------------------------------------------------------
+    # Live-device operations over the SCM management tunnel (async jobs)
+    # ------------------------------------------------------------------
+
+    def ops_job_start(self, op: str, serials: list[str], advanced: bool = False) -> str:
+        """Start a live-device operations job; returns the job UUID.
+
+        pan.dev: POST /operations/v1/jobs/{op}  body {"devices": [serials]}
+        The device answers over its existing management tunnel to SCM — no
+        SSH, no device credentials. `advanced` applies to route/fib jobs only.
+        """
+        body: dict = {"devices": serials}
+        if advanced:
+            body["advanced"] = True
+        data = self._request("POST", self.NGFW_OPS_URL, f"/jobs/{op}", json=body)
+        job_id = str(data.get("job_id") or "") if isinstance(data, dict) else ""
+        if not job_id:
+            raise SCMError(f"operations job '{op}' returned no job_id: {data!r}")
+        return job_id
+
+    def ops_job_status(self, job_id: str) -> dict:
+        """Return a live-device operations job record.
+
+        pan.dev: GET /operations/v1/device/jobs/{id}
+        Job state: pending | in_progress | complete | failed; per-device
+        results are inline at results[].details.result.
+        """
+        data = self._request("GET", self.NGFW_OPS_URL, f"/device/jobs/{job_id}")
+        return data if isinstance(data, dict) else {}
 
     def close(self) -> None:
         self._http.close()

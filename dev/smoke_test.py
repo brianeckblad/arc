@@ -904,6 +904,7 @@ def test_inline_help_alignment() -> None:
     def _fake_shell(features: dict) -> SimpleNamespace:
         shell = SimpleNamespace(_features=features, _dev_mode=False, _command_visibility={})
         shell._is_command_visible = HelpMixin._is_command_visible.__get__(shell)
+        shell._visible_command_keys = HelpMixin._visible_command_keys.__get__(shell)
         return shell
 
     hidden_shell = _fake_shell({"create_address": "off"})

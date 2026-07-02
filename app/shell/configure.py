@@ -508,6 +508,7 @@ class ConfigureMixin:
             except OSError as exc:
                 raise RuntimeError(f"Could not write settings/features.json: {exc}") from exc
             self._features[flag_name] = state
+            self._invalidate_visible_keys()
 
         def _print_feature_rows(title: str, flags: list[str], colour: str, flag_cmds: dict[str, list[str]]) -> None:
             """Print a compact flag list with command mappings."""
@@ -657,10 +658,13 @@ class ConfigureMixin:
             return
         if action in ("on", "enable", "true"):
             self._dev_mode = True
+            self._invalidate_visible_keys()
         elif action in ("off", "disable", "false"):
             self._dev_mode = False
+            self._invalidate_visible_keys()
         elif action == "toggle":
             self._dev_mode = not self._dev_mode
+            self._invalidate_visible_keys()
         else:
             console.print(
                 f"[yellow]Usage:[/yellow] dev [on|off|status]  [dim](no argument toggles)[/dim]"

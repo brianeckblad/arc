@@ -151,14 +151,32 @@ class ExecutionMixin:
             f"[dim]SSH → {ssh_user}@{host}:{ssh_port}  cmd: {ssh_cmd}[/dim]"
         )
 
-        output = self._ssh.execute(
-            host=host,
-            command=ssh_cmd,
-            user=ssh_user,
-            key_path=ssh_key_path,
-            password=ssh_password,
-            port=ssh_port,
-        )
+        if cmd_def.category == "panos-config":
+            # Break-glass: device-local config drifts from SCM. Say so every
+            # time, and run through the scripted configure-mode channel
+            # (PAN-OS set/delete only work inside `configure`).
+            console.print(
+                "[yellow]⚠ DRIFT WARNING:[/yellow] this changes DEVICE-LOCAL config. "
+                "SCM does not know about it and may overwrite it at the next push. "
+                "Commit on the device with [bold]commit --remote[/bold] when done."
+            )
+            output = self._ssh.run_config_commands(
+                host=host,
+                commands=[ssh_cmd],
+                user=ssh_user,
+                key_path=ssh_key_path,
+                password=ssh_password,
+                port=ssh_port,
+            )
+        else:
+            output = self._ssh.execute(
+                host=host,
+                command=ssh_cmd,
+                user=ssh_user,
+                key_path=ssh_key_path,
+                password=ssh_password,
+                port=ssh_port,
+            )
         console.print(fmt.format_raw(output, title=f"SSH: {key}"))
 
     def _resolve_ssh_command(self, cmd_def: CommandDef, args: dict) -> str:

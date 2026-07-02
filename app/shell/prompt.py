@@ -62,8 +62,12 @@ class PromptMixin:
         """Left-pad *name* to the help command column and apply the theme style.
 
         Every help/`?` listing renders its command column through this one
-        helper so all sections align on the same visual column.
+        helper so all sections align on the same visual column. Names longer
+        than the column (a few PAN-OS stems) overflow with a 2-space gap
+        rather than being truncated — keys must stay copy-pastable.
         """
+        if len(name) > width:
+            return self._styled(f"{name}  ", self._theme.command_name)
         return self._styled(f"{name:<{width}}", self._theme.command_name)
 
     @staticmethod

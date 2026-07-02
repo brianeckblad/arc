@@ -108,6 +108,31 @@ terminal width 120           # force render width; 0 = auto-detect
 terminal spinner off         # hide the "querying SCM…" spinner
 ```
 
+## Live device data — API first, SSH when needed
+
+The full PAN-OS op-command tree (show / clear / request / test …) is built in
+(enable families with `feature enable panos_<family>`). Three execution paths:
+
+```text
+show advanced-routing route        # SCM serves it over the device tunnel —
+                                   # no SSH, no 2FA, just your token (cd <device> first)
+show routing protocol bgp peer     # SCM can't serve it → arc prints the exact
+                                   # --remote / connect syntax to run instead
+show routing protocol bgp peer --remote   # SSH: one 2FA per device per session
+                                          # (the connection is pooled + kept alive)
+watch 10 show routing protocol bgp peer --remote   # re-run every 10s, Ctrl-C stops —
+                                                   # no extra 2FA (session reused)
+```
+
+## Break-glass device recovery
+
+When SCM is down and a device must be recovered, the PAN-OS config tree is
+available over SSH. The `panos_config_recovery` family (mgmt IP/DNS/gateway,
+interface, panorama settings) is enabled by default; everything else stays
+hidden until you `feature enable panos_config_<family>`. Every device-local
+config command prints a DRIFT WARNING — SCM may overwrite local changes at the
+next push. Commit on the device with `commit --remote` when done.
+
 ## Interactive SSH session
 
 `connect` and `remote <device>` open a true interactive SSH session. ARC

@@ -39,6 +39,7 @@ SHELL_BUILTINS: tuple[str, ...] = (
     "update",
     "delete",
     "abandon",
+    "watch",
     "clear", "exit", "quit",
     "help", "?",
 )
@@ -64,6 +65,7 @@ SHELL_HELP_ROWS: tuple[ShellBuiltinHelp, ...] = (
     ShellBuiltinHelp("cli <subcommand>",     "CLI theme operations  (show | color | reset)", configure_only=True),
     ShellBuiltinHelp("feature <subcommand>", "Feature flags  (show | enable <flag> | disable <flag>)"),
     ShellBuiltinHelp("terminal",             "Pager/width/spinner preferences  (terminal length 0 = no paging)"),
+    ShellBuiltinHelp("watch <sec> <cmd>",    "Re-run a command every N seconds until Ctrl-C  (SSH session reused)"),
     ShellBuiltinHelp("setup",                "Guided credential setup wizard  (auto-detects OS, two questions)"),
     ShellBuiltinHelp("pwd",                  "Show device, folder, TSG, and active account"),
     ShellBuiltinHelp("docs",                 "Open docs in browser"),

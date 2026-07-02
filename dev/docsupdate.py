@@ -1211,6 +1211,26 @@ def main(argv: list[str] | None = None) -> int:
         except (subprocess.CalledProcessError, OSError) as exc:
             print(f"[warn] field-catalog regeneration failed: {exc}", file=sys.stderr)
 
+        # Pull the PAN-OS CLI hierarchy pages (dev/panos_sources.json — add new
+        # version URLs there) and regenerate the PAN-OS command catalog.
+        print("\nUpdating PAN-OS CLI hierarchy mirrors (docs/panos-cli/)…")
+        try:
+            subprocess.run(
+                [sys.executable, str(DEV_DIR / "panosupdate.py")],
+                check=True,
+            )
+        except (subprocess.CalledProcessError, OSError) as exc:
+            print(f"[warn] PAN-OS docs pull failed: {exc}", file=sys.stderr)
+
+        print("\nRegenerating PAN-OS command catalog (app/commands/panos_catalog.py)…")
+        try:
+            subprocess.run(
+                [sys.executable, str(DEV_DIR / "generate_panos_catalog.py")],
+                check=True,
+            )
+        except (subprocess.CalledProcessError, OSError) as exc:
+            print(f"[warn] PAN-OS catalog regeneration failed: {exc}", file=sys.stderr)
+
         # Regenerate feature flags from the generated endpoint catalog plus every
         # explicit CommandDef.feature_flag.  New API surface defaults OFF so ARC
         # fails closed until features are intentionally enabled.

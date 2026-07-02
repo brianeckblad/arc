@@ -294,6 +294,22 @@ class HelpMixin:
             return False
         return is_enabled(self._features, cmd_def.feature_flag, self._dev_mode)
 
+    def _visible_command_keys(self) -> list[str]:
+        """Cached list of visible registry keys — the per-keystroke hot path.
+
+        With the PAN-OS catalog the registry holds ~3k keys; recomputing
+        visibility per keystroke costs milliseconds. Invalidated whenever a
+        feature flag or dev mode changes (_invalidate_visible_keys).
+        """
+        cache = getattr(self, "_visible_keys_cache", None)
+        if cache is None:
+            cache = [k for k, v in COMMANDS.items() if self._is_command_visible(k, v)]
+            self._visible_keys_cache = cache
+        return cache
+
+    def _invalidate_visible_keys(self) -> None:
+        self._visible_keys_cache = None
+
     def _is_command_available(self, key: str, cmd_def: CommandDef) -> bool:
         """_is_command_visible plus the current-context gates.
 

@@ -70,6 +70,9 @@ def _usage_options(usage: str, command_key: str, typed: list[str]) -> list[tuple
     surfaced immediately so the operator sees the meaningful options right after
     the command — they just type the name first, then pick one.
     """
+    # Multi-variant usage (PAN-OS catalog entries join variants with \n):
+    # the walker consumes the canonical variant — always the first line.
+    usage = usage.split("\n")[0]
     required, optional = _parse_usage(usage, command_key)
     n = len(typed)
     if n < len(required):
@@ -523,7 +526,7 @@ class ArcCompleter(Completer):
 
     def _all_commands(self, include_remote_suffix: bool) -> list[str]:
         builtins = list(_SHELL_BUILTINS)
-        commands = [key for key in COMMANDS if self._command_visible(key)]
+        commands = self._shell._visible_command_keys()
         if not include_remote_suffix:
             return builtins + commands
         with_remote = [f"{c} --remote" for c in commands]
