@@ -35,6 +35,23 @@ arc:global >
 The prompt changes to `#` when in configure mode. Type `exit` to leave configure mode
 and return to the normal `>` prompt.
 
+**Nothing is left staged silently.** Writes go into SCM's *candidate*
+configuration; they reach devices only on `commit`. If you `exit` configure
+mode with uncommitted changes, ARC asks what to do:
+
+```text
+arc:global # exit
+
+Uncommitted changes: 2 write(s) staged in the SCM candidate config.
+  commit   — push the changes to managed devices
+  abandon  — discard the candidate config (revert to running)
+  cancel   — stay in configure mode
+```
+
+`abandon` (also available as a command in configure mode) discards the
+tenant's **entire** candidate configuration — including changes staged outside
+ARC (e.g. in the SCM web UI) — after a y/N confirmation.
+
 **Why configure mode?** It provides a clear visual and operational boundary between
 inspection and mutation, reduces accidental changes, and aligns with familiar
 Cisco/Junos conventions for network operators.

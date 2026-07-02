@@ -252,6 +252,10 @@ class ShellState:
     device: Optional[dict] = None
     folder: str = "Shared"
     configure_mode: bool = False
+    # Successful write operations since the last commit/abandon. Drives the
+    # commit / abandon / cancel prompt when leaving configure mode, so staged
+    # candidate changes are never silently left behind in SCM.
+    pending_writes: int = 0
     # Active TSG ID — overrides the value from ArcConfig when set.
     # Useful when a bearer token was issued at the root and the user needs
     # to work within a specific child TSG without re-authenticating.

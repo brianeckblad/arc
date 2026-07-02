@@ -71,6 +71,9 @@ class SCMClient:
     # pan.dev: openapi-specs/scm/config/ngfw/identity/identity-services-march.yaml
     IDENTITY_URL = "https://api.strata.paloaltonetworks.com/config/identity/v1"
 
+    # pan.dev: openapi-specs/scm/config/ngfw/operations/config-operations-march.yaml
+    OPERATIONS_URL = "https://api.strata.paloaltonetworks.com/config/operations/v1"
+
     # pan.dev: openapi-specs/scm/iam/ServiceAccounts.yaml
     #          openapi-specs/scm/tenancy/TenantServiceGroup.yaml
     IAM_URL = "https://api.sase.paloaltonetworks.com"
@@ -1137,6 +1140,16 @@ class SCMClient:
         if description:
             payload["description"] = description
         return self._post_setup("/config-versions/candidate:push", json=payload)
+
+    def discard_candidate(self) -> Any:
+        """Discard the TSG's candidate configuration (revert to running config).
+
+        Removes ALL staged (uncommitted) changes in the tenant — including any
+        made outside this ARC session, e.g. in the SCM web UI.
+
+        pan.dev: DELETE /config/operations/v1/config-versions/candidate
+        """
+        return self._request("DELETE", self.OPERATIONS_URL, "/config-versions/candidate")
 
     def close(self) -> None:
         self._http.close()

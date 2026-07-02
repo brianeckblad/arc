@@ -106,12 +106,24 @@ class ConfigSecurityError(Exception):
 # Keychain helpers
 # ---------------------------------------------------------------------------
 
+# Set when any keychain read raises — lets the shell warn once at startup
+# instead of silently running with empty credentials.
+_keychain_read_failed = False
+
+
+def keychain_read_failed() -> bool:
+    """True when at least one keychain read failed this process (backend down)."""
+    return _keychain_read_failed
+
+
 def _keychain_get(key: str) -> str:
     """Return a credential from the OS keychain, or '' if absent / unavailable."""
+    global _keychain_read_failed
     try:
         value = keyring.get_password(_KEYCHAIN_SERVICE, key)
         return value or ""
     except keyring.errors.KeyringError as exc:
+        _keychain_read_failed = True
         logger.debug("Keychain read failed for %s: %s", key, exc)
         return ""
 

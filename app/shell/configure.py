@@ -29,6 +29,69 @@ class ConfigureMixin:
         for line in _configure_banner().splitlines():
             console.print(f"[green]{line.strip()}[/green]" if line.strip() else "")
 
+    def _discard_candidate_config(self) -> bool:
+        """Discard the SCM candidate configuration. Returns True on success."""
+        if not self._scm:
+            console.print("[red]SCM not connected — cannot discard the candidate config.[/red]")
+            return False
+        try:
+            self._scm.discard_candidate()
+        except Exception as exc:  # noqa: BLE001 — always tell the operator why
+            console.print(f"[red]Could not discard candidate config:[/red] {exc}")
+            return False
+        self._state.pending_writes = 0
+        console.print(
+            "[green]✓[/green] Candidate configuration discarded — SCM reverted to the running config."
+        )
+        return True
+
+    def _cmd_abandon(self, args: list[str]) -> None:
+        """Discard all staged (uncommitted) SCM changes (configure mode only)."""
+        del args
+        if not self._state.configure_mode:
+            console.print(
+                "[yellow]abandon is a configure-mode command.[/yellow] "
+                "Enter [bold]configure[/bold] first."
+            )
+            return
+        console.print(
+            "[yellow]This discards the tenant's ENTIRE candidate configuration[/yellow] — "
+            "including changes staged outside this ARC session (e.g. the SCM web UI)."
+        )
+        answer = console.input("Discard all uncommitted changes? [y/N] ").strip().lower()
+        if answer not in ("y", "yes"):
+            console.print("[dim]Cancelled — candidate config kept.[/dim]")
+            return
+        self._discard_candidate_config()
+
+    def _confirm_configure_exit(self) -> bool:
+        """Ask what to do with uncommitted changes when leaving configure mode.
+
+        Returns True when the operator may leave configure mode (changes were
+        committed, abandoned, or there were none); False to stay in it.
+        """
+        count = self._state.pending_writes
+        if count == 0:
+            return True
+        console.print(
+            f"\n[yellow]Uncommitted changes:[/yellow] {count} write(s) staged in the SCM candidate config.\n"
+            "  [bold]commit[/bold]   — push the changes to managed devices\n"
+            "  [bold]abandon[/bold]  — discard the candidate config (revert to running)\n"
+            "  [bold]cancel[/bold]   — stay in configure mode\n"
+        )
+        while True:
+            answer = console.input("configure exit (commit/abandon/cancel): ").strip().lower()
+            if answer == "commit":
+                self._execute_api("commit", COMMANDS["commit"], {})
+                # _execute_api resets pending_writes only when the push succeeded.
+                return self._state.pending_writes == 0
+            if answer == "abandon":
+                return self._discard_candidate_config()
+            if answer in ("cancel", ""):
+                console.print("[dim]Staying in configure mode.[/dim]")
+                return False
+            console.print("[dim]Type commit, abandon, or cancel.[/dim]")
+
     def _cmd_cli(self, args: list[str]) -> None:
         """Read/write CLI theme settings (configure mode only)."""
         if not self._state.configure_mode:

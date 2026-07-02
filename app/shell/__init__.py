@@ -79,6 +79,15 @@ class ArcShell(
         )
 
     def _init_clients(self) -> None:
+        # Keychain trouble is easy to mistake for "wrong credentials" — say it
+        # up front, once, with the way out.
+        from app.config import keychain_read_failed
+        if keychain_read_failed():
+            console.print(
+                "[yellow]⚠[/yellow]  OS keychain unavailable — stored credentials could not be read.  "
+                "[dim]Use SCM_* env vars for this session, or run [bold]arc auth test[/bold] to diagnose.[/dim]"
+            )
+
         if self._config.scm.is_configured:
             try:
                 self._scm = SCMClient(self._config.scm)

@@ -1236,6 +1236,19 @@ def main(argv: list[str] | None = None) -> int:
         except (subprocess.CalledProcessError, OSError) as exc:
             print(f"[warn] API index regeneration failed: {exc}", file=sys.stderr)
 
+        # Self-verify: a broken catalog/registry should fail HERE, not at the
+        # next arc startup.  Sections 1-3 = syntax + imports + registry.
+        print("\nVerifying registry (dev/smoke_test.py --only 1,2,3)…")
+        try:
+            subprocess.run(
+                [sys.executable, str(DEV_DIR / "smoke_test.py"), "--only", "1,2,3", "--quiet"],
+                check=True,
+            )
+            print("Registry OK.")
+        except (subprocess.CalledProcessError, OSError) as exc:
+            print(f"[warn] smoke verification failed — fix before committing: {exc}", file=sys.stderr)
+            result = 1
+
     return result
 
 

@@ -281,10 +281,19 @@ class DispatchMixin:
         # ---- exit / quit ----
         if cmd in ("exit", "quit"):
             if self._state.configure_mode:
+                # Uncommitted candidate changes? Force a commit/abandon/cancel
+                # decision so nothing is silently left staged in SCM.
+                if not self._confirm_configure_exit():
+                    return False
                 self._state.configure_mode = False
                 console.print("[cyan]Exited configure mode.[/cyan]")
                 return False
             return True
+
+        # ---- abandon (configure mode): discard the SCM candidate config ----
+        if cmd == "abandon":
+            self._cmd_abandon(tokens[1:])
+            return False
 
 
         # ---- Shell built-ins ----

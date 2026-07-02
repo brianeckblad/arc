@@ -417,6 +417,7 @@ class NavigationMixin:
         # Create via API.
         try:
             result       = self._scm.create_folder(name, parent_name)
+            self._state.pending_writes += 1
             created_id   = result.get("id", "")
             created_name = result.get("name") or name
             console.print(

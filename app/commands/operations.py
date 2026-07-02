@@ -223,7 +223,9 @@ COMMANDS: dict[str, CommandDef] = {
         api_handler=_commit,
         ssh_command=_ssh_commit,
         render="jobs",
-        feature_flag="commit",
+        # Intentionally NOT feature-gated: an operator in configure mode must
+        # always be able to commit (or abandon) — disabling commit would strand
+        # staged candidate changes in SCM.
     ),
 }
 

@@ -37,6 +37,7 @@ SHELL_BUILTINS: tuple[str, ...] = (
     "set",
     "update",
     "delete",
+    "abandon",
     "clear", "exit", "quit",
     "help", "?",
 )
@@ -56,6 +57,7 @@ SHELL_HELP_ROWS: tuple[ShellBuiltinHelp, ...] = (
     ShellBuiltinHelp("set <type> <name>",    "Create configuration  (configure mode)  — set ? for sub-commands", configure_only=True),
     ShellBuiltinHelp("update <type> <name>", "Modify existing object  (configure mode)  — update ? for types", configure_only=True),
     ShellBuiltinHelp("delete <type> <name>", "Delete configuration object  (configure mode)  — delete ? for types", configure_only=True),
+    ShellBuiltinHelp("abandon",              "Discard ALL uncommitted SCM changes  (revert candidate to running)", configure_only=True),
     ShellBuiltinHelp("cli <subcommand>",     "CLI theme operations  (show | color | reset)", configure_only=True),
     ShellBuiltinHelp("feature <subcommand>", "Feature flags  (show | enable <flag> | disable <flag>)"),
     ShellBuiltinHelp("setup",                "Guided credential setup wizard  (auto-detects OS, two questions)"),
