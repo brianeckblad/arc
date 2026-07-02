@@ -5,7 +5,7 @@ usage: "update ngts serviceaccounts credentials id <value> json|file <payload-or
 feature_flag: update_ngts_serviceaccounts_credentials
 category: ngts
 scope: global
-api: "PUT https://api.strata.paloaltonetworks.com/v1/serviceaccounts/{id}/credentials"
+api: "PUT https://api.strata.paloaltonetworks.com/ngts/v1/serviceaccounts/{id}/credentials"
 ---
 
 # update ngts serviceaccounts credentials

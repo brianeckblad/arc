@@ -5,7 +5,7 @@ usage: "show ngts exp-notifications tenant-config"
 feature_flag: show_ngts_exp_notifications_tenant_config
 category: ngts
 scope: global
-api: "GET https://api.strata.paloaltonetworks.com/v1/expirationnotifications/tenantconfiguration"
+api: "GET https://api.strata.paloaltonetworks.com/ngts/v1/expirationnotifications/tenantconfiguration"
 ---
 
 # show ngts exp-notifications tenant-config

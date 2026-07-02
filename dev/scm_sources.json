@@ -16,7 +16,7 @@
     "ngfw-network": "openapi-specs/scm/config/ngfw/network/network-services-R2-2026.yaml",
     "ngfw-config-operations": "openapi-specs/scm/config/ngfw/operations/config-operations-march.yaml",
     "ngfw-operations": "openapi-specs/scm/config/ngfw-operations/operations-R2-2026.yaml",
-    "ngfw-device": "openapi-specs/scm/config/ngfw/device/device-settings_April.yaml",
+    "ngfw-device": "openapi-specs/scm/config/ngfw/device/device-settings.yaml",
     "ngfw-identity": "openapi-specs/scm/config/ngfw/identity/identity-services-march.yaml",
     "ngfw-device-onboarding": "openapi-specs/scm/config/ngfw/setup/device-onboarding/device-onboarding-updated.yaml",
     "auth": "openapi-specs/scm/auth/AuthService.yaml",
@@ -34,7 +34,7 @@
     "incidents": "openapi-specs/scm/config/incidents/Unified_SCM_Incident.yaml",
     "ngts-tlsprotect": "openapi-specs/scm/config/ngts/tlsprotect-cloud.json",
     "posture-management": "openapi-specs/scm/config/posture-management/Posture APIs-updated.yaml",
-    "sase-deployment": "openapi-specs/scm/config/sase/deployment/deployment-services-march.yaml",
+    "sase-deployment": "openapi-specs/scm/config/sase/deployment/deployment-services-june.yaml",
     "sase-identity": "openapi-specs/scm/config/sase/identity/identity-services-march.yaml",
     "sase-mobileagent": "openapi-specs/scm/config/sase/mobileagent/mobile-agent-feb-v1.yaml",
     "sase-network-configurations": "openapi-specs/scm/config/sase/network configurations/network-services-R2-2026.yaml",
@@ -51,7 +51,9 @@
     "iam-roles": "openapi-specs/scm/iam/Roles.yaml",
     "iam-user-accounts": "openapi-specs/scm/iam/UserAccounts.yaml",
     "subscription-instance": "openapi-specs/scm/subscription/Instance.yaml",
-    "subscription-licenses": "openapi-specs/scm/subscription/Licenses.yaml"
+    "subscription-licenses": "openapi-specs/scm/subscription/Licenses.yaml",
+    "ngfw-device-device-settings": "openapi-specs/scm/config/ngfw/device/device-settings.yaml",
+    "sase-deployment-deployment-services-june": "openapi-specs/scm/config/sase/deployment/deployment-services-june.yaml"
   },
   "spec_domains": {
     "ngfw-objects": "objects",
@@ -95,7 +97,9 @@
     "iam-roles": "iam",
     "iam-user-accounts": "iam",
     "subscription-instance": "subscription",
-    "subscription-licenses": "subscription"
+    "subscription-licenses": "subscription",
+    "ngfw-device-device-settings": "device",
+    "sase-deployment-deployment-services-june": "deployment"
   },
   "guides": {
     "home": "products/scm/docs/home.md",
@@ -121,6 +125,20 @@
       "from": "openapi-specs/scm/config/ngfw/objects/objects_v1.3_feb.yaml",
       "to": "openapi-specs/scm/config/ngfw/objects/objects-june.yaml",
       "date": "2026-06-17"
+    },
+    {
+      "kind": "specs",
+      "key": "ngfw-device",
+      "from": "openapi-specs/scm/config/ngfw/device/device-settings_April.yaml",
+      "to": "openapi-specs/scm/config/ngfw/device/device-settings.yaml",
+      "date": "2026-06-30"
+    },
+    {
+      "kind": "specs",
+      "key": "sase-deployment",
+      "from": "openapi-specs/scm/config/sase/deployment/deployment-services-march.yaml",
+      "to": "openapi-specs/scm/config/sase/deployment/deployment-services-june.yaml",
+      "date": "2026-06-30"
     }
   ]
 }

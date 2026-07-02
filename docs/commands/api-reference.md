@@ -465,17 +465,21 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 | `update cngfw vuln-signatures` | global | `update_cngfw_vuln_signatures` | PUT https://api.strata.paloaltonetworks.com/config/security/v1/vulnerability-protection-signatures/{id} |
 | `update cngfw wildfire-profiles` | global | `update_cngfw_wildfire_profiles` | PUT https://api.strata.paloaltonetworks.com/config/security/v1/wildfire-anti-virus-profiles/{id} |
 
-## Device
+## Device-Device-Settings
 
 | Command | Scope | Feature flag | SCM API |
 |---|---|---|---|
 | `delete authentication-settings` | global | `delete_authentication_settings` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/authentication-settings/{id} |
+| `delete autoscale` | global | `delete_autoscale` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/autoscale |
+| `delete content-cloud-settings` | global | `delete_content_cloud_settings` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/content-cloud-settings/{id} |
 | `delete content-id-settings` | global | `delete_content_id_settings` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/content-id-settings/{id} |
+| `delete device-context-segment-association` | global | `delete_device_context_segment_association` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/device-context-segment-association |
 | `delete device-redistribution-collector` | global | `delete_device_redistribution_collector` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/device-redistribution-collector/{id} |
 | `delete general-settings` | global | `delete_general_settings` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/general-settings/{id} |
-| `delete ha-configurations` | global | `delete_ha_configurations` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations/{id} |
+| `delete ha-configurations` | global | `delete_ha_configurations` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations |
 | `delete management-interface` | global | `delete_management_interface` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/management-interface/{id} |
 | `delete motd-banner-settings` | global | `delete_motd_banner_settings` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/motd-banner-settings/{id} |
+| `delete ngfw device device settings device-context-segment-association` | global | `delete_device_context_segment_association` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/device-context-segment-association/{id} |
 | `delete service-route` | global | `delete_service_route` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/service-route/{id} |
 | `delete service-settings` | global | `delete_service_settings` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/service-settings/{id} |
 | `delete session-settings` | global | `delete_session_settings` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/session-settings/{id} |
@@ -484,7 +488,10 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 | `delete update-schedule` | global | `delete_update_schedule` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/update-schedule/{id} |
 | `delete vpn-settings` | global | `delete_vpn_settings` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/vpn-settings/{id} |
 | `set authentication-settings` | global | `create_authentication_settings` | POST https://api.strata.paloaltonetworks.com/config/device/v1/authentication-settings |
+| `set autoscale` | global | `create_autoscale` | POST https://api.strata.paloaltonetworks.com/config/device/v1/autoscale |
+| `set content-cloud-settings` | global | `create_content_cloud_settings` | POST https://api.strata.paloaltonetworks.com/config/device/v1/content-cloud-settings |
 | `set content-id-settings` | global | `create_content_id_settings` | POST https://api.strata.paloaltonetworks.com/config/device/v1/content-id-settings |
+| `set device-context-segment-association` | global | `create_device_context_segment_association` | POST https://api.strata.paloaltonetworks.com/config/device/v1/device-context-segment-association |
 | `set device-redistribution-collector` | global | `create_device_redistribution_collector` | POST https://api.strata.paloaltonetworks.com/config/device/v1/device-redistribution-collector |
 | `set general-settings` | global | `create_general_settings` | POST https://api.strata.paloaltonetworks.com/config/device/v1/general-settings |
 | `set ha-configurations` | global | `create_ha_configurations` | POST https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations |
@@ -499,14 +506,22 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 | `set vpn-settings` | global | `create_vpn_settings` | POST https://api.strata.paloaltonetworks.com/config/device/v1/vpn-settings |
 | `show authentication-settings` | global | `show_authentication_settings` | GET https://api.strata.paloaltonetworks.com/config/device/v1/authentication-settings |
 | `show authentication-settings id` | global | `show_authentication_settings_id` | GET https://api.strata.paloaltonetworks.com/config/device/v1/authentication-settings/{id} |
+| `show autoscale` | global | `show_autoscale` | GET https://api.strata.paloaltonetworks.com/config/device/v1/autoscale |
+| `show content-cloud-settings` | global | `show_content_cloud_settings` | GET https://api.strata.paloaltonetworks.com/config/device/v1/content-cloud-settings |
+| `show content-cloud-settings id` | global | `show_content_cloud_settings_id` | GET https://api.strata.paloaltonetworks.com/config/device/v1/content-cloud-settings/{id} |
 | `show content-id-settings` | global | `show_content_id_settings` | GET https://api.strata.paloaltonetworks.com/config/device/v1/content-id-settings |
 | `show content-id-settings id` | global | `show_content_id_settings_id` | GET https://api.strata.paloaltonetworks.com/config/device/v1/content-id-settings/{id} |
+| `show device-context-segment-association` | global | `show_device_context_segment_association` | GET https://api.strata.paloaltonetworks.com/config/device/v1/device-context-segment-association |
+| `show device-context-segment-association id` | global | `show_device_context_segment_association_id` | GET https://api.strata.paloaltonetworks.com/config/device/v1/device-context-segment-association/{id} |
 | `show device-redistribution-collector` | global | `show_device_redistribution_collector` | GET https://api.strata.paloaltonetworks.com/config/device/v1/device-redistribution-collector |
 | `show device-redistribution-collector id` | global | `show_device_redistribution_collector_id` | GET https://api.strata.paloaltonetworks.com/config/device/v1/device-redistribution-collector/{id} |
 | `show general-settings` | global | `show_general_settings` | GET https://api.strata.paloaltonetworks.com/config/device/v1/general-settings |
 | `show general-settings id` | global | `show_general_settings_id` | GET https://api.strata.paloaltonetworks.com/config/device/v1/general-settings/{id} |
 | `show ha-configurations` | global | `show_ha_configurations` | GET https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations |
-| `show ha-configurations id` | global | `show_ha_configurations_id` | GET https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations/{id} |
+| `show ha-configurations-gateways` | global | `show_ha_configurations_gateways` | GET https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations-gateways |
+| `show ha-configurations-ip-addresses` | global | `show_ha_configurations_ip_addresses` | GET https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations-ip-addresses |
+| `show ha-configurations-netmasks` | global | `show_ha_configurations_netmasks` | GET https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations-netmasks |
+| `show ha-configurations-ports` | global | `show_ha_configurations_ports` | GET https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations-ports |
 | `show ha-devices` | global | `show_ha_devices` | GET https://api.strata.paloaltonetworks.com/config/device/v1/ha-devices |
 | `show management-interface` | global | `show_management_interface` | GET https://api.strata.paloaltonetworks.com/config/device/v1/management-interface |
 | `show management-interface id` | global | `show_management_interface_id` | GET https://api.strata.paloaltonetworks.com/config/device/v1/management-interface/{id} |
@@ -527,10 +542,13 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 | `show vpn-settings` | global | `show_vpn_settings` | GET https://api.strata.paloaltonetworks.com/config/device/v1/vpn-settings |
 | `show vpn-settings id` | global | `show_vpn_settings_id` | GET https://api.strata.paloaltonetworks.com/config/device/v1/vpn-settings/{id} |
 | `update authentication-settings` | global | `update_authentication_settings` | PUT https://api.strata.paloaltonetworks.com/config/device/v1/authentication-settings/{id} |
+| `update autoscale` | global | `update_autoscale` | PUT https://api.strata.paloaltonetworks.com/config/device/v1/autoscale |
+| `update content-cloud-settings` | global | `update_content_cloud_settings` | PUT https://api.strata.paloaltonetworks.com/config/device/v1/content-cloud-settings/{id} |
 | `update content-id-settings` | global | `update_content_id_settings` | PUT https://api.strata.paloaltonetworks.com/config/device/v1/content-id-settings/{id} |
+| `update device-context-segment-association` | global | `update_device_context_segment_association` | PUT https://api.strata.paloaltonetworks.com/config/device/v1/device-context-segment-association/{id} |
 | `update device-redistribution-collector` | global | `update_device_redistribution_collector` | PUT https://api.strata.paloaltonetworks.com/config/device/v1/device-redistribution-collector/{id} |
 | `update general-settings` | global | `update_general_settings` | PUT https://api.strata.paloaltonetworks.com/config/device/v1/general-settings/{id} |
-| `update ha-configurations` | global | `update_ha_configurations` | PUT https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations/{id} |
+| `update ha-configurations` | global | `update_ha_configurations` | PUT https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations |
 | `update management-interface` | global | `update_management_interface` | PUT https://api.strata.paloaltonetworks.com/config/device/v1/management-interface/{id} |
 | `update motd-banner-settings` | global | `update_motd_banner_settings` | PUT https://api.strata.paloaltonetworks.com/config/device/v1/motd-banner-settings/{id} |
 | `update service-route` | global | `update_service_route` | PUT https://api.strata.paloaltonetworks.com/config/device/v1/service-route/{id} |
@@ -865,156 +883,153 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 
 | Command | Scope | Feature flag | SCM API |
 |---|---|---|---|
-| `delete ngts cert-requests approval` | global | `delete_ngts_cert_requests_approval` | DELETE https://api.strata.paloaltonetworks.com/v1/certificaterequests/approvalrules/{id} |
-| `delete ngts cert-templates` | global | `delete_ngts_cert_templates` | DELETE https://api.strata.paloaltonetworks.com/v1/certificateissuingtemplates/{id} |
-| `delete ngts certs revokes approval` | global | `delete_ngts_certs_revokes_approval` | DELETE https://api.strata.paloaltonetworks.com/v1/certificates/revocations/approvalrules/{id} |
-| `delete ngts credential-configs` | global | `delete_ngts_credential_configs` | DELETE https://api.strata.paloaltonetworks.com/v1/credentialmanagerconfigurations/{id} |
-| `delete ngts credentials` | global | `delete_ngts_credentials` | DELETE https://api.strata.paloaltonetworks.com/v1/credentials |
-| `delete ngts dist-issuers configurations` | global | `delete_ngts_dist_issuers_configurations` | DELETE https://api.strata.paloaltonetworks.com/v1/distributedissuers/configurations/{id} |
-| `delete ngts dist-issuers policies` | global | `delete_ngts_dist_issuers_policies` | DELETE https://api.strata.paloaltonetworks.com/v1/distributedissuers/policies/{id} |
-| `delete ngts dist-issuers subcaproviders` | global | `delete_ngts_dist_issuers_subcaproviders` | DELETE https://api.strata.paloaltonetworks.com/v1/distributedissuers/subcaproviders/{id} |
-| `delete ngts edgeworkers` | global | `delete_ngts_edgeworkers` | DELETE https://api.strata.paloaltonetworks.com/v1/edgeworkers/{id} |
-| `delete ngts integrationservices` | global | `delete_ngts_integrationservices` | DELETE https://api.strata.paloaltonetworks.com/v1/integrationservices/{id} |
-| `delete ngts machineidentities` | global | `delete_ngts_machineidentities` | DELETE https://api.strata.paloaltonetworks.com/v1/machineidentities/{id} |
-| `delete ngts machines` | global | `delete_ngts_machines` | DELETE https://api.strata.paloaltonetworks.com/v1/machines/{id} |
-| `delete ngts plugins` | global | `delete_ngts_plugins` | DELETE https://api.strata.paloaltonetworks.com/v1/plugins/{id} |
-| `delete ngts plugins disablements` | global | `delete_ngts_plugins_disablements` | DELETE https://api.strata.paloaltonetworks.com/v1/plugins/{id}/disablements |
-| `delete ngts serviceaccounts` | global | `delete_ngts_serviceaccounts` | DELETE https://api.strata.paloaltonetworks.com/v1/serviceaccounts/{id} |
-| `delete ngts tags` | global | `delete_ngts_tags` | DELETE https://api.strata.paloaltonetworks.com/v1/tags/{name} |
-| `delete ngts tags values` | global | `delete_ngts_tags_values` | DELETE https://api.strata.paloaltonetworks.com/v1/tags/{name}/values/{value} |
-| `delete ngts tlsprotect credentials` | global | `delete_ngts_credentials` | DELETE https://api.strata.paloaltonetworks.com/v1/credentials/{id} |
-| `set ngts activitylogsearch` | global | `create_ngts_activitylogsearch` | POST https://api.strata.paloaltonetworks.com/v1/activitylogsearch |
-| `set ngts activitylogsearch export` | global | `create_ngts_activitylogsearch_export` | POST https://api.strata.paloaltonetworks.com/v1/activitylogsearch/export |
-| `set ngts autorenewal trigger` | global | `create_ngts_autorenewal_trigger` | POST https://api.strata.paloaltonetworks.com/v1/autorenewal/trigger |
-| `set ngts cert-instance-search` | global | `create_ngts_cert_instance_search` | POST https://api.strata.paloaltonetworks.com/outagedetection/v1/certificateinstancesearch |
-| `set ngts cert-instances validation` | global | `create_ngts_cert_instances_validation` | POST https://api.strata.paloaltonetworks.com/outagedetection/v1/certificateinstances/validation |
-| `set ngts cert-request-search` | global | `create_ngts_cert_request_search` | POST https://api.strata.paloaltonetworks.com/outagedetection/v1/certificaterequestssearch |
-| `set ngts cert-requests` | global | `create_ngts_cert_requests` | POST https://api.strata.paloaltonetworks.com/outagedetection/v1/certificaterequests |
-| `set ngts cert-requests approval` | global | `create_ngts_cert_requests_approval` | POST https://api.strata.paloaltonetworks.com/v1/certificaterequests/{id}/approval/{decision} |
-| `set ngts cert-requests approval bulk` | global | `create_ngts_cert_requests_approval_bulk` | POST https://api.strata.paloaltonetworks.com/v1/certificaterequests/approval/bulk/{decision} |
-| `set ngts cert-requests resubmission` | global | `create_ngts_cert_requests_resubmission` | POST https://api.strata.paloaltonetworks.com/outagedetection/v1/certificaterequests/{id}/resubmission |
-| `set ngts cert-requests validation` | global | `create_ngts_cert_requests_validation` | POST https://api.strata.paloaltonetworks.com/outagedetection/v1/certificaterequests/validation |
-| `set ngts cert-templates` | global | `create_ngts_cert_templates` | POST https://api.strata.paloaltonetworks.com/v1/certificateissuingtemplates |
-| `set ngts cert-templates domains-sync` | global | `create_ngts_cert_templates_domains_sync` | POST https://api.strata.paloaltonetworks.com/v1/certificateissuingtemplates/domainssynchronization |
-| `set ngts certificatesearch` | global | `create_ngts_certificatesearch` | POST https://api.strata.paloaltonetworks.com/outagedetection/v1/certificatesearch |
-| `set ngts certs` | global | `create_ngts_certs` | POST https://api.strata.paloaltonetworks.com/outagedetection/v1/certificates |
-| `set ngts certs deletion` | global | `create_ngts_certs_deletion` | POST https://api.strata.paloaltonetworks.com/outagedetection/v1/certificates/deletion |
-| `set ngts certs imports` | global | `create_ngts_certs_imports` | POST https://api.strata.paloaltonetworks.com/v1/certificates/imports |
-| `set ngts certs recovery` | global | `create_ngts_certs_recovery` | POST https://api.strata.paloaltonetworks.com/outagedetection/v1/certificates/recovery |
-| `set ngts certs retirement` | global | `create_ngts_certs_retirement` | POST https://api.strata.paloaltonetworks.com/outagedetection/v1/certificates/retirement |
-| `set ngts certs revokes approval` | global | `create_ngts_certs_revokes_approval` | POST https://api.strata.paloaltonetworks.com/v1/certificates/revocations/approvalrules |
-| `set ngts certs validation` | global | `create_ngts_certs_validation` | POST https://api.strata.paloaltonetworks.com/outagedetection/v1/certificates/validation |
-| `set ngts credential-configs` | global | `create_ngts_credential_configs` | POST https://api.strata.paloaltonetworks.com/v1/credentialmanagerconfigurations |
-| `set ngts credential-configs test` | global | `create_ngts_credential_configs_test` | POST https://api.strata.paloaltonetworks.com/v1/credentialmanagerconfigurations/test |
-| `set ngts credentials` | global | `create_ngts_credentials` | POST https://api.strata.paloaltonetworks.com/v1/credentials |
-| `set ngts credentials test` | global | `create_ngts_credentials_test` | POST https://api.strata.paloaltonetworks.com/v1/credentials/test |
-| `set ngts dist-issuers configurations` | global | `create_ngts_dist_issuers_configurations` | POST https://api.strata.paloaltonetworks.com/v1/distributedissuers/configurations |
-| `set ngts dist-issuers policies` | global | `create_ngts_dist_issuers_policies` | POST https://api.strata.paloaltonetworks.com/v1/distributedissuers/policies |
-| `set ngts dist-issuers subcaproviders` | global | `create_ngts_dist_issuers_subcaproviders` | POST https://api.strata.paloaltonetworks.com/v1/distributedissuers/subcaproviders |
-| `set ngts edgeinstances update` | global | `create_ngts_edgeinstances_update` | POST https://api.strata.paloaltonetworks.com/v1/edgeinstances/{id}/update |
-| `set ngts edgeworkers` | global | `create_ngts_edgeworkers` | POST https://api.strata.paloaltonetworks.com/v1/edgeworkers |
-| `set ngts edgeworkers pair` | global | `create_ngts_edgeworkers_pair` | POST https://api.strata.paloaltonetworks.com/v1/edgeworkers/{id}/pair |
-| `set ngts exp-reports trigger` | global | `create_ngts_exp_reports_trigger` | POST https://api.strata.paloaltonetworks.com/v1/expirationreports/trigger |
-| `set ngts integrationservices` | global | `create_ngts_integrationservices` | POST https://api.strata.paloaltonetworks.com/v1/integrationservices |
-| `set ngts machineidentities` | global | `create_ngts_machineidentities` | POST https://api.strata.paloaltonetworks.com/v1/machineidentities |
-| `set ngts machineidentities workflows` | global | `create_ngts_machineidentities_workflows` | POST https://api.strata.paloaltonetworks.com/v1/machineidentities/{id}/workflows |
-| `set ngts machineidentitysearch` | global | `create_ngts_machineidentitysearch` | POST https://api.strata.paloaltonetworks.com/v1/machineidentitysearch |
-| `set ngts machines` | global | `create_ngts_machines` | POST https://api.strata.paloaltonetworks.com/v1/machines |
-| `set ngts machines batchprovisionings abort` | global | `create_ngts_machines_batchprovisionings_abort` | POST https://api.strata.paloaltonetworks.com/v1/machines/{id}/batchprovisionings/abort |
-| `set ngts machines discovery abort` | global | `create_ngts_machines_discovery_abort` | POST https://api.strata.paloaltonetworks.com/v1/machines/{id}/discovery/abort |
-| `set ngts machines workflows` | global | `create_ngts_machines_workflows` | POST https://api.strata.paloaltonetworks.com/v1/machines/{id}/workflows |
-| `set ngts machinesearch` | global | `create_ngts_machinesearch` | POST https://api.strata.paloaltonetworks.com/v1/machinesearch |
-| `set ngts pairingcodes satellite` | global | `create_ngts_pairingcodes_satellite` | POST https://api.strata.paloaltonetworks.com/v1/pairingcodes/satellite |
-| `set ngts plugins` | global | `create_ngts_plugins` | POST https://api.strata.paloaltonetworks.com/v1/plugins |
-| `set ngts plugins disablements` | global | `create_ngts_plugins_disablements` | POST https://api.strata.paloaltonetworks.com/v1/plugins/{id}/disablements |
-| `set ngts recoverycodes satellite` | global | `create_ngts_recoverycodes_satellite` | POST https://api.strata.paloaltonetworks.com/v1/recoverycodes/satellite |
-| `set ngts serviceaccounts` | global | `create_ngts_serviceaccounts` | POST https://api.strata.paloaltonetworks.com/v1/serviceaccounts |
-| `set ngts tags` | global | `create_ngts_tags` | POST https://api.strata.paloaltonetworks.com/v1/tags |
-| `set ngts tags creation` | global | `create_ngts_tags_creation` | POST https://api.strata.paloaltonetworks.com/v1/tags/creation |
-| `set ngts tags deletion` | global | `create_ngts_tags_deletion` | POST https://api.strata.paloaltonetworks.com/v1/tags/deletion |
-| `set ngts tags values` | global | `create_ngts_tags_values` | POST https://api.strata.paloaltonetworks.com/v1/tags/{name}/values |
-| `set ngts tagsassignment aggregates` | global | `create_ngts_tagsassignment_aggregates` | POST https://api.strata.paloaltonetworks.com/v1/tagsassignment/aggregates |
-| `set ngts tlsprotect cert-requests approval` | global | `create_ngts_cert_requests_approval` | POST https://api.strata.paloaltonetworks.com/v1/certificaterequests/approvalrules |
-| `set ngts tlsprotect credential-configs test` | global | `create_ngts_credential_configs_test` | POST https://api.strata.paloaltonetworks.com/v1/credentialmanagerconfigurations/{id}/test |
-| `show ngts activitytypes` | global | `show_ngts_activitytypes` | GET https://api.strata.paloaltonetworks.com/v1/activitytypes |
-| `show ngts autorenewal status` | global | `show_ngts_autorenewal_status` | GET https://api.strata.paloaltonetworks.com/v1/autorenewal/status |
-| `show ngts autorenewal tenant-config` | global | `show_ngts_autorenewal_tenant_config` | GET https://api.strata.paloaltonetworks.com/v1/autorenewal/tenantconfiguration |
-| `show ngts cert-instances` | global | `show_ngts_cert_instances` | GET https://api.strata.paloaltonetworks.com/outagedetection/v1/certificateinstances |
-| `show ngts cert-instances id` | global | `show_ngts_cert_instances_id` | GET https://api.strata.paloaltonetworks.com/outagedetection/v1/certificateinstances/{id} |
-| `show ngts cert-requests` | global | `show_ngts_cert_requests` | GET https://api.strata.paloaltonetworks.com/outagedetection/v1/certificaterequests |
-| `show ngts cert-requests approval` | global | `show_ngts_cert_requests_approval` | GET https://api.strata.paloaltonetworks.com/v1/certificaterequests/approvalrules |
-| `show ngts cert-requests approval id` | global | `show_ngts_cert_requests_approval_id` | GET https://api.strata.paloaltonetworks.com/v1/certificaterequests/approvalrules/{id} |
-| `show ngts cert-requests approvalrequests id` | global | `show_ngts_cert_requests_approvalrequests_id` | GET https://api.strata.paloaltonetworks.com/v1/certificaterequests/approvalrequests/{entityId} |
-| `show ngts cert-requests id` | global | `show_ngts_cert_requests_id` | GET https://api.strata.paloaltonetworks.com/outagedetection/v1/certificaterequests/{id} |
-| `show ngts cert-templates` | global | `show_ngts_cert_templates` | GET https://api.strata.paloaltonetworks.com/v1/certificateissuingtemplates |
-| `show ngts cert-templates id` | global | `show_ngts_cert_templates_id` | GET https://api.strata.paloaltonetworks.com/v1/certificateissuingtemplates/{id} |
-| `show ngts certs` | global | `show_ngts_certs` | GET https://api.strata.paloaltonetworks.com/outagedetection/v1/certificates |
-| `show ngts certs contents id` | global | `show_ngts_certs_contents_id` | GET https://api.strata.paloaltonetworks.com/outagedetection/v1/certificates/{id}/contents |
-| `show ngts certs id` | global | `show_ngts_certs_id` | GET https://api.strata.paloaltonetworks.com/outagedetection/v1/certificates/{id} |
-| `show ngts certs imports id` | global | `show_ngts_certs_imports_id` | GET https://api.strata.paloaltonetworks.com/v1/certificates/imports/{id} |
-| `show ngts certs revokes approval` | global | `show_ngts_certs_revokes_approval` | GET https://api.strata.paloaltonetworks.com/v1/certificates/revocations/approvalrules |
-| `show ngts certs revokes approval id` | global | `show_ngts_certs_revokes_approval_id` | GET https://api.strata.paloaltonetworks.com/v1/certificates/revocations/approvalrules/{id} |
-| `show ngts credential-configs` | global | `show_ngts_credential_configs` | GET https://api.strata.paloaltonetworks.com/v1/credentialmanagerconfigurations |
-| `show ngts credential-configs id` | global | `show_ngts_credential_configs_id` | GET https://api.strata.paloaltonetworks.com/v1/credentialmanagerconfigurations/{id} |
-| `show ngts credentials` | global | `show_ngts_credentials` | GET https://api.strata.paloaltonetworks.com/v1/credentials |
-| `show ngts credentials id` | global | `show_ngts_credentials_id` | GET https://api.strata.paloaltonetworks.com/v1/credentials/{id} |
-| `show ngts dist-issuers configurations` | global | `show_ngts_dist_issuers_configurations` | GET https://api.strata.paloaltonetworks.com/v1/distributedissuers/configurations |
-| `show ngts dist-issuers configurations id` | global | `show_ngts_dist_issuers_configurations_id` | GET https://api.strata.paloaltonetworks.com/v1/distributedissuers/configurations/{id} |
-| `show ngts dist-issuers intermediate-certs` | global | `show_ngts_dist_issuers_intermediate_certs` | GET https://api.strata.paloaltonetworks.com/v1/distributedissuers/intermediatecertificates |
-| `show ngts dist-issuers policies` | global | `show_ngts_dist_issuers_policies` | GET https://api.strata.paloaltonetworks.com/v1/distributedissuers/policies |
-| `show ngts dist-issuers policies id` | global | `show_ngts_dist_issuers_policies_id` | GET https://api.strata.paloaltonetworks.com/v1/distributedissuers/policies/{id} |
-| `show ngts dist-issuers subcaproviders` | global | `show_ngts_dist_issuers_subcaproviders` | GET https://api.strata.paloaltonetworks.com/v1/distributedissuers/subcaproviders |
-| `show ngts dist-issuers subcaproviders id` | global | `show_ngts_dist_issuers_subcaproviders_id` | GET https://api.strata.paloaltonetworks.com/v1/distributedissuers/subcaproviders/{id} |
-| `show ngts edgeencryptionkeys` | global | `show_ngts_edgeencryptionkeys` | GET https://api.strata.paloaltonetworks.com/v1/edgeencryptionkeys |
-| `show ngts edgeencryptionkeys id` | global | `show_ngts_edgeencryptionkeys_id` | GET https://api.strata.paloaltonetworks.com/v1/edgeencryptionkeys/{id} |
-| `show ngts edgeinstances` | global | `show_ngts_edgeinstances` | GET https://api.strata.paloaltonetworks.com/v1/edgeinstances |
-| `show ngts edgeinstances id` | global | `show_ngts_edgeinstances_id` | GET https://api.strata.paloaltonetworks.com/v1/edgeinstances/{id} |
-| `show ngts edgeworkers` | global | `show_ngts_edgeworkers` | GET https://api.strata.paloaltonetworks.com/v1/edgeworkers |
-| `show ngts exp-notifications tenant-config` | global | `show_ngts_exp_notifications_tenant_config` | GET https://api.strata.paloaltonetworks.com/v1/expirationnotifications/tenantconfiguration |
-| `show ngts exp-reports tenant-config` | global | `show_ngts_exp_reports_tenant_config` | GET https://api.strata.paloaltonetworks.com/v1/expirationreports/tenantconfiguration |
-| `show ngts integrationservices` | global | `show_ngts_integrationservices` | GET https://api.strata.paloaltonetworks.com/v1/integrationservices |
-| `show ngts integrationservices id` | global | `show_ngts_integrationservices_id` | GET https://api.strata.paloaltonetworks.com/v1/integrationservices/{id} |
-| `show ngts inventory-monitoring id` | global | `show_ngts_inventory_monitoring_id` | GET https://api.strata.paloaltonetworks.com/outagedetection/v1/inventorymonitoringconfig/{type} |
-| `show ngts machineidentities` | global | `show_ngts_machineidentities` | GET https://api.strata.paloaltonetworks.com/v1/machineidentities |
-| `show ngts machineidentities id` | global | `show_ngts_machineidentities_id` | GET https://api.strata.paloaltonetworks.com/v1/machineidentities/{id} |
-| `show ngts machines` | global | `show_ngts_machines` | GET https://api.strata.paloaltonetworks.com/v1/machines |
-| `show ngts machines discovery id` | global | `show_ngts_machines_discovery_id` | GET https://api.strata.paloaltonetworks.com/v1/machines/{id}/discovery |
-| `show ngts machines id` | global | `show_ngts_machines_id` | GET https://api.strata.paloaltonetworks.com/v1/machines/{id} |
-| `show ngts machinetypes` | global | `show_ngts_machinetypes` | GET https://api.strata.paloaltonetworks.com/v1/machinetypes |
-| `show ngts plugins` | global | `show_ngts_plugins` | GET https://api.strata.paloaltonetworks.com/v1/plugins |
-| `show ngts plugins disablements` | global | `show_ngts_plugins_disablements` | GET https://api.strata.paloaltonetworks.com/v1/plugins/disablements |
-| `show ngts plugins id` | global | `show_ngts_plugins_id` | GET https://api.strata.paloaltonetworks.com/v1/plugins/{id} |
-| `show ngts serviceaccounts` | global | `show_ngts_serviceaccounts` | GET https://api.strata.paloaltonetworks.com/v1/serviceaccounts |
-| `show ngts serviceaccounts id` | global | `show_ngts_serviceaccounts_id` | GET https://api.strata.paloaltonetworks.com/v1/serviceaccounts/{id} |
-| `show ngts serviceaccounts scopes` | global | `show_ngts_serviceaccounts_scopes` | GET https://api.strata.paloaltonetworks.com/v1/serviceaccounts/scopes |
-| `show ngts tags` | global | `show_ngts_tags` | GET https://api.strata.paloaltonetworks.com/v1/tags |
-| `show ngts tags id` | global | `show_ngts_tags_id` | GET https://api.strata.paloaltonetworks.com/v1/tags/{name} |
-| `show ngts tags values` | global | `show_ngts_tags_values` | GET https://api.strata.paloaltonetworks.com/v1/tags/values |
-| `show ngts tags values id` | global | `show_ngts_tags_values_id` | GET https://api.strata.paloaltonetworks.com/v1/tags/{name}/values |
-| `show ngts updatesconfig` | global | `show_ngts_updatesconfig` | GET https://api.strata.paloaltonetworks.com/v1/updatesconfig |
-| `update ngts autorenewal tenant-config` | global | `update_ngts_autorenewal_tenant_config` | PUT https://api.strata.paloaltonetworks.com/v1/autorenewal/tenantconfiguration |
-| `update ngts cert-requests approval` | global | `update_ngts_cert_requests_approval` | PUT https://api.strata.paloaltonetworks.com/v1/certificaterequests/approvalrules/{id} |
-| `update ngts cert-templates` | global | `update_ngts_cert_templates` | PUT https://api.strata.paloaltonetworks.com/v1/certificateissuingtemplates/{id} |
-| `update ngts certs revokes approval` | global | `update_ngts_certs_revokes_approval` | PUT https://api.strata.paloaltonetworks.com/v1/certificates/revocations/approvalrules/{id} |
-| `update ngts credential-configs` | global | `update_ngts_credential_configs` | PUT https://api.strata.paloaltonetworks.com/v1/credentialmanagerconfigurations |
-| `update ngts credentials` | global | `update_ngts_credentials` | PUT https://api.strata.paloaltonetworks.com/v1/credentials |
-| `update ngts dist-issuers configurations` | global | `update_ngts_dist_issuers_configurations` | PATCH https://api.strata.paloaltonetworks.com/v1/distributedissuers/configurations/{id} |
-| `update ngts dist-issuers policies` | global | `update_ngts_dist_issuers_policies` | PATCH https://api.strata.paloaltonetworks.com/v1/distributedissuers/policies/{id} |
-| `update ngts dist-issuers subcaproviders` | global | `update_ngts_dist_issuers_subcaproviders` | PATCH https://api.strata.paloaltonetworks.com/v1/distributedissuers/subcaproviders/{id} |
-| `update ngts edgeinstances` | global | `update_ngts_edgeinstances` | PUT https://api.strata.paloaltonetworks.com/v1/edgeinstances/{id} |
-| `update ngts exp-notifications tenant-config` | global | `update_ngts_exp_notifications_tenant_config` | PUT https://api.strata.paloaltonetworks.com/v1/expirationnotifications/tenantconfiguration |
-| `update ngts exp-reports tenant-config` | global | `update_ngts_exp_reports_tenant_config` | PUT https://api.strata.paloaltonetworks.com/v1/expirationreports/tenantconfiguration |
-| `update ngts integrationservices` | global | `update_ngts_integrationservices` | PATCH https://api.strata.paloaltonetworks.com/v1/integrationservices/{id} |
-| `update ngts inventory-monitoring` | global | `update_ngts_inventory_monitoring` | PUT https://api.strata.paloaltonetworks.com/outagedetection/v1/inventorymonitoringconfig/{type} |
-| `update ngts inventory-monitoring scheduler` | global | `update_ngts_inventory_monitoring_scheduler` | PUT https://api.strata.paloaltonetworks.com/outagedetection/v1/inventorymonitoringconfig/{type}/scheduler |
-| `update ngts machineidentities` | global | `update_ngts_machineidentities` | PATCH https://api.strata.paloaltonetworks.com/v1/machineidentities/{id} |
-| `update ngts machines` | global | `update_ngts_machines` | PATCH https://api.strata.paloaltonetworks.com/v1/machines/{id} |
-| `update ngts plugins` | global | `update_ngts_plugins` | PATCH https://api.strata.paloaltonetworks.com/v1/plugins/{id} |
-| `update ngts serviceaccounts` | global | `update_ngts_serviceaccounts` | PATCH https://api.strata.paloaltonetworks.com/v1/serviceaccounts/{id} |
-| `update ngts serviceaccounts credentials` | global | `update_ngts_serviceaccounts_credentials` | PUT https://api.strata.paloaltonetworks.com/v1/serviceaccounts/{id}/credentials |
-| `update ngts serviceaccounts ocitoken` | global | `update_ngts_serviceaccounts_ocitoken` | PUT https://api.strata.paloaltonetworks.com/v1/serviceaccounts/{id}/ocitoken |
-| `update ngts tagsassignment` | global | `update_ngts_tagsassignment` | PATCH https://api.strata.paloaltonetworks.com/v1/tagsassignment |
-| `update ngts updatesconfig` | global | `update_ngts_updatesconfig` | PATCH https://api.strata.paloaltonetworks.com/v1/updatesconfig |
+| `delete ngts cert-requests approval` | global | `delete_ngts_cert_requests_approval` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/certificaterequests/approvalrules/{id} |
+| `delete ngts cert-templates` | global | `delete_ngts_cert_templates` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/certificateissuingtemplates/{id} |
+| `delete ngts certs revokes approval` | global | `delete_ngts_certs_revokes_approval` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/certificates/revocations/approvalrules/{id} |
+| `delete ngts credential-configs` | global | `delete_ngts_credential_configs` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/credentialmanagerconfigurations/{id} |
+| `delete ngts credentials` | global | `delete_ngts_credentials` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/credentials |
+| `delete ngts dist-issuers configurations` | global | `delete_ngts_dist_issuers_configurations` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/configurations/{id} |
+| `delete ngts dist-issuers policies` | global | `delete_ngts_dist_issuers_policies` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/policies/{id} |
+| `delete ngts dist-issuers subcaproviders` | global | `delete_ngts_dist_issuers_subcaproviders` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/subcaproviders/{id} |
+| `delete ngts edgeworkers` | global | `delete_ngts_edgeworkers` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/edgeworkers/{id} |
+| `delete ngts integrationservices` | global | `delete_ngts_integrationservices` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/integrationservices/{id} |
+| `delete ngts machineidentities` | global | `delete_ngts_machineidentities` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/machineidentities/{id} |
+| `delete ngts machines` | global | `delete_ngts_machines` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/machines/{id} |
+| `delete ngts plugins` | global | `delete_ngts_plugins` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/plugins/{id} |
+| `delete ngts plugins disablements` | global | `delete_ngts_plugins_disablements` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/plugins/{id}/disablements |
+| `delete ngts serviceaccounts` | global | `delete_ngts_serviceaccounts` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/serviceaccounts/{id} |
+| `delete ngts tags` | global | `delete_ngts_tags` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/tags/{name} |
+| `delete ngts tags values` | global | `delete_ngts_tags_values` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/tags/{name}/values/{value} |
+| `delete ngts tlsprotect credentials` | global | `delete_ngts_credentials` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/credentials/{id} |
+| `set ngts activitylogsearch` | global | `create_ngts_activitylogsearch` | POST https://api.strata.paloaltonetworks.com/ngts/v1/activitylogsearch |
+| `set ngts activitylogsearch export` | global | `create_ngts_activitylogsearch_export` | POST https://api.strata.paloaltonetworks.com/ngts/v1/activitylogsearch/export |
+| `set ngts autorenewal trigger` | global | `create_ngts_autorenewal_trigger` | POST https://api.strata.paloaltonetworks.com/ngts/v1/autorenewal/trigger |
+| `set ngts cert-instance-search` | global | `create_ngts_cert_instance_search` | POST https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificateinstancesearch |
+| `set ngts cert-instances validation` | global | `create_ngts_cert_instances_validation` | POST https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificateinstances/validation |
+| `set ngts cert-request-search` | global | `create_ngts_cert_request_search` | POST https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificaterequestssearch |
+| `set ngts cert-requests` | global | `create_ngts_cert_requests` | POST https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificaterequests |
+| `set ngts cert-requests approval` | global | `create_ngts_cert_requests_approval` | POST https://api.strata.paloaltonetworks.com/ngts/v1/certificaterequests/{id}/approval/{decision} |
+| `set ngts cert-requests approval bulk` | global | `create_ngts_cert_requests_approval_bulk` | POST https://api.strata.paloaltonetworks.com/ngts/v1/certificaterequests/approval/bulk/{decision} |
+| `set ngts cert-requests resubmission` | global | `create_ngts_cert_requests_resubmission` | POST https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificaterequests/{id}/resubmission |
+| `set ngts cert-requests validation` | global | `create_ngts_cert_requests_validation` | POST https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificaterequests/validation |
+| `set ngts cert-templates` | global | `create_ngts_cert_templates` | POST https://api.strata.paloaltonetworks.com/ngts/v1/certificateissuingtemplates |
+| `set ngts cert-templates domains-sync` | global | `create_ngts_cert_templates_domains_sync` | POST https://api.strata.paloaltonetworks.com/ngts/v1/certificateissuingtemplates/domainssynchronization |
+| `set ngts certificatesearch` | global | `create_ngts_certificatesearch` | POST https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificatesearch |
+| `set ngts certs` | global | `create_ngts_certs` | POST https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificates |
+| `set ngts certs deletion` | global | `create_ngts_certs_deletion` | POST https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificates/deletion |
+| `set ngts certs imports` | global | `create_ngts_certs_imports` | POST https://api.strata.paloaltonetworks.com/ngts/v1/certificates/imports |
+| `set ngts certs recovery` | global | `create_ngts_certs_recovery` | POST https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificates/recovery |
+| `set ngts certs retirement` | global | `create_ngts_certs_retirement` | POST https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificates/retirement |
+| `set ngts certs revokes approval` | global | `create_ngts_certs_revokes_approval` | POST https://api.strata.paloaltonetworks.com/ngts/v1/certificates/revocations/approvalrules |
+| `set ngts certs validation` | global | `create_ngts_certs_validation` | POST https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificates/validation |
+| `set ngts credential-configs` | global | `create_ngts_credential_configs` | POST https://api.strata.paloaltonetworks.com/ngts/v1/credentialmanagerconfigurations |
+| `set ngts credential-configs test` | global | `create_ngts_credential_configs_test` | POST https://api.strata.paloaltonetworks.com/ngts/v1/credentialmanagerconfigurations/test |
+| `set ngts credentials` | global | `create_ngts_credentials` | POST https://api.strata.paloaltonetworks.com/ngts/v1/credentials |
+| `set ngts credentials test` | global | `create_ngts_credentials_test` | POST https://api.strata.paloaltonetworks.com/ngts/v1/credentials/test |
+| `set ngts dist-issuers configurations` | global | `create_ngts_dist_issuers_configurations` | POST https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/configurations |
+| `set ngts dist-issuers policies` | global | `create_ngts_dist_issuers_policies` | POST https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/policies |
+| `set ngts dist-issuers subcaproviders` | global | `create_ngts_dist_issuers_subcaproviders` | POST https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/subcaproviders |
+| `set ngts edgeinstances update` | global | `create_ngts_edgeinstances_update` | POST https://api.strata.paloaltonetworks.com/ngts/v1/edgeinstances/{id}/update |
+| `set ngts edgeworkers` | global | `create_ngts_edgeworkers` | POST https://api.strata.paloaltonetworks.com/ngts/v1/edgeworkers |
+| `set ngts edgeworkers pair` | global | `create_ngts_edgeworkers_pair` | POST https://api.strata.paloaltonetworks.com/ngts/v1/edgeworkers/{id}/pair |
+| `set ngts integrationservices` | global | `create_ngts_integrationservices` | POST https://api.strata.paloaltonetworks.com/ngts/v1/integrationservices |
+| `set ngts machineidentities` | global | `create_ngts_machineidentities` | POST https://api.strata.paloaltonetworks.com/ngts/v1/machineidentities |
+| `set ngts machineidentities workflows` | global | `create_ngts_machineidentities_workflows` | POST https://api.strata.paloaltonetworks.com/ngts/v1/machineidentities/{id}/workflows |
+| `set ngts machineidentitysearch` | global | `create_ngts_machineidentitysearch` | POST https://api.strata.paloaltonetworks.com/ngts/v1/machineidentitysearch |
+| `set ngts machines` | global | `create_ngts_machines` | POST https://api.strata.paloaltonetworks.com/ngts/v1/machines |
+| `set ngts machines batchprovisionings abort` | global | `create_ngts_machines_batchprovisionings_abort` | POST https://api.strata.paloaltonetworks.com/ngts/v1/machines/{id}/batchprovisionings/abort |
+| `set ngts machines discovery abort` | global | `create_ngts_machines_discovery_abort` | POST https://api.strata.paloaltonetworks.com/ngts/v1/machines/{id}/discovery/abort |
+| `set ngts machines workflows` | global | `create_ngts_machines_workflows` | POST https://api.strata.paloaltonetworks.com/ngts/v1/machines/{id}/workflows |
+| `set ngts machinesearch` | global | `create_ngts_machinesearch` | POST https://api.strata.paloaltonetworks.com/ngts/v1/machinesearch |
+| `set ngts pairingcodes satellite` | global | `create_ngts_pairingcodes_satellite` | POST https://api.strata.paloaltonetworks.com/ngts/v1/pairingcodes/satellite |
+| `set ngts plugins` | global | `create_ngts_plugins` | POST https://api.strata.paloaltonetworks.com/ngts/v1/plugins |
+| `set ngts plugins disablements` | global | `create_ngts_plugins_disablements` | POST https://api.strata.paloaltonetworks.com/ngts/v1/plugins/{id}/disablements |
+| `set ngts recoverycodes satellite` | global | `create_ngts_recoverycodes_satellite` | POST https://api.strata.paloaltonetworks.com/ngts/v1/recoverycodes/satellite |
+| `set ngts serviceaccounts` | global | `create_ngts_serviceaccounts` | POST https://api.strata.paloaltonetworks.com/ngts/v1/serviceaccounts |
+| `set ngts tags` | global | `create_ngts_tags` | POST https://api.strata.paloaltonetworks.com/ngts/v1/tags |
+| `set ngts tags creation` | global | `create_ngts_tags_creation` | POST https://api.strata.paloaltonetworks.com/ngts/v1/tags/creation |
+| `set ngts tags deletion` | global | `create_ngts_tags_deletion` | POST https://api.strata.paloaltonetworks.com/ngts/v1/tags/deletion |
+| `set ngts tags values` | global | `create_ngts_tags_values` | POST https://api.strata.paloaltonetworks.com/ngts/v1/tags/{name}/values |
+| `set ngts tagsassignment aggregates` | global | `create_ngts_tagsassignment_aggregates` | POST https://api.strata.paloaltonetworks.com/ngts/v1/tagsassignment/aggregates |
+| `set ngts tlsprotect cert-requests approval` | global | `create_ngts_cert_requests_approval` | POST https://api.strata.paloaltonetworks.com/ngts/v1/certificaterequests/approvalrules |
+| `set ngts tlsprotect credential-configs test` | global | `create_ngts_credential_configs_test` | POST https://api.strata.paloaltonetworks.com/ngts/v1/credentialmanagerconfigurations/{id}/test |
+| `show ngts activitytypes` | global | `show_ngts_activitytypes` | GET https://api.strata.paloaltonetworks.com/ngts/v1/activitytypes |
+| `show ngts autorenewal status` | global | `show_ngts_autorenewal_status` | GET https://api.strata.paloaltonetworks.com/ngts/v1/autorenewal/status |
+| `show ngts autorenewal tenant-config` | global | `show_ngts_autorenewal_tenant_config` | GET https://api.strata.paloaltonetworks.com/ngts/v1/autorenewal/tenantconfiguration |
+| `show ngts cert-instances` | global | `show_ngts_cert_instances` | GET https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificateinstances |
+| `show ngts cert-instances id` | global | `show_ngts_cert_instances_id` | GET https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificateinstances/{id} |
+| `show ngts cert-requests` | global | `show_ngts_cert_requests` | GET https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificaterequests |
+| `show ngts cert-requests approval` | global | `show_ngts_cert_requests_approval` | GET https://api.strata.paloaltonetworks.com/ngts/v1/certificaterequests/approvalrules |
+| `show ngts cert-requests approval id` | global | `show_ngts_cert_requests_approval_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/certificaterequests/approvalrules/{id} |
+| `show ngts cert-requests approvalrequests id` | global | `show_ngts_cert_requests_approvalrequests_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/certificaterequests/approvalrequests/{entityId} |
+| `show ngts cert-requests id` | global | `show_ngts_cert_requests_id` | GET https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificaterequests/{id} |
+| `show ngts cert-templates` | global | `show_ngts_cert_templates` | GET https://api.strata.paloaltonetworks.com/ngts/v1/certificateissuingtemplates |
+| `show ngts cert-templates id` | global | `show_ngts_cert_templates_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/certificateissuingtemplates/{id} |
+| `show ngts certs` | global | `show_ngts_certs` | GET https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificates |
+| `show ngts certs contents id` | global | `show_ngts_certs_contents_id` | GET https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificates/{id}/contents |
+| `show ngts certs id` | global | `show_ngts_certs_id` | GET https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificates/{id} |
+| `show ngts certs imports id` | global | `show_ngts_certs_imports_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/certificates/imports/{id} |
+| `show ngts certs revokes approval` | global | `show_ngts_certs_revokes_approval` | GET https://api.strata.paloaltonetworks.com/ngts/v1/certificates/revocations/approvalrules |
+| `show ngts certs revokes approval id` | global | `show_ngts_certs_revokes_approval_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/certificates/revocations/approvalrules/{id} |
+| `show ngts credential-configs` | global | `show_ngts_credential_configs` | GET https://api.strata.paloaltonetworks.com/ngts/v1/credentialmanagerconfigurations |
+| `show ngts credential-configs id` | global | `show_ngts_credential_configs_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/credentialmanagerconfigurations/{id} |
+| `show ngts credentials` | global | `show_ngts_credentials` | GET https://api.strata.paloaltonetworks.com/ngts/v1/credentials |
+| `show ngts credentials id` | global | `show_ngts_credentials_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/credentials/{id} |
+| `show ngts dist-issuers configurations` | global | `show_ngts_dist_issuers_configurations` | GET https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/configurations |
+| `show ngts dist-issuers configurations id` | global | `show_ngts_dist_issuers_configurations_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/configurations/{id} |
+| `show ngts dist-issuers intermediate-certs` | global | `show_ngts_dist_issuers_intermediate_certs` | GET https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/intermediatecertificates |
+| `show ngts dist-issuers policies` | global | `show_ngts_dist_issuers_policies` | GET https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/policies |
+| `show ngts dist-issuers policies id` | global | `show_ngts_dist_issuers_policies_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/policies/{id} |
+| `show ngts dist-issuers subcaproviders` | global | `show_ngts_dist_issuers_subcaproviders` | GET https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/subcaproviders |
+| `show ngts dist-issuers subcaproviders id` | global | `show_ngts_dist_issuers_subcaproviders_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/subcaproviders/{id} |
+| `show ngts edgeencryptionkeys` | global | `show_ngts_edgeencryptionkeys` | GET https://api.strata.paloaltonetworks.com/ngts/v1/edgeencryptionkeys |
+| `show ngts edgeencryptionkeys id` | global | `show_ngts_edgeencryptionkeys_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/edgeencryptionkeys/{id} |
+| `show ngts edgeinstances` | global | `show_ngts_edgeinstances` | GET https://api.strata.paloaltonetworks.com/ngts/v1/edgeinstances |
+| `show ngts edgeinstances id` | global | `show_ngts_edgeinstances_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/edgeinstances/{id} |
+| `show ngts edgeworkers` | global | `show_ngts_edgeworkers` | GET https://api.strata.paloaltonetworks.com/ngts/v1/edgeworkers |
+| `show ngts exp-notifications tenant-config` | global | `show_ngts_exp_notifications_tenant_config` | GET https://api.strata.paloaltonetworks.com/ngts/v1/expirationnotifications/tenantconfiguration |
+| `show ngts integrationservices` | global | `show_ngts_integrationservices` | GET https://api.strata.paloaltonetworks.com/ngts/v1/integrationservices |
+| `show ngts integrationservices id` | global | `show_ngts_integrationservices_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/integrationservices/{id} |
+| `show ngts inventory-monitoring id` | global | `show_ngts_inventory_monitoring_id` | GET https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/inventorymonitoringconfig/{type} |
+| `show ngts machineidentities` | global | `show_ngts_machineidentities` | GET https://api.strata.paloaltonetworks.com/ngts/v1/machineidentities |
+| `show ngts machineidentities id` | global | `show_ngts_machineidentities_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/machineidentities/{id} |
+| `show ngts machines` | global | `show_ngts_machines` | GET https://api.strata.paloaltonetworks.com/ngts/v1/machines |
+| `show ngts machines discovery id` | global | `show_ngts_machines_discovery_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/machines/{id}/discovery |
+| `show ngts machines id` | global | `show_ngts_machines_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/machines/{id} |
+| `show ngts machinetypes` | global | `show_ngts_machinetypes` | GET https://api.strata.paloaltonetworks.com/ngts/v1/machinetypes |
+| `show ngts plugins` | global | `show_ngts_plugins` | GET https://api.strata.paloaltonetworks.com/ngts/v1/plugins |
+| `show ngts plugins disablements` | global | `show_ngts_plugins_disablements` | GET https://api.strata.paloaltonetworks.com/ngts/v1/plugins/disablements |
+| `show ngts plugins id` | global | `show_ngts_plugins_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/plugins/{id} |
+| `show ngts serviceaccounts` | global | `show_ngts_serviceaccounts` | GET https://api.strata.paloaltonetworks.com/ngts/v1/serviceaccounts |
+| `show ngts serviceaccounts id` | global | `show_ngts_serviceaccounts_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/serviceaccounts/{id} |
+| `show ngts serviceaccounts scopes` | global | `show_ngts_serviceaccounts_scopes` | GET https://api.strata.paloaltonetworks.com/ngts/v1/serviceaccounts/scopes |
+| `show ngts tags` | global | `show_ngts_tags` | GET https://api.strata.paloaltonetworks.com/ngts/v1/tags |
+| `show ngts tags id` | global | `show_ngts_tags_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/tags/{name} |
+| `show ngts tags values` | global | `show_ngts_tags_values` | GET https://api.strata.paloaltonetworks.com/ngts/v1/tags/values |
+| `show ngts tags values id` | global | `show_ngts_tags_values_id` | GET https://api.strata.paloaltonetworks.com/ngts/v1/tags/{name}/values |
+| `show ngts updatesconfig` | global | `show_ngts_updatesconfig` | GET https://api.strata.paloaltonetworks.com/ngts/v1/updatesconfig |
+| `update ngts autorenewal tenant-config` | global | `update_ngts_autorenewal_tenant_config` | PUT https://api.strata.paloaltonetworks.com/ngts/v1/autorenewal/tenantconfiguration |
+| `update ngts cert-requests approval` | global | `update_ngts_cert_requests_approval` | PUT https://api.strata.paloaltonetworks.com/ngts/v1/certificaterequests/approvalrules/{id} |
+| `update ngts cert-templates` | global | `update_ngts_cert_templates` | PUT https://api.strata.paloaltonetworks.com/ngts/v1/certificateissuingtemplates/{id} |
+| `update ngts certs revokes approval` | global | `update_ngts_certs_revokes_approval` | PUT https://api.strata.paloaltonetworks.com/ngts/v1/certificates/revocations/approvalrules/{id} |
+| `update ngts credential-configs` | global | `update_ngts_credential_configs` | PUT https://api.strata.paloaltonetworks.com/ngts/v1/credentialmanagerconfigurations |
+| `update ngts credentials` | global | `update_ngts_credentials` | PUT https://api.strata.paloaltonetworks.com/ngts/v1/credentials |
+| `update ngts dist-issuers configurations` | global | `update_ngts_dist_issuers_configurations` | PATCH https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/configurations/{id} |
+| `update ngts dist-issuers policies` | global | `update_ngts_dist_issuers_policies` | PATCH https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/policies/{id} |
+| `update ngts dist-issuers subcaproviders` | global | `update_ngts_dist_issuers_subcaproviders` | PATCH https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/subcaproviders/{id} |
+| `update ngts edgeinstances` | global | `update_ngts_edgeinstances` | PUT https://api.strata.paloaltonetworks.com/ngts/v1/edgeinstances/{id} |
+| `update ngts exp-notifications tenant-config` | global | `update_ngts_exp_notifications_tenant_config` | PUT https://api.strata.paloaltonetworks.com/ngts/v1/expirationnotifications/tenantconfiguration |
+| `update ngts integrationservices` | global | `update_ngts_integrationservices` | PATCH https://api.strata.paloaltonetworks.com/ngts/v1/integrationservices/{id} |
+| `update ngts inventory-monitoring` | global | `update_ngts_inventory_monitoring` | PUT https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/inventorymonitoringconfig/{type} |
+| `update ngts inventory-monitoring scheduler` | global | `update_ngts_inventory_monitoring_scheduler` | PUT https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/inventorymonitoringconfig/{type}/scheduler |
+| `update ngts machineidentities` | global | `update_ngts_machineidentities` | PATCH https://api.strata.paloaltonetworks.com/ngts/v1/machineidentities/{id} |
+| `update ngts machines` | global | `update_ngts_machines` | PATCH https://api.strata.paloaltonetworks.com/ngts/v1/machines/{id} |
+| `update ngts plugins` | global | `update_ngts_plugins` | PATCH https://api.strata.paloaltonetworks.com/ngts/v1/plugins/{id} |
+| `update ngts serviceaccounts` | global | `update_ngts_serviceaccounts` | PATCH https://api.strata.paloaltonetworks.com/ngts/v1/serviceaccounts/{id} |
+| `update ngts serviceaccounts credentials` | global | `update_ngts_serviceaccounts_credentials` | PUT https://api.strata.paloaltonetworks.com/ngts/v1/serviceaccounts/{id}/credentials |
+| `update ngts serviceaccounts ocitoken` | global | `update_ngts_serviceaccounts_ocitoken` | PUT https://api.strata.paloaltonetworks.com/ngts/v1/serviceaccounts/{id}/ocitoken |
+| `update ngts tagsassignment` | global | `update_ngts_tagsassignment` | PATCH https://api.strata.paloaltonetworks.com/ngts/v1/tagsassignment |
+| `update ngts updatesconfig` | global | `update_ngts_updatesconfig` | PATCH https://api.strata.paloaltonetworks.com/ngts/v1/updatesconfig |
 
 ## Objects
 

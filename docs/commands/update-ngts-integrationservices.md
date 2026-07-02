@@ -5,7 +5,7 @@ usage: "update ngts integrationservices id <value> json|file <payload-or-path>"
 feature_flag: update_ngts_integrationservices
 category: ngts
 scope: global
-api: "PATCH https://api.strata.paloaltonetworks.com/v1/integrationservices/{id}"
+api: "PATCH https://api.strata.paloaltonetworks.com/ngts/v1/integrationservices/{id}"
 ---
 
 # update ngts integrationservices

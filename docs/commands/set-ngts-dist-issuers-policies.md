@@ -5,7 +5,7 @@ usage: "set ngts dist-issuers policies json|file <payload-or-path>"
 feature_flag: create_ngts_dist_issuers_policies
 category: ngts
 scope: global
-api: "POST https://api.strata.paloaltonetworks.com/v1/distributedissuers/policies"
+api: "POST https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/policies"
 ---
 
 # set ngts dist-issuers policies

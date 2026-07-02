@@ -1,7 +1,7 @@
 # SCM NGFW API Reference
 
 > Pulled from https://pan.dev/scm/docs/home/ and the pan.dev GitHub
-> OpenAPI specs on 2026-06-20.
+> OpenAPI specs on 2026-06-30.
 > Regenerate with: `python dev/docsupdate.py` (the `docsupdate` trigger).
 
 This reference set ships with ARC but is excluded from the browsable
@@ -22,7 +22,7 @@ Consolidated OpenAPI endpoint listings per NGFW config domain. See
 - **[specs/ngfw-network.md](specs/ngfw-network.md)** — 246 endpoints
 - **[specs/ngfw-config-operations.md](specs/ngfw-config-operations.md)** — 8 endpoints
 - **[specs/ngfw-operations.md](specs/ngfw-operations.md)** — 10 endpoints
-- **[specs/ngfw-device.md](specs/ngfw-device.md)** — 71 endpoints
+- **[specs/ngfw-device.md](specs/ngfw-device.md)** — 89 endpoints
 - **[specs/ngfw-identity.md](specs/ngfw-identity.md)** — 88 endpoints
 - **[specs/ngfw-device-onboarding.md](specs/ngfw-device-onboarding.md)** — 21 endpoints
 - **[specs/auth.md](specs/auth.md)** — 3 endpoints
@@ -38,7 +38,7 @@ Consolidated OpenAPI endpoint listings per NGFW config domain. See
 - **[specs/cloudngfw-setup.md](specs/cloudngfw-setup.md)** — 47 endpoints
 - **[specs/cloudngfw-device-onboarding.md](specs/cloudngfw-device-onboarding.md)** — 21 endpoints
 - **[specs/incidents.md](specs/incidents.md)** — 2 endpoints
-- **[specs/ngts-tlsprotect.md](specs/ngts-tlsprotect.md)** — 150 endpoints
+- **[specs/ngts-tlsprotect.md](specs/ngts-tlsprotect.md)** — 147 endpoints
 - **[specs/posture-management.md](specs/posture-management.md)** — 10 endpoints
 - **[specs/sase-deployment.md](specs/sase-deployment.md)** — 40 endpoints
 - **[specs/sase-identity.md](specs/sase-identity.md)** — 88 endpoints
@@ -58,6 +58,8 @@ Consolidated OpenAPI endpoint listings per NGFW config domain. See
 - **[specs/iam-user-accounts.md](specs/iam-user-accounts.md)** — 2 endpoints
 - **[specs/subscription-instance.md](specs/subscription-instance.md)** — 2 endpoints
 - **[specs/subscription-licenses.md](specs/subscription-licenses.md)** — 1 endpoints
+- **[specs/ngfw-device-device-settings.md](specs/ngfw-device-device-settings.md)** — 89 endpoints
+- **[specs/sase-deployment-deployment-services-june.md](specs/sase-deployment-deployment-services-june.md)** — 40 endpoints
 
 ## Guides (`guides/`)
 

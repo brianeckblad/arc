@@ -68,10 +68,10 @@ literally contains a reserved word (a type keyword, or `description` / `tag`):
 set address "tag server" fqdn example.com
 ```
 
-The order of arguments is defined in `settings/command-structure.csv` — a single
-line per command listing just the field names (`address,name,type,value,description,tag`).
-Reorder by moving the names; the choices, hints and which fields are required come
-from the API-derived field library in code, not the CSV.
+The order of arguments is defined in `settings/command-structure.json` — one entry
+per command listing just the field names (`{"address": ["name", "type", "value", "description", "tag"]}`).
+Reorder by moving the names in the array; the choices, hints and which fields are required come
+from the API-derived field library in code, not the JSON.
 
 ---
 
@@ -169,7 +169,7 @@ These are optional — the API does not require them. In the shell they are tab-
 set address WebServer ip-netmask 10.1.2.3/32  description <optional>  tag <optional>
 ```
 
-> **Tab-driven entry.** ARC builds the prompts from `settings/command-structure.csv`.
+> **Tab-driven entry.** ARC builds the prompts from `settings/command-structure.json`.
 > At each step Tab shows what to enter next: `<name>` → the type choices
 > (`ip-netmask` / `ip-range` / `ip-wildcard` / `fqdn`) → the `<value>` for that type →
 > the optional `description` / `tag` keywords. A required value never returns an empty

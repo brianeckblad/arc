@@ -2,8 +2,8 @@
 
 **Version:** 1.0.0  
 **Source:** `openapi-specs/scm/config/ngts/tlsprotect-cloud.json`  
-**Base URL:** `https://api.strata.paloaltonetworks.com`  
-**Endpoints:** 150  
+**Base URL:** `https://api.strata.paloaltonetworks.com/ngts`  
+**Endpoints:** 147  
 **GitHub:** https://github.com/PaloAltoNetworks/pan.dev/blob/master/openapi-specs/scm/config/ngts/tlsprotect-cloud.json
 
 ---
@@ -93,7 +93,7 @@
 
 **Summary:** Retrieve Certificate Instances  
 **Operation ID:** `certificateinstances_getAll`  
-**Tags:** Certificate Installations  
+**Tags:** TLS Server Endpoints  
 **Query params:** source, ipAddress, hostname, limit  
 **Response codes:** 200, 400, 412
 
@@ -101,14 +101,14 @@
 
 **Summary:** Get a certificate installation details  
 **Operation ID:** `certificateinstances_getById`  
-**Tags:** Certificate Installations  
+**Tags:** TLS Server Endpoints  
 **Response codes:** 200, 400, 404, 412
 
 ### `POST /outagedetection/v1/certificateinstances/validation`
 
 **Summary:** Request validation for a set of  
 **Operation ID:** `certificateinstances_validation`  
-**Tags:** Certificate Installations  
+**Tags:** TLS Server Endpoints  
 **Body schema:** `CertificateInstanceValidationRequest`  
 **Required fields:** `instanceIds`  
 **Response codes:** 202, 400, 412
@@ -117,7 +117,7 @@
 
 **Summary:** Retrieve certificate instance data matching search  
 **Operation ID:** `certificateinstances_search_getByExpression`  
-**Tags:** Certificate Installations  
+**Tags:** TLS Server Endpoints  
 **Body schema:** `Filter`  
 **Type variants (oneOf/anyOf):** `expression(operands+operator/operand+operator/field+operator)`  
 **Response codes:** 200, 400, 412
@@ -382,14 +382,14 @@
 
 **Summary:** Get the details of all machine  
 **Operation ID:** `machineidentities_getAll`  
-**Tags:** Machine Identities  
+**Tags:** Machine Installations  
 **Response codes:** 200, 400, 412
 
 ### `POST /v1/machineidentities`
 
 **Summary:** Add a machine identity to a  
 **Operation ID:** `machineidentities_create`  
-**Tags:** Machine Identities  
+**Tags:** Machine Installations  
 **Body schema:** `MachineIdentityCreationRequest`  
 **Required fields:** `certificateId`, `machineId`  
 **Response codes:** 201, 400
@@ -398,21 +398,21 @@
 
 **Summary:** Get a machine identity details  
 **Operation ID:** `machineidentities_getById`  
-**Tags:** Machine Identities  
+**Tags:** Machine Installations  
 **Response codes:** 200, 400, 404, 412
 
 ### `DELETE /v1/machineidentities/{id}`
 
 **Summary:** Remove a machine identity  
 **Operation ID:** `machineidentities_delete`  
-**Tags:** Machine Identities  
+**Tags:** Machine Installations  
 **Response codes:** 204, 400, 404, 412
 
 ### `PATCH /v1/machineidentities/{id}`
 
 **Summary:** Update a machine identity details  
 **Operation ID:** `machineidentities_update`  
-**Tags:** Machine Identities  
+**Tags:** Machine Installations  
 **Body schema:** `MachineIdentityUpdateRequest`  
 **Response codes:** 200, 400, 404, 412
 
@@ -420,7 +420,7 @@
 
 **Summary:** Initiate a machine workflow  
 **Operation ID:** `machineidentities_initiateWorkflow`  
-**Tags:** Machine Identities  
+**Tags:** Machine Installations  
 **Body schema:** `MachineIdentityWorkflowRequest`  
 **Required fields:** `workflowName`  
 **Response codes:** 201, 400, 404, 412
@@ -429,7 +429,7 @@
 
 **Summary:** Get the details of machine identities  
 **Operation ID:** `getMachineIdentitiesByExpression`  
-**Tags:** Machine Identities  
+**Tags:** Machine Installations  
 **Body schema:** `MachineIdentitySearchRequest`  
 **Response codes:** 200, 400, 412
 
@@ -721,40 +721,18 @@
 **Tags:** Certificate Auto-renewal Monitoring  
 **Response codes:** 200, 401, 500
 
-### `GET /v1/expirationreports/tenantconfiguration`
-
-**Summary:** Retrieve the certificate expiration reports config  
-**Operation ID:** `get-v1-tenant-expiration-reports-configuration`  
-**Tags:** Certificate Expiration Reports  
-**Response codes:** 200, 400, 401, 500
-
-### `PUT /v1/expirationreports/tenantconfiguration`
-
-**Summary:** Update the certificate expiration reports configur  
-**Operation ID:** `put-v1-tenant-expiration-reports-configuration`  
-**Tags:** Certificate Expiration Reports  
-**Body schema:** `TenantExpirationReportsConfiguration`  
-**Response codes:** 200, 400, 401, 500
-
-### `POST /v1/expirationreports/trigger`
-
-**Summary:** Attempt to initiate the certificate reports  
-**Operation ID:** `post-v1-run-reports`  
-**Tags:** Certificate Expiration Reports  
-**Response codes:** 204
-
 ### `GET /v1/tags`
 
 **Summary:** Retrieve all tags  
 **Operation ID:** `tags_getAll`  
-**Tags:** Tags  
+**Tags:** Certificate Tags  
 **Response codes:** 200, 400, 412
 
 ### `POST /v1/tags`
 
 **Summary:** Create a tag  
 **Operation ID:** `tags_create`  
-**Tags:** Tags  
+**Tags:** Certificate Tags  
 **Body schema:** `TagRequest`  
 **Required fields:** `name`  
 **Response codes:** 201, 400, 412
@@ -763,28 +741,28 @@
 
 **Summary:** Retrieve tag by name  
 **Operation ID:** `tags_getByName`  
-**Tags:** Tags  
+**Tags:** Certificate Tags  
 **Response codes:** 200, 400, 404, 412
 
 ### `DELETE /v1/tags/{name}`
 
 **Summary:** Delete tag by name  
 **Operation ID:** `tags_deleteByName`  
-**Tags:** Tags  
+**Tags:** Certificate Tags  
 **Response codes:** 202, 404, 412
 
 ### `GET /v1/tags/{name}/values`
 
 **Summary:** Retrieve values for a tag  
 **Operation ID:** `tags_get_values`  
-**Tags:** Tags  
+**Tags:** Certificate Tags  
 **Response codes:** 200, 400, 404, 412
 
 ### `POST /v1/tags/{name}/values`
 
 **Summary:** Create tag values  
 **Operation ID:** `tag_values_create`  
-**Tags:** Tags  
+**Tags:** Certificate Tags  
 **Body schema:** `TagValuesRequest`  
 **Required fields:** `values`  
 **Response codes:** 201, 400, 412
@@ -793,21 +771,21 @@
 
 **Summary:** Delete a tag value  
 **Operation ID:** `tags_deleteValueByName`  
-**Tags:** Tags  
+**Tags:** Certificate Tags  
 **Response codes:** 202, 404, 412
 
 ### `GET /v1/tags/values`
 
 **Summary:** Retrieve values for all tags  
 **Operation ID:** `tags_getAllValues`  
-**Tags:** Tags  
+**Tags:** Certificate Tags  
 **Response codes:** 200, 400, 412
 
 ### `POST /v1/tags/creation`
 
 **Summary:** Create tags in bulk  
 **Operation ID:** `tags_bulk_create`  
-**Tags:** Tags  
+**Tags:** Certificate Tags  
 **Body schema:** `TagsBulkRequest`  
 **Response codes:** 201, 400, 412
 
@@ -815,7 +793,7 @@
 
 **Summary:** Delete tags in bulk  
 **Operation ID:** `tags_bulk_delete`  
-**Tags:** Tags  
+**Tags:** Certificate Tags  
 **Body schema:** `TagsBulkRequest`  
 **Response codes:** 202, 404, 412
 
@@ -823,7 +801,7 @@
 
 **Summary:** Replace Add Or Delete Tags  
 **Operation ID:** `tags_assignToEntities`  
-**Tags:** Tags  
+**Tags:** Certificate Tags  
 **Body schema:** `TagsAssignRequest`  
 **Required fields:** `entityIds`  
 **Response codes:** 200, 400, 412
@@ -832,7 +810,7 @@
 
 **Summary:** Bulk operation to retrieve number of  
 **Operation ID:** `tags_assignmentAggregates`  
-**Tags:** Tags  
+**Tags:** Certificate Tags  
 **Body schema:** `TagsAssignmentAggregatesRequest`  
 **Required fields:** `tags`  
 **Response codes:** 200, 400, 412
@@ -841,7 +819,7 @@
 
 **Summary:** Create a new Issuer configuration  
 **Operation ID:** `configurations_create`  
-**Tags:** Workload Identity Manager Configurations  
+**Tags:** Issuer Configurations  
 **Body schema:** `ConfigurationCreateRequest`  
 **Required fields:** `name`, `policyIds`, `subCaProviderId`  
 **Type variants (oneOf/anyOf):** `clientAuthentication(audience+clients/urls/audience+baseUrl)`  
@@ -851,21 +829,21 @@
 
 **Summary:** Get the details of all Issuer  
 **Operation ID:** `configurations_getAll`  
-**Tags:** Workload Identity Manager Configurations  
+**Tags:** Issuer Configurations  
 **Response codes:** 200, 400, 412
 
 ### `GET /v1/distributedissuers/configurations/{id}`
 
 **Summary:** Get configurations details for a specific  
 **Operation ID:** `configurations_getById`  
-**Tags:** Workload Identity Manager Configurations  
+**Tags:** Issuer Configurations  
 **Response codes:** 200, 400, 404, 412
 
 ### `PATCH /v1/distributedissuers/configurations/{id}`
 
 **Summary:** Update an Issuer configuration details  
 **Operation ID:** `configurations_update`  
-**Tags:** Workload Identity Manager Configurations  
+**Tags:** Issuer Configurations  
 **Body schema:** `ConfigurationUpdateRequest`  
 **Response codes:** 200, 400, 404, 412
 
@@ -873,14 +851,14 @@
 
 **Summary:** Remove an Issuer configuration  
 **Operation ID:** `configurations_delete`  
-**Tags:** Workload Identity Manager Configurations  
+**Tags:** Issuer Configurations  
 **Response codes:** 200, 400, 404, 412
 
 ### `POST /v1/distributedissuers/subcaproviders`
 
 **Summary:** Create a new Sub CA provider  
 **Operation ID:** `subcaproviders_create`  
-**Tags:** Workload Identity Manager Sub CA Providers  
+**Tags:** Issuer Sub CA Providers  
 **Body schema:** `SubCaProviderCreateRequest`  
 **Required fields:** `caAccountId`, `caProductOptionId`, `caType`, `commonName`, `keyAlgorithm`, `name`, `validityPeriod`  
 **Response codes:** 201, 400, 412
@@ -889,21 +867,21 @@
 
 **Summary:** Get the details of all Sub  
 **Operation ID:** `subcaprovider_getAll`  
-**Tags:** Workload Identity Manager Sub CA Providers  
+**Tags:** Issuer Sub CA Providers  
 **Response codes:** 200, 400, 412
 
 ### `GET /v1/distributedissuers/subcaproviders/{id}`
 
 **Summary:** Get a Sub CA provider details  
 **Operation ID:** `subcaproviders_getById`  
-**Tags:** Workload Identity Manager Sub CA Providers  
+**Tags:** Issuer Sub CA Providers  
 **Response codes:** 200, 400, 404, 412
 
 ### `PATCH /v1/distributedissuers/subcaproviders/{id}`
 
 **Summary:** Update a Sub CA provider details  
 **Operation ID:** `subcaproviders_update`  
-**Tags:** Workload Identity Manager Sub CA Providers  
+**Tags:** Issuer Sub CA Providers  
 **Body schema:** `SubCaProviderUpdateRequest`  
 **Response codes:** 200, 400, 404, 412
 
@@ -911,14 +889,14 @@
 
 **Summary:** Remove a Sub CA provider  
 **Operation ID:** `subcaproviders_delete`  
-**Tags:** Workload Identity Manager Sub CA Providers  
+**Tags:** Issuer Sub CA Providers  
 **Response codes:** 200, 400, 404, 412
 
 ### `POST /v1/distributedissuers/policies`
 
 **Summary:** Create a new Workload Issuance policy  
 **Operation ID:** `policies_create`  
-**Tags:** Workload Identity Manager Policies  
+**Tags:** Workload Issuance Policies  
 **Body schema:** `PolicyCreateRequest`  
 **Required fields:** `extendedKeyUsages`, `keyAlgorithm`, `keyUsages`, `name`, `sans`, `subject`, `validityPeriod`  
 **Response codes:** 201, 400, 412
@@ -927,21 +905,21 @@
 
 **Summary:** Get the details of all Workload  
 **Operation ID:** `policies_getAll`  
-**Tags:** Workload Identity Manager Policies  
+**Tags:** Workload Issuance Policies  
 **Response codes:** 200, 400, 412
 
 ### `GET /v1/distributedissuers/policies/{id}`
 
 **Summary:** Get a Workload Issuance policy details  
 **Operation ID:** `policies_getById`  
-**Tags:** Workload Identity Manager Policies  
+**Tags:** Workload Issuance Policies  
 **Response codes:** 200, 400, 404, 412
 
 ### `PATCH /v1/distributedissuers/policies/{id}`
 
 **Summary:** Update a Workload Issuance policy details  
 **Operation ID:** `policies_update`  
-**Tags:** Workload Identity Manager Policies  
+**Tags:** Workload Issuance Policies  
 **Body schema:** `PolicyUpdateRequest`  
 **Response codes:** 200, 400, 404, 412
 
@@ -949,14 +927,14 @@
 
 **Summary:** Remove a Workload Issuance policy  
 **Operation ID:** `policies_delete`  
-**Tags:** Workload Identity Manager Policies  
+**Tags:** Workload Issuance Policies  
 **Response codes:** 200, 400, 404, 412
 
 ### `GET /v1/distributedissuers/intermediatecertificates`
 
 **Summary:** Get the details of all Issuer  
 **Operation ID:** `intermediatecertificates_getAll`  
-**Tags:** Workload Identity Manager Intermediate Certificates  
+**Tags:** Issuer Certificates  
 **Response codes:** 200, 400, 412
 
 ### `POST /v1/certificaterequests/{id}/approval/{decision}`
@@ -1065,7 +1043,7 @@
 
 **Summary:** Retrieve all plugins  
 **Operation ID:** `get-v1-plugins`  
-**Tags:** Plugins  
+**Tags:** Plugins (Connectors)  
 **Query params:** pluginTypes, includeDisabled  
 **Response codes:** 200
 
@@ -1073,7 +1051,7 @@
 
 **Summary:** Create a local plugin  
 **Operation ID:** `post-v1-plugins`  
-**Tags:** Plugins  
+**Tags:** Plugins (Connectors)  
 **Body schema:** `PublicPluginCreationRequest`  
 **Required fields:** `manifest`, `pluginType`  
 **Response codes:** 201
@@ -1082,14 +1060,14 @@
 
 **Summary:** Retrieve plugin by ID  
 **Operation ID:** `get-v1-plugins-id`  
-**Tags:** Plugins  
+**Tags:** Plugins (Connectors)  
 **Response codes:** 200
 
 ### `PATCH /v1/plugins/{id}`
 
 **Summary:** Update a local plugin  
 **Operation ID:** `patch-v1-plugins-id`  
-**Tags:** Plugins  
+**Tags:** Plugins (Connectors)  
 **Body schema:** `PublicPluginUpdateRequest`  
 **Response codes:** 200, 401, 403
 
@@ -1097,28 +1075,28 @@
 
 **Summary:** Delete a local plugin  
 **Operation ID:** `delete-v1-plugins-id`  
-**Tags:** Plugins  
+**Tags:** Plugins (Connectors)  
 **Response codes:** 204
 
 ### `POST /v1/plugins/{id}/disablements`
 
 **Summary:** Disable a plugin  
 **Operation ID:** `post-v1-plugins-id-exclusions`  
-**Tags:** Plugins  
+**Tags:** Plugins (Connectors)  
 **Response codes:** 201
 
 ### `DELETE /v1/plugins/{id}/disablements`
 
 **Summary:** Remove plugin disablement  
 **Operation ID:** `delete-v1-plugins-id-exclusions`  
-**Tags:** Plugins  
+**Tags:** Plugins (Connectors)  
 **Response codes:** 204
 
 ### `GET /v1/plugins/disablements`
 
 **Summary:** Retrieve all disabled plugins  
 **Operation ID:** `get-v1-plugins-exclusions`  
-**Tags:** Plugins  
+**Tags:** Plugins (Connectors)  
 **Response codes:** 200
 
 ### `GET /v1/serviceaccounts`

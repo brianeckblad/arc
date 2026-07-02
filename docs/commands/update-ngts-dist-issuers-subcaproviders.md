@@ -5,7 +5,7 @@ usage: "update ngts dist-issuers subcaproviders id <value> json|file <payload-or
 feature_flag: update_ngts_dist_issuers_subcaproviders
 category: ngts
 scope: global
-api: "PATCH https://api.strata.paloaltonetworks.com/v1/distributedissuers/subcaproviders/{id}"
+api: "PATCH https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/subcaproviders/{id}"
 ---
 
 # update ngts dist-issuers subcaproviders

@@ -5,7 +5,7 @@ usage: "set ngts machineidentities json|file <payload-or-path>"
 feature_flag: create_ngts_machineidentities
 category: ngts
 scope: global
-api: "POST https://api.strata.paloaltonetworks.com/v1/machineidentities"
+api: "POST https://api.strata.paloaltonetworks.com/ngts/v1/machineidentities"
 ---
 
 # set ngts machineidentities

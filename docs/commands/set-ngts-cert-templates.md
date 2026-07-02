@@ -5,7 +5,7 @@ usage: "set ngts cert-templates json|file <payload-or-path>"
 feature_flag: create_ngts_cert_templates
 category: ngts
 scope: global
-api: "POST https://api.strata.paloaltonetworks.com/v1/certificateissuingtemplates"
+api: "POST https://api.strata.paloaltonetworks.com/ngts/v1/certificateissuingtemplates"
 ---
 
 # set ngts cert-templates

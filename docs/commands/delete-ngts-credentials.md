@@ -5,7 +5,7 @@ usage: "delete ngts credentials"
 feature_flag: delete_ngts_credentials
 category: ngts
 scope: global
-api: "DELETE https://api.strata.paloaltonetworks.com/v1/credentials"
+api: "DELETE https://api.strata.paloaltonetworks.com/ngts/v1/credentials"
 ---
 
 # delete ngts credentials

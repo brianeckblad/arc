@@ -5,7 +5,7 @@ usage: "set ngts autorenewal trigger json|file <payload-or-path>"
 feature_flag: create_ngts_autorenewal_trigger
 category: ngts
 scope: global
-api: "POST https://api.strata.paloaltonetworks.com/v1/autorenewal/trigger"
+api: "POST https://api.strata.paloaltonetworks.com/ngts/v1/autorenewal/trigger"
 ---
 
 # set ngts autorenewal trigger

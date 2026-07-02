@@ -5,7 +5,7 @@ usage: "set ngts activitylogsearch json|file <payload-or-path>"
 feature_flag: create_ngts_activitylogsearch
 category: ngts
 scope: global
-api: "POST https://api.strata.paloaltonetworks.com/v1/activitylogsearch"
+api: "POST https://api.strata.paloaltonetworks.com/ngts/v1/activitylogsearch"
 ---
 
 # set ngts activitylogsearch

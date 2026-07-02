@@ -5,7 +5,7 @@ usage: "set ngts machinesearch json|file <payload-or-path>"
 feature_flag: create_ngts_machinesearch
 category: ngts
 scope: global
-api: "POST https://api.strata.paloaltonetworks.com/v1/machinesearch"
+api: "POST https://api.strata.paloaltonetworks.com/ngts/v1/machinesearch"
 ---
 
 # set ngts machinesearch

@@ -761,7 +761,7 @@ def test_inline_help_alignment() -> None:
     else:
         fail("enabled feature command missing from completion", "set address was hidden while create_address=on")
 
-    # 9f — Command-structure file (settings/command-structure.csv) drives the
+    # 9f — Command-structure file (settings/command-structure.json) drives the
     #      slot-by-slot completion for `set address`, and tokenization is
     #      quote-aware so a name with spaces ("this is a test") stays one token.
     from app.settings import command_structure as _cs
@@ -770,9 +770,9 @@ def test_inline_help_alignment() -> None:
     _cs.invalidate_cache()
     spec = _cs.arg_spec("set address")
     if spec and [a["name"] for a in spec] == ["name", "type", "value", "description", "tag"]:
-        ok("command-structure.csv: set address args ordered name→type→value→description→tag")
+        ok("command-structure.json: set address args ordered name→type→value→description→tag")
     else:
-        fail("command-structure.csv did not load set address args in order",
+        fail("command-structure.json did not load set address args in order",
              f"spec={spec}")
 
     toks, partial = _tokenize_partial('set address "this is a test" ')

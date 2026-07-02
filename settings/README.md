@@ -10,7 +10,7 @@ Edit a file, save, restart ARC. That's it.
 | `goodbye.txt` | Random exit messages (one per line) | Add/remove lines |
 | `theme.json` | Colours used in `?` help and prompts | Rich style strings: `"cyan"`, `"bold yellow"`, `"dim"` |
 | `cli-structure.yaml` | Verb descriptions, section headers, help footer, configure banner | YAML key/values |
-| `command-structure.csv` | The **order** of fields for a command (`address,name,type,value,...`) | One line per command — move the field names to reorder |
+| `command-structure.json` | The **order** of fields for a command (`{"address": ["name", "type", ...]}`) | Add/move field names in the array to reorder |
 
 > **Command help text** (the one-liner + usage shown by `?` and the full
 > `help <command>` page) is **not** here — it lives in each command's own
@@ -103,29 +103,31 @@ This also runs automatically whenever you pull new API specs with `docsupdate`.
 
 ---
 
-## command-structure.csv — argument order
+## command-structure.json — argument order
 
 This file controls **only one thing: the order of fields** for each
-`set <object>` command. One line per command — the object first, then its fields
-in the order you type them:
+`set <object>` command. One JSON entry per command — the object is the key,
+and the value is an array of field names in the order you type them:
 
-```csv
-# object,field,field,...
-address,name,type,value,description,tag
+```json
+{
+  "_comment": [
+    "Instructions..."
+  ],
+  "address": ["name", "type", "value", "description", "tag"]
+}
 ```
 
-- **Reorder** a command by moving the field names left/right. That is all you edit.
+- **Reorder** a command by moving field names in the array. That is all you edit.
 - Everything else — which field is a fixed choice (and what the choices are),
   which are required, the Tab/`?` hints — is **not** in this file. It comes from
   the API-derived field library in the code, so you never have to maintain it.
 - **You do not need quotes** around values with spaces — ARC works out where each
   field ends (e.g. `set address my web host fqdn example.com`). Quotes still work
   for the rare value that contains a reserved word.
-- A command with no line here falls back to the `usage:` line in its
+- A command with no entry here falls back to the `usage:` line in its
   `docs/commands/<command>.md`.
-
-> Advanced: a fully-specified `command-structure.json` is read as a fallback when
-> no CSV exists.
+- Keys starting with `_` are treated as comments and ignored by the parser.
 
 ---
 

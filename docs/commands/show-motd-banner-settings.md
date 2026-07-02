@@ -3,7 +3,7 @@ command: "show motd-banner-settings"
 description: "List login banner settings"
 usage: "show motd-banner-settings"
 feature_flag: show_motd_banner_settings
-category: device
+category: device-device-settings
 scope: global
 api: "GET https://api.strata.paloaltonetworks.com/config/device/v1/motd-banner-settings"
 ---

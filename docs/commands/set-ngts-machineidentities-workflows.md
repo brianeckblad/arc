@@ -5,7 +5,7 @@ usage: "set ngts machineidentities workflows id <value> json|file <payload-or-pa
 feature_flag: create_ngts_machineidentities_workflows
 category: ngts
 scope: global
-api: "POST https://api.strata.paloaltonetworks.com/v1/machineidentities/{id}/workflows"
+api: "POST https://api.strata.paloaltonetworks.com/ngts/v1/machineidentities/{id}/workflows"
 ---
 
 # set ngts machineidentities workflows

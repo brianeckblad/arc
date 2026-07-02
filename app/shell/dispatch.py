@@ -1,10 +1,69 @@
 """ArcShell dispatch mixin — the line dispatcher (parses + routes every command)."""
 from __future__ import annotations
 
+import difflib  # For fuzzy command matching
+
 from app.shell._base import *  # noqa: F401,F403  (shared spine namespace)
 
 
 class DispatchMixin:
+    def _show_command_not_found(self, tokens: list[str]) -> None:
+        """Show a helpful message when a command is not recognized.
+        
+        Special handling for common cases like 'setup' or 'config' to guide
+        users to the correct help resources.
+        """
+        cmd_text = " ".join(tokens)
+        first_word = tokens[0].lower() if tokens else ""
+        
+        # Special case: setup/config-related terms
+        config_terms = ["setup", "config", "configure", "configuration", "credential", "auth", "login"]
+        if first_word in config_terms or any(word in config_terms for word in [t.lower() for t in tokens]):
+            console.print(
+                f"\n[yellow]No command:[/yellow] [bold]{cmd_text}[/bold]\n\n"
+                "[cyan]Looking for setup/configuration help?[/cyan]\n\n"
+                "  [bold]Platform-specific guides:[/bold]\n"
+                "    • [cyan]help config osx[/cyan]      — macOS (Keychain, Touch ID)\n"
+                "    • [cyan]help config nix[/cyan]      — Linux (libsecret / Secret Service)\n"
+                "    • [cyan]help config win[/cyan]      — Windows (Credential Manager)\n"
+                "    • [cyan]help config generate[/cyan] — generate a starter config file\n"
+                "    • [cyan]help configuration[/cyan]   — full configuration reference\n\n"
+                "  [bold]Configuration commands:[/bold]\n"
+                "    • [cyan]arc auth configure[/cyan]   — (outside shell) credential setup wizard\n"
+                "    • [cyan]arc config generate[/cyan]  — (outside shell) create config file\n"
+            )
+            return
+        
+        # Try fuzzy matching against available commands
+        all_commands = list(_SHELL_BUILTINS) + list(COMMANDS.keys())
+        # Filter to visible commands
+        def _feature_visible(command_def: CommandDef) -> bool:
+            return is_enabled(self._features, command_def.feature_flag, self._dev_mode)
+        
+        visible_commands = [
+            cmd for cmd in all_commands 
+            if cmd not in COMMANDS or _feature_visible(COMMANDS[cmd])
+        ]
+        
+        # Get fuzzy matches
+        matches = difflib.get_close_matches(first_word, visible_commands, n=5, cutoff=0.5)
+        
+        if matches:
+            console.print(
+                f"\n[yellow]Unknown command:[/yellow] [bold]{cmd_text}[/bold]\n\n"
+                "[cyan]Did you mean:[/cyan]\n"
+            )
+            for match in matches:
+                console.print(f"  • [cyan]{match}[/cyan]")
+            console.print(
+                "\nType [bold]?[/bold] for all commands or [bold]help[/bold] for docs."
+            )
+        else:
+            console.print(
+                f"\n[yellow]Unknown command:[/yellow] [bold]{cmd_text}[/bold]\n"
+                "Type [bold]?[/bold] for all commands or [bold]help <topic>[/bold] for docs."
+            )
+
     def _dispatch(self, line: str) -> bool:
         """Process one input line.  Returns True when the user wants to exit ARC."""
         # Normalize whitespace: collapse tabs and multiple spaces to a single space.
@@ -33,16 +92,15 @@ class DispatchMixin:
         visible_command_keys = [k for k, v in COMMANDS.items() if _feature_visible(v)]
         phrases = [[b] for b in _SHELL_BUILTINS if b != "?"] + [k.split() for k in visible_command_keys]
 
-        # Detect a trailing help trigger: '?' (brief, context-sensitive) or
-        # '??' (full help).  Both are appended by the '?' key binding.
-        help_token = "??" if "??" in tokens else ("?" if "?" in tokens else None)
-        help_full = help_token == "??"
+        # Detect a trailing help trigger: '?' (brief, context-sensitive).
+        # Cisco/Palo-style: single ? shows next options. Use "<command> help" for full docs.
+        help_token = "?" if "?" in tokens else None
 
         # Expand the command/topic portion before trailing "help".
         if len(tokens) >= 2 and tokens[-1].lower() == "help":
             tokens = _expand_unambiguous_prefix(tokens[:-1], phrases) + ["help"]
 
-        # Expand prefix before the '?' / '??' context-help trigger.
+        # Expand prefix before the '?' context-help trigger.
         if help_token is not None:
             qidx = tokens.index(help_token)
             tokens = _expand_unambiguous_prefix(tokens[:qidx], phrases) + tokens[qidx:]
@@ -64,8 +122,8 @@ class DispatchMixin:
             self._cmd_help_docs(topic)
             return False
 
-        # Cisco-style context help: a trailing '?' shows the next syntax options
-        # (brief); a trailing '??' shows the full command help.
+        # Cisco/Palo-style context help: a trailing '?' shows the next syntax options.
+        # Use "<command> help" for full documentation instead of ??.
         if help_token is not None:
             question_idx = tokens.index(help_token)
             prefix_tokens = tokens[:question_idx]
@@ -77,7 +135,7 @@ class DispatchMixin:
                 self._pending_default = " ".join(prefix_tokens) + " "
 
                 # Brief '?' on a structured command → next syntax options only.
-                if not help_full and self._print_context_help(prefix_tokens):
+                if self._print_context_help(prefix_tokens):
                     return False
 
                 # Special case: `set ?` / `set <sub> ?` in configure mode.
@@ -99,15 +157,7 @@ class DispatchMixin:
                 # General case: prefix help for registered commands.
                 self._cmd_help_inline(prefix_tokens)
                 return False
-            if help_full:
-                # Bare '??' → the full unfiltered command reference.
-                self._cmd_help_full()
-                return False
             # Fall through so the bare "?" branch below fires
-
-        # A real command line was entered — reset the '?'-repeat tracker so the
-        # next single '?' starts fresh (brief) rather than escalating to full.
-        self._last_q_prefix = None
 
         cmd = tokens[0].lower()
 
@@ -164,6 +214,10 @@ class DispatchMixin:
 
         if cmd == "feature":
             self._cmd_feature(tokens[1:])
+            return False
+
+        if cmd == "setup":
+            self._cmd_setup(tokens[1:])
             return False
 
         # Hidden command — not advertised in ? or tab completion.  Reveals
@@ -231,7 +285,14 @@ class DispatchMixin:
                 self._cmd_help_full()
             elif rest:
                 # "help <topic>" — render docs page for the topic
-                self._cmd_help_docs(" ".join(rest).lower())
+                topic_text = " ".join(rest).lower()
+                # Special case: if the topic matches a builtin like "setup",
+                # and it's asking for help, show the setup wizard help
+                if topic_text == "setup":
+                    from app.docs import render_help_topic
+                    render_help_topic(console, "setup")
+                    return False
+                self._cmd_help_docs(topic_text)
             else:
                 # Bare "help" or "?" — Cisco-style compact inline listing
                 self._cmd_help_inline([])
@@ -266,10 +327,8 @@ class DispatchMixin:
         # ---- Registry commands ----
         key, cmd_def, args = match_command(tokens)
         if key is None or not _feature_visible(cmd_def):
-            console.print(
-                f"[red]Unknown command:[/red] [bold]{' '.join(tokens)}[/bold]  "
-                "— type [bold]?[/bold] or [bold]help[/bold] for available commands."
-            )
+            # Unknown command - provide helpful suggestions
+            self._show_command_not_found(tokens)
             return False
 
         if remote:

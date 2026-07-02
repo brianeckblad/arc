@@ -5,7 +5,7 @@ usage: "set ngts cert-requests approval id <value> decision <value> json|file <p
 feature_flag: create_ngts_cert_requests_approval
 category: ngts
 scope: global
-api: "POST https://api.strata.paloaltonetworks.com/v1/certificaterequests/{id}/approval/{decision}"
+api: "POST https://api.strata.paloaltonetworks.com/ngts/v1/certificaterequests/{id}/approval/{decision}"
 ---
 
 # set ngts cert-requests approval

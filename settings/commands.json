@@ -1,0 +1,25 @@
+{
+  "_README": "Command visibility control - independent of feature flags. Set false to hide specific commands from help and block execution. Useful for deprecating commands or hiding experimental commands without using features.json.",
+  "_NOTE": "This is separate from features.json. Features control functional areas; commands.json controls individual command visibility.",
+  
+  "_comment_shell_builtins": "=== Shell Built-in Commands ===",
+  "cd": true,
+  "pwd": true,
+  "folder": true,
+  "tsg": true,
+  "account": true,
+  "remote": true,
+  "connect": true,
+  "configure": true,
+  "setup": true,
+  "exit": true,
+  "quit": true,
+  "help": true,
+  "?": true,
+  "docs": true,
+  "clear": true,
+  
+  "_comment_examples": "=== Example: Hide specific commands ===",
+  "_example_1": "To hide 'show devices' even if feature_flag allows it:",
+  "_example_show_devices": "show devices: false"
+}

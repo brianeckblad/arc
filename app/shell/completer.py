@@ -455,7 +455,7 @@ class ArcCompleter(Completer):
 
         Combines sub-command next-tokens (e.g. `show interface` → `all`) with the
         command's argument options.  Argument options come from the per-command
-        structure file when present (`settings/command-structure.csv`), else from
+        structure file when present (`settings/command-structure.json`), else from
         parsing the command's usage string.  Required value slots yield a single
         non-inserting hint (e.g. `<name>`) so Tab never returns a silent result.
         """

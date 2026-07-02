@@ -1,0 +1,21 @@
+{
+  "_comment": [
+    "command-structure.json \u2014 the ORDER of fields for each 'set <object>' command.",
+    "",
+    "Format: Each key is an object type, value is an array of field names in order.",
+    "Reorder a command by moving field names in the array. That is all you edit here.",
+    "Everything else (which fields are choices, the choices themselves, the hints,",
+    "which are required) comes from the API/field library in code \u2014 never this file.",
+    "",
+    "You do NOT need quotes around values with spaces \u2014 ARC works out where each",
+    "field ends from the structure below (quotes still work for rare edge cases).",
+    "Keys starting with _ are instructions/metadata and are ignored by the parser."
+  ],
+  "address": [
+    "name",
+    "type",
+    "value",
+    "description",
+    "tag"
+  ]
+}

@@ -818,7 +818,7 @@ When an agent needs to work on a specific domain or feature area, use these keyw
 | `shell` | REPL, help, completion | `app/shell/` package (dispatch.py, help.py, navigation.py; `dev/CODE_MAP.md` for ranges) | Shell UX, prompts, help system, dispatch |
 | `feature` | Feature on/off/dev | `settings/features.json`, `app/settings/features.py`, `docs/commands/features.md` | Turn a command on/dev/off, the feature system, the hidden `dev` mode |
 | `settings` | User-editable assets | `settings/` (banner, theme, goodbye, cli-structure, command-structure, features), `app/paths.py` | Banner, colours, labels, exit messages, argument order — no code (command help text lives in docs/commands/*.md) |
-| `argspec` | Tab/`?` argument completion | `settings/command-structure.csv`, `app/settings/command_structure.py` | Field order, choices, and greedy no-quote parsing for `set <object>` commands |
+| `argspec` | Tab/`?` argument completion | `settings/command-structure.json`, `app/settings/command_structure.py` | Field order, choices, and greedy no-quote parsing for `set <object>` commands |
 | `theme` | Colours | `settings/theme.json`, `app/settings/theme.py` | Recolour `?` help, prompt, banner |
 | `auth` | Authentication/credentials | `app/cli.py` (auth commands), `app/config.py` | Profile management, credential storage |
 | `scm-api` | SCM REST integration | `app/api/client.py`, `dev/API_INDEX.md`, `docs/scm-api/` | Adding new SCM API endpoints |
@@ -1217,8 +1217,8 @@ pairs are offered at the end (minus those already typed). The parser/walker is
 to make a new command fully tab-guided, give it a complete `usage:` line.
 
 **Structure-aware completion + greedy parsing (takes precedence over usage).**
-For curated `set <object>` commands listed in `settings/command-structure.csv`,
-the CSV holds **only the field order** (`address,name,type,value,description,tag`);
+For curated `set <object>` commands listed in `settings/command-structure.json`,
+the JSON holds **only the field order** (`{"address": ["name", "type", "value", "description", "tag"]}`);
 all richer metadata (which fields are fixed choices and their options, which are
 required, the per-field hints) comes from the code-side field library in
 `app/settings/command_structure.py` — seeded today from the SCM schema (e.g. the
@@ -1227,9 +1227,8 @@ an `arg_spec(key)`, the completer (`_arg_options`), inline `?` (`help.py`), and 
 registry parser (`match_command` → `command_structure.parse`) all use it **instead of**
 the `usage` string. Its `_walk` tokenizer consumes free value slots **greedily** so the
 operator never needs quotes (`set address my web host fqdn example.com` → name =
-`my web host`); quotes remain an escape hatch. Commands with no CSV row fall back to the
-usage-string walker above. A nested `settings/command-structure.json` is read only when
-no CSV exists. Add a CSV row only when a command has a curated, human-friendly parser —
+`my web host`); quotes remain an escape hatch. Commands with no JSON entry fall back to the
+usage-string walker above. Add a JSON entry only when a command has a curated, human-friendly parser —
 generated OpenAPI commands stay on their `usage` string (e.g. `json|file <payload-or-path>`).
 
 Device and folder caches are populated at startup when SCM is configured. Both caches refresh when the user runs `show devices` or navigates with `folder`/`tsg` commands.

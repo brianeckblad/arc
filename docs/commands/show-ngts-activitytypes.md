@@ -5,7 +5,7 @@ usage: "show ngts activitytypes"
 feature_flag: show_ngts_activitytypes
 category: ngts
 scope: global
-api: "GET https://api.strata.paloaltonetworks.com/v1/activitytypes"
+api: "GET https://api.strata.paloaltonetworks.com/ngts/v1/activitytypes"
 ---
 
 # show ngts activitytypes

@@ -10,7 +10,7 @@ class HelpMixin:
         """Find the longest command key (with a structure spec) inside *prefix_tokens*.
 
         Returns ``(key, remainder_tokens)`` or ``(None, [])`` when no command in
-        ``settings/command-structure.csv`` matches the typed prefix.
+        ``settings/command-structure.json`` matches the typed prefix.
         """
         lowered = [t.lower() for t in prefix_tokens]
         for count in range(len(lowered), 0, -1):
@@ -138,15 +138,17 @@ class HelpMixin:
                     "pwd", "docs", "help", "clear", "exit", "quit",
                 }
                 if prefix in _builtin_names:
-                    console.print(
-                        f"\n  {self._styled(prefix, t.command_name)}  is a shell built-in.  "
-                        f"Type [bold]{prefix} help[/bold] for full docs.\n"
-                    )
+                    # Special handling for setup - show config help
+                    if prefix == "setup":
+                        self._show_command_not_found([prefix])
+                    else:
+                        console.print(
+                            f"\n  {self._styled(prefix, t.command_name)}  is a shell built-in.  "
+                            f"Type [bold]{prefix} help[/bold] for full docs.\n"
+                        )
                 else:
-                    console.print(
-                        f"\n  [yellow]No commands match:[/yellow] [bold]{prefix}[/bold]  "
-                        "— type [bold]?[/bold] for the full command list.\n"
-                    )
+                    # No match — use the intelligent suggestion system from dispatch
+                    self._show_command_not_found([prefix])
             return
 
         # --- Bare ? or help — Cisco/Palo-style root prompt listing ---
@@ -215,40 +217,48 @@ class HelpMixin:
         )
 
     def _cmd_help_full(self) -> None:
-        """Print the full command reference regardless of context."""
-        console.print()
-        console.print(Panel(
-            "[bold cyan]ARC — Assisted Remote Console[/bold cyan]\n"
-            "A PAN-OS-style interactive shell for Palo Alto Networks SCM environments.\n"
-            "Commands are routed through SCM APIs by default.\n"
-            "Use [bold]connect[/bold] or [bold]remote <device>[/bold] to open an\n"
-            "interactive SSH session on a device.\n\n"
-            "[dim]Scope tags:  (folder) → scoped to active folder  "
-            "(device) → requires cd <device>  "
-            "(global) → no context filtering[/dim]",
-            title="Full Command Reference  (help all)", border_style="cyan",
-        ))
+        """Print the full command reference regardless of context.
+        
+        Uses pagination automatically since this is a long output.
+        """
+        def _print_full_help():
+            console.print()
+            console.print(Panel(
+                "[bold cyan]ARC — Assisted Remote Console[/bold cyan]\n"
+                "A PAN-OS-style interactive shell for Palo Alto Networks SCM environments.\n"
+                "Commands are routed through SCM APIs by default.\n"
+                "Use [bold]connect[/bold] or [bold]remote <device>[/bold] to open an\n"
+                "interactive SSH session on a device.\n\n"
+                "[dim]Scope tags:  (folder) → scoped to active folder  "
+                "(device) → requires cd <device>  "
+                "(global) → no context filtering[/dim]",
+                title="Full Command Reference  (help all)", border_style="cyan",
+            ))
 
-        for category, keys in sorted(CATEGORIES.items()):
-            available_keys = [
-                key for key in sorted(keys)
-                if self._is_command_available(key, COMMANDS[key])
-            ]
-            if not available_keys:
-                continue
-            console.print(f"\n[bold yellow]{category.upper()}[/bold yellow]")
-            for k in available_keys:
-                cmd = COMMANDS[k]
-                scope_tag = (
-                    "  [dim][global][/dim]" if cmd.scope == "global"
-                    else "  [dim][device][/dim]" if cmd.scope == "device"
-                    else ""
-                )
-                ssh_note = " [dim](SSH)[/dim]" if cmd.ssh_command else ""
-                console.print(f"  [cyan]{k:<{_HELP_CMD_WIDTH + 2}}[/cyan] {cmd.description}{scope_tag}{ssh_note}")
+            for category, keys in sorted(CATEGORIES.items()):
+                available_keys = [
+                    key for key in sorted(keys)
+                    if self._is_command_available(key, COMMANDS[key])
+                ]
+                if not available_keys:
+                    continue
+                console.print(f"\n[bold yellow]{category.upper()}[/bold yellow]")
+                for k in available_keys:
+                    cmd = COMMANDS[k]
+                    scope_tag = (
+                        "  [dim][global][/dim]" if cmd.scope == "global"
+                        else "  [dim][device][/dim]" if cmd.scope == "device"
+                        else ""
+                    )
+                    ssh_note = " [dim](SSH)[/dim]" if cmd.ssh_command else ""
+                    console.print(f"  [cyan]{k:<{_HELP_CMD_WIDTH + 2}}[/cyan] {cmd.description}{scope_tag}{ssh_note}")
 
-        self._print_shell_builtins()
-        console.print()
+            self._print_shell_builtins()
+            console.print()
+        
+        # Always use pager for full help (it's long)
+        with console.pager(styles=True):
+            _print_full_help()
 
     def _cmd_show_write_help(self, verb: str) -> None:
         """Show available delete/update commands in configure mode."""
@@ -290,7 +300,17 @@ class HelpMixin:
             console.print(f"    {cmd_cell} {desc}")
 
     def _is_command_available(self, key: str, cmd_def: CommandDef) -> bool:
-        """Return True when a registered command is executable in the current context."""
+        """Return True when a registered command is executable in the current context.
+        
+        Enforces:
+        1. Command visibility (settings/commands.json)
+        2. Device/configure mode context requirements
+        3. Feature flag gates (settings/features.json)
+        """
+        # Check command visibility first (independent of features)
+        if not is_command_visible(key, self._command_visibility):
+            return False
+        
         if cmd_def.scope == "device" and not self._state.device:
             return False
         if key == "commit" and not self._state.configure_mode:

@@ -5,7 +5,7 @@ usage: "delete ngts machineidentities id <value>"
 feature_flag: delete_ngts_machineidentities
 category: ngts
 scope: global
-api: "DELETE https://api.strata.paloaltonetworks.com/v1/machineidentities/{id}"
+api: "DELETE https://api.strata.paloaltonetworks.com/ngts/v1/machineidentities/{id}"
 ---
 
 # delete ngts machineidentities

@@ -5,7 +5,7 @@ usage: "set ngts recoverycodes satellite json|file <payload-or-path>"
 feature_flag: create_ngts_recoverycodes_satellite
 category: ngts
 scope: global
-api: "POST https://api.strata.paloaltonetworks.com/v1/recoverycodes/satellite"
+api: "POST https://api.strata.paloaltonetworks.com/ngts/v1/recoverycodes/satellite"
 ---
 
 # set ngts recoverycodes satellite

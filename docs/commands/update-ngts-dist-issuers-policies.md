@@ -5,7 +5,7 @@ usage: "update ngts dist-issuers policies id <value> json|file <payload-or-path>
 feature_flag: update_ngts_dist_issuers_policies
 category: ngts
 scope: global
-api: "PATCH https://api.strata.paloaltonetworks.com/v1/distributedissuers/policies/{id}"
+api: "PATCH https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/policies/{id}"
 ---
 
 # update ngts dist-issuers policies

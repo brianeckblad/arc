@@ -3,7 +3,7 @@ command: "delete update-schedule"
 description: "Delete update schedule settings"
 usage: "delete update-schedule id <value>"
 feature_flag: delete_update_schedule
-category: device
+category: device-device-settings
 scope: global
 api: "DELETE https://api.strata.paloaltonetworks.com/config/device/v1/update-schedule/{id}"
 ---

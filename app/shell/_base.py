@@ -78,12 +78,35 @@ from app.settings.cli_structure import (
 )
 from app.docs import available_help_topics, open_docs_in_browser, render_help_topic
 from app.settings.features import dev_mode_from_env, feature_state, is_enabled, load_features
+from app.settings.commands import load_command_visibility, is_command_visible
 from app.shell_catalog import SHELL_BUILTINS, shell_help_rows
 from app.ssh.manager import SSHManager
 from app.settings.theme import ArcTheme, THEME_KEYS, load_theme, reset_theme, save_theme
 from app.utils import formatter as fmt
 
 console = Console()
+
+
+def paginate_if_needed(content_fn: callable, force_pager: bool = False, styles: bool = False) -> None:
+    """Automatically paginate output if it exceeds terminal height.
+    
+    Args:
+        content_fn: A callable that prints content using console.print()
+        force_pager: If True, always use pager regardless of content length
+        styles: Whether to preserve Rich styles in the pager
+        
+    Usage:
+        paginate_if_needed(lambda: console.print(long_text))
+    """
+    if force_pager:
+        with console.pager(styles=styles):
+            content_fn()
+    else:
+        # For auto-pagination, we'd need to capture output and count lines
+        # For now, use pager for known-long outputs (help all, docs)
+        # Short outputs (inline ?) go direct
+        content_fn()
+
 
 HISTORY_FILE = os.path.join(platformdirs.user_data_dir("arc"), "history")
 GOODBYE_FILE = _GOODBYE_FILE  # settings/goodbye.txt (imported below)
@@ -177,17 +200,10 @@ def _make_key_bindings(shell=None) -> KeyBindings:
         # Preserve any partial command the user has already typed so that
         # dispatch can show context-sensitive help instead of the full menu.
         # e.g.  "show address" + ? → submit "show address ?"
+        # Cisco/Palo-style: single ? always shows next options in context.
+        # For full docs, use "<command> help" instead.
         prefix = buf.text.rstrip()
-        last = getattr(shell, "_last_q_prefix", None) if shell is not None else None
-        if prefix and last == prefix:
-            # Second '?' on the same prefix → full help ("??").
-            buf.text = prefix + " ??"
-            if shell is not None:
-                shell._last_q_prefix = None
-        else:
-            buf.text = (prefix + " ?") if prefix else "?"
-            if shell is not None:
-                shell._last_q_prefix = prefix
+        buf.text = (prefix + " ?") if prefix else "?"
         buf.validate_and_handle()
 
     @kb.add("tab")

@@ -5,7 +5,7 @@ usage: "show ngts machinetypes"
 feature_flag: show_ngts_machinetypes
 category: ngts
 scope: global
-api: "GET https://api.strata.paloaltonetworks.com/v1/machinetypes"
+api: "GET https://api.strata.paloaltonetworks.com/ngts/v1/machinetypes"
 ---
 
 # show ngts machinetypes

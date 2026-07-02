@@ -5,7 +5,7 @@ usage: "set ngts certs deletion json|file <payload-or-path>"
 feature_flag: create_ngts_certs_deletion
 category: ngts
 scope: global
-api: "POST https://api.strata.paloaltonetworks.com/outagedetection/v1/certificates/deletion"
+api: "POST https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificates/deletion"
 ---
 
 # set ngts certs deletion

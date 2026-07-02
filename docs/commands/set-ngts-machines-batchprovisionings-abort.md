@@ -5,7 +5,7 @@ usage: "set ngts machines batchprovisionings abort id <value> json|file <payload
 feature_flag: create_ngts_machines_batchprovisionings_abort
 category: ngts
 scope: global
-api: "POST https://api.strata.paloaltonetworks.com/v1/machines/{id}/batchprovisionings/abort"
+api: "POST https://api.strata.paloaltonetworks.com/ngts/v1/machines/{id}/batchprovisionings/abort"
 ---
 
 # set ngts machines batchprovisionings abort

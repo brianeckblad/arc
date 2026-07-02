@@ -5,7 +5,7 @@ usage: "set ngts cert-requests approval bulk decision <value> json|file <payload
 feature_flag: create_ngts_cert_requests_approval_bulk
 category: ngts
 scope: global
-api: "POST https://api.strata.paloaltonetworks.com/v1/certificaterequests/approval/bulk/{decision}"
+api: "POST https://api.strata.paloaltonetworks.com/ngts/v1/certificaterequests/approval/bulk/{decision}"
 ---
 
 # set ngts cert-requests approval bulk

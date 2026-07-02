@@ -5,7 +5,7 @@ usage: "set ngts cert-requests resubmission id <value> json|file <payload-or-pat
 feature_flag: create_ngts_cert_requests_resubmission
 category: ngts
 scope: global
-api: "POST https://api.strata.paloaltonetworks.com/outagedetection/v1/certificaterequests/{id}/resubmission"
+api: "POST https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificaterequests/{id}/resubmission"
 ---
 
 # set ngts cert-requests resubmission

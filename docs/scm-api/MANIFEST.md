@@ -1,6 +1,6 @@
 # SCM API Manifest
 
-Pulled on 2026-06-20 from `PaloAltoNetworks/pan.dev` (master).
+Pulled on 2026-06-30 from `PaloAltoNetworks/pan.dev` (master).
 
 | Category | Base URL (`servers[0].url`) | Spec |
 |----------|------------------------------|------|
@@ -10,7 +10,7 @@ Pulled on 2026-06-20 from `PaloAltoNetworks/pan.dev` (master).
 | `ngfw-network` | `https://api.strata.paloaltonetworks.com/config/network/v1` | `openapi-specs/scm/config/ngfw/network/network-services-R2-2026.yaml` |
 | `ngfw-config-operations` | `https://api.strata.paloaltonetworks.com/config/operations/v1` | `openapi-specs/scm/config/ngfw/operations/config-operations-march.yaml` |
 | `ngfw-operations` | `https://api.strata.paloaltonetworks.com/operations/v1` | `openapi-specs/scm/config/ngfw-operations/operations-R2-2026.yaml` |
-| `ngfw-device` | `https://api.strata.paloaltonetworks.com/config/device/v1` | `openapi-specs/scm/config/ngfw/device/device-settings_April.yaml` |
+| `ngfw-device` | `https://api.strata.paloaltonetworks.com/config/device/v1` | `openapi-specs/scm/config/ngfw/device/device-settings.yaml` |
 | `ngfw-identity` | `https://api.strata.paloaltonetworks.com/config/identity/v1` | `openapi-specs/scm/config/ngfw/identity/identity-services-march.yaml` |
 | `ngfw-device-onboarding` | `https://api.strata.paloaltonetworks.com/config/setup/device-onboarding/v1` | `openapi-specs/scm/config/ngfw/setup/device-onboarding/device-onboarding-updated.yaml` |
 | `auth` | `https://auth.apps.paloaltonetworks.com` | `openapi-specs/scm/auth/AuthService.yaml` |
@@ -26,9 +26,9 @@ Pulled on 2026-06-20 from `PaloAltoNetworks/pan.dev` (master).
 | `cloudngfw-setup` | `https://api.strata.paloaltonetworks.com/config/setup/v1` | `openapi-specs/scm/config/cloudngfw/setup/config-setup-feb-v1.yaml` |
 | `cloudngfw-device-onboarding` | `https://api.strata.paloaltonetworks.com/config/setup/device-onboarding/v1` | `openapi-specs/scm/config/cloudngfw/setup/device-onboarding/device-onboarding-updated.yaml` |
 | `incidents` | `https://api.strata.paloaltonetworks.com` | `openapi-specs/scm/config/incidents/Unified_SCM_Incident.yaml` |
-| `ngts-tlsprotect` | `https://api.strata.paloaltonetworks.com` | `openapi-specs/scm/config/ngts/tlsprotect-cloud.json` |
+| `ngts-tlsprotect` | `https://api.strata.paloaltonetworks.com/ngts` | `openapi-specs/scm/config/ngts/tlsprotect-cloud.json` |
 | `posture-management` | `https://api.strata.paloaltonetworks.com` | `openapi-specs/scm/config/posture-management/Posture APIs-updated.yaml` |
-| `sase-deployment` | `https://api.strata.paloaltonetworks.com/config/deployment/v1` | `openapi-specs/scm/config/sase/deployment/deployment-services-march.yaml` |
+| `sase-deployment` | `https://api.strata.paloaltonetworks.com/config/deployment/v1` | `openapi-specs/scm/config/sase/deployment/deployment-services-june.yaml` |
 | `sase-identity` | `https://api.strata.paloaltonetworks.com/config/identity/v1` | `openapi-specs/scm/config/sase/identity/identity-services-march.yaml` |
 | `sase-mobileagent` | `https://api.strata.paloaltonetworks.com/config/mobile-agent/v1` | `openapi-specs/scm/config/sase/mobileagent/mobile-agent-feb-v1.yaml` |
 | `sase-network-configurations` | `https://api.strata.paloaltonetworks.com/config/network/v1` | `openapi-specs/scm/config/sase/network configurations/network-services-R2-2026.yaml` |
@@ -46,3 +46,5 @@ Pulled on 2026-06-20 from `PaloAltoNetworks/pan.dev` (master).
 | `iam-user-accounts` | `https://api.sase.paloaltonetworks.com` | `openapi-specs/scm/iam/UserAccounts.yaml` |
 | `subscription-instance` | `https://api.sase.paloaltonetworks.com` | `openapi-specs/scm/subscription/Instance.yaml` |
 | `subscription-licenses` | `https://api.sase.paloaltonetworks.com` | `openapi-specs/scm/subscription/Licenses.yaml` |
+| `ngfw-device-device-settings` | `https://api.strata.paloaltonetworks.com/config/device/v1` | `openapi-specs/scm/config/ngfw/device/device-settings.yaml` |
+| `sase-deployment-deployment-services-june` | `https://api.strata.paloaltonetworks.com/config/deployment/v1` | `openapi-specs/scm/config/sase/deployment/deployment-services-june.yaml` |

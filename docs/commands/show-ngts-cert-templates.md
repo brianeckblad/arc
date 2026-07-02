@@ -5,7 +5,7 @@ usage: "show ngts cert-templates"
 feature_flag: show_ngts_cert_templates
 category: ngts
 scope: global
-api: "GET https://api.strata.paloaltonetworks.com/v1/certificateissuingtemplates"
+api: "GET https://api.strata.paloaltonetworks.com/ngts/v1/certificateissuingtemplates"
 ---
 
 # show ngts cert-templates

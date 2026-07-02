@@ -75,7 +75,7 @@ Resource                                      Methods  ARC Command              
   authentication-rules                        LRCUD    ✓ delete cngfw authentication-rules / set cngfw authentication-rules / set cngfw authentication-rules move / +4 more —
   authentication-sequences                    LRCUD    ✓ delete cngfw authentication-sequences / set cngfw authentication-sequences / show cngfw authentication-sequences / +2 more —
   certificate-profiles                        LRCUD    ✓ delete cngfw certificate-profiles / set cngfw certificate-profiles / show certificate-profile / +3 more —
-  certificates                                LRCD     ✓ delete cngfw certs / set cngfw certs / set cngfw certs export / +7 more —
+  certificates                                LRCD     ✓ delete cngfw certs / set cngfw certs / set cngfw certs export / +3 more —
   kerberos-server-profiles                    LRCUD    ✓ delete cngfw kerberos-server-profiles / set cngfw kerberos-server-profiles / show cngfw kerberos-server-profiles / +2 more —
   ldap-server-profiles                        LRCUD    ✓ delete cngfw ldap-server-profiles / set cngfw ldap-server-profiles / show cngfw ldap-server-profiles / +2 more —
   local-user-groups                           LRCUD    ✓ delete cngfw local-user-groups / set cngfw local-user-groups / show cngfw local-user-groups / +3 more —
@@ -114,7 +114,7 @@ Resource                                      Methods  ARC Command              
   service-groups                              LRCUD    ✓ delete cngfw service-groups / delete service-group / set cngfw service-groups / +6 more —
   services                                    LRCUD    ✓ delete cngfw services / delete service / set cngfw services / +6 more show objects service
   syslog-server-profiles                      LRCUD    ✓ delete cngfw syslog-server-profiles / set cngfw syslog-server-profiles / show cngfw syslog-server-profiles / +2 more —
-  tags                                        LRCUD    ✓ delete cngfw tags / delete tag / set cngfw tags / +6 more show objects tag
+  tags                                        LRCUD    ✓ delete cngfw tags / delete ngts tags / delete ngts tags values / +13 more show objects tag
 
 ## Config Operations
 **Base:** `https://api.strata.paloaltonetworks.com/config/operations/v1`  |  **Spec:** `docs/scm-api/specs/cloudngfw-operations.yaml`
@@ -243,6 +243,34 @@ Resource                                      Methods  ARC Command              
   config-versions/running                     L        ✓ show cngfw config-versions running       —
   jobs                                        LR       ✓ show cngfw jobs / show cngfw jobs id / show jobs all / +1 more show jobs processed
 
+## Device Settings
+**Base:** `https://api.strata.paloaltonetworks.com/config/device/v1`  |  **Spec:** `docs/scm-api/specs/ngfw-device-device-settings.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  authentication-settings                     LRCUD    ✓ delete authentication-settings / set authentication-settings / show authentication-settings / +2 more —
+  autoscale                                   LCUD     ✓ delete autoscale / set autoscale / show autoscale / +1 more —
+  content-cloud-settings                      LRCUD    ✓ delete content-cloud-settings / set content-cloud-settings / show content-cloud-settings / +2 more —
+  content-id-settings                         LRCUD    ✓ delete content-id-settings / set content-id-settings / show content-id-settings / +2 more —
+  device-context-segment-association          LRCUD    ✓ delete device-context-segment-association / delete ngfw device device settings device-context-segment-association / set device-context-segment-association / +3 more —
+  device-redistribution-collector             LRCUD    ✓ delete device-redistribution-collector / set device-redistribution-collector / show device-redistribution-collector / +2 more —
+  general-settings                            LRCUD    ✓ delete general-settings / set general-settings / show general-settings / +2 more —
+  ha-configurations                           LCUD     ✓ delete ha-configurations / set ha-configurations / show ha-configurations / +2 more —
+  ha-configurations-gateways                  L        ✓ show ha-configurations-gateways          —
+  ha-configurations-ip-addresses              L        ✓ show ha-configurations-ip-addresses      show objects address
+  ha-configurations-netmasks                  L        ✓ show ha-configurations-netmasks          —
+  ha-configurations-ports                     L        ✓ show ha-configurations-ports             —
+  ha-devices                                  L        ✓ show ha-devices                          show system info
+  management-interface                        LRCUD    ✓ delete management-interface / set management-interface / show management-interface / +2 more —
+  motd-banner-settings                        LRCUD    ✓ delete motd-banner-settings / set motd-banner-settings / show motd-banner-settings / +2 more —
+  service-route                               LRCUD    ✓ delete service-route / set service-route / show service-route / +2 more —
+  service-settings                            LRCUD    ✓ delete service-settings / set service-settings / show service-settings / +2 more —
+  session-settings                            LRCUD    ✓ delete session-settings / set session-settings / show session-settings / +2 more —
+  session-timeouts                            LRCUD    ✓ delete session-timeouts / set session-timeouts / show session-timeouts / +2 more —
+  tcp-settings                                LRCUD    ✓ delete tcp-settings / set tcp-settings / show tcp-settings / +2 more —
+  update-schedule                             LRCUD    ✓ delete update-schedule / set update-schedule / show update-schedule / +2 more —
+  vpn-settings                                LRCUD    ✓ delete vpn-settings / set vpn-settings / show vpn-settings / +2 more —
+
 ## Device Onboarding
 **Base:** `https://api.strata.paloaltonetworks.com/config/setup/device-onboarding/v1`  |  **Spec:** `docs/scm-api/specs/ngfw-device-onboarding.yaml`
 
@@ -259,10 +287,17 @@ Resource                                      Methods  ARC Command              
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
   authentication-settings                     LRCUD    ✓ delete authentication-settings / set authentication-settings / show authentication-settings / +2 more —
+  autoscale                                   LCUD     ✓ delete autoscale / set autoscale / show autoscale / +1 more —
+  content-cloud-settings                      LRCUD    ✓ delete content-cloud-settings / set content-cloud-settings / show content-cloud-settings / +2 more —
   content-id-settings                         LRCUD    ✓ delete content-id-settings / set content-id-settings / show content-id-settings / +2 more —
+  device-context-segment-association          LRCUD    ✓ delete device-context-segment-association / delete ngfw device device settings device-context-segment-association / set device-context-segment-association / +3 more —
   device-redistribution-collector             LRCUD    ✓ delete device-redistribution-collector / set device-redistribution-collector / show device-redistribution-collector / +2 more —
   general-settings                            LRCUD    ✓ delete general-settings / set general-settings / show general-settings / +2 more —
-  ha-configurations                           LRCUD    ✓ delete ha-configurations / set ha-configurations / show ha-configurations / +2 more —
+  ha-configurations                           LCUD     ✓ delete ha-configurations / set ha-configurations / show ha-configurations / +2 more —
+  ha-configurations-gateways                  L        ✓ show ha-configurations-gateways          —
+  ha-configurations-ip-addresses              L        ✓ show ha-configurations-ip-addresses      show objects address
+  ha-configurations-netmasks                  L        ✓ show ha-configurations-netmasks          —
+  ha-configurations-ports                     L        ✓ show ha-configurations-ports             —
   ha-devices                                  L        ✓ show ha-devices                          show system info
   management-interface                        LRCUD    ✓ delete management-interface / set management-interface / show management-interface / +2 more —
   motd-banner-settings                        LRCUD    ✓ delete motd-banner-settings / set motd-banner-settings / show motd-banner-settings / +2 more —
@@ -284,7 +319,7 @@ Resource                                      Methods  ARC Command              
   authentication-rules                        LRCUD    ✓ delete cngfw authentication-rules / set cngfw authentication-rules / set cngfw authentication-rules move / +4 more —
   authentication-sequences                    LRCUD    ✓ delete cngfw authentication-sequences / set cngfw authentication-sequences / show cngfw authentication-sequences / +2 more —
   certificate-profiles                        LRCUD    ✓ delete cngfw certificate-profiles / set cngfw certificate-profiles / show certificate-profile / +3 more —
-  certificates                                LRCD     ✓ delete cngfw certs / set cngfw certs / set cngfw certs export / +7 more —
+  certificates                                LRCD     ✓ delete cngfw certs / set cngfw certs / set cngfw certs export / +3 more —
   kerberos-server-profiles                    LRCUD    ✓ delete cngfw kerberos-server-profiles / set cngfw kerberos-server-profiles / show cngfw kerberos-server-profiles / +2 more —
   ldap-server-profiles                        LRCUD    ✓ delete cngfw ldap-server-profiles / set cngfw ldap-server-profiles / show cngfw ldap-server-profiles / +2 more —
   local-user-groups                           LRCUD    ✓ delete cngfw local-user-groups / set cngfw local-user-groups / show cngfw local-user-groups / +3 more —
@@ -381,7 +416,7 @@ Resource                                      Methods  ARC Command              
   service-groups                              LRCUD    ✓ delete cngfw service-groups / delete service-group / set cngfw service-groups / +6 more —
   services                                    LRCUD    ✓ delete cngfw services / delete service / set cngfw services / +6 more show objects service
   syslog-server-profiles                      LRCUD    ✓ delete cngfw syslog-server-profiles / set cngfw syslog-server-profiles / show cngfw syslog-server-profiles / +2 more —
-  tags                                        LRCUD    ✓ delete cngfw tags / delete tag / set cngfw tags / +6 more show objects tag
+  tags                                        LRCUD    ✓ delete cngfw tags / delete ngts tags / delete ngts tags values / +13 more show objects tag
 
 ## Operations and Troubleshooting
 **Base:** `https://api.strata.paloaltonetworks.com/operations/v1`  |  **Spec:** `docs/scm-api/specs/ngfw-operations.yaml`
@@ -450,70 +485,68 @@ Resource                                      Methods  ARC Command              
   variables                                   LRCUD    ✓ delete cngfw variables / set cngfw variables / show cngfw variables / +2 more —
 
 ## TLS Protect Cloud API for Strata Cloud Manager
-**Base:** `https://api.strata.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/ngts-tlsprotect.yaml`
+**Base:** `https://api.strata.paloaltonetworks.com/ngts`  |  **Spec:** `docs/scm-api/specs/ngts-tlsprotect.yaml`
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  outagedetection/v1/certificateinstances     LR       ✓ show ngts cert-instances / show ngts cert-instances id —
-  outagedetection/v1/certificateinstances/validation C        ✓ set ngts cert-instances validation       —
-  outagedetection/v1/certificateinstancesearch C        ✓ set ngts cert-instance-search            —
-  outagedetection/v1/certificaterequests      LRC      ✓ set ngts cert-requests / set ngts cert-requests resubmission / show ngts cert-requests / +1 more —
-  outagedetection/v1/certificaterequests/validation C        ✓ set ngts cert-requests validation        —
-  outagedetection/v1/certificaterequestssearch C        ✓ set ngts cert-request-search             —
-  outagedetection/v1/certificates             LRC      ✓ delete cngfw certs / set cngfw certs / set cngfw certs export / +7 more —
-  outagedetection/v1/certificates/deletion    C        ✓ set ngts certs deletion                  —
-  outagedetection/v1/certificates/recovery    C        ✓ set ngts certs recovery                  —
-  outagedetection/v1/certificates/retirement  C        ✓ set ngts certs retirement                —
-  outagedetection/v1/certificates/validation  C        ✓ set ngts certs validation                —
-  outagedetection/v1/certificatesearch        C        ✓ set ngts certificatesearch               —
-  outagedetection/v1/inventorymonitoringconfig RU       ✓ show ngts inventory-monitoring id / update ngts inventory-monitoring / update ngts inventory-monitoring scheduler —
-  v1/activitylogsearch                        C        ✓ set ngts activitylogsearch               —
-  v1/activitylogsearch/export                 C        ✓ set ngts activitylogsearch export        —
-  v1/activitytypes                            L        ✓ show ngts activitytypes                  —
-  v1/autorenewal/status                       L        ✓ show ngts autorenewal status             —
-  v1/autorenewal/tenantconfiguration          LU       ✓ show ngts autorenewal tenant-config / update ngts autorenewal tenant-config —
-  v1/autorenewal/trigger                      C        ✓ set ngts autorenewal trigger             —
-  v1/certificateissuingtemplates              LRCUD    ✓ delete ngts cert-templates / set ngts cert-templates / show ngts cert-templates / +2 more —
-  v1/certificateissuingtemplates/domainssynchronization C        ✓ set ngts cert-templates domains-sync     —
-  v1/certificaterequests                      C        ✓ set ngts cert-requests approval          —
-  v1/certificaterequests/approval/bulk        C        ✓ set ngts cert-requests approval bulk     —
-  v1/certificaterequests/approvalrequests     R        ✓ show ngts cert-requests approvalrequests id —
-  v1/certificaterequests/approvalrules        LRCUD    ✓ delete ngts cert-requests approval / set ngts tlsprotect cert-requests approval / show ngts cert-requests approval / +2 more —
-  v1/certificates/imports                     RC       ✓ set ngts certs imports / show ngts certs imports id —
-  v1/certificates/revocations/approvalrules   LRCUD    ✓ delete ngts certs revokes approval / set ngts certs revokes approval / show ngts certs revokes approval / +2 more —
-  v1/credentialmanagerconfigurations          LRCUD    ✓ delete ngts credential-configs / set ngts credential-configs / set ngts tlsprotect credential-configs test / +3 more —
-  v1/credentialmanagerconfigurations/test     C        ✓ set ngts credential-configs test         —
-  v1/credentials                              LRCUD    ✓ delete ngts credentials / delete ngts tlsprotect credentials / set ngts credentials / +3 more —
-  v1/credentials/test                         C        ✓ set ngts credentials test                —
-  v1/distributedissuers/configurations        LRCD     ✓ delete ngts dist-issuers configurations / set ngts dist-issuers configurations / show ngts dist-issuers configurations / +2 more —
-  v1/distributedissuers/intermediatecertificates L        ✓ show ngts dist-issuers intermediate-certs —
-  v1/distributedissuers/policies              LRCD     ✓ delete ngts dist-issuers policies / set ngts dist-issuers policies / show ngts dist-issuers policies / +2 more —
-  v1/distributedissuers/subcaproviders        LRCD     ✓ delete ngts dist-issuers subcaproviders / set ngts dist-issuers subcaproviders / show ngts dist-issuers subcaproviders / +2 more —
-  v1/edgeencryptionkeys                       LR       ✓ show ngts edgeencryptionkeys / show ngts edgeencryptionkeys id —
-  v1/edgeinstances                            LRCU     ✓ set ngts edgeinstances update / show ngts edgeinstances / show ngts edgeinstances id / +1 more —
-  v1/edgeworkers                              LCD      ✓ delete ngts edgeworkers / set ngts edgeworkers / set ngts edgeworkers pair / +1 more —
-  v1/expirationnotifications/tenantconfiguration LU       ✓ show ngts exp-notifications tenant-config / update ngts exp-notifications tenant-config —
-  v1/expirationreports/tenantconfiguration    LU       ✓ show ngts exp-reports tenant-config / update ngts exp-reports tenant-config —
-  v1/expirationreports/trigger                C        ✓ set ngts exp-reports trigger             —
-  v1/integrationservices                      LRCD     ✓ delete ngts integrationservices / set ngts integrationservices / show ngts integrationservices / +2 more show objects service
-  v1/machineidentities                        LRCD     ✓ delete ngts machineidentities / set ngts machineidentities / set ngts machineidentities workflows / +3 more —
-  v1/machineidentitysearch                    C        ✓ set ngts machineidentitysearch           —
-  v1/machines                                 LRCD     ✓ delete ngts machines / set ngts machines / set ngts machines batchprovisionings abort / +6 more —
-  v1/machinesearch                            C        ✓ set ngts machinesearch                   —
-  v1/machinetypes                             L        ✓ show ngts machinetypes                   —
-  v1/pairingcodes/satellite                   C        ✓ set ngts pairingcodes satellite          —
-  v1/plugins                                  LRCD     ✓ delete ngts plugins / delete ngts plugins disablements / set ngts plugins / +4 more —
-  v1/plugins/disablements                     L        ✓ show ngts plugins disablements           —
-  v1/recoverycodes/satellite                  C        ✓ set ngts recoverycodes satellite         —
-  v1/serviceaccounts                          LRCUD    ✓ delete ngts serviceaccounts / set ngts serviceaccounts / show ngts serviceaccounts / +4 more —
-  v1/serviceaccounts/scopes                   L        ✓ show ngts serviceaccounts scopes         —
-  v1/tags                                     LRCD     ✓ delete ngts tags / delete ngts tags values / set ngts tags / +4 more show objects tag
-  v1/tags/creation                            C        ✓ set ngts tags creation                   show objects tag
-  v1/tags/deletion                            C        ✓ set ngts tags deletion                   show objects tag
-  v1/tags/values                              L        ✓ show ngts tags values                    show objects tag
-  v1/tagsassignment                           ?        ✓ update ngts tagsassignment               show objects tag
-  v1/tagsassignment/aggregates                C        ✓ set ngts tagsassignment aggregates       show objects tag
-  v1/updatesconfig                            L        ✓ show ngts updatesconfig / update ngts updatesconfig —
+  outagedetection/v1/certificateinstances     LR       —                                          —
+  outagedetection/v1/certificateinstances/validation C        —                                          —
+  outagedetection/v1/certificateinstancesearch C        —                                          —
+  outagedetection/v1/certificaterequests      LRC      ✓ set ngts cert-requests approval          —
+  outagedetection/v1/certificaterequests/validation C        —                                          —
+  outagedetection/v1/certificaterequestssearch C        —                                          —
+  outagedetection/v1/certificates             LRC      ✓ delete cngfw certs / set cngfw certs / set cngfw certs export / +3 more —
+  outagedetection/v1/certificates/deletion    C        —                                          —
+  outagedetection/v1/certificates/recovery    C        —                                          —
+  outagedetection/v1/certificates/retirement  C        —                                          —
+  outagedetection/v1/certificates/validation  C        —                                          —
+  outagedetection/v1/certificatesearch        C        —                                          —
+  outagedetection/v1/inventorymonitoringconfig RU       —                                          —
+  v1/activitylogsearch                        C        —                                          —
+  v1/activitylogsearch/export                 C        —                                          —
+  v1/activitytypes                            L        —                                          —
+  v1/autorenewal/status                       L        —                                          —
+  v1/autorenewal/tenantconfiguration          LU       —                                          —
+  v1/autorenewal/trigger                      C        —                                          —
+  v1/certificateissuingtemplates              LRCUD    —                                          —
+  v1/certificateissuingtemplates/domainssynchronization C        —                                          —
+  v1/certificaterequests                      C        —                                          —
+  v1/certificaterequests/approval/bulk        C        —                                          —
+  v1/certificaterequests/approvalrequests     R        —                                          —
+  v1/certificaterequests/approvalrules        LRCUD    —                                          —
+  v1/certificates/imports                     RC       —                                          —
+  v1/certificates/revocations/approvalrules   LRCUD    —                                          —
+  v1/credentialmanagerconfigurations          LRCUD    —                                          —
+  v1/credentialmanagerconfigurations/test     C        —                                          —
+  v1/credentials                              LRCUD    —                                          —
+  v1/credentials/test                         C        —                                          —
+  v1/distributedissuers/configurations        LRCD     —                                          —
+  v1/distributedissuers/intermediatecertificates L        —                                          —
+  v1/distributedissuers/policies              LRCD     —                                          —
+  v1/distributedissuers/subcaproviders        LRCD     —                                          —
+  v1/edgeencryptionkeys                       LR       —                                          —
+  v1/edgeinstances                            LRCU     —                                          —
+  v1/edgeworkers                              LCD      —                                          —
+  v1/expirationnotifications/tenantconfiguration LU       —                                          —
+  v1/integrationservices                      LRCD     ✓ show service                             show objects service
+  v1/machineidentities                        LRCD     —                                          —
+  v1/machineidentitysearch                    C        —                                          —
+  v1/machines                                 LRCD     —                                          —
+  v1/machinesearch                            C        —                                          —
+  v1/machinetypes                             L        —                                          —
+  v1/pairingcodes/satellite                   C        —                                          —
+  v1/plugins                                  LRCD     —                                          —
+  v1/plugins/disablements                     L        —                                          —
+  v1/recoverycodes/satellite                  C        —                                          —
+  v1/serviceaccounts                          LRCUD    —                                          —
+  v1/serviceaccounts/scopes                   L        —                                          —
+  v1/tags                                     LRCD     ✓ show tag                                 show objects tag
+  v1/tags/creation                            C        ✓ show tag                                 show objects tag
+  v1/tags/deletion                            C        ✓ show tag                                 show objects tag
+  v1/tags/values                              L        ✓ show tag                                 show objects tag
+  v1/tagsassignment                           ?        ✓ show tag                                 show objects tag
+  v1/tagsassignment/aggregates                C        ✓ show tag                                 show objects tag
+  v1/updatesconfig                            L        —                                          —
 
 ## Posture Management and Assessment API: BPA, Custom Checks, and Compliance
 **Base:** `https://api.strata.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/posture-management.yaml`
@@ -525,6 +558,23 @@ Resource                                      Methods  ARC Command              
   posture/checks/v1/batch-upsert              C        ✓ set posture batch-upsert                 —
   posture/checks/v1/reports                   R        ✓ show posture reports bpa-result id       —
   posture/checks/v1/reports/config-file-upload C        ✓ set posture reports config-file-upload   —
+
+## Network Deployment
+**Base:** `https://api.strata.paloaltonetworks.com/config/deployment/v1`  |  **Spec:** `docs/scm-api/specs/sase-deployment-deployment-services-june.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  bandwidth-allocations                       LCUD     —                                          —
+  bgp-routing                                 LU       —                                          —
+  enable                                      C        —                                          —
+  internal-dns-servers                        LRCUD    —                                          —
+  locations                                   L        —                                          —
+  remote-networks                             LRCUD    —                                          —
+  service-connection-groups                   LRCUD    —                                          —
+  service-connections                         LRCUD    —                                          —
+  shared-infrastructure-settings              LU       ✓ show high-availability all / state       —
+  sites                                       LRCUD    ✓ delete cngfw sites / set cngfw sites / show cngfw sites / +2 more —
+  traffic-steering-rules                      LRCUD    —                                          —
 
 ## Network Deployment
 **Base:** `https://api.strata.paloaltonetworks.com/config/deployment/v1`  |  **Spec:** `docs/scm-api/specs/sase-deployment.yaml`
@@ -563,7 +613,7 @@ Resource                                      Methods  ARC Command              
   authentication-rules                        LRCUD    ✓ delete cngfw authentication-rules / set cngfw authentication-rules / set cngfw authentication-rules move / +4 more —
   authentication-sequences                    LRCUD    ✓ delete cngfw authentication-sequences / set cngfw authentication-sequences / show cngfw authentication-sequences / +2 more —
   certificate-profiles                        LRCUD    ✓ delete cngfw certificate-profiles / set cngfw certificate-profiles / show certificate-profile / +3 more —
-  certificates                                LRCD     ✓ delete cngfw certs / set cngfw certs / set cngfw certs export / +7 more —
+  certificates                                LRCD     ✓ delete cngfw certs / set cngfw certs / set cngfw certs export / +3 more —
   kerberos-server-profiles                    LRCUD    ✓ delete cngfw kerberos-server-profiles / set cngfw kerberos-server-profiles / show cngfw kerberos-server-profiles / +2 more —
   ldap-server-profiles                        LRCUD    ✓ delete cngfw ldap-server-profiles / set cngfw ldap-server-profiles / show cngfw ldap-server-profiles / +2 more —
   local-user-groups                           LRCUD    ✓ delete cngfw local-user-groups / set cngfw local-user-groups / show cngfw local-user-groups / +3 more —
@@ -737,7 +787,7 @@ Resource                                      Methods  ARC Command              
   service-groups                              LRCUD    ✓ delete cngfw service-groups / delete service-group / set cngfw service-groups / +6 more —
   services                                    LRCUD    ✓ delete cngfw services / delete service / set cngfw services / +6 more show objects service
   syslog-server-profiles                      LRCUD    ✓ delete cngfw syslog-server-profiles / set cngfw syslog-server-profiles / show cngfw syslog-server-profiles / +2 more —
-  tags                                        LRCUD    ✓ delete cngfw tags / delete tag / set cngfw tags / +6 more show objects tag
+  tags                                        LRCUD    ✓ delete cngfw tags / delete ngts tags / delete ngts tags values / +13 more show objects tag
 
 ## Config Operations
 **Base:** `https://api.strata.paloaltonetworks.com/config/operations/v1`  |  **Spec:** `docs/scm-api/specs/sase-operations.yaml`

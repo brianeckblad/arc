@@ -1,42 +1,41 @@
 """Loader for the per-command argument *order* that drives Tab completion.
 
 The user-facing file is intentionally tiny and curated:
-``settings/command-structure.csv`` lists, for selected friendly commands, just
-the **fields in the order you type them** — nothing else.  One row per curated
+``settings/command-structure.json`` lists, for selected friendly commands, just
+the **fields in the order you type them** — nothing else.  One entry per curated
 ``set <object>`` command::
 
-    # object,field,field,...
-    address,name,type,value,description,tag
+    {
+      "address": ["name", "type", "value", "description", "tag"]
+    }
 
-Reorder a command by moving the field names.  Everything else — which field is a
-fixed choice (and what the choices are), which are required, the Tab hints — is
-*not* in the CSV.  It comes from the code-side field library below (seeded from
-the SCM API schema), keyed by ``(object, field)`` with a generic fallback by
-field name.  So a non-programmer only ever touches field order.
+Reorder a command by moving the field names in the array.  Everything else — which
+field is a fixed choice (and what the choices are), which are required, the Tab
+hints — is *not* in the JSON.  It comes from the code-side field library below
+(seeded from the SCM API schema), keyed by ``(object, field)`` with a generic
+fallback by field name.  So a non-programmer only ever touches field order.
 
-The loader compiles each row into the internal shape the completer consumes: an
+The loader compiles each entry into the internal shape the completer consumes: an
 ordered list of arg dicts with keys ``name``, ``kind`` (``value`` | ``choice`` |
 ``keyword``), ``required`` (bool), ``choices`` (list), ``choice_hints`` (dict),
 ``hint`` and optional ``value_hint``.
 
-Generated OpenAPI commands are intentionally **not** all copied into this CSV.
+Generated OpenAPI commands are intentionally **not** all copied into this JSON.
 They use each command's ``usage`` string instead (for example generic writes
-offer ``json|file <payload-or-path>``).  Add a CSV row only when a command has a
+offer ``json|file <payload-or-path>``).  Add a JSON entry only when a command has a
 curated, human-friendly parser that is better than the generic generated form.
 
-An advanced ``settings/command-structure.json`` (fully-specified arg dicts) is
-still read as a fallback when no CSV exists.  Any missing/malformed file leaves
-every command on its usage-string fallback, so the shell always starts cleanly.
+Any missing/malformed file leaves every command on its usage-string fallback,
+so the shell always starts cleanly.
 """
 
 from __future__ import annotations
 
-import csv
 import json
 import logging
 from dataclasses import dataclass, field
 
-from app.paths import COMMAND_STRUCTURE_CSV, COMMAND_STRUCTURE_JSON
+from app.paths import COMMAND_STRUCTURE_JSON
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +46,7 @@ _cache: dict[str, dict] | None = None
 # ---------------------------------------------------------------------------
 # Field library — the API-derived metadata for each field.
 #
-# The CSV only says *which* fields a command has and in *what order*.  This
+# The JSON only says *which* fields a command has and in *what order*.  This
 # library says what each field *is*: a free value, a fixed choice (with its
 # options), or an optional trailing keyword — plus the human hint shown on Tab.
 #
@@ -56,8 +55,8 @@ _cache: dict[str, dict] | None = None
 # same way `app/commands/resource_catalog.py` is.
 # ---------------------------------------------------------------------------
 
-# Per-(object, field) definitions.  Keys are the object name (CSV column 1) and
-# the field name (the remaining CSV columns).
+# Per-(object, field) definitions.  Keys are the object name (JSON key) and
+# the field name (array elements in the JSON).
 _FIELD_LIBRARY: dict[tuple[str, str], dict] = {
     ("address", "name"): {
         "kind": "value", "required": True,
@@ -133,44 +132,38 @@ def _resolve_field(obj: str, field: str) -> dict:
     return arg
 
 
-def _load_csv() -> dict[str, dict]:
-    """Parse the simple CSV (``object,field,field,...``) into command arg specs.
+def _load_json() -> dict[str, dict]:
+    """Parse the JSON structure file (``{object: [field, field, ...]}``) into command arg specs.
 
-    Each non-comment row becomes one ``set <object>`` command whose ordered
-    arguments are resolved through the field library.
+    Each entry becomes one ``set <object>`` command whose ordered arguments are
+    resolved through the field library. Keys starting with ``_`` are treated as
+    comments and ignored.
     """
     structure: dict[str, dict] = {}
-    with COMMAND_STRUCTURE_CSV.open(encoding="utf-8", newline="") as handle:
-        for cells in csv.reader(handle):
-            if not cells:
-                continue
-            obj = cells[0].strip()
-            if not obj or obj.startswith("#"):
-                continue
-            fields = [c.strip() for c in cells[1:] if c.strip()]
-            if not fields:
-                continue
-            structure[f"set {obj}"] = {"args": [_resolve_field(obj, f) for f in fields]}
-    return structure
-
-
-def _load_json() -> dict[str, dict]:
-    """Parse the JSON structure file into ``{command: entry}``."""
     raw = json.loads(COMMAND_STRUCTURE_JSON.read_text(encoding="utf-8"))
     if not isinstance(raw, dict):
         return {}
-    return {
-        key: value
-        for key, value in raw.items()
-        if not key.startswith("_") and isinstance(value, dict)
-    }
+    
+    for obj, fields in raw.items():
+        # Skip underscore-prefixed keys (comments/metadata)
+        if obj.startswith("_"):
+            continue
+        # Expect an array of field names
+        if not isinstance(fields, list):
+            continue
+        field_names = [f.strip() for f in fields if isinstance(f, str) and f.strip()]
+        if not field_names:
+            continue
+        structure[f"set {obj}"] = {"args": [_resolve_field(obj, f) for f in field_names]}
+    
+    return structure
 
 
 def load_command_structure() -> dict[str, dict]:
     """Return ``{command_key: entry}`` from the structure file (cached).
 
-    CSV is used when present; otherwise JSON.  Any read/parse failure returns
-    ``{}`` so completion falls back to usage strings gracefully.
+    Reads from JSON.  Any read/parse failure returns ``{}`` so completion falls
+    back to usage strings gracefully.
     """
     global _cache
     if _cache is not None:
@@ -178,11 +171,9 @@ def load_command_structure() -> dict[str, dict]:
 
     structure: dict[str, dict] = {}
     try:
-        if COMMAND_STRUCTURE_CSV.exists():
-            structure = _load_csv()
-        elif COMMAND_STRUCTURE_JSON.exists():
+        if COMMAND_STRUCTURE_JSON.exists():
             structure = _load_json()
-    except (OSError, csv.Error, json.JSONDecodeError, ValueError) as exc:
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
         logger.warning("command-structure parse error: %s", exc)
         structure = {}
 

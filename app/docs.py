@@ -61,6 +61,9 @@ GENERAL_TOPICS = {
     # API reference — complete mapping of API resources to ARC commands
     "api-reference":    "commands/api-reference.md",
     "api":              "commands/api-reference.md",
+    # Guided credential setup — also reachable via the `setup` shell builtin
+    "setup":            "setup.md",
+    "getting-started":  "setup.md",
 }
 
 
@@ -106,9 +109,14 @@ def doc_path_for_topic(topic: str) -> Path | None:
     return None
 
 
-def render_help_topic(console: Console, topic: str) -> bool:
+def render_help_topic(console: Console, topic: str, use_pager: bool = True) -> bool:
     """Render a Markdown help topic inside the ARC shell.
-
+    
+    Args:
+        console: Rich console for output
+        topic: Topic name to render
+        use_pager: If True, automatically paginate long documentation
+    
     Returns True when a document was found and printed; False otherwise.
     """
     path = doc_path_for_topic(topic)
@@ -119,9 +127,24 @@ def render_help_topic(console: Console, topic: str) -> bool:
     # Command docs begin with YAML front-matter (the structured help fields used
     # by `?`).  Strip it so only the human-readable body is rendered here.
     _meta, markdown_text = parse_front_matter(markdown_text)
-    console.print()
-    console.print(Panel(Markdown(markdown_text), title=f"Help: {topic or 'overview'}", border_style="cyan"))
-    console.print()
+    
+    # Count lines to decide if we need pagination
+    # Rough estimate: 1 line of markdown ≈ 1 terminal line
+    line_count = len(markdown_text.split('\n'))
+    terminal_height = console.size.height
+    needs_pager = line_count > (terminal_height - 5) if terminal_height else False
+    
+    def _print_doc():
+        console.print()
+        console.print(Panel(Markdown(markdown_text), title=f"Help: {topic or 'overview'}", border_style="cyan"))
+        console.print()
+    
+    if use_pager and needs_pager:
+        with console.pager(styles=True):
+            _print_doc()
+    else:
+        _print_doc()
+    
     return True
 
 

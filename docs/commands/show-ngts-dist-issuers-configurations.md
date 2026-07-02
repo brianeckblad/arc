@@ -5,7 +5,7 @@ usage: "show ngts dist-issuers configurations"
 feature_flag: show_ngts_dist_issuers_configurations
 category: ngts
 scope: global
-api: "GET https://api.strata.paloaltonetworks.com/v1/distributedissuers/configurations"
+api: "GET https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/configurations"
 ---
 
 # show ngts dist-issuers configurations

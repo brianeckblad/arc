@@ -28,10 +28,9 @@ STRUCTURE_FILE = SETTINGS_DIR / "cli-structure.yaml"
 FEATURES_FILE = SETTINGS_DIR / "features.json"
 
 # Per-command argument structure that drives Tab completion and `?` help.
-# Hand-editable; the CSV holds only the ORDER of each command's fields
-# (object,field,field,...), with all field metadata resolved from the code-side
-# field library.  A nested JSON form is read as a fallback when no CSV exists.
-COMMAND_STRUCTURE_CSV  = SETTINGS_DIR / "command-structure.csv"
+# Hand-editable; the JSON holds only the ORDER of each command's fields
+# ({"object": ["field", "field", ...]}), with all field metadata resolved from
+# the code-side field library.
 COMMAND_STRUCTURE_JSON = SETTINGS_DIR / "command-structure.json"
 
 # Per-user secrets directory (config.json is written here, never committed).

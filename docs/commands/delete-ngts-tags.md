@@ -5,7 +5,7 @@ usage: "delete ngts tags name <value>"
 feature_flag: delete_ngts_tags
 category: ngts
 scope: global
-api: "DELETE https://api.strata.paloaltonetworks.com/v1/tags/{name}"
+api: "DELETE https://api.strata.paloaltonetworks.com/ngts/v1/tags/{name}"
 ---
 
 # delete ngts tags

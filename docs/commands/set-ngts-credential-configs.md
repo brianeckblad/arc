@@ -5,7 +5,7 @@ usage: "set ngts credential-configs json|file <payload-or-path>"
 feature_flag: create_ngts_credential_configs
 category: ngts
 scope: global
-api: "POST https://api.strata.paloaltonetworks.com/v1/credentialmanagerconfigurations"
+api: "POST https://api.strata.paloaltonetworks.com/ngts/v1/credentialmanagerconfigurations"
 ---
 
 # set ngts credential-configs

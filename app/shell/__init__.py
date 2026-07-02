@@ -48,6 +48,10 @@ class ArcShell(
         # Each flag is "on" / "dev" / "off".  Edit settings/features.json or set
         # ARC_FEATURE_<NAME>=on|dev|off env vars.
         self._features: dict[str, str] = load_features()
+        
+        # Command visibility — independent of feature flags.  Loaded from
+        # settings/commands.json.  Set false to hide specific commands.
+        self._command_visibility: dict[str, bool] = load_command_visibility()
 
         # Development mode reveals "dev" (under-construction) commands.  Off by
         # default; toggled by the hidden `dev` command, or pre-enabled in CI/CD
@@ -110,11 +114,9 @@ class ArcShell(
 
         if not self._scm:
             console.print(
-                "[red]✗[/red] [red]SCM not connected.[/red] "
-                "Commands will fail unless you use [bold]remote <device>[/bold] or "
-                "[bold]--remote[/bold] with SSH credentials, "
-                "or set SCM credentials and restart.\n"
-                "Exit ARC and run [bold]arc auth configure[/bold] to set up credentials."
+                "[red]✗[/red] [bold red]SCM not connected.[/bold red]  "
+                "Type [bold cyan]setup[/bold cyan] for a guided credential wizard, "
+                "or [bold cyan]help setup[/bold cyan] to browse setup steps.\n"
             )
             return
 

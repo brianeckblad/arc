@@ -3,7 +3,7 @@ command: "delete general-settings"
 description: "Delete general settings"
 usage: "delete general-settings id <value>"
 feature_flag: delete_general_settings
-category: device
+category: device-device-settings
 scope: global
 api: "DELETE https://api.strata.paloaltonetworks.com/config/device/v1/general-settings/{id}"
 ---

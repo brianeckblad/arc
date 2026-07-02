@@ -171,7 +171,7 @@ _update_service_group()                  1058-1098      Update a service group's
 _update_tag()                            1101-1139      Update an existing tag (color, comments).
 _update_external_dynamic_list()          1142-1198      Update an existing EDL (URL, description, or frequency).
 
-## `app/commands/resource_catalog.py`  (1053 lines)
+## `app/commands/resource_catalog.py`  (1068 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -279,6 +279,20 @@ save_config()                            435-506        Persist config: secrets 
 delete_profile()                         509-535        Remove a named profile from config.json and its keychain entries.
 clear_keychain()                         538-567        Remove ARC secrets from the OS keychain.
 
+## `app/shell/configure.py`  (532 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+class ConfigureMixin                     9-460          
+  ._cmd_configure()                      10-30          Enter configure mode (Cisco-style).
+  ._cmd_cli()                            32-86          Read/write CLI theme settings (configure mode only).
+  ._cmd_feature()                        88-292         Show or change feature-flag states at runtime.
+  ._cmd_dev()                            294-325        Toggle development mode (hidden command).
+  ._print_dev_status()                   327-341        Print the current development-mode state and the dev-flag count.
+  ._cmd_setup()                          343-460        Interactive credential setup wizard.
+_setup_bearer_instructions()             467-495        Print bearer-token setup commands for the detected OS.
+_setup_oauth_instructions()              498-530        Print OAuth client credential setup commands for the detected OS.
+
 ## `app/shell/completer.py`  (528 lines)
 
 Symbol                                   Lines          Purpose
@@ -327,45 +341,44 @@ _ssh_test_nat()                          345-353
 _test_url()                              356-363        Test URL categorization — use --remote.  PAN-OS: test url <url>
 _ssh_test_url()                          366-368        
 
-## `app/shell/help.py`  (498 lines)
+## `app/shell/help.py`  (518 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class HelpMixin                          8-496          
+class HelpMixin                          8-516          
   ._match_structured()                   9-25           Find the longest command key (with a structure spec) inside *prefix_to
   ._print_context_help()                 27-44          Print Cisco-style context-sensitive help for a structured command.
   ._render_context_help()                46-64          Render the next-option rows: ``  token   description`` (token column a
   ._cmd_help()                           66-85          Print the command reference.
-  ._cmd_help_inline()                    87-172         Cisco-style compact inline help — one line per command, no panels.
-  ._cmd_help_docs()                      174-215        Show the full documentation page for a command or topic.
-  ._cmd_help_full()                      217-251        Print the full command reference regardless of context.
-  ._cmd_show_write_help()                253-275        Show available delete/update commands in configure mode.
-  ._print_shell_builtins()               277-290        Print the shell built-in commands section (shared by inline and full h
-  ._is_command_available()               292-302        Return True when a registered command is executable in the current con
-  ._is_config_command()                  305-309        Return True when a command should appear in configure-mode `?` help.
-  ._root_verb_options()                  311-346        Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
-  ._collapsed_prefix_help_options()      348-403        Return collapsed next-token help options for a command prefix.
-  ._collapsed_tier_help_options()        405-440        Return collapsed bare-tier help options for one scope.
-  ._context_annotation()                 442-463        Return a short inline context note for commands whose output depends o
-  ._print_context_hint_for()             465-469        Print a one-line context note below an exact-match docs result.
-  ._print_inline_usage()                 471-496        Print the description + usage syntax for a complete command in `?` hel
+  ._cmd_help_inline()                    87-174         Cisco-style compact inline help — one line per command, no panels.
+  ._cmd_help_docs()                      176-217        Show the full documentation page for a command or topic.
+  ._cmd_help_full()                      219-261        Print the full command reference regardless of context.
+  ._cmd_show_write_help()                263-285        Show available delete/update commands in configure mode.
+  ._print_shell_builtins()               287-300        Print the shell built-in commands section (shared by inline and full h
+  ._is_command_available()               302-322        Return True when a registered command is executable in the current con
+  ._is_config_command()                  325-329        Return True when a command should appear in configure-mode `?` help.
+  ._root_verb_options()                  331-366        Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
+  ._collapsed_prefix_help_options()      368-423        Return collapsed next-token help options for a command prefix.
+  ._collapsed_tier_help_options()        425-460        Return collapsed bare-tier help options for one scope.
+  ._context_annotation()                 462-483        Return a short inline context note for commands whose output depends o
+  ._print_context_hint_for()             485-489        Print a one-line context note below an exact-match docs result.
+  ._print_inline_usage()                 491-516        Print the description + usage syntax for a complete command in `?` hel
 
-## `app/settings/command_structure.py`  (412 lines)
+## `app/settings/command_structure.py`  (403 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_field_meta()                            100-107        Return the raw metadata dict for *field* of *object* (library → generi
-_resolve_field()                         110-133        Build one arg dict for *field* of *object*, from the field library.
-_load_csv()                              136-154        Parse the simple CSV (``object,field,field,...``) into command arg spe
-_load_json()                             157-166        Parse the JSON structure file into ``{command: entry}``.
-load_command_structure()                 169-190        Return ``{command_key: entry}`` from the structure file (cached).
-arg_spec()                               193-204        Return the ordered ``args`` list for *command_key*, or ``None`` if abs
-invalidate_cache()                       207-210        Force a re-read on next access (used by tools/tests that rewrite the f
-class _NextState                         230-240        What the *next* token can be — used to drive Tab completion.
-_walk()                                  243-329        Consume *tokens* against *spec*, returning (assignments, positionals, 
-parse()                                  332-346        Parse *remainder* tokens into an args dict using the command structure
-help_options()                           349-378        Return Cisco-style ``?`` help rows for the next token after *typed*.
-completion_options()                     381-409        Return ``{text, display, meta}`` options for the next token after *typ
+_field_meta()                            99-106         Return the raw metadata dict for *field* of *object* (library → generi
+_resolve_field()                         109-132        Build one arg dict for *field* of *object*, from the field library.
+_load_json()                             135-159        Parse the JSON structure file (``{object: [field, field, ...]}``) into
+load_command_structure()                 162-181        Return ``{command_key: entry}`` from the structure file (cached).
+arg_spec()                               184-195        Return the ordered ``args`` list for *command_key*, or ``None`` if abs
+invalidate_cache()                       198-201        Force a re-read on next access (used by tools/tests that rewrite the f
+class _NextState                         221-231        What the *next* token can be — used to drive Tab completion.
+_walk()                                  234-320        Consume *tokens* against *spec*, returning (assignments, positionals, 
+parse()                                  323-337        Parse *remainder* tokens into an args dict using the command structure
+help_options()                           340-369        Return Cisco-style ``?`` help rows for the next token after *typed*.
+completion_options()                     372-400        Return ``{text, display, meta}`` options for the next token after *typ
 
 ## `app/commands/setup.py`  (343 lines)
 
@@ -379,16 +392,13 @@ _show_snippets()                         151-220        List snippets scoped to 
 _show_snippets_global()                  223-235        List ALL snippets regardless of device or folder context.
 _show_snippet_detail()                   238-277        Show detail for a named snippet.
 
-## `app/shell/configure.py`  (340 lines)
+## `app/shell/dispatch.py`  (340 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class ConfigureMixin                     7-339          
-  ._cmd_configure()                      8-28           Enter configure mode (Cisco-style).
-  ._cmd_cli()                            30-84          Read/write CLI theme settings (configure mode only).
-  ._cmd_feature()                        86-290         Show or change feature-flag states at runtime.
-  ._cmd_dev()                            292-323        Toggle development mode (hidden command).
-  ._print_dev_status()                   325-339        Print the current development-mode state and the dev-flag count.
+class DispatchMixin                      9-339          
+  ._show_command_not_found()             10-65          Show a helpful message when a command is not recognized.
+  ._dispatch()                           67-339         Process one input line.  Returns True when the user wants to exit ARC.
 
 ## `app/commands/security.py`  (311 lines)
 

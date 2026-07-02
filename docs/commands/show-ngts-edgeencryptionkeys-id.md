@@ -5,7 +5,7 @@ usage: "show ngts edgeencryptionkeys id"
 feature_flag: show_ngts_edgeencryptionkeys_id
 category: ngts
 scope: global
-api: "GET https://api.strata.paloaltonetworks.com/v1/edgeencryptionkeys/{id}"
+api: "GET https://api.strata.paloaltonetworks.com/ngts/v1/edgeencryptionkeys/{id}"
 ---
 
 # show ngts edgeencryptionkeys id

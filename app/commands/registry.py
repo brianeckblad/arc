@@ -13,7 +13,7 @@ from app.commands.base import CommandDef, ExecutionContext  # noqa: F401
 from app.settings.command_help import apply_overrides
 
 # Structure-aware argument parser — when a command has an entry in
-# settings/command-structure.csv, ARC parses its arguments with greedy string
+# settings/command-structure.json, ARC parses its arguments with greedy string
 # handling so the operator never needs to quote a string field.
 from app.settings import command_structure
 
@@ -151,7 +151,7 @@ def match_command(tokens: list[str]) -> tuple[Optional[str], CommandDef, dict]:
         if sentence == key or sentence.startswith(key + " "):
             remainder = tokens[len(key.split()):]
             # Prefer the structure-aware parser (greedy string fields, no quotes
-            # required) when this command is described in command-structure.csv.
+            # required) when this command is described in command-structure.json.
             spec = command_structure.arg_spec(key)
             if spec:
                 return key, cmd_def, command_structure.parse(spec, remainder)

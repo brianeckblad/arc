@@ -1,6 +1,8 @@
 """ArcShell configure mixin — configure mode, cli theme, feature flags."""
 from __future__ import annotations
 
+import platform  # For OS detection in setup wizard
+
 from app.shell._base import *  # noqa: F401,F403  (shared spine namespace)
 
 
@@ -337,3 +339,193 @@ class ConfigureMixin:
                 f"{len(dev_flags)} dev command group(s) hidden.  "
                 f"[dim]Type 'dev' to reveal them.[/dim]"
             )
+
+    def _cmd_setup(self, args: list[str]) -> None:  # noqa: C901 (acceptable complexity)
+        """Interactive credential setup wizard.
+
+        Auto-detects the host OS, asks two short questions (SCM auth method and
+        SSH auth method), then prints the exact commands the operator needs to
+        run — nothing is written to disk until the operator follows those steps.
+
+        Side effects: prints to console only.  Does not modify any config files.
+        """
+        # If any args were given treat them as a passthrough to `help setup`.
+        if args:
+            from app.docs import render_help_topic  # Deferred: avoids circular at module level
+            render_help_topic(console, "setup")
+            return
+
+        os_name = platform.system()  # "Darwin" | "Linux" | "Windows"
+        os_label = {"Darwin": "macOS", "Linux": "Linux / WSL", "Windows": "Windows"}.get(os_name, os_name)
+        keychain_name = {
+            "Darwin":  "macOS Keychain",
+            "Linux":   "Secret Service (libsecret) or config file",
+            "Windows": "Windows Credential Manager",
+        }.get(os_name, "the OS keychain")
+
+        console.print()
+        console.print("[bold cyan]ARC Credential Setup Wizard[/bold cyan]")
+        console.print(f"[dim]Detected platform: {os_label}  ·  Secrets stored in: {keychain_name}[/dim]")
+        console.print()
+
+        # ── Question 1: SCM auth method ──────────────────────────────────────
+        console.print(
+            "[bold]Q1[/bold]  What SCM credentials do you have?\n"
+            "  [bold cyan]1[/bold cyan]  A pre-issued bearer token\n"
+            "  [bold cyan]2[/bold cyan]  OAuth client ID + secret  (service account)\n"
+            "  [bold cyan]3[/bold cyan]  Neither — I need to create a service account first"
+        )
+        try:
+            scm_choice = console.input("  → ").strip()
+        except (EOFError, KeyboardInterrupt):
+            console.print("\n[dim]Setup cancelled.[/dim]")
+            return
+
+        if scm_choice not in ("1", "2", "3"):
+            console.print("[yellow]Invalid choice — please type 1, 2, or 3.[/yellow]")
+            return
+
+        # ── Question 2: SSH auth method ──────────────────────────────────────
+        console.print()
+        console.print(
+            "[bold]Q2[/bold]  How will you SSH to managed devices?\n"
+            "  [bold cyan]1[/bold cyan]  SSH key file  (recommended — no password stored)\n"
+            "  [bold cyan]2[/bold cyan]  Password"
+        )
+        try:
+            ssh_choice = console.input("  → ").strip()
+        except (EOFError, KeyboardInterrupt):
+            console.print("\n[dim]Setup cancelled.[/dim]")
+            return
+
+        if ssh_choice not in ("1", "2"):
+            console.print("[yellow]Invalid choice — please type 1 or 2.[/yellow]")
+            return
+
+        console.print()
+        console.print("[bold]─── Steps to follow (run these outside ARC) ───[/bold]")
+        console.print()
+
+        # ── SCM instructions ─────────────────────────────────────────────────
+        if scm_choice == "1":
+            console.print("[bold cyan]SCM — bearer token:[/bold cyan]")
+            _setup_bearer_instructions(console, os_name)
+        elif scm_choice == "2":
+            console.print("[bold cyan]SCM — OAuth client credentials:[/bold cyan]")
+            _setup_oauth_instructions(console, os_name)
+        else:
+            console.print("[bold cyan]SCM — create a service account first:[/bold cyan]")
+            console.print(
+                "  1. Log in to https://stratacloudmanager.paloaltonetworks.com/\n"
+                "  2. Navigate to Settings → Identity & Access → Service Accounts\n"
+                "  3. Add a service account; copy Client ID, Client Secret, and TSG ID.\n"
+                "     (The secret is shown only once — save it now.)\n"
+                "  4. Come back and run [bold]setup[/bold] again — choose option 2 (OAuth)."
+            )
+            console.print()
+
+        # ── SSH instructions ─────────────────────────────────────────────────
+        if ssh_choice == "1":
+            console.print()
+            console.print("[bold cyan]SSH — key file:[/bold cyan]")
+            console.print(
+                "  # Generate a dedicated key (run once):\n"
+                "  ssh-keygen -t ed25519 -f ~/.ssh/panos_key -C arc-panos\n\n"
+                "  # Tell ARC to use it:\n"
+                "  arc auth configure --ssh-key ~/.ssh/panos_key"
+            )
+        else:
+            console.print()
+            console.print("[bold cyan]SSH — password:[/bold cyan]")
+            console.print(
+                "  arc auth configure\n"
+                "  # When prompted:\n"
+                "  #   SSH username: admin\n"
+                f"  #   SSH password: <paste>   ← stored in {keychain_name}"
+            )
+
+        # ── Final verification ────────────────────────────────────────────────
+        console.print()
+        console.print("[bold]─── Verify afterwards ───[/bold]")
+        console.print(
+            "  arc auth show    # confirm config values (secrets masked)\n"
+            "  arc auth test    # live API call to SCM\n"
+            "  Then restart ARC — the prompt should show [green]✓ SCM connected[/green]."
+        )
+        console.print()
+        console.print(
+            "[dim]Full setup guide: [bold]help setup[/bold]  ·  "
+            "Platform details: [bold]help config osx[/bold] / [bold]help config nix[/bold] / [bold]help config win[/bold][/dim]"
+        )
+        console.print()
+
+
+# ---------------------------------------------------------------------------
+# Private helpers — per-platform SCM setup instructions.
+# ---------------------------------------------------------------------------
+
+def _setup_bearer_instructions(console, os_name: str) -> None:  # type: ignore[type-arg]
+    """Print bearer-token setup commands for the detected OS."""
+    if os_name == "Darwin":
+        console.print(
+            "  arc auth configure\n"
+            "  # When prompted:\n"
+            "  #   SCM auth method: 1 (bearer token)\n"
+            "  #   Token: <paste>   ← stored in macOS Keychain, NOT on disk\n\n"
+            "  # Or store manually via the security CLI:\n"
+            "  security add-generic-password -U -s arc -a arc.bearer.token -w YOUR_TOKEN"
+        )
+    elif os_name == "Windows":
+        console.print(
+            "  arc auth configure\n"
+            "  # When prompted:\n"
+            "  #   SCM auth method: 1 (bearer token)\n"
+            "  #   Token: <paste>   ← stored in Windows Credential Manager\n\n"
+            "  # Or set for this PowerShell session only:\n"
+            "  $env:SCM_BEARER_TOKEN = 'YOUR_TOKEN'"
+        )
+    else:
+        console.print(
+            "  arc auth configure\n"
+            "  # When prompted:\n"
+            "  #   SCM auth method: 1 (bearer token)\n"
+            "  #   Token: <paste>   ← stored via libsecret or config file (0600)\n\n"
+            "  # Or set for this terminal session only:\n"
+            "  export SCM_BEARER_TOKEN=your-bearer-token"
+        )
+
+
+def _setup_oauth_instructions(console, os_name: str) -> None:  # type: ignore[type-arg]
+    """Print OAuth client credential setup commands for the detected OS."""
+    if os_name == "Darwin":
+        console.print(
+            "  arc auth configure\n"
+            "  # When prompted:\n"
+            "  #   SCM auth method: 2 (OAuth)\n"
+            "  #   Client ID:     <paste>  ← safe to store in config file\n"
+            "  #   Client secret: <paste>  ← stored in macOS Keychain\n"
+            "  #   TSG ID:        <paste>  ← safe to store in config file"
+        )
+    elif os_name == "Windows":
+        console.print(
+            "  arc auth configure\n"
+            "  # When prompted:\n"
+            "  #   SCM auth method: 2 (OAuth)\n"
+            "  #   Client ID:     <paste>  ← safe to store in config file\n"
+            "  #   Client secret: <paste>  ← stored in Windows Credential Manager\n"
+            "  #   TSG ID:        <paste>  ← safe to store in config file"
+        )
+    else:
+        console.print(
+            "  arc auth configure\n"
+            "  # When prompted:\n"
+            "  #   SCM auth method: 2 (OAuth)\n"
+            "  #   Client ID:     <paste>  ← safe to store in config file\n"
+            "  #   Client secret: <paste>  ← stored via libsecret / config file 0600\n"
+            "  #   TSG ID:        <paste>  ← safe to store in config file\n\n"
+            "  # Or export for this session:\n"
+            "  export SCM_CLIENT_ID=...\n"
+            "  export SCM_CLIENT_SECRET=...\n"
+            "  export SCM_TSG_ID=..."
+        )
+

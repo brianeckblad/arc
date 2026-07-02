@@ -16,6 +16,7 @@ Use `help <command>` to open detailed docs for a command.
 - `delete aggregate-interfaces` — Delete an Aggregate Interface
 - `delete authentication-settings` — Delete authentication settings
 - `delete auto-vpn-clusters` — Delete an Auto VPN cluster
+- `delete autoscale` — Delete autoscale settings
 - `delete bgp-af-profiles` — Delete a BGP address family profile
 - `delete bgp-auth-profiles` — Delete a BGP authentication profile
 - `delete bgp-filtering-profiles` — Delete a BGP filtering profile
@@ -98,7 +99,9 @@ Use `help <command>` to open detailed docs for a command.
 - `delete cngfw vuln-signatures` — Delete a vulnerability protection signature
 - `delete cngfw wildfire-profiles` — Delete a WildFire and anti-virus profile
 - `delete config-match-list` — Delete a config match list entry
+- `delete content-cloud-settings` — Delete Content Cloud settings
 - `delete content-id-settings` — Delete Content-ID settings
+- `delete device-context-segment-association` — Delete device context segment associations by name
 - `delete device-redistribution-collector` — Delete device redistribution collector settings
 - `delete dhcp-interfaces` — Delete a DHCP interface
 - `delete dns-proxies` — Delete a DNS proxy
@@ -125,6 +128,7 @@ Use `help <command>` to open detailed docs for a command.
 - `delete management-interface` — Delete management interface settings
 - `delete motd-banner-settings` — Delete login banner settings
 - `delete nat-rules` — Delete a NAT rule
+- `delete ngfw device device settings device-context-segment-association` — Delete a device context segment association
 - `delete ngts cert-requests approval` — Delete certificate request workflow approval rule
 - `delete ngts cert-templates` — Remove an issuing template
 - `delete ngts certs revokes approval` — Delete certificate revocation workflow approval ru
@@ -215,6 +219,7 @@ Use `help <command>` to open detailed docs for a command.
 - `set authentication-settings` — Create authentication settings
 - `set auto-vpn-clusters` — Create an Auto VPN cluster
 - `set auto-vpn-push` — Push Auto VPN configs
+- `set autoscale` — Create autoscale settings
 - `set bgp-af-profiles` — Create a BGP address family profile
 - `set bgp-auth-profiles` — Create a BGP authentication profile
 - `set bgp-filtering-profiles` — Create a BGP filtering profile
@@ -315,7 +320,9 @@ Use `help <command>` to open detailed docs for a command.
 - `set cngfw vuln-signatures` — Create a vulnerability protection signature
 - `set cngfw wildfire-profiles` — Create a WildFire and anti-virus profile
 - `set config-match-list` — Create a config match list entry
+- `set content-cloud-settings` — Create Content Cloud settings
 - `set content-id-settings` — Create Content-ID settings
+- `set device-context-segment-association` — Create a device context segment association
 - `set device-redistribution-collector` — Create device redistribution collector settings
 - `set dhcp-interfaces` — Create a DHCP interface
 - `set dns-proxies` — Create a DNS proxy
@@ -382,7 +389,6 @@ Use `help <command>` to open detailed docs for a command.
 - `set ngts edgeinstances update` — Trigger manual update of Satellite Instance
 - `set ngts edgeworkers` — Create Satellite Worker
 - `set ngts edgeworkers pair` — Pair Satellite Worker with Satellite Instance
-- `set ngts exp-reports trigger` — Attempt to initiate the certificate reports
 - `set ngts integrationservices` — Add a service
 - `set ngts machineidentities` — Add a machine identity to a
 - `set ngts machineidentities workflows` — Initiate a machine workflow
@@ -505,6 +511,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show auto-vpn-clusters id` — Get an Auto VPN cluster
 - `show auto-vpn-monitor` — Show auto vpn monitor in the active folder
 - `show auto-vpn-settings` — Show auto vpn settings in the active folder
+- `show autoscale` — Get autoscale settings
 - `show bgp-af-profiles id` — Get a BGP address family profile
 - `show bgp-auth-profiles` — Show bgp auth profiles in the active folder
 - `show bgp-auth-profiles id` — Get a BGP authentication profile
@@ -673,6 +680,8 @@ Use `help <command>` to open detailed docs for a command.
 - `show cngfw wildfire-profiles id` — Get a WildFire and anti-virus profile
 - `show config-match-list` — Show config match list in the active folder
 - `show config-match-list id` — Get a config match list entry
+- `show content-cloud-settings` — List Content Cloud settings
+- `show content-cloud-settings id` — Get existing Content Cloud settings
 - `show content-id-settings` — List Content-ID settings
 - `show content-id-settings id` — Get existing Content-ID settings
 - `show decryption-profile` — Show decryption profiles in the active folder
@@ -680,6 +689,8 @@ Use `help <command>` to open detailed docs for a command.
 - `show device` — Show detail for a device (or 'show device' when cd'd in)
 - `show device jobs id` — Retrieve job status and results, running on a device
 - `show device snippets` — Show snippets attached to a device
+- `show device-context-segment-association` — List device context segment associations
+- `show device-context-segment-association id` — Get a device context segment association
 - `show device-redistribution-collector` — List device redistribution collector settings
 - `show device-redistribution-collector id` — Get existing device redistribution collector settings
 - `show devices` — List all SCM-managed devices
@@ -696,7 +707,10 @@ Use `help <command>` to open detailed docs for a command.
 - `show gp-match-list` — List globalprotect match list entries
 - `show gp-match-list id` — Get a globalprotect match list entry
 - `show ha-configurations` — List high availability configurations
-- `show ha-configurations id` — Get existing high availability configurations
+- `show ha-configurations-gateways` — Autocomplete HA gateways
+- `show ha-configurations-ip-addresses` — Autocomplete HA IP addresses
+- `show ha-configurations-netmasks` — Autocomplete HA netmasks
+- `show ha-configurations-ports` — Autocomplete HA ports
 - `show ha-devices` — List high availability devices
 - `show high-availability all` — Show full HA configuration from the active folder
 - `show high-availability state` — Show HA state summary from the active folder
@@ -793,7 +807,6 @@ Use `help <command>` to open detailed docs for a command.
 - `show ngts edgeinstances id` — Retrieve Satellite Instance By Id
 - `show ngts edgeworkers` — Retrieve Satellite Workers
 - `show ngts exp-notifications tenant-config` — Retrieve the certificate expiration notification c
-- `show ngts exp-reports tenant-config` — Retrieve the certificate expiration reports config
 - `show ngts integrationservices` — Get a list of services
 - `show ngts integrationservices id` — Get service details
 - `show ngts inventory-monitoring id` — Get the details of the current
@@ -956,6 +969,7 @@ Use `help <command>` to open detailed docs for a command.
 - `update authentication-settings` — Update authentication settings
 - `update auto-vpn-clusters` — Update an Auto VPN cluster
 - `update auto-vpn-settings` — Update Auto VPN settings
+- `update autoscale` — Update autoscale settings
 - `update bgp-af-profiles` — Update a BGP address family profile
 - `update bgp-auth-profiles` — Update a BGP authentication profile
 - `update bgp-filtering-profiles` — Update a BGP filtering profile
@@ -1034,7 +1048,9 @@ Use `help <command>` to open detailed docs for a command.
 - `update cngfw vuln-signatures` — Update a vulnerability protection signature
 - `update cngfw wildfire-profiles` — Update a wildfire and antivirus profile
 - `update config-match-list` — Update a config match list entry
+- `update content-cloud-settings` — Update Content Cloud settings
 - `update content-id-settings` — Update Content-ID settings
+- `update device-context-segment-association` — Update a device context segment association
 - `update device-redistribution-collector` — Update device redistribution collector settings
 - `update dhcp-interfaces` — Update a DHCP interface
 - `update dns-proxies` — Update a DNS proxy
@@ -1071,7 +1087,6 @@ Use `help <command>` to open detailed docs for a command.
 - `update ngts dist-issuers subcaproviders` — Update a Sub CA provider details
 - `update ngts edgeinstances` — Update Satellite Instance
 - `update ngts exp-notifications tenant-config` — Update the certificate expiration notification con
-- `update ngts exp-reports tenant-config` — Update the certificate expiration reports configur
 - `update ngts integrationservices` — Update Service properties
 - `update ngts inventory-monitoring` — Updates existing inventory monitoring configuratio
 - `update ngts inventory-monitoring scheduler` — Update inventory monitoring scheduler by type

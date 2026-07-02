@@ -5,7 +5,7 @@ usage: "show ngts serviceaccounts"
 feature_flag: show_ngts_serviceaccounts
 category: ngts
 scope: global
-api: "GET https://api.strata.paloaltonetworks.com/v1/serviceaccounts"
+api: "GET https://api.strata.paloaltonetworks.com/ngts/v1/serviceaccounts"
 ---
 
 # show ngts serviceaccounts
