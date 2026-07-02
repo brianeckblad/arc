@@ -1,1448 +1,328 @@
-# Agent Operational Guidelines
+# ARC — Agent Guide (the hub)
 
-**Instructions for AI agents working on this project**
+**ARC (Assisted Remote Console)** is a PAN-OS-style interactive shell for Palo
+Alto firewalls managed by Strata Cloud Manager (SCM). Commands execute through
+SCM REST APIs by default; live device state goes over SSH (`--remote`,
+`connect`, `remote <device>`). SCM is the only API integration.
 
-> **Source of truth:** This file is synced from
-> [`.github/copilot-instructions.md`](.github/copilot-instructions.md),
-> which GitHub Copilot reads automatically at the start of every session.
-> Use `update cpi` to update this file and Copilot instructions together.
+This file is the **single hub** for anyone (human or agent) working on ARC.
+Read it, then follow the routing tables below to the one or two spoke files a
+task needs. There is no other instruction file — `.github/copilot-instructions.md`
+and `README.dev.md` were retired into this hub.
 
-## Quick Navigation
-
-| I need to... | Read this |
-|--------------|-----------|
-| Add a command | Command Registry Pattern + domain keyword ([network], [security], [objects], [setup], [operations]) |
-| Fix formatting output | `app/utils/formatter.py` + [formatter] keyword |
-| Update shell help/prompts | `app/shell/help.py` or `app/shell/prompt.py` + [shell] keyword |
-| Add SCM API endpoint | SCM Gateway Map section + `app/api/client.py` + [scm-api] keyword |
-| Update docs | `docs/` + Documentation Strategy section |
-| Run validation | `python dev/smoke_test.py` |
-| Review coding standards | `docs/agent-patterns/` (python, javascript, security) |
-| Understand token optimization | ARC Domain Keywords + Token-Efficient Development Patterns sections |
+**Read minimally.** Never read a 300+ line file whole: look up the method's
+line range in `dev/CODE_MAP.md` and read only that range. The tables below name
+the smallest file that owns each concern.
 
 ---
 
-<!--
-  ╔══════════════════════════════════════════════════════════════════╗
-  ║  PART 1 — GENERAL WORKFLOW                                       ║
-  ║  Reusable rules that apply to any project.                       ║
-  ║  Copy this section verbatim to bootstrap a new repo.             ║
-  ╚══════════════════════════════════════════════════════════════════╝
--->
+## Task Routing — say a keyword, touch small files
 
-## Session Memory - READ FIRST EVERY SESSION
-
-AI agents have no memory between conversations, and connections time out. To
-bridge that, this repo keeps a `SESSION.md` file at the repo root that every
-agent reads at the start of every session and updates automatically as work
-progresses. The file persists until the user explicitly clears it, so a
-reconnect or new session picks up exactly where the last one left off.
-
-**File:** `SESSION.md` (repo root, gitignored — local working memory only)
-
-### At the start of every session
-
-1. Use the `read_file` tool to read `SESSION.md`.
-2. If it has a **Current Work** block, summarize it in 2–3 lines so the user
-   can confirm the context before starting new work.
-3. If the file is empty or missing, proceed normally — do not create it yet.
-
-### Automatic session maintenance (no trigger needed)
-
-The agent must keep `SESSION.md` current **without being asked**:
-
-- **After completing any significant unit of work** — feature added, bug fixed,
-  decision made, file edited — append or update the **Current Work** block.
-- **Before any risky or multi-step operation** — write the current state first
-  so a timeout mid-operation leaves a recoverable record.
-- **On reconnect** — read the file, confirm context with the user, then continue.
-
-The goal: if the connection drops at any moment, the next session can read
-`SESSION.md` and resume without the user re-explaining anything.
-
-### Trigger phrases the user can say
-
-Short forms are the primary triggers. Longer natural-language forms still work.
-
-| User says | Agent does |
-|-----------|------------|
-| `ck` / `checkpoint` / `save context` / `remember this` | Append a full dated checkpoint entry to `SESSION.md` using the entry template below. |
-| `ctx` / `show context` / `recall` / `what were we doing` | Read `SESSION.md` and summarize recent entries. |
-| `wipe` / `clear memory` / `start fresh` / `forget everything` | Truncate `SESSION.md` (keep the header template), confirm what was cleared. |
-| `arc` / `archive memory` | Move all session entries to `SESSION.archive.md`, then clear. |
-| `gitp` / `git push` / `commit and push` | Stage all changes (`git add -A`), commit with a generated message, push to `origin/main`, then print the server update command (see below). |
-| `cpi` / `update cpi` / `update copilot instructions` / `update instructions` | Review what was built or decided and update both `.github/copilot-instructions.md` and `AGENTS.md` so they stay in sync. Confirm what changed in each file. |
-| `evala` / `evaluate agents` / `evaluate instructions` | Evaluate AI instruction files for clean general vs app-specific separation, then ensure `.github/copilot-instructions.md` and `AGENTS.md` are synced. |
-| `agi` / `read agent instructions` / `read copilot instructions` | Read `.github/copilot-instructions.md` and `AGENTS.md` in full, then confirm they have been loaded into context. |
-| `docsupdate` / `update docs` / `pull api docs` / `docs agent` | Enter docs-agent mode (`dev/DOCS_AGENT.md`): run `python dev/docsupdate.py` to pull every pan.dev SCM doc, auto-heal moved/renamed source paths via `dev/scm_sources.json`, write `docs/scm-api/CHANGES.md`, then update any ARC API calls affected by removed/changed endpoints. Confirm what changed. |
-
-A short trigger (`ck`, `ctx`, `wipe`, `arc`, `gitp`, `cpi`, `evala`, `agi`, `docsupdate`) is a command only when it is the
-entire user message. Inside a longer sentence, treat it as normal text.
-
-### SESSION.md structure
-
-```markdown
-# Session Notes
-<!-- Gitignored. Read by all agents at session start. Updated automatically. -->
-<!-- Clear with: wipe | Clear and archive with: arc -->
-
-## Current Work
-**Goal:** one line describing what is being worked on right now.
-**Branch:** (git branch name)
-**Status:** in-progress | blocked | done
-
-**Recent progress:**
-- bullet — what was just completed
-- bullet — next up
-
-**Key decisions:**
-- bullet (or "none yet")
-
-**Files in play:**
-- path/to/file — why
-
-**Open questions / blockers:**
-- bullet (or "none")
-
----
-
-## Checkpoints
-
-<!-- Full dated entries appended here by `ck` / auto-checkpoint -->
-```
-
-### `gitp` — Stage, Commit, Push, and Print Update Command
-
-When the user says `gitp` (or any natural-language equivalent):
-
-1. Run `git add -A` to stage all changes.
-2. Inspect `git diff --staged --stat` to summarize what changed.
-3. Write a conventional-commit message (no internal quotes) describing the changes.
-4. Commit using the simple `-m` form (or the `/tmp/msg.txt` file method for multi-line messages).
-5. Push to `origin/main`.
-6. Print the server update command so the user can copy-paste it (update this for your project):
-
-```bash
-cd deployment && ansible-playbook playbooks/update.yml --vault-password-file ~/.vault_pass
-```
-
-### `cpi` — Update Copilot + Agent Instructions Together
-
-When the user says `cpi` / `update cpi` (or natural-language equivalent):
-
-1. Read `.github/copilot-instructions.md` and `AGENTS.md`.
-2. Apply required instruction updates to `.github/copilot-instructions.md`.
-3. Apply the same updates to `AGENTS.md` so content stays aligned.
-4. Keep the `AGENTS.md` header (`# Agent Operational Guidelines`) and opening source-of-truth note intact.
-5. Confirm exactly what changed in each file.
-
-### `evala` — Evaluate Agent Instructions for General/App Separation
-
-When the user says `evala` (or any natural-language equivalent):
-
-1. Read `.github/copilot-instructions.md`, `AGENTS.md`, and any other local agent instruction files.
-2. Identify rules that are in the wrong layer:
-   - General engineering, security, design, workflow, or deployment-hardening practices sitting in app-specific sections.
-   - App names, file paths, cloud resources, exact commands, architecture diagrams, product/domain language, or app-only helper names sitting in reusable general sections.
-3. Move generalizable practices into **Part 1 — General Workflow**.
-4. Move project-only facts into **Part 2 — App-specific**.
-5. Remove duplicates, stale rules, and contradictions while preserving useful project facts.
-6. Ensure `.github/copilot-instructions.md` and `AGENTS.md` end in sync after the move.
-7. Confirm what moved from app-specific → general, what moved from general → app-specific, what was removed, and that both files were synced.
-
-### Proactively offer to checkpoint when
-
-- A non-trivial decision was just made (architecture, library choice, abandoned approach).
-- The user is about to switch tasks or branches.
-- A long debugging session just resolved.
-
----
-
-## IDE Diagnostic False Positives — Known Noise
-
-Before acting on any IDE diagnostic, identify its category.
-
-### Authoritative validators
-
-| Context | Real validator | IDE diagnostics |
-|---------|---------------|-----------------|
-| Python | `python3 -m py_compile file.py` | Mostly trustworthy, except Flask note below |
-| JS inside `.html` | `node --check extracted-js.js` | **High noise — do not chase** |
-
-### False positive categories (do NOT fix these)
-
-| Category | IDE message | Why it's false |
-|----------|-------------|----------------|
-| **JS template literals** | `Unused constant x` / `Expression expected` / `Closing '}' expected` | Variables used inside `${x}` are invisible to the HTML parser |
-| **Flask route returns** | `Expected type 'Response', got 'tuple[Response, int]'` | `(jsonify(...), 400)` IS correct Flask — JetBrains can't infer the union type |
-| **SVG self-closing tags** | `Empty tag doesn't work in some browsers` | `<path/>`, `<circle/>`, `<rect/>` are valid HTML5/SVG |
-| **onclick-wired params** | `Unused parameter x` | Functions called by HTML `onclick` — IDE can't see the caller |
-| **Missing label** | `Missing associated label` | Hidden inputs and internal state fields don't need visible labels |
-| **throw in try/catch** | `'throw' of exception caught locally` | Intentional re-throw pattern for error propagation |
-
-**Key rule:** `node --check` passing clean means JS is correct. IDE template errors in `.html`
-files are noise from the HTML parser misreading JS — ignore them.
-
----
-
-## Shell Command Safety - CRITICAL
-
-### Never Output Jinja2 Braces Through the Terminal
-
-The zsh shell interprets `{{ }}` as glob patterns. Commands that output Jinja2 content will hang or produce empty output.
-
-```bash
-# BAD - causes empty output or hangs
-cat file_with_jinja.yml
-grep "pattern" file_with_jinja.yml
-
-# GOOD - use the read_file / grep_search tools instead (they bypass the shell)
-# GOOD - if terminal is required, use Python:
-python3 -c "print(open('file.yml').read()[:500])"
-```
-
-### Never Use Unquoted Heredocs with Dynamic Content
-
-```bash
-# BAD - shell interprets {{ }} and $vars, causes heredoc> hang
-cat > file.yml << EOF
-name: "{{ app_name }}"
-EOF
-
-# GOOD - single-quote the delimiter
-cat > file.yml << 'EOF'
-name: "{{ app_name }}"
-EOF
-
-# BEST - use Python or the insert_edit_into_file tool to write files
-```
-
-### Prefer Non-Terminal Tools
-
-| Task | Use This | Not This |
-|------|----------|----------|
-| Read a file | `read_file` tool | `cat` / `head` / `tail` in terminal |
-| Search in file | `grep_search` tool | `grep` in terminal |
-| Write / edit a file | `insert_edit_into_file` or `replace_string_in_file` tool | `cat > file << EOF` in terminal |
-| Verify edits applied | `read_file` tool | `cat file` in terminal |
-
-### If Terminal Hangs (no output, or dquote> / heredoc> / quote>)
-
-1. **Do NOT keep waiting** - it will not recover
-2. **Run a new terminal command** - the tool starts a fresh session
-3. **Switch to a non-terminal tool** to accomplish the task
-
-### Ansible Playbooks
-
-- Run with `isBackground: true` and retrieve output with `get_terminal_output` for long-running playbooks
-- Pipe short playbook runs through `2>&1` to capture all output
-
----
-
-## Git Branching Rules
-
-**Default: do not create feature branches.** Commit directly to whatever branch
-the user is currently on (typically `main`). The user controls branching
-strategy — only create a branch when the user explicitly asks for one.
-
-If you genuinely believe a branch is warranted (large refactor, risky
-multi-step change), **ask before creating it** — do not create one preemptively.
-
----
-
-## Git Commit Rules
-
-```bash
-# ALWAYS - simple messages, no internal quotes
-git commit -m "docs: add deployment guide"
-git commit -m "fix: correct IAM role permissions"
-
-# NEVER - nested quotes cause dquote> hangs
-git commit -m "docs: add 'comprehensive' guide"
-
-# FOR COMPLEX MESSAGES - use file method
-cat > /tmp/msg.txt << 'EOF'
-feat: multi-line commit message
-
-- Detail one
-- Detail two
-EOF
-git commit -F /tmp/msg.txt && rm /tmp/msg.txt
-```
-
----
-
-## General Python Coding Standards
-
-See `docs/agent-patterns/python-standards.md` for detailed examples.
-
-**Key rules:** never `str(e)` in JSON responses; all imports at module level (except `# Deferred:` cases); initialize before `try`; use Pythonic style (PEP 8/257); prefer named callables over `lambda`; type hints on public functions; format with `black`/`isort`; catch specific exceptions first; no side effects at import; no global mutable state; use context managers (`with`); fail fast/raise early; functions do one thing (≤50 lines); meaningful names (avoid `data`, `temp`, `result`); prefer built-ins/stdlib; prefer comprehensions; pin dependencies; use virtual environments.
-- **Meaningful names** — avoid generic names like `data`, `temp`, `result`, `stuff`, `info`; name things by what they represent in the domain.
-- **Prefer built-ins and stdlib** — reach for `collections.Counter`, `collections.defaultdict`, `itertools.chain`, `functools` before writing equivalent loops.
-- **Prefer comprehensions** — use list/dict/set comprehensions over equivalent `for` loops that build a collection, when the result is readable.
-- **Pin dependencies** — lock exact versions in `requirements.txt`; use `pip-audit` to check for CVEs before each deployment.
-- **Virtual environments** — always develop inside a `venv`; never install project dependencies into the system Python.
-
----
-
-## General JavaScript Coding Standards
-
-See `docs/agent-patterns/javascript-standards.md` for detailed examples.
-
-**Key patterns:** modal/pending-state single-owner lifecycle (confirm owns snapshot → execute → cleanup); declare related state variables together; use registry arrays for grouped DOM operations.
-
----
-
-## General Coding Workflow
-
-- Start from clear requirements; if scope is ambiguous, propose small options before implementing.
-- Prefer small, focused edits that preserve existing behavior unless a change is requested.
-- Keep naming and structure consistent with the current codebase.
-- Highlight risks, assumptions, and missing data explicitly instead of silently guessing.
-- Optimize for maintainability: straightforward code paths, minimal side effects, clear data ownership.
-
-
----
-
-## Senior Engineering Standards — Senior-Quality Code, Junior-Readable
-
-Write code the next developer can safely modify, even if they are new to the
-project. Senior-quality code is simple, explicit, tested, and boring in the best
-way.
-
-
-- **Clarity beats cleverness** — prefer obvious control flow over compressed tricks.
-- **Name by domain meaning** — use names that explain what a value represents, not its type (`listing_status`, not `data`).
-- **Explain why, not what** — comments should capture decisions, constraints, tradeoffs, and non-obvious edge cases.
-- **Keep public APIs predictable** — functions should validate inputs, return consistent shapes, and document side effects.
-- **Make errors actionable** — include enough context for logs/debugging without leaking secrets or internals to users.
-- **Minimize hidden coupling** — avoid magic globals, implicit file paths, import-time state, and order-dependent behavior.
-- **Prefer boring dependencies** — choose stdlib or already-present libraries unless a new dependency clearly pays for itself.
-- **Leave the code easier to review** — small diffs, focused functions, no unrelated formatting churn.
-- **Teach through structure** — when code has a pattern, extract a helper or registry so junior devs can follow one example.
-- **Explain function intent briefly** — each non-trivial function should have 1-3 sentences describing purpose, inputs/outputs, and side effects.
-- **Document variable groups, not every variable** — when related state variables work together, add a short block-level note or table describing ownership and lifecycle.
-
-### Quick readability pattern for stateful code
-
-Use this lightweight table style when a function or module has multiple related
-state values:
-
-| Group | Owns | Meaning | Updated by |
+| Keyword / task | Read | Edit | Validate |
 |---|---|---|---|
-| Pending action state | `pending_*` fields | Tracks current user-confirm flow | confirm/cancel handlers |
-| Device context | `device`, `folder`, `tsg_id` | Active execution scope for API/SSH | `cd`, `folder`, `tsg` commands |
+| `network` / `security` / `objects` / `identity` / `setup` / `operations` commands | `docs/COMMAND_PATTERNS.md`, `dev/API_INDEX.md` (endpoint row) | `app/commands/<domain>.py` | `python dev/smoke_test.py --only 1,2,3` |
+| `packet-tracer` (policy simulation) | `app/commands/packet_tracer.py` | same | `--only 1,2,3` |
+| `render` (output/table changes) | `docs/RENDER_CATALOG.md` | `app/utils/formatter.py`, `_render()` in `app/shell/execution.py` | `--file app/utils/formatter.py` |
+| `commanddef` (field reference) | `docs/COMMANDDEF_REFERENCE.md` | — | — |
+| `shell` (REPL, dispatch, help UX) | `dev/CODE_MAP.md` → one range in `app/shell/<file>.py` | that one mixin file | `--file app/shell/<file>.py` |
+| `catalog` (builtin names, SHELL help rows) | `app/shell_catalog.py` | same | `--file app/shell_catalog.py` |
+| `feature` / `flag <name>` (turn commands on/dev/off) | `settings/features.json` | same (+ one `CommandDef.feature_flag`) | `--only 1,2,3` |
+| `theme` (colours) | `settings/theme.json`, `app/settings/theme.py` | same | `--only 10` |
+| `settings` (banner, goodbye, labels — no code) | `settings/` | `settings/banner.txt` etc. | `--only 7,8,9,10` |
+| `argspec` (greedy `set <object>` parsing, slot completion) | `settings/command-structure.json`, `app/settings/command_structure.py` | same | `--only 4` |
+| `auth` (credentials, profiles) | `app/config.py`, `app/cli.py` (auth group) | same | `--file app/config.py` |
+| `scm-api` / `endpoint <resource>` | `dev/API_INDEX.md`; deep dive: `docs/scm-api/specs/<cat>.md` | `app/api/client.py` | full suite |
+| `docsupdate` / docs agent | `dev/DOCS_AGENT.md` | run `python dev/docsupdate.py` | `--self-test` |
+| `scaffold <cmd> <module>` | — | run `python dev/scaffold.py "<cmd>" <module>` | `--only 1,2,3` |
+| `map` / `method <name>` (find code) | `dev/CODE_MAP.md` | — | — |
+| `debug` | error table at the bottom of this file | files the error names | targeted smoke |
 
-Keep entries short; this is a navigation aid, not full API documentation.
-
-### Mini example — function intent + grouped state note
-
-```python
-# BAD — no intent, unclear state ownership
-def run(ctx, args):
-    x = None
-    y = None
-    ...
-
-# GOOD — brief function intent + grouped state context
-def run(ctx: ExecutionContext, args: dict) -> None:
-    """Execute a folder-scoped action and print a user-facing status line.
-
-    Inputs: execution context and parsed command args.
-    Side effects: updates pending action state and writes to console output.
-    """
-    # Pending action state: owned by confirm/cancel flow in this command path.
-    pending_action = None
-    pending_target = None
-    ...
-```
-
-### Definition of done for code changes
-
-- Requirements are satisfied with the smallest maintainable change.
-- Edge cases and failure paths are handled intentionally.
-- Relevant validators/tests were run, or the reason they cannot run is stated.
-- Security checklist is satisfied: input validation, authorization, secrets/logging, dependency risk.
-- New or changed behavior is discoverable through names, docstrings, UI copy, or docs.
+**Spoke files** (each replaces reading a large module):
+`docs/COMMAND_PATTERNS.md` (minimal working command patterns) ·
+`docs/RENDER_CATALOG.md` (all render= keys) ·
+`docs/COMMANDDEF_REFERENCE.md` (CommandDef fields) ·
+`dev/API_INDEX.md` (one line per SCM endpoint) ·
+`dev/CODE_MAP.md` (method → line ranges, auto-regenerated) ·
+`dev/DOCS_AGENT.md` (pan.dev docs pull playbook).
 
 ---
 
-## General Secure Coding Baseline — All Apps
-
-See `docs/agent-patterns/security-checklist.md` for detailed examples.
-
-**Core rules:** threat-model before coding; validate at boundaries; authorize server-side; keep secrets out of code; sanitize logs; avoid dangerous primitives (`eval`, `exec`, shell interpolation); use safe subprocess calls (`shell=False`); use timeouts for I/O; fail closed; prefer least privilege; audit dependencies; handle destructive actions carefully.
-
----
-
-## Web App Security — General Rules
-
-See `docs/agent-patterns/security-checklist.md` for detailed examples and Flask/Python-specific patterns.
-
-**Quick reference:** never leak internals in errors; never log sensitive material; never hardcode secrets; session cookies must be HttpOnly/Secure/SameSite; TOTP enrollment requires password; validate all input (type, length, range); sanitize file uploads (`secure_filename()`); confine paths (`Path.resolve()` + `is_relative_to()`); emit security headers (CSP, HSTS, X-Frame-Options); rate-limit auth endpoints; audit dependencies before deployment.
-
----
-
-## Nginx / Reverse Proxy Hardening
-
-Apply these rules whenever deploying a web app behind Nginx (or any reverse proxy).
-
-### Never duplicate security headers
-
-The reverse proxy is the single source of truth for `X-Frame-Options`,
-`X-Content-Type-Options`, `Referrer-Policy`, `Content-Security-Policy`, and
-`Strict-Transport-Security`. If the app also emits them, browsers receive duplicate
-values and CSP/HSTS behavior becomes unpredictable. Pick one layer; emit from the other
-layer only in development.
-
-### server_tokens off — every server block
-
-```nginx
-# BAD — only on the HTTPS block; HTTP block still leaks nginx/1.24.0 (Ubuntu)
-server { listen 80; ... }  # no server_tokens here
-server { listen 443 ssl; server_tokens off; ... }
-
-# GOOD — every block that can respond to a request
-server { listen 80; server_tokens off; return 301 https://$host$request_uri; }
-server { listen 443 ssl; server_tokens off; ... }
-```
-
-### Remove the default site
-
-```bash
-rm /etc/nginx/sites-enabled/default
-```
-
-The default Ubuntu Nginx site answers unmatched `Host` headers and leaks version info.
-Remove it during setup — it is safe to remove on any dedicated app host.
-
-### HTTP → HTTPS redirect
-
-Every HTTP request must redirect to HTTPS. The redirect server block needs
-`server_tokens off` (see above) and nothing else:
-
-```nginx
-server {
-    listen 80;
-    server_name example.com;
-    server_tokens off;
-    return 301 https://$host$request_uri;
-}
-```
-
-### Rate zones
-
-Define Nginx rate zones for at minimum two tiers:
-
-```nginx
-# In http { } block
-limit_req_zone $binary_remote_addr zone=login:10m rate=5r/m;
-limit_req_zone $binary_remote_addr zone=api:10m   rate=60r/m;
-```
-
-Apply the tighter `login` zone to `/login`, `/register`, `/reset-password`, and any
-MFA verification endpoint. Apply `api` to the general app location.
-
-### Proxy timeout alignment
-
-Set `proxy_read_timeout` and `proxy_send_timeout` to just above the app/Gunicorn
-timeout — not several minutes longer. If Gunicorn times out at 120 s, set proxy
-timeouts to 125–130 s so failures surface predictably to the client.
-
-### client_max_body_size
-
-Align `client_max_body_size` with the app's `MAX_CONTENT_LENGTH`. If they differ,
-Nginx will silently drop oversized bodies before Flask can return a helpful error.
-
----
-
-<!--
-  ╔══════════════════════════════════════════════════════════════════╗
-  ║  PART 2 — ARC (project-specific)                                 ║
-  ║  Rules, architecture, and patterns specific to this codebase.    ║
-  ║  Do not copy to other projects without review.                   ║
-  ╚══════════════════════════════════════════════════════════════════╝
--->
-
-## ARC — Assisted Remote Console
-
-**ARC** is an assisted remote console for Palo Alto Networks SCM and PAN-OS environments.
-It provides a PAN-OS-style interactive shell that routes supported commands through SCM REST APIs
-by default, with optional SSH passthrough for managed devices.
-
-ARC is SCM-only for API integrations. The command vocabulary intentionally mirrors familiar
-firewall / network-operations commands, and API mode translates those commands to SCM REST calls
-as implementations are added. Device-local execution is handled through SSH only.
-
----
-
-### ARC Coding Workflow
-
-- Start from clear requirements; if scope is ambiguous, propose small options before implementing.
-- Prefer small, focused edits that preserve existing behavior unless a change is requested.
-- Keep naming and structure consistent with the current codebase.
-- **Always run `python dev/smoke_test.py` after any change to `app/`.** It covers syntax, imports, registry integrity, arg parser, config types, formatter, CLI banner alignment, inline-help alignment, and theme wiring in one pass.
-- Highlight risks, assumptions, and missing data explicitly instead of silently guessing.
-- Optimize for maintainability: straightforward code paths, minimal side effects, clear data ownership.
-- **Write as if the reviewer is a junior engineer learning network operations and firewall workflows.** Keep implementation details concrete, and make control flow easy to map to operator intent.
-
-#### Token-efficient agent workflow — read README.dev.md first
-
-**`README.dev.md`** (repo root) is the developer guide + keyword dictionary that
-covers 90% of tasks (recipes, file ownership, debug patterns, smoke section map)
-without reading this full file.
-
-| Start here | Then read if needed |
-|-----------|-------------------|
-| `README.dev.md` — keyword dictionary, file ownership, add-command steps, debug patterns, smoke section map | `AGENTS.md` — full spec, security rules, SCM gateway map |
-| **`docs/COMMAND_PATTERNS.md`** — 5 minimal working patterns (saves reading 300+ line modules) | `app/commands/<module>.py` — full implementation for that domain |
-| **`docs/RENDER_CATALOG.md`** — all render= keys + formatters (saves reading formatter.py) | `app/utils/formatter.py` — specific renderer implementation |
-| **`docs/COMMANDDEF_REFERENCE.md`** — CommandDef field reference (saves reading base.py) | `app/commands/base.py` — full definitions |
-| `dev/API_INDEX.md` — compact endpoint table (all specs) | `docs/scm-api/specs/<cat>.md` — full spec for one category |
-| `dev/CODE_MAP.md` — method line ranges for large files | the one large file, read only that range |
-
----
-
-#### Tokenmaxxing Principles — Mandatory for Every Change
-
-Apply these rules on every edit to keep agent context costs low as the codebase grows.
-
-**Read minimally:**
-- Read `README.dev.md` (not `AGENTS.md`) for routine tasks and keyword phrasing
-- Use `read_file` with `offset` + `limit` to read only the relevant section of large files
-- **Never read a 300+ line file whole.** The shell is now `app/shell/<file>.py` (a mixin package). Look up the method's exact line range in `dev/CODE_MAP.md`, then read only that range
-- For shell builtin names/help rows, read `app/shell_catalog.py` before reading any `app/shell/*.py`
-- For command patterns, read `docs/COMMAND_PATTERNS.md` (saves reading existing 300+ line modules)
-- For available render types, read `docs/RENDER_CATALOG.md` (saves reading formatter.py)
-- For CommandDef fields, read `docs/COMMANDDEF_REFERENCE.md` (saves reading base.py)
-- `dev/API_INDEX.md` replaces reading any spec file for endpoint lookups
-
-**Never hand-maintain line numbers:**
-- `dev/CODE_MAP.md` is generated by `python dev/generate_code_map.py` and drift-checked by smoke section 10
-- Do not write line numbers into docstrings or comments — they rot. Point to `dev/CODE_MAP.md` instead
-- After editing any 300+ line file, run `python dev/generate_code_map.py` (the pre-commit hook at `.git/hooks/pre-commit` also auto-refreshes it when any `app/*.py` file is staged; install it once with `bash dev/install_hooks.sh`)
-- Version is `0.1.<commit-count>`, sourced from `app/__init__.py` `__version__` (mirrored to `pyproject.toml`). An optional local-only hook keeps it current — do not hand-edit `__version__`; see `docs/dev-versioning.md` to install the `.githooks/pre-commit` bumper via `git config core.hooksPath .githooks`.
-
-**String-theory structure:**
-- Keep new feature metadata in small attached files whenever possible (`shell_catalog.py`, `app/settings/features.py`, command modules)
-- Treat `app/shell/_base.py` as the shell spine; do not grow it with large static dictionaries or catalogs
-- Extract one string at a time only after smoke coverage exists for that seam; avoid large multi-section shell refactors in one pass
-
-**Write minimally:**
-- Use `replace_string_in_file` for targeted edits, not full-file rewrites
-- One `replace_string_in_file` call per logical change; batch related edits into one call
-- Never re-read a file after writing it unless `get_errors` shows a problem
-
-**Validate minimally:**
-- `python dev/smoke_test.py --only 1,2,3` for command additions (not the full 90-check suite)
-- `python dev/smoke_test.py --file app/shell/<file>.py` auto-selects relevant sections
-- Only run the full suite `python dev/smoke_test.py` before committing
-
-**Feature-flag new work (JSON-first, three states):**
-- Set `feature_flag='your_flag'` on any CommandDef not yet ready to ship
-- Each flag in `settings/features.json` is `true` (on for everyone), `"dev"` (under development — hidden until development mode), or `false` (off for everyone)
-- Add `"your_flag": "dev"` while building it; flip to `true` when ready to ship
-- Development mode is toggled by the **hidden `dev` command** (or `ARC_DEV_MODE=1` for CI/CD) and reveals every `"dev"` command; the prompt shows `arc:global:dev >`
-- Toggle one flag for a session inside ARC: `feature enable|disable|dev <flag>` (not saved)
-- `is_enabled(flags, flag, dev_mode)` gates commands; pass `self._dev_mode` at every call site
-- There is no FeatureFlags dataclass — `app/settings/features.py` just reads the JSON into a state map (`{flag: "on"|"dev"|"off"}`)
-
-**Model selection:**
-- Use cheap/fast models (claude-3-5-sonnet, gpt-4o) for pattern-mechanical tasks (add a command, fix a typo)
-- Use reasoning models (claude-3-7-sonnet, o3) only for multi-file debugging or architectural decisions
-- Use large-context models (gemini-2.5-pro) for full-codebase refactors where many files must be read simultaneously
-
----
-
-**Targeted smoke test** — run only what the change touches:
-```bash
-python dev/smoke_test.py --only 1,2,3    # syntax + imports + registry (after adding a command)
-python dev/smoke_test.py --only 8        # builtins alignment only
-python dev/smoke_test.py --file app/commands/network.py  # auto-selects 1,2,3
-python dev/smoke_test.py --file app/shell/prompt.py      # auto-selects 1,2,8
-```
-
-**Scaffold new commands** — generates handler stub + CommandDef + docs file:
-```bash
-python dev/scaffold.py "show bgp routes" network
-python dev/scaffold.py "show bgp routes" network --scope folder --render list --dry-run
-```
-
-**Debug session protocol** — paste this block to minimize re-reads:
-```
-debug:
-file: <which file you were editing or which command you ran>
-error: <paste traceback or error message>
-context: <device set? configure mode? profile? SCM connected?>
-```
-The debug error table in `README.dev.md` maps error text to the 1–2 relevant files.
-
-**Model routing hints:**
-| Task complexity | Suggested model |
-|---|---|
-| Add one standard command (known pattern) | claude-3-5-sonnet, gpt-4o |
-| Debug API/dispatch flow (multi-file trace) | claude-3-7-sonnet, o3 |
-| Read many files simultaneously | gemini-2.0-flash, gemini-2.5-pro (1M+ context) |
-| Pure boilerplate / scaffold generation | gpt-4o-mini, Copilot inline |
-| Architecture / security review | claude-opus-4, gemini-2.5-pro |
-| Large refactor touching many files | gemini-2.5-pro (load whole codebase at once) |
-
-#### smoke_test.py — maintenance rules
-
-`smoke_test.py` lives at `dev/` and runs automatically in the pre-commit hook.
-
-| Trigger | Required action |
-|---------|----------------|
-| New command added to a `COMMANDS` dict | Run `python dev/generate_command_docs.py` so the command's `docs/commands/<slug>.md` gets help front-matter — smoke **section 10** fails until it does. Registry tests auto-discover it otherwise |
-| New formatter function added | Add a minimal call in **section 6** of `dev/smoke_test.py` |
-| CLI banner lines changed (`_print_startup_help` in `app/shell/prompt.py`) | Update `_BANNER_LINES` in **section 7** of `dev/smoke_test.py` — the test will catch mismatches and print exactly what to change |
-| New module added under `app/` | No change needed — syntax and import tests auto-discover it |
-| New `SCMConfig` / `ArcConfig` field with invariant | Add a case in **section 5** of `dev/smoke_test.py` |
-| New theme key added to `ArcTheme` | Add a display label to `THEME_KEYS` in `app/settings/theme.py`; add to **section 9** if there is an invariant |
-| Builtin command added/removed/renamed | Edit `app/shell_catalog.py` first; then grep `app/shell/` for dispatch/completer/hint-string refs; delete `docs/commands/<name>.md`; smoke section 8 validates catalog wiring. Full checklist in `README.dev.md`. |
-| Any 300+ line file's methods moved/renamed | `dev/CODE_MAP.md` auto-checked by **section 10**; run `python dev/generate_code_map.py` (pre-commit also auto-refreshes) |
-
-**Targeted run flags** (saves time and tokens during development):
-```bash
-python dev/smoke_test.py --only 3          # registry only (after adding a CommandDef)
-python dev/smoke_test.py --only 1,2,3      # syntax + imports + registry
-python dev/smoke_test.py --only 8          # builtins alignment only
-python dev/smoke_test.py --file app/shell_catalog.py      # builtin catalog + shell help wiring
-python dev/smoke_test.py --file app/commands/network.py   # auto-selects 1,2,3
-python dev/smoke_test.py --file app/shell/prompt.py       # auto-selects 1,2,8
-python dev/smoke_test.py --file app/utils/formatter.py    # auto-selects 1,2,6
-python dev/smoke_test.py --file app/settings/theme.py              # auto-selects 1,2,9
-python dev/smoke_test.py --file app/config.py             # auto-selects 1,2,5
-```
-
-The test is intentionally lightweight — no mocking, no network, no auth. It validates structure and wiring, not API behavior.
-
----
-
-### Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Language | Python 3.11+ |
-| Package manager | [uv](https://github.com/astral-sh/uv) |
-| CLI framework | Typer |
-| Shell REPL | prompt-toolkit |
-| Output rendering | Rich |
-| HTTP client | httpx (sync) |
-| SSH | paramiko |
-| Data validation | pydantic |
-| Config storage | `<project_root>/config/<os_username>/config.json` + env vars |
-
----
-
-### Project Structure
-
-ARC separates **core code** (`app/`) from **user-editable settings** (`settings/`)
-and **per-user secrets** (`config/`).  A non-programmer customizes ARC by editing
-files under `settings/` — never the Python.
+## Project Structure
 
 ```
 arc/
-├── README.md                       ← project overview linking to docs/
-├── README.dev.md                   ← developer guide: tokenmaxing recipes + keyword dictionary (read first)
-├── pyproject.toml                  ← uv-managed project config
-├── run.py                          ← dev entry point (python run.py)
-├── settings/                       ← USER-EDITABLE assets (committed; hand-edit, no code)
-│   ├── README.md                   ← "edit these files to customize ARC"
-│   ├── features.json               ← THE on/off switch for every command (source of truth)
-│   ├── banner.txt                  ← startup banner (Rich markup; ## lines are comments)
-│   ├── goodbye.txt                 ← random exit messages (one chosen per exit)
-│   ├── theme.json                  ← CLI colour roles (edited via `cli color` or by hand)
-│   └── cli-structure.yaml          ← verb descriptions, section labels, help footer, configure banner
-├── config/
-│   └── config.example.json         ← credential template → config/<os_username>/config.json (secrets, gitignored)
-├── dev/
-│   ├── smoke_test.py               ← developer smoke suite (run: python dev/smoke_test.py)
-│   ├── scaffold.py                 ← command scaffolder (python dev/scaffold.py "cmd" module)
-│   ├── generate_api_index.py / API_INDEX.md  ← compact endpoint table (replaces reading specs)
-│   ├── generate_code_map.py / CODE_MAP.md    ← method→line-range map for large files
-│   ├── generate_command_docs.py         ← ensure command-doc front-matter + regenerate index/api-reference (runs on docsupdate)
-│   ├── generate_resource_catalog.py     ← regenerate app/commands/resource_catalog.py from specs (100% coverage; runs on docsupdate)
-│   ├── docsupdate.py / scm_sources.json  ← SCM doc puller + self-healing discovery
-│   └── DOCS_AGENT.md               ← docs-agent mode playbook
-├── docs/                           ← user-facing Markdown rendered by ARC help
-│   ├── README.md / usage.md / architecture.md / configuration.md
-│   ├── config-generate.md / config-osx.md / config-nix.md / config-win.md  ← per-OS setup walkthroughs
-│   ├── dev-versioning.md           ← optional local auto-version pre-commit hook setup
-│   ├── commands/                   ← one Markdown file per command (show-X, set-X, delete-X, packet-tracer …)
-│   └── scm-api/                    ← SCM NGFW reference (specs/ + guides/ + MANIFEST + CHANGES)
-└── app/                            ← CORE CODE ONLY (no user assets live here)
-    ├── __init__.py                 ← package version
-    ├── paths.py                    ← single source of truth for filesystem paths (settings/, config/, docs/)
-    ├── cli.py                      ← typer app: arc / arc auth / arc config / arc scm / arc docs
-    ├── shell/                       ← interactive REPL (mixin package — one concern per file)
-    │   ├── __init__.py              ← ArcShell composes the mixins + __init__/_init_clients/run
-    │   ├── _base.py                 ← shared spine: imports, constants, helpers, ShellState (mixins do `from _base import *`)
-    │   ├── completer.py             ← ArcCompleter (tab completion)
-    │   ├── dispatch.py              ← DispatchMixin: _dispatch (parse + route every line)
-    │   ├── navigation.py            ← NavigationMixin: cd / folder / tsg / account / pwd + cache refresh
-    │   ├── sessions.py              ← SessionsMixin: connect / remote interactive SSH
-    │   ├── execution.py             ← ExecutionMixin: _execute_api / _execute_remote / _render
-    │   ├── help.py                  ← HelpMixin: ? help system (inline/full/docs/verb options)
-    │   ├── configure.py             ← ConfigureMixin: configure mode, cli theme, feature flags
-    │   ├── write_cmd.py             ← WriteMixin: set / set folder (create)
-    │   └── prompt.py                ← PromptMixin: prompt / banner / startup / goodbye / styling
-    ├── shell_catalog.py            ← small builtin catalog: accepted names + SHELL help rows
-    ├── settings/                    ← loaders for the user-editable settings/ directory
-    │   ├── __init__.py              ← convenience re-exports (ArcTheme, load_features, …)
-    │   ├── features.py              ← JSON-first feature loader: reads settings/features.json → state map (on/dev/off)
-    │   ├── theme.py                 ← ArcTheme dataclass + load/save/reset (reads settings/theme.json)
-    │   ├── cli_structure.py         ← loader for settings/cli-structure.yaml
-    │   └── command_help.py          ← reads docs/commands/*.md front-matter → per-command description + usage
-    ├── config.py                   ← ArcConfig dataclasses + load_config() / save_config() (secrets)
-    ├── docs.py                     ← docs/ Markdown loader for `help <topic>` and browser opener
-    ├── api/
-    │   └── client.py               ← SCMClient (REST only)
-    ├── ssh/
-    │   └── manager.py              ← SSHManager (paramiko connection pool)
+├── run.py / pyproject.toml        ← dev entry point (python run.py); uv-managed
+├── AGENTS.md                      ← this hub
+├── settings/                      ← USER-EDITABLE, no code: features.json (command
+│                                    on/dev/off), banner.txt, goodbye.txt, theme.json,
+│                                    cli-structure.yaml, command-structure.json,
+│                                    commands.json (per-command visibility)
+├── config/<os_username>/          ← per-user secrets file (gitignored; keychain-backed)
+├── dev/                           ← generators + smoke suite (see Validation below)
+├── docs/                          ← user-facing Markdown rendered by `help <topic>`
+│   ├── commands/                  ← hand-written command pages ONLY (+ generated
+│   │                                index.md, api-reference.md). Commands without a
+│   │                                file get help synthesized from the registry.
+│   └── scm-api/                   ← pulled pan.dev specs + guides (docsupdate)
+└── app/                           ← CODE ONLY
+    ├── cli.py                     ← typer entry: arc / arc auth / arc config / arc scm
+    ├── paths.py                   ← single source of truth for asset paths
+    ├── config.py                  ← ArcConfig + profiles + keychain secrets
+    ├── docs.py                    ← help-topic renderer (+ synthesize_command_help)
+    ├── api/client.py              ← SCMClient: _request() core + per-domain wrappers
+    ├── ssh/manager.py             ← paramiko pool (agent → key → password → 2FA)
+    ├── shell_catalog.py           ← builtin names + SHELL help rows (edit first)
+    ├── shell/                     ← REPL as mixins, one concern per file:
+    │   ├── _base.py               ← spine: shared imports/constants/helpers/ShellState
+    │   ├── dispatch.py            ← _dispatch(): parse + route every input line
+    │   ├── navigation.py          ← cd / folder / tsg / account / pwd + caches
+    │   ├── execution.py           ← _execute_api/_execute_remote/_render + API errors
+    │   ├── help.py                ← ? help (visibility checks live here)
+    │   ├── completer.py           ← tab completion
+    │   ├── configure.py / write_cmd.py / sessions.py / prompt.py
+    │   └── __init__.py            ← ArcShell composition + run loop
+    ├── settings/                  ← loaders for settings/ + docs front-matter
     ├── commands/
-    │   ├── base.py                 ← CommandDef, ExecutionContext, require_scm/require_device, write helpers
-    │   ├── registry.py             ← thin assembler: merges all domain COMMANDS, exposes match_command()
-    │   ├── setup.py                ← /config/setup/v1  — devices, snippets, folders
-    │   ├── objects.py              ← /config/objects/v1 — addresses, services, tags, EDLs (read + set/update/delete)
-    │   ├── security.py             ← /config/security/v1 — security-rules, url-categories, profiles
-    │   ├── network.py              ← /config/network/v1 — interfaces, routing, zones, HA, NAT, VPN
-    │   ├── identity.py             ← /config/identity/v1 — auth profiles, certs, local users
-    │   ├── operations.py           ← jobs, commit (SCM); system info/logs/ping (SSH/--remote)
-    │   └── packet_tracer.py        ← packet-tracer / test security-policy-match (folder rule-base simulation)
-    │   ├── resource_catalog.py     ← AUTO-GENERATED OpenAPI operation catalog (do not hand-edit)
-    │   └── generated.py            ← factory: builds feature-gated show/set/update/delete commands from resource_catalog
-    └── utils/
-        └── formatter.py            ← rich Table/Panel renderers for all output types
+    │   ├── base.py                ← CommandDef, ExecutionContext, guards,
+    │   │                            show_handler()/delete_handler() factories
+    │   ├── registry.py            ← thin merger; match_command()
+    │   ├── <domain>.py            ← setup/objects/security/network/identity/
+    │   │                            operations/packet_tracer command modules
+    │   ├── resource_catalog.py    ← AUTO-GENERATED endpoint catalog (do not edit)
+    │   └── generated.py           ← factory: catalog entry → feature-gated command
+    └── utils/formatter.py         ← Rich renderers (_simple_table + specials)
 ```
 
-#### Where things live — the three-folder rule
-
-| Folder | Contains | Edited by |
-|--------|----------|-----------|
-| `app/` | Python — the application logic | developers/agents |
-| `settings/` | banner, theme, features.json, structure, goodbye | **anyone** (no code) |
-| `config/<user>/` | secrets (tokens, SSH passwords) | `arc auth configure` (keychain-backed) |
-
-**Path rule:** never hard-code an asset path. Import from `app/paths.py`
-(`BANNER_FILE`, `GOODBYE_FILE`, `THEME_FILE`, `STRUCTURE_FILE`, `FEATURES_FILE`, `COMMAND_DOCS_DIR`).
-
-#### Command module layout — mirrors SCM URI structure
-
-Each module under `app/commands/` maps to one SCM API domain or operational group:
-
-| Module | SCM URI prefix | Commands |
-|--------|---------------|----------|
-| `setup.py` | `/config/setup/v1` | devices, snippets, folders |
-| `objects.py` | `/config/objects/v1` | addresses, address-groups, services, tags, EDLs |
-| `security.py` | `/config/security/v1` | security-rules, url-categories, profiles |
-| `network.py` | `/config/network/v1` | interfaces, zones, routing, HA, NAT, VPN |
-| `identity.py` | `/config/identity/v1` | auth profiles, certificates, local users |
-| `operations.py` | `/config/setup/v1` + live-device | jobs, commit (SCM); system info, logs, ping (SSH via --remote) |
-| `packet_tracer.py` | (client-side) | packet-tracer / test security-policy-match — simulates the folder rule base |
-
-`base.py` contains only shared types (`CommandDef`, `ExecutionContext`) and
-utility functions (`require_scm`, `require_device`, `parse_kv_tail`,
-`merge_common_fields`). No handler logic goes in `base.py`.
-
-`registry.py` is a **thin assembler only** — it imports each module's `COMMANDS`
-dict, merges them, builds `SORTED_COMMANDS` and `CATEGORIES`, and exposes
-`match_command()`. No handler logic goes in `registry.py`.
-
-**When adding a new SCM endpoint family**, create `app/commands/<domain>.py`, add
-the base URL constant and getter to `SCMClient`, add the module to the merge block
-in `registry.py`, and add the feature flag(s) to `settings/features.json`.
-
-#### Generated SCM endpoint coverage — feature-gated by default
-
-**Policy: every pulled SCM OpenAPI operation becomes generated command metadata
-unless an explicit curated command already owns that command key.**
-
-| Piece | Role |
-|-------|------|
-| `dev/generate_resource_catalog.py` | Reads every pulled OpenAPI spec and writes `GET`/`POST`/`PUT`/`PATCH`/`DELETE` operation metadata to `app/commands/resource_catalog.py`. |
-| `app/commands/resource_catalog.py` | AUTO-GENERATED endpoint operation catalog (do not hand-edit). |
-| `app/commands/generated.py` | Factory turning each catalog entry into a feature-gated command: `GET` → `show`, `POST` → `set`, `PUT/PATCH` → `update`, `DELETE` → `delete`. Merged FIRST in `registry.py` so explicit commands win. |
-| `dev/generate_feature_flags.py` | Regenerates `settings/features.json`; existing flag states are preserved and new generated flags default `false`. |
-| `docsupdate` | Runs `generate_resource_catalog.py`, `generate_feature_flags.py`, `generate_command_docs.py`, then `generate_api_index.py`, so new pan.dev endpoints become command metadata + feature flags + docs automatically. |
-| smoke **section 3** | Fails if `resource_catalog.py` drifts from the specs (a new endpoint with no command). Fix: `python dev/generate_resource_catalog.py`. |
-
-Generated commands are intentionally **hidden until enabled** by feature flags.
-This keeps newly discovered API surface fail-closed while still making the full
-surface available for operators to enable. Generic generated write commands use
-`json|file <payload-or-path>` until a curated command adds friendly arguments.
-When an explicit command is added for a resource, the generated command with the
-same key is shadowed by the explicit command (explicit wins).
-
-#### `app/shell/` — the REPL package (mixins)
-
-`ArcShell` is composed from mixin classes, one concern per file. To change shell
-behaviour, edit the **one** mixin file that owns it (see the tree above), not a
-2,800-line monolith. Method line ranges are in `dev/CODE_MAP.md` (now per module:
-`app/shell/navigation.py`, `app/shell/help.py`, …).
-
-Rules when editing the package:
-- Shared imports / constants / module helpers / `ShellState` live in `app/shell/_base.py`.
-  Every mixin starts with `from app.shell._base import *` to get that namespace.
-- Add a new shared name → put it in `_base.py` (it auto-exports via `__all__`).
-- Add a new shell command method → put it in the mixin that owns the concern;
-  no `__init__.py` change needed (mixins are inherited).
-- A brand-new concern → new `app/shell/<thing>.py` with a `class <Thing>Mixin:`,
-  then add it to the `ArcShell(...)` base list and the import block in `__init__.py`.
-- Public surface (do not break): `from app.shell import ArcShell, ShellState, console,`
-  `_SHELL_BUILTINS, _expand_unambiguous_prefix`.
-- Validate: `python dev/smoke_test.py --file app/shell/<file>.py` then the full suite.
-
-The split was produced by slicing the original monolith verbatim (no behaviour
-change). `dev/generate_code_map.py` maps `navigation.py` and `help.py` (the two files
-still ≥ 300 lines); section 11 keeps the map honest.
+**Three-folder rule:** `app/` = code (developers/agents), `settings/` = user-editable
+assets (anyone, no code), `config/<user>/` = secrets (via `arc auth configure`).
+Never hard-code an asset path — import from `app/paths.py`.
 
 ---
 
+## Command Metadata — Source-of-Truth Hierarchy
 
+One command, five metadata layers. Higher layers override lower. Know which
+layer owns what before editing anything:
 
-### ARC Domain Keywords — For Scoped Agent Work
-
-When an agent needs to work on a specific domain or feature area, use these keywords in your prompt to scope the context efficiently:
-
-| Keyword | Scope | Key Files | Use When |
-|---------|-------|-----------|----------|
-| `network` | Network config commands | `app/commands/network.py`, `docs/scm-api/specs/network.md` | Adding/fixing interface, zone, routing, or HA commands |
-| `security` | Security policy commands | `app/commands/security.py`, `docs/scm-api/specs/security.md` | Working on security-rules, URL categories, profiles |
-| `objects` | Address/service objects | `app/commands/objects.py`, `docs/scm-api/specs/objects.md` | Adding address, service, tag, or EDL commands |
-| `identity` | Auth profiles, certs, users | `app/commands/identity.py`, `docs/scm-api/specs/ngfw-identity.md` | Auth profiles, certificates, local users |
-| `setup` | Device/folder/snippet mgmt | `app/commands/setup.py`, `docs/scm-api/specs/setup.md` | Device inventory, folder ops, snippet management |
-| `operations` | Jobs, commit, live device | `app/commands/operations.py`, `docs/scm-api/specs/ngfw-operations.md` | Commit operations, job tracking, live device commands |
-| `packet-tracer` | Policy simulation | `app/commands/packet_tracer.py`, `docs/commands/packet-tracer.md` | Rule-base match logic, ASA-style packet trace |
-| `formatter` | Output rendering | `app/utils/formatter.py` | Adding new table/panel renderers |
-| `shell` | REPL, help, completion | `app/shell/` package (dispatch.py, help.py, navigation.py; `dev/CODE_MAP.md` for ranges) | Shell UX, prompts, help system, dispatch |
-| `feature` | Feature on/off/dev | `settings/features.json`, `app/settings/features.py`, `docs/commands/features.md` | Turn a command on/dev/off, the feature system, the hidden `dev` mode |
-| `settings` | User-editable assets | `settings/` (banner, theme, goodbye, cli-structure, command-structure, features), `app/paths.py` | Banner, colours, labels, exit messages, argument order — no code (command help text lives in docs/commands/*.md) |
-| `argspec` | Tab/`?` argument completion | `settings/command-structure.json`, `app/settings/command_structure.py` | Field order, choices, and greedy no-quote parsing for `set <object>` commands |
-| `theme` | Colours | `settings/theme.json`, `app/settings/theme.py` | Recolour `?` help, prompt, banner |
-| `auth` | Authentication/credentials | `app/cli.py` (auth commands), `app/config.py` | Profile management, credential storage |
-| `scm-api` | SCM REST integration | `app/api/client.py`, `dev/API_INDEX.md`, `docs/scm-api/` | Adding new SCM API endpoints |
-
-**Usage pattern:**
-- "Add BGP peer listing [network]" → Agent reads network.py + the network spec only
-- "Change the banner [settings]" → Agent edits settings/banner.txt only
-- "Turn on show-zone for everyone [feature]" → Agent edits settings/features.json only
-- "Improve packet-tracer port matching [packet-tracer]" → Agent reads packet_tracer.py only
-
-**Token savings:** Using a keyword prevents the agent from reading all 5 domain modules + full AGENTS.md when only 1-2 files are relevant.
-
----
-
-### Token-Efficient Development Patterns
-
-When working on ARC as an agent, follow these patterns to minimize token usage:
-
-#### Read selectively using domain keywords
-- Use `[domain]` keywords (network, security, objects, setup, operations) to scope file reads
-- Read `docs/scm-api/specs/<domain>.md` for API reference instead of full OpenAPI YAML
-- Check `docs/commands/<command>.md` for existing command docs before exploring code
-
-#### Leverage existing infrastructure
-- **Command registry pattern:** Add commands by creating entries in domain module's `COMMANDS` dict
-- **No dispatcher changes needed:** Registry auto-merges; tab completion auto-picks up new commands  
-- **Argument parsing is automatic:** Use `KEYWORD_PARAMS` for named args, positional for the rest
-- **Don't reinvent formatters:** Check `formatter.py` for existing table/panel builders before writing new ones
-
-#### Reuse before creating
-- Before writing a new SCM API method, check if `app/api/client.py` already has a similar getter
-- Before adding a formatter, check if an existing one can be parameterized
-- Before writing table construction code, use existing table builder patterns
-
-#### Prefer targeted smoke tests
-- Run `python dev/smoke_test.py` after changes — it's fast and covers 86+ checks
-- Add a formatter call to section 6 if you added a new renderer
-- Add a builtin to `_BUILTIN_NAMES` if you added a shell command
-- Don't run full integration tests unless the change affects API calls
-
-#### Minimize doc reading for simple changes
-- For typo fixes, argument tweaks, or one-line changes: read only the target file
-- For new commands following existing patterns: read one example command in the same domain
-- For shell UX changes: read only the relevant `app/shell/<file>.py` (use `dev/CODE_MAP.md` line ranges)
-
----
-
-### Documentation Strategy
-
-Agent instructions (`.github/copilot-instructions.md` and `AGENTS.md`) are **not** the user manual.
-They hold design language, architecture constraints, coding patterns, command-registry rules,
-and app requirements that agents need while editing code.
-
-User-facing documentation lives in `docs/` as Markdown. ARC reads that folder at runtime through
-`app/docs.py` and renders docs inside the CLI with Rich Markdown:
-
-| CLI input | Documentation source |
-|-----------|----------------------|
-| `help usage` | `docs/usage.md` |
-| `help architecture` | `docs/architecture.md` |
-| `help configuration` | `docs/configuration.md` |
-| `help commands` | `docs/commands/index.md` |
-| `help show system info` | `docs/commands/show-system-info.md` |
-| `help remote` | `docs/commands/remote.md` |
-| `docs` | Opens `docs/README.md` in the default browser |
-
-When adding or changing a user-visible command, update both the command registry and the matching
-Markdown doc in `docs/commands/`. Keep docs concise and formatted for terminal rendering.
-
-**Command help is single-source.** Each command's `docs/commands/<slug>.md` begins with a YAML
-front-matter block (`command`, `description`, `usage`, `feature_flag`, `category`, `scope`, `api`).
-`app/settings/command_help.py` reads that front-matter and applies `description`/`usage` onto the
-`CommandDef`, so the inline `?` / `<command> ?` help and the full `help <command>` page come from the
-**same file** — there is no second place to edit. `app/docs.py` strips the front-matter before
-rendering the body. Run `python dev/generate_command_docs.py` (also run automatically by `docsupdate`) to
-add front-matter to new command docs and regenerate `docs/commands/index.md` + `api-reference.md`.
-
----
-
-### Execution Modes
-
-ARC routes every command through a two-mode dispatch in `ArcShell._dispatch()`:
-
-| Mode | Trigger | Mechanism |
-|------|---------|-----------|
-| **API** (default) | Any command without `--remote` | `SCMClient` REST API |
-| **SSH** | `--remote`, `remote <device>`, or `connect` | `SSHManager` runs commands on the device |
-
-**SCM API covers all configuration commands** — objects, security policy, network config (interfaces,
-zones, routing, HA), jobs, commit, and device inventory. Every config command that ARC exposes runs
-against the SCM REST API by default.
-
-**Live operational state** (CPU/memory, traffic logs, live routing table, ping, software check) is
-**not stored in SCM**. These commands return a clear message directing the operator to use `--remote`
-for SSH execution against the device. Never use "translation pending" language — instead say clearly
-that the command requires live device state and show the `--remote` usage.
-
-Device context is set by `cd <device>` and stored in `ShellState.device`. SCM folder context is stored
-in `ShellState.folder` and passed as the `?folder=` query parameter on SCM calls.
-
----
-
-### Command Registry Pattern
-
-eEvery supported command lives in one of the domain modules under `app/commands/`.
-Each module exports a `COMMANDS: dict[str, CommandDef]` dict. `registry.py` merges them.
-
-```python
-# In app/commands/objects.py (or whichever domain module owns this command)
-def _show_bgp_peers(ctx: ExecutionContext, args: dict) -> Any:
-    scm = require_scm(ctx)
-    return scm.get_bgp_peers(folder=ctx.folder)
-
-COMMANDS: dict[str, CommandDef] = {
-    ...
-    'show bgp peers': CommandDef(
-        description='Show BGP peer summary',
-        category='network',
-        scope='folder',                      # 'folder' | 'device' | 'global'
-        api_handler=_show_bgp_peers,         # Callable(ctx: ExecutionContext, args: dict) -> Any
-        ssh_command='show routing protocol bgp peer',  # str or Callable(args: dict) -> str
-        render='raw',                         # key into ArcShell._render() dispatch table
-    ),
-}
-```
-
-#### Command scope — declared on every CommandDef
-
-| scope | Meaning | When to use |
-|-------|---------|-------------|
-| `"folder"` | Scoped to `ctx.folder`. Handler passes `folder=ctx.folder` to SCM. | All config/policy/objects/network commands — anything stored in SCM at the folder or snippet level. Default. |
-| `"device"` | Requires active device context (`cd <device>`). ARC blocks execution with a clear error if no device is selected. | Per-device operational info that SCM stores (system info, logs). Live-device commands that need `--remote`. |
-| `"global"` | No context filtering. Returns TSG-wide data regardless of folder or device. | `show devices`, `show jobs all/id`, `show snippet`, `show snippets global`, `show device snippets` (takes name arg), `commit`. |
-
-**Scope assignment rules:**
-- Network config (interfaces, zones, routing, HA) → `"folder"` — these are stored in SCM at folder/snippet level
-- SCM inventory + jobs + commit → `"global"` — TSG-wide, no folder/device required
-- Live operational state (resources, logs, ping, software check) → `"device"` — need a device context for `--remote` targeting
-- Do NOT assign `"device"` scope to network config commands; they are configuration, not live device state
-
-**Rules for adding commands:**
-
-- Handler function must be a private module-level `def _handler_name(ctx, args)` in the correct domain module — never an inline lambda, never in `registry.py` or `base.py`.
-- Import `require_scm` and `require_device` from `app.commands.base`. Import `translation_pending` only if genuinely needed (it exists for legacy SSH-only stubs).
-- Every new `CommandDef` **must** declare `scope=` explicitly — do not rely on the default.
-- `ssh_command` must be a named function or a plain string — **never an inline lambda**.
-- `api_handler` receives `ExecutionContext` (`.scm`, `.ssh`, `.device`, `.folder`, `.target`, `.device_host`) and an `args` dict parsed from the remainder tokens after the matched command prefix.
-- `ssh_command` is a plain string for static commands, or a `Callable(args) -> str` for commands that embed dynamic arguments (e.g. `ping host <ip>`).
-- `render` is a string key into the dispatch table in `ArcShell._render()`. Add a renderer in `formatter.py` for new output types.
-- After adding an entry to a domain module's `COMMANDS`, tab completion picks it up automatically.
-
-**Adding a command — checklist:**
-
-1. Identify or create the right domain module (`setup.py`, `objects.py`, `security.py`, `network.py`, `operations.py`).
-2. Write `_handler(ctx, args)` in that module.
-3. Add `CommandDef` entry with explicit `scope=` to that module's `COMMANDS` dict. The `description=` is the built-in default; the canonical help (description + `usage:` shown by `<command> ?`) lives in the command's `docs/commands/<slug>.md` front-matter.
-4. Add or update `docs/commands/<command-slug>.md` so `help <command>` works.
-5. Add renderer in `formatter.py` if needed; add dispatch case in `ArcShell._render()`.
-6. Run `python dev/generate_command_docs.py` so the command's `docs/commands/<slug>.md` gets help front-matter and the index + API reference are refreshed (smoke section 10 enforces full coverage). Then edit that doc's `description`/`usage` front-matter + body.
-7. Run `python dev/smoke_test.py` — registry tests auto-pick up the new command; add a formatter call to section 6 if a new renderer was added.
-8. Smoke-test interactively: `printf 'help your new command\nyour new command\nexit\n' | arc`.
-
----
-
-### Config Pattern
-
-`ArcConfig` is a dataclass read once at startup in `cli.main()`:
-
-```python
-from app.config import load_config
-cfg = load_config()   # env vars override config file values
-```
-
-Config is stored at `<project_root>/config/<os_username>/config.json` (mode `0600`, directory `0700`). A legacy fallback reads from the `platformdirs`-based `~/.arc/config.json` path on first run and migrates automatically.
-
-`arc config generate` (typer command group `config_app` in `app/cli.py`) writes a starter
-`config.json` with annotated placeholders and `0600` permissions (`--force` overwrites an
-existing file). Platform-specific setup walkthroughs live in `docs/config-osx.md`,
-`docs/config-nix.md`, `docs/config-win.md`, and `docs/config-generate.md`.
-
-Config hierarchy (later overrides earlier): config file → environment variables.
-
-SCM auth supports either `SCM_BEARER_TOKEN` or OAuth client credentials
-(`SCM_CLIENT_ID`, `SCM_CLIENT_SECRET`, `SCM_TSG_ID`). Bearer token takes precedence.
-
-**Named profiles** allow multiple SCM service accounts to coexist. The config file stores a `profiles` dict and an `active_profile` field. Profile-scoped keychain keys use the format `scm.bearer_token.<profile>`; the `default` profile uses the historic non-suffixed keys for backward compatibility.
-
-```python
-# Create a profile (outside the shell)
-arc auth configure --profile readwrite
-
-# Switch profiles inside the shell
-account readwrite
-
-# Profile-aware load (used internally; shell always uses active profile)
-cfg = load_config(profile="readwrite")
-```
-
-Never read config inside the registry or formatter. Pass `ArcConfig` through `ExecutionContext`
-if a handler needs it.
-
----
-
-### Client Initialization
-
-Clients are built once in `ArcShell.__init__()` and stored as instance attributes:
-
-- `self._scm` — `SCMClient` or `None`
-- `self._ssh` — `SSHManager` (always present; connections are deferred per device)
-
-SCM is not required to start the shell. ARC only fails when an API command requires SCM and no SCM
-credentials are configured. SSH commands can still run when SSH credentials/device reachability exist.
-
----
-
-### Shell Built-in Commands
-
-Handled directly in `ArcShell._dispatch()` before the registry is consulted:
-
-| Command | Behavior |
-|---------|----------|
-| `cd <device>` | Change Device in SCM — fuzzy-matches hostname / serial / IP. **Tab** after `cd ` lists all managed devices. |
-| `remote <device>` | SSH to Device — opens an interactive SSH session on the named device (also sets device context). **Tab** after `remote ` lists all managed devices. |
-| `connect <device>` | SSH to Device — opens an interactive SSH session on the named device, or on the current `cd` device when no name is given. |
-| `exit` | Exit ARC — closes all connections and quits. |
-| `pwd` | Print current device, active SCM folder, TSG, and active credential profile. |
-| `folder <name>` | Set `ShellState.folder` (used by all SCM API calls). **Tab** after `folder ` lists available SCM folders. `folder ..` resets to Shared. |
-| `folder create <name>` | Create a new SCM folder (configure mode required) — interactive numbered parent-selection menu, then POST to SCM and refresh cache. |
-| `tsg <id>` | Switch the active Tenant Services Group. Re-authenticates via OAuth to the new TSG and clears device + folder context. **Tab** after `tsg ` lists child TSGs. |
-| `account <name>` | List or switch named credential profiles. `account` with no args lists all profiles; `account <name>` switches to the named profile and reinitializes SCM + clears context. **Tab** after `account ` lists profile names. |
-| `configure` | Enter configure mode. Prompt changes to `#` (for example `arc:global #`). |
-| `cli` | Configure-mode CLI theme operations. `cli show`, `cli color <key> <style>`, `cli reset`. |
-| `?` / `help` | Print the full command reference. |
-| `help <topic>` | Render Markdown from `docs/` inside the CLI. |
-| `docs` | Open `docs/README.md` in the default browser. |
-| `clear` | Clear the terminal. |
-| `dev` | **Hidden** (not in `?` or tab completion). Toggles development mode, revealing every command whose feature flag is `"dev"`. `dev on` / `dev off` / `dev status`. Prompt shows `arc:global:dev >`. Handled in `dispatch.py` → `_cmd_dev` (configure.py); intentionally absent from `shell_catalog.py`. |
-| `--remote` | Not listed as a shell command. It appears only as a completion suffix while typing a registered command and runs that one command remotely. |
-
----
-
-### CLI Theme System
-
-ARC's colour roles are stored in `settings/theme.json` and loaded at shell startup into `ArcTheme` (defined in `app/settings/theme.py`). Every colour value is a Rich markup style string (e.g. `"cyan"`, `"bold yellow"`, `"dim"`).
-
-**Theme keys:**
-
-| Key | Default | Controls |
-|-----|---------|----------|
-| `command_name` | `cyan` | Command names in `?` help output |
-| `section_header` | `bold yellow` | Section headers (GLOBAL / FOLDER / DEVICE / SHELL) |
-| `section_header_locked` | `dim bold` | DEVICE section header when no device is active |
-| `description` | *(empty — plain)* | Description text beside commands |
-| `description_dim` | `dim` | Dim/secondary text and context annotations |
-| `banner_logo` | `bold cyan` | Default style tag for the logo |
-| `banner_subtitle` | `dim` | Default style tag for the subtitle line |
-
-**Editing colours:**
-- **In-shell:** `configure` then `cli color <key> <style>` — saved immediately to `settings/theme.json`
-- **Direct file edit:** open `settings/theme.json` and change any value
-- **Reset:** `configure` then `cli reset` — restores all keys to defaults
-
-**`settings/banner.txt`** is the single source of truth for the startup banner. It contains Rich markup tags directly (e.g. `[bold cyan]...[/bold cyan]`). Lines starting with `##` are comments stripped before printing. Add a blank line for spacing, a legal notice, or change the logo colour — all without touching Python code.
-
-**Rules for adding a new theme key:**
-1. Add the field to `ArcTheme` in `app/settings/theme.py` with a default value.
-2. Add a display label to `THEME_KEYS` in `app/settings/theme.py`.
-3. Use `self._styled(text, self._theme.<key>)` wherever the colour is applied in the `app/shell/` package.
-4. Add a case in **section 9** of `dev/smoke_test.py` if there is an invariant to check.
-5. Run `python dev/smoke_test.py` to verify.
-
----
-
-### Shell UX Design — Key Principles
-
-These are the canonical interaction patterns for ARC. All future shell features must follow these rules.
-
-#### Two-mode help system — Cisco-style inline vs full docs
-
-ARC has two distinct help modes:
-
-| Trigger | Mode | Behavior |
-|---------|------|----------|
-| `?` (bare) | Cisco inline | Compact 3-tier listing — one line per command, no panels |
-| `show ?` | Cisco inline | All `show *` commands with one-liner descriptions |
-| `help` (bare) | Cisco inline | Same as bare `?` |
-| `cd help` | Full docs | Renders `docs/commands/cd.md` for the command before `help` |
-| `show address help` | Full docs | Renders docs page for `show address` |
-| `help <topic>` | Full docs | Renders docs by topic name |
-| `help all` | Full dump | Unfiltered complete reference |
-
-**`?` is always the quick inline reference — never show elaborate panels for bare `?`.**
-
-**Strict context-aware rule:** `?` must only list commands that are executable in the current context and mode.
-Do not show unavailable/locked commands in the inline list.
-
-**Progressive collapse rule:** prefix help must show only the next valid token(s), not a full dump of matching command strings.
-Examples: `show jobs ?` -> `all`, `id`; `show device ?` -> `<enter>`, `snippets`, `devices`.
-This applies to bare tiered `?` too: each tier should show top-level next tokens (for example `show`, `commit`) rather than full leaf command lines.
-
-**Usage rule:** when the typed prefix is itself a complete command (e.g. `packet-tracer ?`, `show interface ?`), the inline `?` shows a **Usage:** block — the command's `usage` syntax line (how to invoke it with arguments) plus a `<command> help` pointer — instead of a bare `<enter>`. The `usage` text lives on `CommandDef.usage`, set per command in its `docs/commands/<slug>.md` front-matter (`usage:`). Commands with no `usage` fall back to showing the command name. Sub-command options (e.g. `show device ?` → `snippets`) still list below the usage block. `_print_inline_usage()` in `app/shell/help.py` renders it.
-
-The inline `?` output is organized in three tiers with plain section headers:
-
-| Tier | Label | Commands shown |
-|------|-------|----------------|
-| **Tier 1 — GLOBAL** | `GLOBAL` | All `scope="global"` commands |
-| **Tier 2 — FOLDER** | `FOLDER [<name>]` | All `scope="folder"` commands with active folder annotation |
-| **Tier 3 — DEVICE** | `DEVICE [<name>]` bright / `DEVICE [locked]` dim | All `scope="device"` commands |
-| **SHELL** | `SHELL` | Built-in navigation commands |
-
-Footer line always shown: `<command> help  → docs  |  help all → full reference`
-
-`help all` bypasses tiers and shows the full unfiltered reference.
-
-Availability examples:
-- `scope="device"` commands appear only when a device is selected
-- `commit` appears only in configure mode
-- `folder create <name>` and `cli ...` appear only in configure mode
-- In configure mode, bare `?` shows configure workflow commands plus read-only `show ...` navigation stems
-- In configure mode, bare `?` shows only configure-relevant commands (for ARC this means configure workflow commands, not full read-only operational listings)
-
-#### Prompt reflects context tier
-
-The prompt uses four forms that tell the operator exactly which tier they are operating in:
-
-| Context state | Prompt | Notes |
+| Layer | Owns | When it applies |
 |---|---|---|
-| No device, Shared folder | `arc:global >` | Root / global tier — dim cyan label |
-| No device, named folder | `arc:Production >` | Folder tier — green folder name |
-| Device set, Shared folder | `arc:fw01:device >` | Device tier at Shared — yellow device + dim cyan label |
-| Device set, named folder | `arc:fw01:Production >` | Device + specific folder — yellow device + green folder |
+| 1. `CommandDef` in `app/commands/*.py` | everything: handler, description, usage, scope, render, feature_flag | always — the base truth |
+| 2. `docs/commands/<slug>.md` front-matter | description + usage overrides | only when that file exists (hand-written pages) |
+| 3. `settings/features.json` | on / `"dev"` / off per feature flag | gates visibility + execution |
+| 4. `settings/commands.json` | per-command visibility bool | rarely used; hides individual commands |
+| 5. `settings/command-structure.json` + `app/settings/command_structure.py` | field order + greedy parsing for curated `set <object>` | curated write commands only |
 
-**Rule:** Never show `:Shared` in the prompt. Shared is the default/unset state — replace it with
-the context tier label (`:global` or `:device`). Only show a folder name when it is a meaningful
-non-Shared folder that the operator explicitly navigated to.
+**The canonical visibility check** is `ArcShell._is_command_visible()`
+(app/shell/help.py) — feature flag + commands.json. Dispatch, prefix expansion,
+fuzzy suggestions, tab completion, and help ALL use it; never inline a bare
+`is_enabled()` check for command visibility. `_is_command_available()` adds
+context gates (device scope, configure mode) on top for `?` rendering.
 
-#### Everything is context-aware by default
-
-**This is the primary design rule.** No command, built-in, or navigation gesture should silently accept invalid context or produce results from the wrong scope.
-
-| Context constraint | Enforcement |
-|---|---|
-| `cd <device>` when cache populated | Hard error if device not in TSG device list — never create a stub |
-| `folder <name>` when cache populated | Hard error if folder not in TSG folder list |
-| `tsg <id>` switch | Always clears device + folder context; refreshes all caches; warns if new TSG has 0 devices |
-| `remote <device>` / `connect <device>` | Same as `cd` — refuses unknown device when cache populated |
-| Commands with `scope="device"` | `_execute_api` blocks execution and shows actionable error before calling handler |
-| Commands with `scope="folder"` | Handler uses `ctx.folder`; always scoped to the active folder |
-| Commands with `scope="global"` | Handler ignores `ctx.folder`/`ctx.device`; returns TSG-wide data |
-
-**Explicitly global commands** (declared `scope="global"`): `show devices`, `show device`, `show device snippets`, `show snippet <name>`, `show snippets global`, `show jobs all`, `show jobs id`, `commit`, `exit`, `pwd`, `tsg`, `help`, `?`, `docs`, `clear`.
-
-**Exception — empty cache:** When the SCM API is unavailable and the device/folder cache is empty, fall back gracefully (allow SSH stub for `cd`, allow free-form folder name). Document this in the fallback message so the operator knows why the constraint is relaxed.
-
-When adding any new built-in or registered command, explicitly decide its scope and enforce it. Do not add a command and leave scope as an afterthought.
-
-#### Configure mode owns all write/change operations
-
-ARC uses a Cisco-style configure mode for mutating operations.
-
-| Rule | Enforcement |
-|---|---|
-| Enter configure mode | `configure` switches prompt to `#` (`conf` resolves to `configure` via shorthand expansion) |
-| Write operations outside configure mode | Must be blocked with a clear message |
-| `folder create <name>` | Allowed only in configure mode |
-| `commit` | Allowed only in configure mode |
-| CLI theme writes (`cli color`, `cli reset`) | Allowed only in configure mode |
-
-Use `exit` to leave configure mode and return to the normal prompt.
-
-#### Tab completion is context-aware
-
-| User types | Tab shows |
-|-----------|-----------|
-| `cd ` | All managed device names (from SCM cache) |
-| `remote ` | All managed device names |
-| `connect ` | All managed device names (supported shortcut; canonical help shows `connect`) |
-| `folder ` | All SCM folder names |
-| `tsg ` | Child TSG IDs (from TSG cache) |
-| `account ` | All configured credential profile names |
-| `help ` | Docs topics and registered command names |
-| `show sy` | All matching ARC command prefixes |
-| `show system info --` | `--remote` suffix for running that single command remotely |
-| `set address myaddr ` | The command's **usage** option keywords — `ip-netmask` / `ip-range` / `ip-wildcard` / `fqdn`, then `description` / `tag` |
-| `show interface ` | Sub-commands (`all`) of a complete command |
-
-**Usage-driven argument completion.** Once a command word is complete, Tab stops
-prefix-matching sibling command names (so `set address ` never autofills
-`set address-group`) and instead walks the command's `usage` string (from its
-`docs/commands/<slug>.md` front-matter): each positional slot offers its choices
-(`a|b|c`), free `<value>` slots offer nothing, and trailing `[keyword <value>]`
-pairs are offered at the end (minus those already typed). The parser/walker is
-`_parse_usage` / `_usage_options` + `_complete_arguments` in `app/shell/completer.py`.
-**Every command is tabbable to the extent its `usage` describes its options** —
-to make a new command fully tab-guided, give it a complete `usage:` line.
-
-**Structure-aware completion + greedy parsing (takes precedence over usage).**
-For curated `set <object>` commands listed in `settings/command-structure.json`,
-the JSON holds **only the field order** (`{"address": ["name", "type", "value", "description", "tag"]}`);
-all richer metadata (which fields are fixed choices and their options, which are
-required, the per-field hints) comes from the code-side field library in
-`app/settings/command_structure.py` — seeded today from the SCM schema (e.g. the
-address `oneOf` → `ip-netmask | ip-range | ip-wildcard | fqdn`). When a command has
-an `arg_spec(key)`, the completer (`_arg_options`), inline `?` (`help.py`), and the
-registry parser (`match_command` → `command_structure.parse`) all use it **instead of**
-the `usage` string. Its `_walk` tokenizer consumes free value slots **greedily** so the
-operator never needs quotes (`set address my web host fqdn example.com` → name =
-`my web host`); quotes remain an escape hatch. Commands with no JSON entry fall back to the
-usage-string walker above. Add a JSON entry only when a command has a curated, human-friendly parser —
-generated OpenAPI commands stay on their `usage` string (e.g. `json|file <payload-or-path>`).
-
-Device and folder caches are populated at startup when SCM is configured. Both caches refresh when the user runs `show devices` or navigates with `folder`/`tsg` commands.
-
-#### Unambiguous shorthand (Cisco-style)
-
-ARC accepts token-prefix shorthand when (and only when) the prefix resolves to exactly one command.
-
-| User input | Result |
-|-----------|--------|
-| `e` | Runs `exit` (unique match) |
-| `q` | Runs `quit` (unique match) |
-| `sh sec pol` | Runs `show security policy` |
-| `d` | **No expansion** (ambiguous: `docs` vs `devices`) |
-
-Rules:
-- Expansion applies to shell built-ins and registered command keys.
-- Matching is token-wise prefix (`sh sec pol` → `show security policy`).
-- Ambiguous prefixes are never auto-expanded.
-- Tab completion remains available; shorthand-on-Enter is an additional convenience.
-
-#### Interactive SSH model
-
-`connect` and `remote <device>` open a true interactive PTY session. ARC authenticates
-using stored credentials (keychain + 2FA), then hands the terminal directly to the device.
-
-You are ON the device — every keystroke goes to it; every byte from the device is written
-to your terminal. ARC is a transparent byte pipe; no interception, no logging, no command
-dispatch. The session ends when you type `exit` on the device; the ARC prompt reappears
-automatically.
-
-Authentication order:
-1. SSH agent keys
-2. Configured key file (`arc auth configure --ssh-key`)
-3. Default key files (`~/.ssh/id_ed25519`, `id_rsa`, `id_ecdsa`)
-4. Keyboard-interactive (auto-fills stored password from keychain, surfaces 2FA prompts)
-5. Plain password fallback
-
-#### `?` is the canonical help trigger
-
-`?` and `help` are identical for the short command reference. `help <topic>` opens full docs from `docs/`.
-
-#### `pwd` always shows credential status
-
-`pwd` shows device name, serial, IP, active SCM folder, active TSG, and active credential profile. SSH credential status is shown
-at connection time, not in `pwd`.
-
-#### `cd` never starts an SSH session
-
-`cd` only changes the SCM/API device context. To open an interactive SSH session, use `connect`
-for the current device or `remote <device>` for a named device. Do not list `cd ..` / `cd /` in
-help output; they may remain accepted as quiet convenience aliases.
-
-#### Folder context applies to all SCM calls
-
-The active folder (`ShellState.folder`, default `Shared`) is passed as the `?folder=` query parameter
-on every SCM REST call. Change it with `folder <name>` + Tab.
+**Generated commands** (~1,050): every pulled OpenAPI operation becomes a
+feature-gated command via `resource_catalog.py` + `generated.py`
+(GET→show, POST→set, PUT/PATCH→update, DELETE→delete). All default **off** in
+`settings/features.json` — fail-closed until an operator enables them. Explicit
+commands with the same key shadow generated ones (merged last in registry.py).
+Generated commands have **no doc file** — `help <cmd>` synthesizes a page from
+the CommandDef (`app/docs.py synthesize_command_help`). Never create doc stubs.
 
 ---
 
-### SCM REST API — Gateway Map
+## Add a Command
 
-**Source of truth for all SCM API information: https://pan.dev/scm/api/**
-
-Never guess or invent SCM API paths, parameters, or base URLs.  Always look up
-the correct endpoint in the pan.dev OpenAPI specs before implementing or
-changing any API call.  The pan.dev GitHub source for all specs is:
-  `https://github.com/PaloAltoNetworks/pan.dev/tree/master/openapi-specs/scm/`
-
-**Local reference set:** ARC ships a mirror of the SCM NGFW docs under
-`docs/scm-api/` — `specs/<category>.yaml` (raw OpenAPI) + `specs/<category>.md`
-(per-endpoint listing that records, beyond path/summary, the **container scope**
-`folder | snippet | device`, the **body schema** + **required fields**, and the
-nested **oneOf/anyOf type variants** e.g. `layer2 | layer3` — generated by
-`_render_markdown` in `dev/docsupdate.py`), `guides/*.md` (every conceptual
-pan.dev doc under `products/scm/docs/`), plus `index.md`, `CHANGES.md`, and a
-`MANIFEST.md` that records each spec's `servers[0].url` base URL and pull date.
-The source paths live in the editable, self-healing registry `dev/scm_sources.json`.
-Refresh it with the `docsupdate` trigger (`python dev/docsupdate.py`).
-`MANIFEST.md` is the source of truth this gateway-map table mirrors — if they
-disagree, re-run `docsupdate` and update this table from the manifest.  This
-reference set is excluded from the `arc cliup` browser bundle (it is
-developer/agent material, not user help).
-
-SCM gateways come from the `servers[0].url` field in each OpenAPI spec.  The
-same OAuth bearer token works on all of them.  Confirmed base URLs (from the
-last `docsupdate` pull):
-
-| Category | Base URL (`servers[0].url`) | pan.dev spec |
-|----------|----------|--------------|
-| **Objects** (addresses, address-groups, services, tags, EDLs, …) | `https://api.strata.paloaltonetworks.com/config/objects/v1` | `openapi-specs/scm/config/ngfw/objects/objects-june.yaml` |
-| **Security** (security-rules, url-categories, decryption, profiles, …) | `https://api.strata.paloaltonetworks.com/config/security/v1` | `openapi-specs/scm/config/ngfw/security/security-services-R2-2026.yaml` |
-| **Setup** (devices, folders, snippets, labels, jobs, commit/push, …) | `https://api.strata.paloaltonetworks.com/config/setup/v1` | `openapi-specs/scm/config/ngfw/setup/config-setup-feb-v1.yaml` |
-| **Network** (interfaces, zones, routing, HA, …) | `https://api.strata.paloaltonetworks.com/config/network/v1` | `openapi-specs/scm/config/ngfw/network/network-services-R2-2026.yaml` |
-| **Operations** (config jobs, push) | `https://api.strata.paloaltonetworks.com/config/operations/v1` | `openapi-specs/scm/config/ngfw/operations/config-operations-march.yaml` |
-| **Operations (R2)** (live operational ops) | `https://api.strata.paloaltonetworks.com/operations/v1` | `openapi-specs/scm/config/ngfw-operations/operations-R2-2026.yaml` |
-| **Device settings** | `https://api.strata.paloaltonetworks.com/config/device/v1` | `openapi-specs/scm/config/ngfw/device/device-settings_April.yaml` |
-| **Identity** | `https://api.strata.paloaltonetworks.com/config/identity/v1` | `openapi-specs/scm/config/ngfw/identity/identity-services-march.yaml` |
-| **Device onboarding** | `https://api.strata.paloaltonetworks.com/config/setup/device-onboarding/v1` | `openapi-specs/scm/config/ngfw/setup/device-onboarding/device-onboarding-updated.yaml` |
-| **IAM** (service accounts, access policies, roles) | `https://api.sase.paloaltonetworks.com` | `openapi-specs/scm/iam/ServiceAccounts.yaml` |
-| **Tenancy** (TSGs, tenant hierarchy) | `https://api.sase.paloaltonetworks.com` | `openapi-specs/scm/tenancy/TenantServiceGroup.yaml` |
-| **Authentication** (OAuth token endpoint) | `https://auth.apps.paloaltonetworks.com` | `openapi-specs/scm/auth/AuthService.yaml` |
-
-Key paths (always verify current spec before using):
-
-```
-# Authentication
-POST https://auth.apps.paloaltonetworks.com/auth/v1/oauth2/access_token
-  body: grant_type=client_credentials&scope=tsg_id:<TSG_ID>
-  auth: HTTP Basic (client_id:client_secret)
-
-# Objects
-GET  https://api.strata.paloaltonetworks.com/config/objects/v1/addresses?folder=Shared
-GET  https://api.strata.paloaltonetworks.com/config/objects/v1/address-groups?folder=Shared
-GET  https://api.strata.paloaltonetworks.com/config/objects/v1/services?folder=Shared
-GET  https://api.strata.paloaltonetworks.com/config/objects/v1/tags?folder=Shared
-
-# Security
-GET  https://api.strata.paloaltonetworks.com/config/security/v1/security-rules?folder=Shared&position=pre
-GET  https://api.strata.paloaltonetworks.com/config/security/v1/url-categories?folder=Shared
-
-# Setup (devices, folders — no folder param needed for devices)
-GET  https://api.strata.paloaltonetworks.com/config/setup/v1/devices
-GET  https://api.strata.paloaltonetworks.com/config/setup/v1/folders
-GET  https://api.strata.paloaltonetworks.com/config/setup/v1/jobs
-GET  https://api.strata.paloaltonetworks.com/config/setup/v1/jobs/{id}
-POST https://api.strata.paloaltonetworks.com/config/setup/v1/config-versions/candidate:push
-
-# Network config (verify exact paths at pan.dev/scm/api/)
-GET  https://api.strata.paloaltonetworks.com/config/network/v1/ethernet?folder=Shared
-GET  https://api.strata.paloaltonetworks.com/config/network/v1/aggregate-ethernet?folder=Shared
-GET  https://api.strata.paloaltonetworks.com/config/network/v1/loopback-interfaces?folder=Shared
-GET  https://api.strata.paloaltonetworks.com/config/network/v1/zones?folder=Shared
-GET  https://api.strata.paloaltonetworks.com/config/network/v1/routing/static-routes?folder=Shared
-GET  https://api.strata.paloaltonetworks.com/config/network/v1/virtual-routers?folder=Shared
-GET  https://api.strata.paloaltonetworks.com/config/network/v1/ha?folder=Shared
-
-# Tenancy — list child TSGs
-GET  https://api.sase.paloaltonetworks.com/tenancy/v1/tenant_service_groups/{tsg_id}/operations/list_children
-GET  https://api.sase.paloaltonetworks.com/tenancy/v1/tenant_service_groups
+```python
+# app/commands/<domain>.py — trivial list/delete? use the factories:
+'show bgp-peers': CommandDef(
+    description='Show BGP peer summary',
+    category='network',
+    scope='folder',                          # REQUIRED — 'folder' | 'device' | 'global'
+    api_handler=show_handler('get_bgp_peers'),
+    ssh_command='show routing protocol bgp peer',   # str or named Callable(args)->str
+    render='list',                           # key into _render(); see docs/RENDER_CATALOG.md
+    feature_flag='bgp_peers',                # optional gate; add to settings/features.json
+),
+# anything with real logic (filtering, payloads, multiple calls) gets a named
+# module-level handler: def _show_x(ctx: ExecutionContext, args: dict) -> Any
 ```
 
-**Token scope:** Every OAuth token is scoped to a specific TSG (`scope=tsg_id:<id>`).
-Tokens scoped to a parent TSG can read data across child TSGs.
-Use `arc auth test` to verify which endpoints are accessible with the current credentials.
+1. Pick the domain module (mirrors the SCM URI: setup, objects, security,
+   network, identity, operations). New SCM method needed? Add a one-line
+   getter to `SCMClient` using `self._request(...)` / `_get_<domain>(...)`.
+2. Add the `CommandDef` with **explicit `scope=`**. Registry, tab completion,
+   and help pick it up automatically — no dispatcher changes.
+3. Feature-flag it: `"your_flag": "dev"` in `settings/features.json` while
+   building; flip to `true` to ship. (`dev` command / `ARC_DEV_MODE=1` reveals
+   dev-flagged commands; `feature enable|disable|dev <flag>` toggles one session.)
+4. Doc file only if you have something to say beyond description/usage —
+   otherwise help is synthesized. If you add `docs/commands/<slug>.md`, give it
+   the front-matter block (`command`, `description`, `usage`, `category`, `scope`).
+5. New `render=` key? Add the formatter (`_simple_table` fits most tables), a
+   `_render()` dispatch case, and a smoke section-7 call.
+6. `python dev/smoke_test.py --only 1,2,3` (full suite before commit).
+
+Scope rules: SCM config (objects/policy/network) → `"folder"` (handler passes
+`folder=ctx.folder`); TSG-wide inventory/jobs/commit → `"global"`; live device
+state (logs, resources, ping) → `"device"` (requires `cd <device>`, runs via
+SSH). Never mark network *config* as `"device"` — it's SCM data.
+
+Handler rules: named module-level functions only (no lambdas — smoke enforces);
+guards `require_scm(ctx)` / `require_device(ctx)` from base.py; raise
+`ValueError("Usage: …")` for bad args — `_execute_api` renders it as a friendly
+message. `ExecutionContext` fields: `.scm .ssh .config .device .folder .tsg_id`.
 
 ---
 
-### `docsupdate` — Refresh the SCM API Reference from pan.dev
+## Execution Model
 
-When the user says `docsupdate` (or `update docs` / `pull api docs` / `docs agent`),
-follow the **Docs Agent Mode** playbook in `dev/DOCS_AGENT.md`. Summary:
+| Mode | Trigger | Path |
+|---|---|---|
+| API (default) | any command | `_dispatch` → `match_command` → `_execute_api` → handler → `_render` |
+| SSH | `--remote <device>`, `remote <device>`, `connect` | `_execute_remote` / interactive PTY |
 
-1. Run `python dev/docsupdate.py`. It downloads the current NGFW OpenAPI
-   specs plus auth, tenancy, IAM service-accounts, and **every** conceptual SCM
-   guide doc under `products/scm/docs/` directly from the pan.dev GitHub repo
-   (`PaloAltoNetworks/pan.dev`, master).
-2. Source paths are NOT hard-coded — they live in the editable registry
-   `dev/scm_sources.json`. When a path 404s (pan.dev renames files often), the
-   tool searches the live GitHub tree, finds the new location by domain +
-   filename similarity, **auto-updates the registry** (recording the move under
-   `relocations`), and retries. No more "file not found".
-3. The script writes, under `docs/scm-api/`: `specs/<category>.yaml` +
-   `specs/<category>.md`, `guides/*.md`, `index.md`, `MANIFEST.md`, and
-   **`CHANGES.md`** (added/removed endpoints per domain + relocations since the
-   last pull). `docs/scm-api/` is excluded from the `arc cliup` browser bundle.
-4. Markdown/manifest/diff generation needs PyYAML (a dev extra). If missing,
-   the script still saves raw specs + guides and prints the install hint
-   (`uv pip install -e '.[dev]'`).
-5. After a pull, read `docs/scm-api/CHANGES.md`. For **removed/renamed**
-   endpoints, grep ARC (`app/api/client.py`, `app/commands/`) and update calls.
-   For **added** endpoints the user wants, use the normal add-command flow.
-6. Compare `docs/scm-api/MANIFEST.md` against the **SCM REST API — Gateway Map**
-   table above; update it (and `app/api/client.py` URL constants) if a base URL
-   or spec filename changed. Confirm to the user what changed.
+- Errors: `SCMClient` raises (`httpx.HTTPStatusError` etc.) — never swallow into
+  `[]`. `_execute_api` converts 401/403/404/network errors into actionable
+  operator messages. Keep it that way.
+- Live operational state is not in SCM: those commands print a clear
+  "requires live device state — use `--remote`" message, never "translation pending".
+- Configure mode (`configure`, prompt `#`) owns all writes: `set`/`delete`/
+  `update`/`commit`/`folder create`/`cli` are blocked outside it.
+- Context: `cd <device>` sets `ShellState.device`; `folder <name>` sets the
+  `?folder=` param for all SCM calls; `tsg <id>` re-scopes auth and clears
+  device/folder/caches (`_reset_tenant_context`).
 
-Helper flags:
-- `python dev/docsupdate.py --check` — report drift/relocations/endpoint changes, write nothing
-- `python dev/docsupdate.py --list-remote` — print the live spec tree on pan.dev
-- `python dev/docsupdate.py --no-mirror` — curated guides only (skip mirroring every doc)
-- `python dev/docsupdate.py --self-test` — offline tests for discovery + diff logic
+### Shell UX invariants (do not regress)
 
-If discovery cannot find a renamed file, hand-edit that one path in
-`dev/scm_sources.json` and re-run (`--list-remote` shows live paths).
-
-After a successful run, the script automatically calls `dev/generate_api_index.py`
-to regenerate `dev/API_INDEX.md` — the compact endpoint table agents use instead
-of reading individual spec files.
+- `?` is Cisco-style inline help: context-aware (only executable commands),
+  progressive (next valid tokens only, not full command dumps), three tiers
+  GLOBAL / FOLDER / DEVICE + SHELL. `<command> help` opens full docs;
+  `help all` is the unfiltered dump.
+- Prompt encodes context: `arc:global >` · `arc:Production >` ·
+  `arc:fw01:device >` · `arc:fw01:Production >` · configure mode ends with `#`.
+  Never show `:Shared` (it's the default state).
+- Unambiguous token-prefix shorthand (`sh sec pol` → `show security policy`);
+  ambiguous prefixes never auto-expand.
+- Tab completion is context-aware (devices after `cd `/`remote `, folders after
+  `folder `, TSGs after `tsg `, profiles after `account `, usage-driven argument
+  slots). Structure-aware completion via `settings/command-structure.json`
+  overrides usage-string walking for curated `set <object>` commands, with
+  greedy no-quote parsing of free-text fields.
+- `cd` never opens SSH; `connect`/`remote` do (true transparent PTY).
+- Availability gates: device-scoped commands hidden without a device;
+  `commit` only in configure mode; hard error for unknown device/folder when
+  the cache is populated (graceful free-form fallback only when SCM is down).
 
 ---
 
-### Environment Variables
+## SCM REST API
 
-| Variable | Description |
-|----------|-------------|
-| `SCM_BEARER_TOKEN` | Pre-issued SCM bearer token |
-| `SCM_CLIENT_ID` | SCM OAuth client ID |
-| `SCM_CLIENT_SECRET` | SCM OAuth client secret |
-| `SCM_TSG_ID` | Tenant Services Group ID |
-| `ARC_SSH_USER` | Default SSH username (default: `admin`) |
-| `ARC_SSH_KEY` | Path to SSH private key |
-| `ARC_SSH_PASS` | SSH password when not using key auth |
-| `ARC_DEBUG` | Set to `1` for verbose tracebacks on errors |
-| `ARC_DEV_MODE` | Set to `1` to start in development mode (reveals `"dev"` feature-flag commands) |
+**Never guess an endpoint.** Look it up in `dev/API_INDEX.md` (one line per
+endpoint), or the mirrored spec `docs/scm-api/specs/<category>.md`. Source of
+truth: https://pan.dev/scm/api/ — mirrored locally by `python dev/docsupdate.py`
+(self-healing source registry `dev/scm_sources.json`; writes `CHANGES.md` +
+`MANIFEST.md`). `MANIFEST.md` records each spec's base URL; `SCMClient` URL
+constants must match it.
+
+Gateways (one OAuth bearer token works on all): objects/security/setup/network/
+identity/device at `api.strata.paloaltonetworks.com/config/<domain>/v1`;
+IAM + tenancy at `api.sase.paloaltonetworks.com`; token endpoint
+`auth.apps.paloaltonetworks.com/auth/v1/oauth2/access_token`
+(client-credentials, `scope=tsg_id:<id>`; parent-TSG tokens can read children).
+
+After `docsupdate`: read `docs/scm-api/CHANGES.md`; removed/renamed endpoints →
+fix `app/api/client.py` + commands; it auto-reruns `generate_resource_catalog.py`,
+`generate_feature_flags.py`, `generate_command_docs.py`, `generate_api_index.py`
+so new endpoints become gated commands + flags + docs automatically.
 
 ---
 
-### Security Notes for ARC
+## Config, Auth, Security
 
-- Secrets (`SCM_BEARER_TOKEN`, `SCM_CLIENT_SECRET`, `ARC_SSH_PASS`, and config equivalents) are stored only in the OS keychain or supplied as temporary environment variables. ARC must never write secrets to `config.json`.
-- `<project_root>/config/<os_username>/config.json` stores non-sensitive values only (`client_id`, `tsg_id`, SSH user/key path/port, default folder, profile name) and is written with owner-only permissions (`0700` directory, `0600` file).
-- If keychain storage fails, fail closed: save only non-sensitive config, do not persist secrets to disk, and tell the user to use keychain access or temporary environment variables.
-- `arc auth configure` must use non-echoing prompts for secrets (`getpass` / hidden input). Never collect tokens, client secrets, or SSH passwords with plain `input()`.
-- Avoid documenting long-lived secrets in shell profiles (`~/.zshrc`, `~/.bashrc`, PowerShell profile). Environment variables are for temporary sessions, CI, or secret-manager wrappers only.
-- The `_mask()` helper in `cli.auth_show` ensures credentials are never printed in clear.
-- `ARC_DEBUG=1` prints full stack traces — do not enable in shared terminal sessions.
-- SSH `AutoAddPolicy` is used for managed devices; acceptable in controlled network-ops environments but means host keys are not verified. Document this when deploying.
+- Config file: `config/<os_username>/config.json` (0600) — **non-sensitive only**
+  (client_id, tsg_id, SSH user/key path/port, profiles, active_profile).
+  Secrets live in the OS keychain (profile-scoped keys `scm.<field>.<profile>`);
+  env vars override everything. `arc auth configure` (wizard), `arc auth test`
+  (5-step diagnostic), `arc config generate` (starter file).
+- Named profiles: `account <name>` switches in-shell; `arc auth configure
+  --profile <name>` creates.
+- Env vars: `SCM_BEARER_TOKEN`, `SCM_CLIENT_ID`, `SCM_CLIENT_SECRET`,
+  `SCM_TSG_ID`, `ARC_SSH_USER`, `ARC_SSH_KEY`, `ARC_SSH_PASS`, `ARC_DEBUG=1`
+  (tracebacks), `ARC_DEV_MODE=1`, `ARC_FEATURE_<NAME>=on|dev|off`.
+- Security invariants: never write secrets to config.json (fail closed if
+  keychain unavailable); `getpass` for secret prompts; `_mask()` when printing
+  credentials; SSH host keys are intentionally not verified (managed-device
+  fleet — documented trade-off); catch specific exceptions, never bare
+  `except Exception: return []` in the client.
+- General Python/security standards: `docs/agent-patterns/python-standards.md`,
+  `docs/agent-patterns/security-checklist.md`.
+
+---
+
+## Validation — dev/smoke_test.py
+
+Run after every change to `app/`; full suite before commit (pre-commit hook runs
+sections 1–3 and auto-regenerates `dev/CODE_MAP.md`; install once with
+`bash dev/install_hooks.sh`).
+
+```bash
+python dev/smoke_test.py                    # full suite (~140 checks, no network)
+python dev/smoke_test.py --only 1,2,3       # syntax + imports + registry
+python dev/smoke_test.py --file <path>      # auto-selects relevant sections
+```
+
+| Section | Covers | Run after changing |
+|---|---|---|
+| 1 / 2 | syntax, imports | any .py |
+| 3 | registry integrity + catalog drift | commands/*.py (drift fix: `python dev/generate_resource_catalog.py`) |
+| 4 | arg parser / command-structure | registry parsing, command-structure.json |
+| 5 | config types | app/config.py |
+| 6 | formatter calls | new renderer → add a call here |
+| 7 | banner alignment | prompt.py `_print_startup_help` (update `_BANNER_LINES`) |
+| 8 | builtins ↔ catalog ↔ help sync | shell_catalog.py |
+| 9 | structure completion + context help | completer / command_structure |
+| 10 | theme + descriptions + doc validity | theme, docs/commands front-matter |
+| 11 | CODE_MAP freshness | any 300+ line file (`python dev/generate_code_map.py`) |
+
+Version is `0.1.<commit-count>` from `app/__init__.py` — never hand-edit
+(optional bumper hook: `docs/dev-versioning.md`).
+
+---
+
+## Git & Workflow
+
+- Commit directly to the current branch (usually `main`); create branches only
+  when the user asks. Simple conventional-commit messages without nested quotes
+  (multi-line via `git commit -F <file>`).
+- User trigger words: `gitp` = stage all + commit + push · `docsupdate` = pull
+  pan.dev docs + follow `dev/DOCS_AGENT.md` · `ck`/`ctx`/`wipe` = write /
+  summarize / clear the `SESSION.md` scratch notes (gitignored session memory).
+- Keep diffs small and focused; match existing naming and style; comments
+  explain *why* (constraints, trade-offs), not *what*.
+- Write for a junior engineer learning network operations: obvious control
+  flow, domain names (`listing_status` not `data`), 1–3-sentence docstrings on
+  non-trivial functions.
+
+---
+
+## Debug — error text → files
+
+| Error | Look in | Likely cause |
+|---|---|---|
+| `Unknown command` | `app/commands/<module>.py` COMMANDS dict | not registered / feature flag off |
+| `HTTPStatusError 4xx/5xx` | `app/api/client.py` + `dev/API_INDEX.md` | wrong path/param; expired token (401) |
+| `AttributeError: no attribute 'get_X'` | `app/api/client.py` | client method missing |
+| `KeyError` in `_render()` | `app/shell/execution.py` dispatch table | render= key has no formatter case |
+| `require_scm` / `require_device` raises | `app/commands/base.py` + `scope=` | missing SCM config / no `cd <device>` |
+| builtin not dispatched | `app/shell_catalog.py` + `app/shell/dispatch.py` | name not in catalog or no elif branch |
+| tab completion wrong/empty | `app/shell/completer.py` | missing case / empty cache |
+| feature hidden unexpectedly | `settings/features.json` | flag missing (absent = off) or `"dev"` outside dev mode |
+| theme colour ignored | `settings/theme.json` + THEME_KEYS | key not in ArcTheme |
+| profile/keychain error | `app/config.py` | profile name mismatch; keychain read failed |
+
+Bug report template (lets an agent read only what it needs):
+
+```text
+debug:
+file: <file you edited or command you ran>
+error: <traceback / output>
+context: <device set? folder? configure mode? profile? SCM connected?>
+```

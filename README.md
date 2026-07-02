@@ -41,7 +41,7 @@ help remote
 ## Development
 
 Developing ARC (or working on it with an AI agent)? Start with
-[`README.dev.md`](README.dev.md) — the developer guide with tokenmaxing recipes,
-a keyword dictionary, file ownership, and the smoke-test map. `AGENTS.md` holds
-the full spec (architecture, security, SCM API gateway map).
+[`AGENTS.md`](AGENTS.md) — the single hub: task-routing keywords, project
+structure, add-a-command recipe, SCM gateway map, validation matrix, and the
+debug table. It routes each task to the one or two spoke files that own it.
 

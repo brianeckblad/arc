@@ -4,30 +4,32 @@ Copy and adapt one of these minimal patterns when adding a new command.
 
 ---
 
-## Pattern 1: List objects (folder-scoped)
+## Pattern 1: List objects (folder-scoped) — use the factory
+
+A plain "list everything in the active folder" command needs **no handler
+function** — `show_handler()` from `app/commands/base.py` builds it:
 
 ```python
 # In app/commands/objects.py (or whichever module)
-
-def _show_thing(ctx: ExecutionContext, args: dict) -> Any:
-    """Show all things in the active folder."""
-    scm = require_scm(ctx)
-    return scm.get_things(folder=ctx.folder)
-
 COMMANDS: dict[str, CommandDef] = {
     ...
     'show thing': CommandDef(
         description='Show things',
         category='objects',       # matches module domain
         scope='folder',           # scoped to active folder
-        api_handler=_show_thing,
+        api_handler=show_handler('get_things'),        # calls scm.get_things(folder=ctx.folder)
         ssh_command='show objects thing',  # PAN-OS equivalent
         render='list',            # generic table
     ),
 }
+# TSG-wide list (no folder param): show_handler('get_devices', folder_scoped=False)
 ```
 
-**Add to docs:** `docs/commands/show-thing.md`
+Write a hand-rolled `def _show_thing(ctx, args)` only when there is extra
+logic (client-side filtering, multiple calls, post-processing).
+
+**Docs:** optional — `help show thing` is synthesized from the CommandDef.
+Add `docs/commands/show-thing.md` only when you have more to say.
 
 **Smoke:** `python dev/smoke_test.py --only 1,2,3`
 
@@ -95,6 +97,26 @@ COMMANDS: dict[str, CommandDef] = {
 ```
 
 **Guard in shell:** Blocked automatically unless in configure mode (checked before handler runs)
+
+---
+
+## Pattern 3b: Delete by name — use the factory
+
+The standard "list → find id by name → DELETE" sequence is also factory-built:
+
+```python
+'delete thing': CommandDef(
+    description='Delete a thing by name',
+    category='objects',
+    scope='folder',
+    api_handler=delete_handler(
+        'Thing', 'get_things', 'delete_thing',
+        usage='Usage: delete thing <name>',
+    ),
+    ssh_command=None,
+    render='raw',
+),
+```
 
 ---
 
