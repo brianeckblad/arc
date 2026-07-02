@@ -365,6 +365,83 @@ def test_arg_parser() -> None:
     else:
         fail("parse_output_filters json wrong", repr(filters))
 
+    # 4c2 — spec-derived field catalog: every entry is internally consistent
+    #       and merged into arg_spec (hand-written command-structure.json wins).
+    try:
+        from app.settings.field_catalog import FIELD_CATALOG
+    except Exception as exc:  # noqa: BLE001
+        FIELD_CATALOG = None
+        fail("field_catalog import failed", str(exc))
+    if FIELD_CATALOG is not None:
+        catalog_problems = []
+        for fc_key, fc_entry in FIELD_CATALOG.items():
+            fc_args = fc_entry.get("args") or []
+            arg_names = {a.get("name") for a in fc_args}
+            payload = fc_entry.get("payload") or {}
+            if not fc_key.startswith("set "):
+                catalog_problems.append(f"{fc_key}: not a set command")
+            if not fc_args:
+                catalog_problems.append(f"{fc_key}: empty args")
+            for a in fc_args:
+                if a.get("kind") not in ("value", "choice", "keyword"):
+                    catalog_problems.append(f"{fc_key}: bad kind {a.get('kind')!r}")
+                if a.get("kind") == "choice" and not a.get("choices"):
+                    catalog_problems.append(f"{fc_key}: choice field {a.get('name')} has no choices")
+            for cli_name in (payload.get("fields") or {}):
+                if cli_name not in arg_names:
+                    catalog_problems.append(f"{fc_key}: payload field {cli_name!r} not in args")
+            variant = payload.get("variant")
+            if variant:
+                if variant.get("type_field") not in arg_names or variant.get("value_field") not in arg_names:
+                    catalog_problems.append(f"{fc_key}: variant type/value fields not in args")
+                if not variant.get("choices"):
+                    catalog_problems.append(f"{fc_key}: variant has no choices")
+        if catalog_problems:
+            fail(f"field catalog: {len(catalog_problems)} inconsistent entrie(s)",
+                 "; ".join(catalog_problems[:4]))
+        else:
+            ok(f"field catalog: {len(FIELD_CATALOG)} generated set command(s) internally consistent")
+
+        from app.settings import command_structure as _cs
+        _cs.invalidate_cache()
+        merged = _cs.load_command_structure()
+        if FIELD_CATALOG and all(k in merged for k in list(FIELD_CATALOG)[:20]):
+            ok("field catalog entries merged into arg_spec")
+        elif FIELD_CATALOG:
+            fail("field catalog entries missing from load_command_structure()")
+        if _cs.arg_spec("set address") is not None:
+            ok("hand-written command-structure.json still resolves (set address)")
+        else:
+            fail("set address lost its hand-written arg spec")
+        _cs.invalidate_cache()
+
+        # payload builder: enum canonicalization + required + bad-enum rejection
+        from app.commands.generated import _payload_from_fields
+        _fake_entry = {
+            "args": [
+                {"name": "name", "kind": "value", "required": True, "hint": ""},
+                {"name": "color", "kind": "keyword", "required": False,
+                 "hint": "", "choices": ["Red", "Green"]},
+            ],
+            "payload": {"fields": {"name": "name", "color": "color"},
+                        "list_fields": [], "variant": None},
+        }
+        built = _payload_from_fields("set x", _fake_entry, {"name": "n1", "color": "red"})
+        bad_enum_rejected = False
+        try:
+            _payload_from_fields("set x", _fake_entry, {"name": "n1", "color": "plaid"})
+        except ValueError:
+            bad_enum_rejected = True
+        missing_rejected = False
+        try:
+            _payload_from_fields("set x", _fake_entry, {"color": "Red"})
+        except ValueError:
+            missing_rejected = True
+        if built == {"name": "n1", "color": "Red"} and bad_enum_rejected and missing_rejected:
+            ok("payload builder: canonical enums, required + enum validation")
+        else:
+            fail("payload builder misbehaved", repr(built))
+
     # 4d — user preferences round-trip (config/<user>/preferences.json)
     from app.settings import user_prefs as _up
 

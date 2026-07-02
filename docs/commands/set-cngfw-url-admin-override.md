@@ -1,7 +1,7 @@
 ---
 command: "set cngfw url-admin-override"
 description: "Add URL Admin Override"
-usage: "set cngfw url-admin-override json|file <payload-or-path>"
+usage: "set cngfw url-admin-override [password <value>] [ssl-tls-service-profile <value>]"
 feature_flag: create_cngfw_url_admin_override
 category: cloudngfw
 scope: global

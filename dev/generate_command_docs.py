@@ -219,10 +219,17 @@ def _generated_usage_map() -> dict[str, str]:
         from app.commands.resource_catalog import CATALOG
     except Exception:  # noqa: BLE001 — stale/missing catalog should not block docs
         return {}
+    try:
+        from app.commands.generated import FIELD_CATALOG, _field_usage
+    except Exception:  # noqa: BLE001
+        FIELD_CATALOG, _field_usage = {}, None
     usage: dict[str, str] = {}
     for entry in CATALOG:
         command = str(entry.get("command", ""))
         if not command:
+            continue
+        if _field_usage and command.startswith("set ") and command in FIELD_CATALOG:
+            usage[command] = _field_usage(command, FIELD_CATALOG[command])
             continue
         path_params = " ".join(f"{name} <value>" for name in entry.get("path_params") or [])
         if command.startswith(("set ", "update ")):

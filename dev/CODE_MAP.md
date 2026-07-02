@@ -9,6 +9,11 @@
   files. Files under app/ with >= 300 lines are mapped.
 -->
 
+## `app/settings/field_catalog.py`  (1924 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+
 ## `app/api/client.py`  (1174 lines)
 
 Symbol                                   Lines          Purpose
@@ -343,6 +348,23 @@ class DispatchMixin                      77-496
   ._show_command_not_found()             120-191        Show a helpful message when a command is not recognized.
   ._dispatch()                           193-496        Process one input line.  Returns True when the user wants to exit ARC.
 
+## `app/settings/command_structure.py`  (424 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+_field_meta()                            99-106         Return the raw metadata dict for *field* of *object* (library → generi
+_resolve_field()                         109-132        Build one arg dict for *field* of *object*, from the field library.
+_load_json()                             135-159        Parse the JSON structure file (``{object: [field, field, ...]}``) into
+_generated_entries()                     162-179        Arg specs for generated `set` commands, from the spec-derived catalog.
+load_command_structure()                 182-202        Return ``{command_key: entry}`` — generated catalog + hand-written JSO
+arg_spec()                               205-216        Return the ordered ``args`` list for *command_key*, or ``None`` if abs
+invalidate_cache()                       219-222        Force a re-read on next access (used by tools/tests that rewrite the f
+class _NextState                         242-252        What the *next* token can be — used to drive Tab completion.
+_walk()                                  255-341        Consume *tokens* against *spec*, returning (assignments, positionals, 
+parse()                                  344-358        Parse *remainder* tokens into an args dict using the command structure
+help_options()                           361-390        Return Cisco-style ``?`` help rows for the next token after *typed*.
+completion_options()                     393-421        Return ``{text, display, meta}`` options for the next token after *typ
+
 ## `app/commands/network.py`  (424 lines)
 
 Symbol                                   Lines          Purpose
@@ -362,22 +384,6 @@ _test_nat_policy_match()                 233-241        Test NAT policy match �
 _ssh_test_nat()                          244-252        
 _test_url()                              255-262        Test URL categorization — use --remote.  PAN-OS: test url <url>
 _ssh_test_url()                          265-267        
-
-## `app/settings/command_structure.py`  (403 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_field_meta()                            99-106         Return the raw metadata dict for *field* of *object* (library → generi
-_resolve_field()                         109-132        Build one arg dict for *field* of *object*, from the field library.
-_load_json()                             135-159        Parse the JSON structure file (``{object: [field, field, ...]}``) into
-load_command_structure()                 162-181        Return ``{command_key: entry}`` from the structure file (cached).
-arg_spec()                               184-195        Return the ordered ``args`` list for *command_key*, or ``None`` if abs
-invalidate_cache()                       198-201        Force a re-read on next access (used by tools/tests that rewrite the f
-class _NextState                         221-231        What the *next* token can be — used to drive Tab completion.
-_walk()                                  234-320        Consume *tokens* against *spec*, returning (assignments, positionals, 
-parse()                                  323-337        Parse *remainder* tokens into an args dict using the command structure
-help_options()                           340-369        Return Cisco-style ``?`` help rows for the next token after *typed*.
-completion_options()                     372-400        Return ``{text, display, meta}`` options for the next token after *typ
 
 ## `app/commands/setup.py`  (333 lines)
 

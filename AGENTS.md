@@ -30,7 +30,7 @@ the smallest file that owns each concern.
 | `theme` (colours) | `settings/theme.json`, `app/settings/theme.py` | same | `--only 10` |
 | `terminal` / prefs (pager, width, spinner) | `app/settings/user_prefs.py`, `_cmd_terminal` in `app/shell/configure.py` | same | `--only 4` |
 | `settings` (banner, goodbye, labels — no code) | `settings/` | `settings/banner.txt` etc. | `--only 7,8,9,10` |
-| `argspec` (greedy `set <object>` parsing, slot completion) | `settings/command-structure.json`, `app/settings/command_structure.py` | same | `--only 4` |
+| `argspec` (greedy `set <object>` parsing, slot completion) | `settings/command-structure.json` (hand, wins), `app/settings/field_catalog.py` (AUTO-GENERATED from specs), `app/settings/command_structure.py` (walker) | hand file, or `python dev/generate_field_library.py` | `--only 4` |
 | `auth` (credentials, profiles) | `app/config.py`, `app/cli.py` (auth group) | same | `--file app/config.py` |
 | `scm-api` / `endpoint <resource>` | `dev/API_INDEX.md`; deep dive: `docs/scm-api/specs/<cat>.md` | `app/api/client.py` | full suite |
 | `docsupdate` / docs agent | `dev/DOCS_AGENT.md` | run `python dev/docsupdate.py` | `--self-test` |
@@ -128,6 +128,16 @@ feature-gated command via `resource_catalog.py` + `generated.py`
 commands with the same key shadow generated ones (merged last in registry.py).
 Generated commands have **no doc file** — `help <cmd>` synthesizes a page from
 the CommandDef (`app/docs.py synthesize_command_help`). Never create doc stubs.
+
+**Field syntax for generated `set` commands:** `dev/generate_field_library.py`
+reads each POST request-body schema and writes `app/settings/field_catalog.py`
+(AUTO-GENERATED) — flat resources get real CLI fields (`set cngfw tags web
+color Red`) with tab completion, `?` help, greedy no-quote parsing, and
+prompt-time validation (required fields, enum choices, oneOf variant groups
+like address types). `generated.py` builds the payload from the parsed fields
+(`_payload_from_fields`); nested-body resources stay on `json|file`. Curated
+commands are NOT wired through the catalog — they opt in via the hand-written
+`settings/command-structure.json`, which always wins on key collisions.
 
 ---
 

@@ -159,23 +159,44 @@ def _load_json() -> dict[str, dict]:
     return structure
 
 
-def load_command_structure() -> dict[str, dict]:
-    """Return ``{command_key: entry}`` from the structure file (cached).
+def _generated_entries() -> dict[str, dict]:
+    """Arg specs for generated `set` commands, from the spec-derived catalog.
 
-    Reads from JSON.  Any read/parse failure returns ``{}`` so completion falls
-    back to usage strings gracefully.
+    ``app/settings/field_catalog.py`` is AUTO-GENERATED from the OpenAPI specs
+    (``python dev/generate_field_library.py``, run by docsupdate). It gives
+    every flat-bodied generated write command the same structured completion,
+    `?` help, and greedy parsing that hand-listed commands get.
+    """
+    try:
+        from app.settings.field_catalog import FIELD_CATALOG
+    except Exception:  # noqa: BLE001 — a missing/broken catalog must never break startup
+        return {}
+    entries: dict[str, dict] = {}
+    for key, entry in FIELD_CATALOG.items():
+        args = entry.get("args") if isinstance(entry, dict) else None
+        if isinstance(args, list) and args:
+            entries[key] = {"args": args}
+    return entries
+
+
+def load_command_structure() -> dict[str, dict]:
+    """Return ``{command_key: entry}`` — generated catalog + hand-written JSON.
+
+    The hand-written ``settings/command-structure.json`` always wins over the
+    generated field catalog for the same command key.  Any read/parse failure
+    degrades to whichever source still loads (worst case ``{}`` — completion
+    falls back to usage strings).
     """
     global _cache
     if _cache is not None:
         return _cache
 
-    structure: dict[str, dict] = {}
+    structure: dict[str, dict] = _generated_entries()
     try:
         if COMMAND_STRUCTURE_JSON.exists():
-            structure = _load_json()
+            structure.update(_load_json())
     except (OSError, json.JSONDecodeError, ValueError) as exc:
         logger.warning("command-structure parse error: %s", exc)
-        structure = {}
 
     _cache = structure
     return structure

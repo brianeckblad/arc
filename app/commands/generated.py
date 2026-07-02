@@ -23,6 +23,66 @@ try:
 except Exception:  # noqa: BLE001 — missing/older catalog must never break startup
     CATALOG = []
 
+try:
+    from app.settings.field_catalog import FIELD_CATALOG
+except Exception:  # noqa: BLE001 — missing/broken field catalog degrades to json|file
+    FIELD_CATALOG = {}
+
+
+def _payload_from_fields(
+    command: str, catalog_entry: dict, args: dict, defaults: dict | None = None
+) -> dict:
+    """Build a request body from structured CLI fields (prompt-time validation).
+
+    Enforces required fields, variant type/value pairing, and enum choices
+    with actionable ValueErrors BEFORE anything is staged — the vendor-CLI
+    "invalid input" experience, driven by the OpenAPI schema. *defaults*
+    supplies context-derived values (e.g. the active folder) for fields the
+    operator did not type.
+    """
+    defaults = defaults or {}
+    spec_args = {a["name"]: a for a in catalog_entry.get("args") or []}
+    payload_spec = catalog_entry.get("payload") or {}
+    list_fields = set(payload_spec.get("list_fields") or [])
+    body: dict[str, Any] = {}
+
+    variant = payload_spec.get("variant")
+    if variant:
+        type_field, value_field = variant["type_field"], variant["value_field"]
+        chosen = str(args.get(type_field) or "").strip().lower()
+        value = str(args.get(value_field) or "").strip()
+        choices = variant.get("choices") or {}
+        if chosen not in choices:
+            raise ValueError(
+                f"'{command}' needs a type: one of {', '.join(sorted(choices))}"
+            )
+        if not value:
+            raise ValueError(f"'{command}' needs a value for type '{chosen}'")
+        body[choices[chosen]] = value
+
+    for cli_name, api_name in (payload_spec.get("fields") or {}).items():
+        meta = spec_args.get(cli_name, {})
+        raw = args.get(cli_name)
+        if raw is None or str(raw).strip() == "":
+            raw = defaults.get(cli_name)
+        text = str(raw).strip() if raw is not None else ""
+        if not text:
+            if meta.get("required"):
+                raise ValueError(f"'{command}' requires <{cli_name}>")
+            continue
+        choices = meta.get("choices")
+        if choices and text not in choices:
+            match = next((c for c in choices if c.lower() == text.lower()), None)
+            if match is None:
+                shown = ", ".join(choices[:8]) + (", …" if len(choices) > 8 else "")
+                raise ValueError(f"'{command}': {cli_name} must be one of: {shown}")
+            text = match  # accept case-insensitive input, send canonical casing
+        if cli_name in list_fields:
+            body[api_name] = [part.strip() for part in text.split(",") if part.strip()]
+        else:
+            body[api_name] = text
+    return body
+
 
 def _json_payload(args: dict) -> Any:
     """Return JSON from ``json <payload>`` or ``file <path>`` command args."""
@@ -68,7 +128,20 @@ def _make_handler(entry: dict) -> Callable[[ExecutionContext, dict], Any]:
     def _run(ctx: ExecutionContext, args: dict) -> Any:
         scm = require_scm(ctx)
         method = entry["method"]
-        body = _json_payload(args) if method in {"POST", "PUT", "PATCH"} else None
+        field_entry = FIELD_CATALOG.get(entry["command"])
+        if method in {"POST", "PUT", "PATCH"}:
+            if method == "POST" and field_entry:
+                # Flat resource with spec-derived field syntax — build the
+                # payload from parsed CLI fields (validates before staging).
+                # A body-level folder falls back to the active folder context.
+                body = _payload_from_fields(
+                    entry["command"], field_entry, args,
+                    defaults={"folder": ctx.folder},
+                )
+            else:
+                body = _json_payload(args)
+        else:
+            body = None
         return scm.request_api(
             entry["base_url"],
             method,
@@ -87,9 +160,27 @@ def _humanize(command: str) -> str:
     return f"{verb.title()} {rest.replace('-', ' ')}"
 
 
+def _field_usage(command: str, catalog_entry: dict) -> str:
+    """Build a usage line from spec-derived CLI fields (drives Tab + `?`)."""
+    parts = [command]
+    for arg in catalog_entry.get("args") or []:
+        kind, name = arg.get("kind"), arg.get("name", "value")
+        if kind == "choice":
+            choices = arg.get("choices") or []
+            shown = "|".join(choices[:5]) + ("|…" if len(choices) > 5 else "")
+            parts.append(shown)
+        elif kind == "keyword":
+            parts.append(f"[{name} <value>]")
+        else:
+            parts.append(f"<{name}>")
+    return " ".join(parts)
+
+
 def _usage(entry: dict) -> str:
     command = entry["command"]
     path_params = " ".join(f"{name} <value>" for name in entry.get("path_params") or [])
+    if command.startswith("set ") and command in FIELD_CATALOG:
+        return _field_usage(command, FIELD_CATALOG[command])
     if command.startswith(("set ", "update ")):
         parts = [command]
         if path_params:

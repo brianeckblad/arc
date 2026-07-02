@@ -1200,6 +1200,17 @@ def main(argv: list[str] | None = None) -> int:
         except (subprocess.CalledProcessError, OSError) as exc:
             print(f"[warn] resource-catalog regeneration failed: {exc}", file=sys.stderr)
 
+        # Regenerate the CLI field catalog: request-body schemas become field
+        # syntax + prompt-time validation for flat generated `set` commands.
+        print("\nRegenerating CLI field catalog (app/settings/field_catalog.py)…")
+        try:
+            subprocess.run(
+                [sys.executable, str(DEV_DIR / "generate_field_library.py")],
+                check=True,
+            )
+        except (subprocess.CalledProcessError, OSError) as exc:
+            print(f"[warn] field-catalog regeneration failed: {exc}", file=sys.stderr)
+
         # Regenerate feature flags from the generated endpoint catalog plus every
         # explicit CommandDef.feature_flag.  New API surface defaults OFF so ARC
         # fails closed until features are intentionally enabled.
