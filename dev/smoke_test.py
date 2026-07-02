@@ -601,17 +601,26 @@ def test_config() -> None:
     else:
         ok(f"all {len(flags)} feature flags use a valid state (on/dev/off)")
 
-    # 6g.3 — settings/features.json is *valid JSON*.  A syntax error makes
-    #         load_features() silently return {} → every command vanishes.  Parse
-    #         it directly (not via load_features) so corruption is caught loudly.
+    # 6g.3 — every settings/features/*.json file is *valid JSON*.  A syntax
+    #         error makes load_features() skip that file → its commands vanish.
+    #         Parse directly (not via load_features) so corruption is caught loudly.
     import json as _json
-    features_file = ROOT / "settings" / "features.json"
-    try:
-        raw_features = _json.loads(features_file.read_text(encoding="utf-8"))
-        ok("settings/features.json is valid JSON")
-    except Exception as exc:
+    features_dir = ROOT / "settings" / "features"
+    raw_features: dict | None = {}
+    feature_files = sorted(features_dir.glob("*.json")) if features_dir.is_dir() else []
+    if not feature_files:
         raw_features = None
-        fail("settings/features.json is NOT valid JSON — all commands would disappear", str(exc))
+        fail("settings/features/ has no flag files — run: python dev/generate_feature_flags.py")
+    for ff in feature_files:
+        try:
+            parsed = _json.loads(ff.read_text(encoding="utf-8"))
+            if isinstance(parsed, dict) and raw_features is not None:
+                raw_features.update(parsed)
+        except Exception as exc:
+            raw_features = None
+            fail(f"settings/features/{ff.name} is NOT valid JSON — its commands would disappear", str(exc))
+    if raw_features is not None:
+        ok(f"all {len(feature_files)} settings/features/*.json files are valid JSON")
 
     # 6g.4 — every command's feature_flag exists in features.json.  A mangled key
     #         (e.g. 'show devices' instead of 'show_devices') silently turns the
@@ -1026,11 +1035,21 @@ def test_theme() -> None:
 
     # 9e — user assets live in settings/, not in app/ or root
     settings = ROOT / "settings"
-    for name in ("banner.txt", "goodbye.txt", "cli-structure.yaml", "features.json"):
+    for name in ("banner.txt", "goodbye.txt", "cli-structure.yaml"):
         if (settings / name).exists():
             ok(f"settings/{name} exists")
         else:
             fail(f"settings/{name} missing — was it moved out of settings/?")
+    features_dir = settings / "features"
+    feature_files = list(features_dir.glob("*.json")) if features_dir.is_dir() else []
+    if len(feature_files) >= 5:
+        ok(f"settings/features/ glossary present ({len(feature_files)} file(s))")
+    else:
+        fail("settings/features/ glossary missing or near-empty — run: python dev/generate_feature_flags.py")
+    if (settings / "features.json").exists():
+        fail("legacy settings/features.json still present — run: python dev/generate_feature_flags.py")
+    else:
+        ok("no legacy settings/features.json (absorbed into the glossary)")
     if (APP / "banner.txt").exists() or (ROOT / "banner.txt").exists():
         fail("banner.txt should live in settings/, not app/ or root")
     else:

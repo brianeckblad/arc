@@ -294,6 +294,60 @@ class HelpMixin:
             return False
         return is_enabled(self._features, cmd_def.feature_flag, self._dev_mode)
 
+    def _cmd_find(self, args: list[str]) -> None:
+        """PAN-OS style command search: ``find command keyword <text>``.
+
+        Searches ALL registered commands (including feature-disabled ones —
+        finding hidden capability is the point) by key and description. Each
+        row shows the gating flag and its state so the operator can enable
+        what they found. Composable: ``find command keyword address | match cngfw``.
+        """
+        tokens = list(args)
+        if [t.lower() for t in tokens[:2]] == ["command", "keyword"]:
+            tokens = tokens[2:]
+        elif tokens and tokens[0].lower() == "command":
+            tokens = tokens[1:]
+        pattern = " ".join(tokens).strip().lower()
+        if not pattern:
+            console.print(
+                "[yellow]Usage:[/yellow] find command keyword <text>\n"
+                "  [dim]e.g. find command keyword address   |   find command keyword bgp | match peer[/dim]"
+            )
+            return
+
+        matches = [
+            (key, cmd_def) for key, cmd_def in COMMANDS.items()
+            if pattern in key.lower() or pattern in (cmd_def.description or "").lower()
+        ]
+        if not matches:
+            console.print(f"[yellow]No commands match:[/yellow] [bold]{pattern}[/bold]")
+            return
+
+        # Useful verbs first, debug noise last; key matches beat description-only.
+        verb_rank = {"show": 0, "set": 1, "update": 2, "delete": 3, "clear": 4,
+                     "request": 5, "test": 6, "ping": 6, "traceroute": 6}
+        matches.sort(key=lambda kv: (
+            pattern not in kv[0].lower(),
+            verb_rank.get(kv[0].split()[0], 8 if kv[0].startswith("debug") else 7),
+            kv[0],
+        ))
+
+        shown = matches[:100]
+        console.print()
+        for key, cmd_def in shown:
+            state = feature_state(self._features, cmd_def.feature_flag)
+            if not cmd_def.feature_flag or state == "on":
+                marker, flag_note = "[green]on [/green]", ""
+            elif state == "dev":
+                marker, flag_note = "[magenta]dev[/magenta]", f"  [dim]{cmd_def.feature_flag}[/dim]"
+            else:
+                marker, flag_note = "[red]off[/red]", f"  [dim]{cmd_def.feature_flag}[/dim]"
+            console.print(f"  {self._help_cell(key)} {marker}{flag_note}")
+        footer = f"{len(matches)} command(s) match '{pattern}'"
+        if len(matches) > len(shown):
+            footer += f" — showing {len(shown)}; narrow the keyword or pipe: | match <text>"
+        console.print(f"\n[dim]{footer}  |  off → feature enable <flag>[/dim]\n")
+
     def _visible_command_keys(self) -> list[str]:
         """Cached list of visible registry keys — the per-keystroke hot path.
 

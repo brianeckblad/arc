@@ -436,14 +436,16 @@ class ConfigureMixin:
           feature show                 — list all flags grouped ON / DEV / OFF
           feature show on|off|dev      — list only flags in one state
           feature show <name>          — list flags matching a name fragment
-          feature enable <flag>        — set a flag ON and save to settings/features.json
-          feature disable <flag>       — set a flag OFF and save to settings/features.json
-          feature dev <flag>           — mark a flag DEV and save to settings/features.json
+          feature find <text>          — search flags AND the commands they gate
+          feature enable <flag>        — set a flag ON (saved to its settings/features/ file)
+          feature disable <flag>       — set a flag OFF (saved)
+          feature dev <flag>           — mark a flag DEV (saved)
           feature ?                    — show this usage summary
 
         Flag states: ON (everyone), DEV (only in development mode — see the
         hidden 'dev' command), OFF (hidden for everyone).  Changes take effect
-        immediately and are persisted to settings/features.json.
+        immediately and are persisted to the flag's own file under
+        settings/features/ (the per-domain glossary).
         """
         sub = args[0].lower() if args else "show"
 
@@ -475,24 +477,25 @@ class ConfigureMixin:
                     result.setdefault(cmd_def.feature_flag, []).append(cmd_key)
             return result
 
-        # The universe of known flags = those in settings/features.json plus any
+        # The universe of known flags = those in settings/features/ plus any
         # referenced by a command in the registry (so newly-added flags appear).
         def _all_flags() -> list[str]:
             names = set(self._features) | set(_flag_to_cmds())
             return sorted(names)
 
         def _persist_feature_state(flag_name: str, state: str) -> None:
-            """Write one feature flag state to settings/features.json and memory."""
+            """Write one flag state to its owning settings/features/ file."""
             import json  # Deferred: used only when changing a feature flag.
 
-            from app.paths import FEATURES_FILE
+            from app.settings.features import feature_file_for
 
+            target = feature_file_for(flag_name)
             try:
-                raw = json.loads(FEATURES_FILE.read_text(encoding="utf-8")) if FEATURES_FILE.exists() else {}
+                raw = json.loads(target.read_text(encoding="utf-8")) if target.exists() else {}
             except (json.JSONDecodeError, OSError) as exc:
-                raise RuntimeError(f"Could not read settings/features.json: {exc}") from exc
+                raise RuntimeError(f"Could not read {target.name}: {exc}") from exc
             if not isinstance(raw, dict):
-                raise RuntimeError("settings/features.json must contain a JSON object")
+                raise RuntimeError(f"{target.name} must contain a JSON object")
 
             raw_value: bool | str
             if state == "on":
@@ -504,9 +507,10 @@ class ConfigureMixin:
 
             raw[flag_name] = raw_value
             try:
-                FEATURES_FILE.write_text(json.dumps(raw, indent=2) + "\n", encoding="utf-8")
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(json.dumps(raw, indent=2) + "\n", encoding="utf-8")
             except OSError as exc:
-                raise RuntimeError(f"Could not write settings/features.json: {exc}") from exc
+                raise RuntimeError(f"Could not write {target.name}: {exc}") from exc
             self._features[flag_name] = state
             self._invalidate_visible_keys()
 
@@ -549,6 +553,44 @@ class ConfigureMixin:
         if sub == "help":
             if not render_help_topic(console, "features"):
                 console.print("[dim]No docs found for 'features' — run 'help features'.[/dim]")
+            return
+
+        if sub == "find":
+            # Flag-centric search: `feature find address` matches flag names AND
+            # the commands they gate; shows the owning glossary file so the
+            # operator knows exactly what to edit. Composable with | match.
+            pattern = " ".join(args[1:]).strip().lower()
+            if not pattern:
+                console.print(
+                    "[yellow]Usage:[/yellow] feature find <text>   "
+                    "[dim](searches flags and the commands they gate; also: find command keyword <text>)[/dim]"
+                )
+                return
+            from app.settings.features import load_features_with_sources
+            _states, sources = load_features_with_sources()
+            flag_cmds = _flag_to_cmds()
+            hits = []
+            for flag in _all_flags():
+                gated = flag_cmds.get(flag, [])
+                if pattern in flag.lower() or any(pattern in c.lower() for c in gated):
+                    hits.append((flag, gated))
+            if not hits:
+                console.print(f"[yellow]No flags or gated commands match:[/yellow] [bold]{pattern}[/bold]")
+                return
+            console.print()
+            for flag, gated in hits[:80]:
+                state = feature_state(self._features, flag)
+                colour = {"on": "green", "dev": "magenta"}.get(state, "red")
+                file_label = sources.get(flag)
+                file_note = f"  [dim]{file_label.name}[/dim]" if file_label is not None else ""
+                shown_cmds = ", ".join(gated[:3]) + (f", +{len(gated) - 3} more" if len(gated) > 3 else "")
+                console.print(f"  [{colour}]{state:<4}[/{colour}] [bold]{flag}[/bold]{file_note}")
+                if shown_cmds:
+                    console.print(f"        [dim]{shown_cmds}[/dim]")
+            footer = f"{len(hits)} flag(s) match '{pattern}'"
+            if len(hits) > 80:
+                footer += " — showing 80; narrow it or pipe: | match <text>"
+            console.print(f"\n[dim]{footer}  |  feature enable <flag> to turn one on[/dim]\n")
             return
 
         if sub == "show":

@@ -2,7 +2,7 @@
 
 `dev` is a **hidden** command — it does not appear in `?` help or tab
 completion. It toggles **development mode**, which reveals every command whose
-feature flag is set to `"dev"` in `settings/features.json`.
+feature flag is set to `"dev"` in `its settings/features/ file`.
 
 This exists so a team can ship work-in-progress commands without confusing
 normal users: a `"dev"` command stays invisible until someone deliberately
@@ -25,7 +25,7 @@ arc:global:dev >
 
 ## How it fits with feature flags
 
-Each flag in `settings/features.json` has three states:
+Each flag in `its settings/features/ file` has three states:
 
 | State | Visible to normal users | Visible in development mode |
 |-------|:-----------------------:|:--------------------------:|
@@ -35,7 +35,7 @@ Each flag in `settings/features.json` has three states:
 
 Typical lifecycle:
 
-1. Build a command and mark its flag `"dev"` in `settings/features.json`.
+1. Build a command and mark its flag `"dev"` in `its settings/features/ file`.
 2. Run ARC, type `dev`, and test the command in development mode.
 3. When it is ready for everyone, set the flag to `true`.
 

@@ -20,7 +20,7 @@ This command requires the **`url_admin_override`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable url_admin_override
 
-# Enable permanently (settings/features.json — git-ignored):
+# Enable permanently (its settings/features/ file — git-ignored):
 {"  \"url_admin_override\": true"}
 ```
 

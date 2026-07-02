@@ -10,7 +10,7 @@ This command requires the **`profile_groups`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable profile_groups
 
-# Enable permanently (settings/features.json — git-ignored):
+# Enable permanently (its settings/features/ file — git-ignored):
 {"  \"profile_groups\": true"}
 ```
 

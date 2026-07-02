@@ -352,6 +352,11 @@ class DispatchMixin:
             self._cmd_terminal(tokens[1:])
             return False
 
+        # ---- find: PAN-OS style command search (find command keyword <x>) ----
+        if cmd == "find":
+            self._cmd_find(tokens[1:])
+            return False
+
         # ---- commit (configure mode): apply staged changes, then push ----
         # `commit --remote` still goes through the registry → SSH path.
         if cmd == "commit" and self._state.configure_mode and not remote:

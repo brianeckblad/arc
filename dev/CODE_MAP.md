@@ -214,13 +214,13 @@ format_raw()                             918-919
 format_dict()                            922-923        
 _flatten()                               930-945        Recursively flatten a nested dict into dot-separated key/value pairs.
 
-## `app/shell/configure.py`  (880 lines)
+## `app/shell/configure.py`  (922 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _prefs_file_label()                      9-15           Repo-relative path of the preferences file, for display.
 capture_write_ops()                      18-48          Run a write handler against a recording client and capture its mutatio
-class ConfigureMixin                     51-808         
+class ConfigureMixin                     51-850         
   ._cmd_configure()                      52-72          Enter configure mode (Cisco-style).
   ._stage_write()                        74-101         Validate a configure-mode write and stage it locally (no SCM change).
   ._cmd_show_pending()                   103-124        List the locally staged configure-mode changes (`show config`).
@@ -231,12 +231,12 @@ class ConfigureMixin                     51-808
   ._confirm_configure_exit()             293-320        Ask what to do with staged changes when leaving configure mode.
   ._cmd_terminal()                       322-374        Per-user terminal preferences — persisted to config/<user>/preferences
   ._cmd_cli()                            376-430        Read/write CLI theme settings (configure mode only).
-  ._cmd_feature()                        432-637        Show or change feature-flag states at runtime.
-  ._cmd_dev()                            639-673        Toggle development mode (hidden command).
-  ._print_dev_status()                   675-689        Print the current development-mode state and the dev-flag count.
-  ._cmd_setup()                          691-808        Interactive credential setup wizard.
-_setup_bearer_instructions()             815-843        Print bearer-token setup commands for the detected OS.
-_setup_oauth_instructions()              846-878        Print OAuth client credential setup commands for the detected OS.
+  ._cmd_feature()                        432-679        Show or change feature-flag states at runtime.
+  ._cmd_dev()                            681-715        Toggle development mode (hidden command).
+  ._print_dev_status()                   717-731        Print the current development-mode state and the dev-flag count.
+  ._cmd_setup()                          733-850        Interactive credential setup wizard.
+_setup_bearer_instructions()             857-885        Print bearer-token setup commands for the detected OS.
+_setup_oauth_instructions()              888-920        Print OAuth client credential setup commands for the detected OS.
 
 ## `app/cli.py`  (877 lines)
 
@@ -304,18 +304,44 @@ save_config()                            447-518        Persist config: secrets 
 delete_profile()                         521-547        Remove a named profile from config.json and its keychain entries.
 clear_keychain()                         550-579        Remove ARC secrets from the OS keychain.
 
-## `app/shell/dispatch.py`  (541 lines)
+## `app/shell/help.py`  (575 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+class HelpMixin                          8-573          
+  ._match_structured()                   9-25           Find the longest command key (with a structure spec) inside *prefix_to
+  ._print_context_help()                 27-44          Print Cisco-style context-sensitive help for a structured command.
+  ._render_context_help()                46-64          Render the next-option rows: ``  token   description`` (token column a
+  ._cmd_help_inline()                    66-153         Cisco-style compact inline help — one line per command, no panels.
+  ._cmd_help_docs()                      155-196        Show the full documentation page for a command or topic.
+  ._cmd_help_full()                      198-244        Print the full command reference regardless of context.
+  ._cmd_show_write_help()                246-268        Show available delete/update commands in configure mode.
+  ._print_shell_builtins()               270-283        Print the shell built-in commands section (shared by inline and full h
+  ._is_command_visible()                 285-295        Single source of truth: does this command exist for this operator?
+  ._cmd_find()                           297-349        PAN-OS style command search: ``find command keyword <text>``.
+  ._visible_command_keys()               351-362        Cached list of visible registry keys — the per-keystroke hot path.
+  ._invalidate_visible_keys()            364-365        
+  ._is_command_available()               367-379        _is_command_visible plus the current-context gates.
+  ._is_config_command()                  382-386        Return True when a command should appear in configure-mode `?` help.
+  ._root_verb_options()                  388-423        Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
+  ._collapsed_prefix_help_options()      425-480        Return collapsed next-token help options for a command prefix.
+  ._collapsed_tier_help_options()        482-517        Return collapsed bare-tier help options for one scope.
+  ._context_annotation()                 519-540        Return a short inline context note for commands whose output depends o
+  ._print_context_hint_for()             542-546        Print a one-line context note below an exact-match docs result.
+  ._print_inline_usage()                 548-573        Print the description + usage syntax for a complete command in `?` hel
+
+## `app/shell/dispatch.py`  (546 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 split_pipe_line()                        23-38          Split *line* at the first unquoted ``|``.
 parse_output_filters()                   41-65          Parse a pipe filter chain into ``[(op, pattern), …]``.
 _line_matches()                          68-74          Regex match (case-insensitive) with plain-substring fallback.
-class DispatchMixin                      77-540         
+class DispatchMixin                      77-545         
   ._cmd_watch()                          78-112         Re-run *rest* every N seconds until Ctrl-C (`watch [N] <command>`).
   ._dispatch_piped()                     114-154        Run *head*, filter its captured output through the pipe *spec*.
   ._show_command_not_found()             156-227        Show a helpful message when a command is not recognized.
-  ._dispatch()                           229-540        Process one input line.  Returns True when the user wants to exit ARC.
+  ._dispatch()                           229-545        Process one input line.  Returns True when the user wants to exit ARC.
 
 ## `app/shell/completer.py`  (534 lines)
 
@@ -332,31 +358,6 @@ class ArcCompleter                       138-533        Context-aware tab comple
   ._complete_arguments()                 455-507        Yield completions for the argument region of a complete command.
   ._arg_options()                        509-524        Resolve next-slot argument options: structure file first, usage fallba
   ._all_commands()                       527-533        
-
-## `app/shell/help.py`  (521 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class HelpMixin                          8-519          
-  ._match_structured()                   9-25           Find the longest command key (with a structure spec) inside *prefix_to
-  ._print_context_help()                 27-44          Print Cisco-style context-sensitive help for a structured command.
-  ._render_context_help()                46-64          Render the next-option rows: ``  token   description`` (token column a
-  ._cmd_help_inline()                    66-153         Cisco-style compact inline help — one line per command, no panels.
-  ._cmd_help_docs()                      155-196        Show the full documentation page for a command or topic.
-  ._cmd_help_full()                      198-244        Print the full command reference regardless of context.
-  ._cmd_show_write_help()                246-268        Show available delete/update commands in configure mode.
-  ._print_shell_builtins()               270-283        Print the shell built-in commands section (shared by inline and full h
-  ._is_command_visible()                 285-295        Single source of truth: does this command exist for this operator?
-  ._visible_command_keys()               297-308        Cached list of visible registry keys — the per-keystroke hot path.
-  ._invalidate_visible_keys()            310-311        
-  ._is_command_available()               313-325        _is_command_visible plus the current-context gates.
-  ._is_config_command()                  328-332        Return True when a command should appear in configure-mode `?` help.
-  ._root_verb_options()                  334-369        Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
-  ._collapsed_prefix_help_options()      371-426        Return collapsed next-token help options for a command prefix.
-  ._collapsed_tier_help_options()        428-463        Return collapsed bare-tier help options for one scope.
-  ._context_annotation()                 465-486        Return a short inline context note for commands whose output depends o
-  ._print_context_hint_for()             488-492        Print a one-line context note below an exact-match docs result.
-  ._print_inline_usage()                 494-519        Print the description + usage syntax for a complete command in `?` hel
 
 ## `app/settings/command_structure.py`  (424 lines)
 

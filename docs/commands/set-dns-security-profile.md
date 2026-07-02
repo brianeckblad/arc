@@ -10,7 +10,7 @@ This command requires the **`security_profiles`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable security_profiles
 
-# Enable permanently (settings/features.json — git-ignored):
+# Enable permanently (its settings/features/ file — git-ignored):
 {"  \"security_profiles\": true"}
 ```
 

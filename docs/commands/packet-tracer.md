@@ -22,7 +22,7 @@ ARC reads the rule base from SCM and simulates the match locally.
 
 ## Feature flag
 
-Gated by `packet_tracer` (ON in the MVP default `settings/features.json`).
+Gated by `packet_tracer` (ON in the MVP default `its settings/features/ file`).
 
 ## Syntax
 

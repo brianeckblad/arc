@@ -10,7 +10,7 @@ This command requires the **`show_routing`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable show_routing
 
-# Enable permanently (settings/features.json — git-ignored):
+# Enable permanently (its settings/features/ file — git-ignored):
 {"  \"show_routing\": true"}
 ```
 

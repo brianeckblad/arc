@@ -25,7 +25,21 @@ BANNER_FILE   = SETTINGS_DIR / "banner.txt"
 GOODBYE_FILE  = SETTINGS_DIR / "goodbye.txt"
 THEME_FILE    = SETTINGS_DIR / "theme.json"
 STRUCTURE_FILE = SETTINGS_DIR / "cli-structure.yaml"
+
+# Feature flags live in a directory of small per-domain files (the glossary):
+#   settings/features/scm-<spec>.json      one per pulled OpenAPI spec
+#   settings/features/panos-ops.json       PAN-OS operational command families
+#   settings/features/panos-config.json    PAN-OS config tree (break-glass)
+#   settings/features/curated.json         hand-written command flags
+#   settings/features/local.json           flags with no generated home
+# FEATURES_FILE is the LEGACY single-file location — read for backward compat,
+# absorbed and removed by dev/generate_feature_flags.py.
+FEATURES_DIR  = SETTINGS_DIR / "features"
 FEATURES_FILE = SETTINGS_DIR / "features.json"
+
+# PAN-OS CLI docs pages pulled by dev/panosupdate.py — user-editable URL
+# registry: add new "commands added/deleted in X" pages here.
+PANOS_SOURCES_FILE = SETTINGS_DIR / "panos-sources.json"
 
 # Per-command argument structure that drives Tab completion and `?` help.
 # Hand-editable; the JSON holds only the ORDER of each command's fields

@@ -10,7 +10,7 @@ This command requires the **`schedules`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable schedules
 
-# Enable permanently (settings/features.json — git-ignored):
+# Enable permanently (its settings/features/ file — git-ignored):
 {"  \"schedules\": true"}
 ```
 

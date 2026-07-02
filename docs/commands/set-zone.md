@@ -10,7 +10,7 @@ This command requires the **`create_zone`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable create_zone
 
-# Enable permanently (settings/features.json — git-ignored):
+# Enable permanently (its settings/features/ file — git-ignored):
 {"  \"create_zone\": true"}
 ```
 

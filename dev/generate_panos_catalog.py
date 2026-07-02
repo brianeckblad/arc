@@ -59,7 +59,7 @@ REPO_ROOT = DEV_DIR.parent
 sys.path.insert(0, str(REPO_ROOT))
 
 MIRROR_DIR = REPO_ROOT / "docs" / "panos-cli"
-SOURCES_FILE = DEV_DIR / "panos_sources.json"
+SOURCES_FILE = REPO_ROOT / "settings" / "panos-sources.json"  # user-editable URL registry
 CURATION_FILE = DEV_DIR / "panos_curation.json"
 CATALOG_FILE = REPO_ROOT / "app" / "commands" / "panos_catalog.py"
 

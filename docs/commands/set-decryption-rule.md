@@ -10,7 +10,7 @@ This command requires the **`decryption_policy`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable decryption_policy
 
-# Enable permanently (settings/features.json — git-ignored):
+# Enable permanently (its settings/features/ file — git-ignored):
 {"  \"decryption_policy\": true"}
 ```
 

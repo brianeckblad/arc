@@ -10,7 +10,7 @@ This command requires the **`pbf_rules`** feature flag to be enabled:
 # Enable for this session:
 arc> feature enable pbf_rules
 
-# Enable permanently (settings/features.json — git-ignored):
+# Enable permanently (its settings/features/ file — git-ignored):
 {"  \"pbf_rules\": true"}
 ```
 

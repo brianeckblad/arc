@@ -2,11 +2,11 @@
 
 ## Overview
 
-The `settings/commands.json` file provides fine-grained control over individual command visibility. This is **independent of feature flags** (settings/features.json).
+The `settings/commands.json` file provides fine-grained control over individual command visibility. This is **independent of feature flags** (its settings/features/ file).
 
 ## Purpose
 
-- **Feature flags** (`settings/features.json`): Enable/disable entire functional areas (e.g., "nat_rules", "delete_objects")
+- **Feature flags** (`its settings/features/ file`): Enable/disable entire functional areas (e.g., "nat_rules", "delete_objects")
 - **Command visibility** (`settings/commands.json`): Hide/show specific individual commands
 
 ## Use Cases
@@ -48,7 +48,7 @@ Commands hidden in `commands.json`:
 When a command is evaluated:
 1. Check `commands.json` visibility (if false, hide regardless of features)
 2. Check device/configure mode requirements
-3. Check feature flag (from `settings/features.json`)
+3. Check feature flag (from `its settings/features/ file`)
 
 ## Examples
 
@@ -69,6 +69,6 @@ When a command is evaluated:
 
 ## Related
 
-- `settings/features.json` — functional area feature flags
+- `its settings/features/ file` — functional area feature flags
 - `help features` — feature flag system documentation
 - `app/settings/commands.py` — visibility loader implementation

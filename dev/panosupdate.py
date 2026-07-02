@@ -2,7 +2,7 @@
 """Update ARC's local PAN-OS CLI command mirrors from docs.paloaltonetworks.com.
 
 This is the PAN-OS sibling of ``dev/docsupdate.py``.  It pulls the pages listed
-in **dev/panos_sources.json** (command-hierarchy pages plus per-version
+in **settings/panos-sources.json** (command-hierarchy pages plus per-version
 new/deleted command lists), extracts the CLI command lines embedded as plain
 text in each page's HTML, and writes one committed mirror per page under
 ``docs/panos-cli/<key>.txt`` — the diffable input consumed by
@@ -49,7 +49,7 @@ DEV_DIR = Path(__file__).resolve().parent
 REPO_ROOT = DEV_DIR.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-SOURCES_FILE = DEV_DIR / "panos_sources.json"
+SOURCES_FILE = REPO_ROOT / "settings" / "panos-sources.json"  # user-editable URL registry
 OUTPUT_DIR = REPO_ROOT / "docs" / "panos-cli"
 CHANGES_FILE = OUTPUT_DIR / "CHANGES.md"
 
@@ -75,7 +75,7 @@ _QUARANTINE_LIST_CAP = 20
 
 
 def load_sources() -> dict:
-    """Return the page registry from dev/panos_sources.json."""
+    """Return the page registry from settings/panos-sources.json."""
     try:
         data = json.loads(SOURCES_FILE.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
