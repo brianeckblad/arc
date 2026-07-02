@@ -18,7 +18,7 @@ Resource                                      Methods  ARC Command              
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
   adns-resolver/v1/ca-certs                   LRCD     ✓ delete adnsr ca-certs / set adnsr ca-certs upload / show adnsr ca-certs / +2 more —
   adns-resolver/v1/connection-sources         LRCUD    ✓ delete adnsr conn-sources / delete adnsr conn-sources subnets / set adnsr conn-sources / +7 more —
-  adns-resolver/v1/connection-sources/subnets LR       ✓ show adnsr conn-sources subnets          —
+  adns-resolver/v1/connection-sources/subnets LR       ✓ show adnsr conn-sources subnets / show adnsr conn-sources subnets id —
   adns-resolver/v1/custom-fqdns               LRCUD    ✓ delete adnsr custom-fqdns / set adnsr custom-fqdns / show adnsr custom-fqdns / +2 more —
   adns-resolver/v1/edls                       LRCUD    ✓ delete adnsr edls / set adnsr edls / show adnsr edls / +2 more —
   adns-resolver/v1/internal-domains           LRCUD    ✓ delete adnsr internal-domains / set adnsr internal-domains / show adnsr internal-domains / +2 more —

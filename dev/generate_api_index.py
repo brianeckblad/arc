@@ -86,13 +86,32 @@ def _resource_key(path_or_url: str) -> str:
     return "/".join(parts)
 
 
-def _front_matter_commands() -> dict[str, list[str]]:
-    """Return resource path → command names from docs/commands front-matter."""
+def _registry_commands() -> dict[str, list[str]]:
+    """Return resource path → command names, from the live command sources.
+
+    Primary source is the generated endpoint catalog (every generated command
+    knows its method + URL). Doc front-matter supplements it for curated
+    commands whose docs declare an ``api:`` field — most commands have no doc
+    file at all (help is registry-synthesized), so docs alone are NOT a
+    reliable mapping source.
+    """
+    mapping: dict[str, list[str]] = {}
+
+    try:
+        from app.commands.resource_catalog import CATALOG
+    except Exception:  # noqa: BLE001
+        CATALOG = []
+    for entry in CATALOG:
+        command = str(entry.get("command") or "").strip()
+        url = str(entry.get("base_url") or "") + str(entry.get("path") or "")
+        key = _resource_key(url)
+        if command and key:
+            mapping.setdefault(key, []).append(command)
+
     try:
         from app.settings.command_help import parse_front_matter
     except Exception:  # noqa: BLE001
-        return {}
-    mapping: dict[str, list[str]] = {}
+        return mapping
     for doc in COMMAND_DOCS_DIR.glob("*.md"):
         meta, _body = parse_front_matter(doc.read_text(encoding="utf-8"))
         command = str(meta.get("command") or "").strip()
@@ -103,9 +122,8 @@ def _front_matter_commands() -> dict[str, list[str]]:
         if len(parts) < 2:
             continue
         key = _resource_key(parts[-1])
-        if not key:
-            continue
-        mapping.setdefault(key, []).append(command)
+        if key and command not in mapping.get(key, []):
+            mapping.setdefault(key, []).append(command)
     return mapping
 
 # SSH command vocabulary (PAN-OS operational CLI → for --remote execution)
@@ -198,7 +216,7 @@ def _parse_spec(yaml_path: Path) -> dict:
 
 def _build_index(specs: list[dict]) -> str:
     """Build the compact markdown index."""
-    doc_commands = _front_matter_commands()
+    doc_commands = _registry_commands()
     lines: list[str] = [
         "# ARC API Index — Compact Endpoint Reference",
         "<!--",
