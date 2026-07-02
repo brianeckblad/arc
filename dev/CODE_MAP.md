@@ -9,6 +9,11 @@
   files. Files under app/ with >= 300 lines are mapped.
 -->
 
+## `app/commands/panos_catalog.py`  (4571 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+
 ## `app/settings/field_catalog.py`  (1924 lines)
 
 Symbol                                   Lines          Purpose

@@ -1,0 +1,10 @@
+{
+  "_comment": "Registry of PAN-OS CLI docs pages for dev/panosupdate.py. Add new version pages here; docsupdate pulls them.",
+  "pages": [
+    {"key": "ops-11.2",          "url": "https://docs.paloaltonetworks.com/ngfw/pan-os-cli-quick-start/cli-command-hierarchy/pan-os-11-2-cli-ops-command-hierarchy",       "kind": "ops-hierarchy",    "version": "11.2"},
+    {"key": "config-11.2",       "url": "https://docs.paloaltonetworks.com/ngfw/pan-os-cli-quick-start/cli-command-hierarchy/pan-os-11-2-configure-cli-command-hierarchy", "kind": "config-hierarchy", "version": "11.2"},
+    {"key": "new-set-11.2",      "url": "https://docs.paloaltonetworks.com/ngfw/pan-os-cli-quick-start/cli-changes/new-set-commands-11-2",   "kind": "added",   "version": "11.2"},
+    {"key": "new-show-12.1",     "url": "https://docs.paloaltonetworks.com/ngfw/pan-os-cli-quick-start/cli-changes/new-show-commands-12-1",  "kind": "added",   "version": "12.1"},
+    {"key": "deleted-set-12.1",  "url": "https://docs.paloaltonetworks.com/ngfw/pan-os-cli-quick-start/cli-changes/deleted-set-commands-12-1", "kind": "deleted", "version": "12.1"}
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "_comment": "Hand-maintained knobs for dev/generate_panos_catalog.py. value_token_overrides: literals forced VALUE_LIKE (stem cut points). keyword_token_overrides: literals never inferred VALUE_LIKE. panorama_markers: stem tokens[0:2] matches tag platforms:['panorama']. recovery_stems: config stems tagged family config_recovery (break-glass set). scm_map: op stem -> SCM ops-job metadata, emitted as 'scm' on matching entries.",
+  "value_token_overrides": ["vsys-name"],
+  "keyword_token_overrides": ["type", "id", "all", "name"],
+  "panorama_markers": ["panorama", "log-collector", "commit-all", "batch", "device-group", "template", "template-stack", "wildfire-appliance", "logger", "plugins"],
+  "recovery_stems": [
+    "set deviceconfig system ip-address", "set deviceconfig system netmask",
+    "set deviceconfig system default-gateway", "set deviceconfig system dns-setting",
+    "set deviceconfig system hostname", "set deviceconfig system service",
+    "set deviceconfig system update-server", "set deviceconfig system panorama",
+    "set network interface ethernet", "set deviceconfig setting management",
+    "set mgt-config users"
+  ],
+  "scm_map": {
+    "show advanced-routing route": {"job": "route-table"},
+    "show advanced-routing fib":   {"job": "fib-table", "advanced": true},
+    "show routing fib":            {"job": "fib-table"},
+    "show dns-proxy statistics":   {"job": "dns-proxy"}
+  }
+}
