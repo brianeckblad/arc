@@ -62,7 +62,14 @@ class ExecutionMixin:
             return
 
         try:
-            data = cmd_def.api_handler(ctx, args)
+            # Spinner while the API call runs — skipped when output is being
+            # captured for a pipe filter or the console is not a terminal
+            # (rich Live displays don't nest under capture).
+            if getattr(self, "_piping", False) or not console.is_terminal:
+                data = cmd_def.api_handler(ctx, args)
+            else:
+                with console.status("[dim]querying SCM…[/dim]", spinner="dots"):
+                    data = cmd_def.api_handler(ctx, args)
             self._render(key, cmd_def, data)
         except httpx.HTTPStatusError as exc:
             status = exc.response.status_code

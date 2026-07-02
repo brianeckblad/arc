@@ -49,6 +49,19 @@ show routing route
 show security policy
 ```
 
+## Filter output — `| match`, `| except`, `| count`
+
+Any output-producing command can be piped through PAN-OS-style filters:
+
+```text
+show devices | match production        # only lines matching (regex, case-insensitive)
+show security policy | except deny     # drop matching lines
+show devices | match PA-4 | count      # chain filters; count matching lines
+```
+
+Filters operate on rendered output lines. Interactive commands
+(`connect`, `remote`, `configure`, `setup`) cannot be filtered.
+
 ## Interactive SSH session
 
 `connect` and `remote <device>` open a true interactive SSH session. ARC

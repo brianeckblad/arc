@@ -68,7 +68,7 @@ sections:
 
 # ── Footer hint below ? output ───────────────────────────────────────────────
 
-help_footer: "show ?  → sub-commands  |  <cmd> help  → full docs  |  help all  → complete reference"
+help_footer: "show ?  → sub-commands  |  <cmd> help  → full docs  |  help all  → full reference  |  <cmd> | match <text>  → filter output"
 
 
 # ── Configure mode banner ────────────────────────────────────────────────────

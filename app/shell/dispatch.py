@@ -2,11 +2,111 @@
 from __future__ import annotations
 
 import difflib  # For fuzzy command matching
+import re as _re
 
 from app.shell._base import *  # noqa: F401,F403  (shared spine namespace)
 
+# ---------------------------------------------------------------------------
+# Output pipe filters — PAN-OS style `<command> | match <pattern>` support.
+# ---------------------------------------------------------------------------
+
+# Commands that own the terminal (interactive sessions, screen control) —
+# capturing their output for a pipe filter would break them.
+_PIPE_UNSUPPORTED = {
+    "connect", "remote", "configure", "conf", "setup",
+    "clear", "docs", "exit", "quit", "dev",
+}
+
+_ANSI_RE = _re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
+
+
+def split_pipe_line(line: str) -> tuple[str, str | None]:
+    """Split *line* at the first unquoted ``|``.
+
+    Returns ``(head_command, filter_spec)`` — filter_spec is None when the
+    line has no pipe. Quoted pipes (``set address "a|b" …``) are preserved.
+    """
+    quote = ""
+    for index, char in enumerate(line):
+        if quote:
+            if char == quote:
+                quote = ""
+        elif char in "'\"":
+            quote = char
+        elif char == "|":
+            return line[:index].strip(), line[index + 1:].strip()
+    return line, None
+
+
+def parse_output_filters(spec: str) -> tuple[list[tuple[str, str]] | None, str]:
+    """Parse a pipe filter chain into ``[(op, pattern), …]``.
+
+    Supported (PAN-OS / Cisco vocabulary): ``match``/``include`` <pattern>,
+    ``except``/``exclude`` <pattern>, ``count``.  Returns ``(None, error)``
+    on a malformed spec.
+    """
+    filters: list[tuple[str, str]] = []
+    for segment in spec.split("|"):
+        parts = segment.strip().split(None, 1)
+        if not parts:
+            return None, "empty filter — usage: <command> | match <pattern>"
+        op = parts[0].lower()
+        if op in ("match", "include", "except", "exclude"):
+            if len(parts) < 2 or not parts[1].strip():
+                return None, f"'{op}' needs a pattern — usage: <command> | {op} <pattern>"
+            filters.append(("match" if op in ("match", "include") else "except", parts[1].strip()))
+        elif op == "count":
+            filters.append(("count", ""))
+        else:
+            return None, f"unknown filter '{op}' — supported: match <pat> | except <pat> | count"
+    return filters, ""
+
+
+def _line_matches(line: str, pattern: str) -> bool:
+    """Regex match (case-insensitive) with plain-substring fallback."""
+    plain = _ANSI_RE.sub("", line)
+    try:
+        return _re.search(pattern, plain, _re.IGNORECASE) is not None
+    except _re.error:
+        return pattern.lower() in plain.lower()
+
 
 class DispatchMixin:
+    def _dispatch_piped(self, head: str, spec: str) -> bool:
+        """Run *head*, filter its captured output through the pipe *spec*."""
+        filters, error = parse_output_filters(spec)
+        if filters is None:
+            console.print(f"[yellow]{error}[/yellow]")
+            return False
+        first = head.split()[0].lower() if head.split() else ""
+        if not first:
+            console.print("[yellow]Nothing to filter — usage: <command> | match <pattern>[/yellow]")
+            return False
+        if first in _PIPE_UNSUPPORTED:
+            console.print(f"[yellow]'{first}' is interactive — output filters don't apply.[/yellow]")
+            return False
+
+        self._piping = True
+        try:
+            with console.capture() as capture:
+                should_exit = self._dispatch(head)
+        finally:
+            self._piping = False
+
+        lines = capture.get().splitlines()
+        for op, pattern in filters:
+            if op == "match":
+                lines = [l for l in lines if _line_matches(l, pattern)]
+            elif op == "except":
+                lines = [l for l in lines if not _line_matches(l, pattern)]
+            elif op == "count":
+                total = sum(1 for l in lines if _ANSI_RE.sub("", l).strip())
+                console.print(f"Count: {total} line(s)")
+                return should_exit
+        for line in lines:
+            console.file.write(line + "\n")
+        return should_exit
+
     def _show_command_not_found(self, tokens: list[str]) -> None:
         """Show a helpful message when a command is not recognized.
         
@@ -40,6 +140,26 @@ class DispatchMixin:
             cmd for cmd in all_commands
             if cmd not in COMMANDS or self._is_command_visible(cmd, COMMANDS[cmd])
         ]
+
+        # Ambiguous abbreviation?  `sh s` matches several commands — list them
+        # instead of a bare "unknown" so the operator learns what to type next.
+        lowered = [t.lower() for t in tokens]
+        prefix_matches = sorted(
+            cmd for cmd in visible_commands
+            if (phrase := cmd.split())
+            and len(phrase) >= len(lowered)
+            and all(phrase[i].startswith(lowered[i]) for i in range(len(lowered)))
+        )
+        if len(prefix_matches) > 1:
+            console.print(
+                f"\n[yellow]Ambiguous command:[/yellow] [bold]{cmd_text}[/bold] "
+                f"matches {len(prefix_matches)} command(s):\n"
+            )
+            for match in prefix_matches[:15]:
+                console.print(f"  • [cyan]{match}[/cyan]")
+            if len(prefix_matches) > 15:
+                console.print(f"  [dim]… and {len(prefix_matches) - 15} more — type more letters[/dim]")
+            return
         
         # Get fuzzy matches
         matches = difflib.get_close_matches(first_word, visible_commands, n=5, cutoff=0.5)
@@ -64,6 +184,11 @@ class DispatchMixin:
         """Process one input line.  Returns True when the user wants to exit ARC."""
         # Normalize whitespace: collapse tabs and multiple spaces to a single space.
         line = re.sub(r"[ \t]+", " ", line).strip()
+
+        # PAN-OS style output filtering: <command> | match <pat> | count …
+        head, pipe_spec = split_pipe_line(line)
+        if pipe_spec is not None:
+            return self._dispatch_piped(head, pipe_spec)
         # Strip --remote flag before any other parsing.
         # Quote-aware tokenization: a value with spaces must be quoted, e.g.
         #   set address "My Host" fqdn x description "DMZ network"

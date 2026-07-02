@@ -318,6 +318,18 @@ class HelpMixin                          8-499
   ._print_context_hint_for()             468-472        Print a one-line context note below an exact-match docs result.
   ._print_inline_usage()                 474-499        Print the description + usage syntax for a complete command in `?` hel
 
+## `app/shell/dispatch.py`  (457 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+split_pipe_line()                        23-38          Split *line* at the first unquoted ``|``.
+parse_output_filters()                   41-62          Parse a pipe filter chain into ``[(op, pattern), …]``.
+_line_matches()                          65-71          Regex match (case-insensitive) with plain-substring fallback.
+class DispatchMixin                      74-456         
+  ._dispatch_piped()                     75-108         Run *head*, filter its captured output through the pipe *spec*.
+  ._show_command_not_found()             110-181        Show a helpful message when a command is not recognized.
+  ._dispatch()                           183-456        Process one input line.  Returns True when the user wants to exit ARC.
+
 ## `app/commands/network.py`  (424 lines)
 
 Symbol                                   Lines          Purpose
@@ -364,14 +376,6 @@ _show_device_snippets()                  87-138         Show snippets attached t
 _show_snippets()                         141-210        List snippets scoped to the current context.
 _show_snippets_global()                  213-225        List ALL snippets regardless of device or folder context.
 _show_snippet_detail()                   228-267        Show detail for a named snippet.
-
-## `app/shell/dispatch.py`  (332 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class DispatchMixin                      9-331          
-  ._show_command_not_found()             10-61          Show a helpful message when a command is not recognized.
-  ._dispatch()                           63-331         Process one input line.  Returns True when the user wants to exit ARC.
 
 ## `app/ssh/manager.py`  (310 lines)
 

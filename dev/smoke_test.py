@@ -343,6 +343,28 @@ def test_arg_parser() -> None:
                 f"expected {expected!r}\n       got     {result!r}",
             )
 
+    # 4b — output pipe filters (`<command> | match <pat> | count`)
+    from app.shell.dispatch import parse_output_filters, split_pipe_line
+
+    if split_pipe_line("show devices | match prod") == ("show devices", "match prod") \
+            and split_pipe_line('set address "a|b" fqdn x') == ('set address "a|b" fqdn x', None) \
+            and split_pipe_line("show devices") == ("show devices", None):
+        ok("split_pipe_line: splits on first unquoted | only")
+    else:
+        fail("split_pipe_line returned unexpected shapes")
+
+    filters, _ = parse_output_filters("match prod | except lab | count")
+    if filters == [("match", "prod"), ("except", "lab"), ("count", "")]:
+        ok("parse_output_filters: match/except/count chain parsed")
+    else:
+        fail("parse_output_filters chain wrong", repr(filters))
+
+    bad, error = parse_output_filters("frobnicate x")
+    if bad is None and "unknown filter" in error:
+        ok("parse_output_filters: rejects unknown filter with hint")
+    else:
+        fail("parse_output_filters accepted an unknown filter")
+
 
 # ---------------------------------------------------------------------------
 # 5. Token optimization checks

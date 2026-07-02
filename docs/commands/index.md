@@ -110,7 +110,7 @@ Use `help <command>` to open detailed docs for a command.
 - `delete external-dynamic-list` — Delete an EDL — delete external-dynamic-list <name>
 - `delete general-settings` — Delete general settings
 - `delete gp-match-list` — Delete a globalprotect match list entry
-- `delete ha-configurations` — Delete high availability configurations
+- `delete ha-configurations` — Delete high availability configuration
 - `delete hipmatch-match-list` — Delete a hipmatch match list entry
 - `delete iam access-policies` — Delete an access policy
 - `delete iam custom-roles` — Delete a custom role
@@ -330,7 +330,7 @@ Use `help <command>` to open detailed docs for a command.
 - `set external-dynamic-list` — Create EDL — set external-dynamic-list <name> type ip|domain|url url <fetch-url>
 - `set general-settings` — Create general settings
 - `set gp-match-list` — Create a globalprotect match list entry
-- `set ha-configurations` — Create high availability configurations
+- `set ha-configurations` — Create high availability configuration
 - `set hipmatch-match-list` — Create a hipmatch match list entry
 - `set iam access-policies` — Assign an access policy
 - `set iam custom-roles` — Create a custom role
@@ -497,7 +497,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show adnsr profiles categories` — Get profile categories
 - `show adnsr profiles id` — Get a profile
 - `show adnsr resolver-info` — Get resolver information
-- `show aggregate-interfaces` — Show aggregate interfaces in the active folder
+- `show aggregate-interfaces` — List Aggregate Interfaces
 - `show aggregate-interfaces id` — Get an Aggregate Interface
 - `show anti-spyware-profile` — Show anti-spyware profiles in the active folder
 - `show app-override-rules` — Show application override rules in the active folder
@@ -508,20 +508,20 @@ Use `help <command>` to open detailed docs for a command.
 - `show authentication-rules` — Show authentication rules in the active folder
 - `show authentication-settings` — List authentication settings
 - `show authentication-settings id` — Get existing authentication settings
-- `show auto-vpn-clusters` — Show auto vpn clusters in the active folder
+- `show auto-vpn-clusters` — List Auto VPN clusters
 - `show auto-vpn-clusters id` — Get an Auto VPN cluster
-- `show auto-vpn-monitor` — Show auto vpn monitor in the active folder
-- `show auto-vpn-settings` — Show auto vpn settings in the active folder
+- `show auto-vpn-monitor` — Get Auto VPN status
+- `show auto-vpn-settings` — Get Auto VPN settings
 - `show autoscale` — Get autoscale settings
 - `show bgp-af-profiles id` — Get a BGP address family profile
-- `show bgp-auth-profiles` — Show bgp auth profiles in the active folder
+- `show bgp-auth-profiles` — List BGP authentication profiles
 - `show bgp-auth-profiles id` — Get a BGP authentication profile
-- `show bgp-filtering-profiles` — Show bgp filtering profiles in the active folder
+- `show bgp-filtering-profiles` — List BGP filtering profiles
 - `show bgp-filtering-profiles id` — Get a BGP filtering profile
 - `show bgp-profile` — Show BGP routing profiles (configuration) in the active folder
 - `show bgp-redist-profiles` — List BGP redistribution profiles
 - `show bgp-redist-profiles id` — Get a BGP redistribution profile
-- `show bgp-route-maps` — Show bgp route maps in the active folder
+- `show bgp-route-maps` — List BGP route maps
 - `show bgp-route-maps id` — Get a BGP route map
 - `show bgp-routemap-redist` — List BGP route map redistributions
 - `show bgp-routemap-redist id` — Get a BGP route map redistribution
@@ -679,7 +679,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show cngfw vuln-signatures id` — Get a vulnerability protection signature
 - `show cngfw wildfire-profiles` — List Wildfire and anti-virus profiles
 - `show cngfw wildfire-profiles id` — Get a WildFire and anti-virus profile
-- `show config-match-list` — Show config match list in the active folder
+- `show config-match-list` — List config match list entries
 - `show config-match-list id` — Get a config match list entry
 - `show content-cloud-settings` — List Content Cloud settings
 - `show content-cloud-settings id` — Get existing Content Cloud settings
@@ -695,7 +695,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show device-redistribution-collector` — List device redistribution collector settings
 - `show device-redistribution-collector id` — Get existing device redistribution collector settings
 - `show devices` — List all SCM-managed devices
-- `show dhcp-interfaces` — Show dhcp interfaces in the active folder
+- `show dhcp-interfaces` — List DHCP interfaces
 - `show dhcp-interfaces id` — Get a DHCP interface
 - `show dns-proxies id` — Get a DNS proxy
 - `show dns-proxy` — Show DNS proxy configurations in the active folder
@@ -707,7 +707,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show general-settings id` — Get existing general settings
 - `show gp-match-list` — List globalprotect match list entries
 - `show gp-match-list id` — Get a globalprotect match list entry
-- `show ha-configurations` — List high availability configurations
+- `show ha-configurations` — Get high availability configuration
 - `show ha-configurations-gateways` — Autocomplete HA gateways
 - `show ha-configurations-ip-addresses` — Autocomplete HA IP addresses
 - `show ha-configurations-netmasks` — Autocomplete HA netmasks
@@ -717,7 +717,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show high-availability state` — Show HA state summary from the active folder
 - `show hip-object` — Show GlobalProtect HIP objects in the active folder
 - `show hip-profile` — Show GlobalProtect HIP profiles in the active folder
-- `show hipmatch-match-list` — Show hipmatch match list in the active folder
+- `show hipmatch-match-list` — List hipmatch match list entries
 - `show hipmatch-match-list id` — Get a hipmatch match list entry
 - `show iam access-policies` — List all access policies
 - `show iam access-policies id` — Get an access policy
@@ -732,28 +732,28 @@ Use `help <command>` to open detailed docs for a command.
 - `show iam sso-users` — Verify a user account
 - `show if-mgmt-profiles` — List interface management profiles
 - `show if-mgmt-profiles id` — Get an interface management profile
-- `show ike-crypto-profiles` — Show ike crypto profiles in the active folder
+- `show ike-crypto-profiles` — List IKE crypto profiles
 - `show ike-crypto-profiles id` — Get an IKE crypto profile
 - `show ike-gateway` — Show IKE gateway configurations (VPN) in the active folder
 - `show ike-gateways id` — Get an IKE gateway
 - `show incidents incidents details id` — Incidents Details
 - `show interface` — Show a specific interface in the active folder
 - `show interface all` — Show all interfaces in the active folder
-- `show ipsec-crypto-profiles` — Show ipsec crypto profiles in the active folder
+- `show ipsec-crypto-profiles` — List IPsec crypto profiles
 - `show ipsec-crypto-profiles id` — Get an IPsec crypto profile
 - `show ipsec-tunnel` — Show IPsec tunnel configurations in the active folder
 - `show ipsec-tunnels id` — Get an IPsec tunnel
-- `show iptag-match-list` — Show iptag match list in the active folder
+- `show iptag-match-list` — List iptag match list entries
 - `show iptag-match-list id` — Get an iptag match list entry
 - `show jobs all` — Show all SCM jobs (TSG-wide)
 - `show jobs id` — Show a specific SCM job by ID
-- `show layer2-subinterfaces` — Show layer2 subinterfaces in the active folder
+- `show layer2-subinterfaces` — List layer 2 subinterfaces
 - `show layer2-subinterfaces id` — Get a layer 2 subinterface
-- `show layer3-subinterfaces` — Show layer3 subinterfaces in the active folder
+- `show layer3-subinterfaces` — List layer 3 subinterfaces
 - `show layer3-subinterfaces id` — Get a layer 3 subinterface
-- `show link-tags` — Show link tags in the active folder
+- `show link-tags` — List link tags
 - `show link-tags id` — Get a link tag
-- `show lldp-profiles` — Show lldp profiles in the active folder
+- `show lldp-profiles` — List LLDP profiles
 - `show lldp-profiles id` — Get an LLDP profile
 - `show local-config download` — Download local configuration file
 - `show local-config versions` — List local configuration versions for a device
@@ -762,9 +762,9 @@ Use `help <command>` to open detailed docs for a command.
 - `show log system` — Show live system log — use --remote for live device data
 - `show log traffic` — Show live traffic log — use --remote for live device data
 - `show log-forwarding-profile` — Show log forwarding profiles in the active folder
-- `show logical-routers` — Show logical routers in the active folder
+- `show logical-routers` — List logical routers
 - `show logical-routers id` — Get a logical router
-- `show loopback-interfaces` — Show loopback interfaces in the active folder
+- `show loopback-interfaces` — List loopback interfaces
 - `show loopback-interfaces id` — Get a loopback interface
 - `show management-interface` — List management interface settings
 - `show management-interface id` — Get existing management interface settings
@@ -833,7 +833,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show npb-rules` — List all Network Packet Broker Rules
 - `show npb-rules id` — Get Network Packet Broker Rule by ID
 - `show oauth2 userinfo` — Retrieve oAuth 2.0 claims
-- `show ospf-auth-profiles` — Show ospf auth profiles in the active folder
+- `show ospf-auth-profiles` — List OSPF authentication profiles
 - `show ospf-auth-profiles id` — Get an OSPF authentication profile
 - `show pbf-rules` — Show policy-based forwarding rules in the active folder
 - `show pbf-rules id` — Get a PBF rule
@@ -841,20 +841,20 @@ Use `help <command>` to open detailed docs for a command.
 - `show posture reports bpa-result id` — Get BPA Processing Status
 - `show posture root` — List Posture Checks
 - `show profile-group` — Show security profile groups in the active folder
-- `show qos-policy-rules` — Show qos policy rules in the active folder
+- `show qos-policy-rules` — List QoS policy rules
 - `show qos-policy-rules id` — Get a QoS policy rule
 - `show qos-profile` — Show QoS profiles in the active folder
 - `show qos-profiles id` — Get a QoS profile
 - `show radius-server` — Show RADIUS server profiles in the active folder
 - `show region` — Show regions (TSG-wide, no folder filter)
 - `show rn-license-info` — Get Remote Networks License Info
-- `show route-access-lists` — Show route access lists in the active folder
+- `show route-access-lists` — List route access lists
 - `show route-access-lists id` — Get a route access list
-- `show route-community-lists` — Show route community lists in the active folder
+- `show route-community-lists` — List route community lists
 - `show route-community-lists id` — Get a route community list
 - `show route-path-acls` — List route path access lists
 - `show route-path-acls id` — Get a route path access list
-- `show route-prefix-lists` — Show route prefix lists in the active folder
+- `show route-prefix-lists` — List route prefix lists
 - `show route-prefix-lists id` — Get a route prefix list
 - `show routing bgp` — Show live BGP routing state from device — use --remote
 - `show routing route` — Show static routes in the active folder
@@ -926,7 +926,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show system disk-space` — Show live disk usage — use --remote for live device data
 - `show system info` — Show device info from SCM (model, serial, SW version, IP, status…)
 - `show system resources` — Show live CPU / memory — use --remote for live device data
-- `show system-match-list` — Show system match list in the active folder
+- `show system-match-list` — List system match list entries
 - `show system-match-list id` — Get a system match list entry
 - `show tag` — Show tags in the active folder
 - `show tcp-settings` — List TCP settings
@@ -934,15 +934,15 @@ Use `help <command>` to open detailed docs for a command.
 - `show tenant-service-groups` — List all tenant service groups
 - `show tenant-service-groups id` — Get a tenant service group
 - `show tls-service-profile` — Show TLS service profiles in the active folder
-- `show tunnel-interfaces` — Show tunnel interfaces in the active folder
+- `show tunnel-interfaces` — List tunnel interfaces
 - `show tunnel-interfaces id` — Get a tunnel interface
 - `show update-schedule` — List update schedule settings
 - `show update-schedule id` — Get existing update schedule settings
 - `show url-categories` — Show custom URL categories in the active folder
 - `show user ip-user-mapping` — Show live user-to-IP mapping from device — use --remote
-- `show userid-match-list` — Show userid match list in the active folder
+- `show userid-match-list` — List userid match list entries
 - `show userid-match-list id` — Get a userid match list entry
-- `show vlan-interfaces` — Show vlan interfaces in the active folder
+- `show vlan-interfaces` — List VLAN interfaces
 - `show vlan-interfaces id` — Get a VLAN interface
 - `show vpn ike-sa` — Show live IKE security associations from device — use --remote
 - `show vpn tunnel` — Show live VPN tunnel state from device — use --remote
@@ -1059,7 +1059,7 @@ Use `help <command>` to open detailed docs for a command.
 - `update external-dynamic-list` — Update EDL url/frequency — update external-dynamic-list <name> url <url>
 - `update general-settings` — Update general settings
 - `update gp-match-list` — Update a globalprotect match list entry
-- `update ha-configurations` — Update high availability configurations
+- `update ha-configurations` — Update high availability configuration
 - `update hipmatch-match-list` — Update a hipmatch match list entry
 - `update iam custom-roles` — Update a Custom Role
 - `update if-mgmt-profiles` — Update an interface management profile
