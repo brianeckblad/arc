@@ -19,15 +19,21 @@ help.  The top of every registered command's doc is a YAML front-matter block::
 The inline `?` / `<command> ?` help reads `description` + `usage` from the
 front-matter; `help <command>` renders the body.
 
+A command doc FILE exists only when someone wrote real content for it — there
+are no per-command stub files.  Commands without a doc file get their `help`
+page synthesized from the registry at runtime (app/docs.py), and their `?`
+description/usage come straight from the CommandDef.
+
 What this script does (idempotent):
-  * ensures every registered command's doc has front-matter (adds it, preserving
-    the existing body; never clobbers a human-edited block);
-  * regenerates `docs/commands/index.md` (the catalog);
+  * prunes boilerplate generated-command stubs (heading-only bodies);
+  * refreshes front-matter on existing generated-command docs (human-owned
+    curated front-matter is never touched);
+  * regenerates `docs/commands/index.md` (the full catalog of all commands);
   * regenerates `docs/commands/api-reference.md` from the front-matter + registry.
 
 Run:
-    python dev/generate_command_docs.py             # ensure front-matter + regenerate
-    python dev/generate_command_docs.py --check      # report gaps, write nothing (exit 1)
+    python dev/generate_command_docs.py              # prune + refresh + regenerate
+    python dev/generate_command_docs.py --check      # flag docs for unregistered commands (exit 1)
 
 This runs automatically as part of `docsupdate` (dev/docsupdate.py).
 """
@@ -277,25 +283,28 @@ def _doc_path(key: str) -> Path:
     return COMMAND_DOCS_DIR / f"{slugify(key)}.md"
 
 
-def _has_front_matter(key: str) -> bool:
-    path = _doc_path(key)
-    if not path.exists():
-        return False
-    meta, _ = parse_front_matter(path.read_text(encoding="utf-8"))
-    return bool(meta.get("command"))
+def _is_trivial_body(key: str, body: str) -> bool:
+    """True when a doc body carries no hand-written content (heading only)."""
+    stripped = [line.strip() for line in body.strip().splitlines() if line.strip()]
+    return not stripped or (len(stripped) <= 2 and stripped[0].startswith("#"))
 
 
 def ensure_front_matter() -> list[str]:
-    """Add front-matter to any registered command doc that lacks it.
+    """Refresh front-matter on EXISTING command docs; never create stub files.
 
-    Preserves the existing Markdown body.  Returns the commands that were
-    updated.  Never overwrites an existing front-matter block (human-owned).
+    Generated commands get their help synthesized from the registry at runtime
+    (see app/docs.py), so a command without a doc file is normal.  A doc file
+    exists only when someone wrote real content for that command.  Curated
+    front-matter (non-generated commands) is human-owned and never overwritten.
+    Returns the commands whose front-matter was refreshed.
     """
     updated: list[str] = []
     generated = _generated_commands()
     for key in COMMANDS:
         path = _doc_path(key)
-        body = path.read_text(encoding="utf-8") if path.exists() else f"# {key}\n"
+        if not path.exists():
+            continue  # no stub creation — registry-synthesized help covers it
+        body = path.read_text(encoding="utf-8")
         meta, stripped_body = parse_front_matter(body)
         new_front_matter = _front_matter(key)
         if meta.get("command") and key not in generated:
@@ -306,6 +315,26 @@ def ensure_front_matter() -> list[str]:
         path.write_text(new_front_matter + "\n" + stripped_body, encoding="utf-8")
         updated.append(key)
     return updated
+
+
+def prune_generated_stubs() -> list[str]:
+    """Delete generated-command docs whose body is boilerplate (heading only).
+
+    A generated command's front-matter mirrors the registry by construction, so
+    a stub file adds nothing — `help <command>` synthesizes the same page.  A
+    generated doc with a real hand-written body is kept.
+    """
+    removed: list[str] = []
+    generated = _generated_commands()
+    for key in sorted(generated):
+        path = _doc_path(key)
+        if not path.exists():
+            continue
+        _meta, body = parse_front_matter(path.read_text(encoding="utf-8"))
+        if _is_trivial_body(key, body):
+            path.unlink()
+            removed.append(key)
+    return removed
 
 
 def regenerate_index() -> None:
@@ -348,24 +377,43 @@ def regenerate_api_reference() -> None:
     (COMMAND_DOCS_DIR / "api-reference.md").write_text("\n".join(lines), encoding="utf-8")
 
 
-def _missing_front_matter() -> list[str]:
-    return sorted(k for k in COMMANDS if not _has_front_matter(k))
+def _invalid_docs() -> list[str]:
+    """Existing command docs that are malformed or point at unknown commands."""
+    problems: list[str] = []
+    skip = {"index.md", "api-reference.md"}
+    action_prefixes = ("show ", "set ", "update ", "delete ", "request ")
+    for path in sorted(COMMAND_DOCS_DIR.glob("*.md")):
+        if path.name in skip:
+            continue
+        meta, _body = parse_front_matter(path.read_text(encoding="utf-8"))
+        command = meta.get("command")
+        if not isinstance(command, str) or not command.strip():
+            continue  # plain topic page (builtins etc.) — front-matter optional
+        command = command.strip()
+        if command in COMMANDS:
+            continue
+        if command.startswith(action_prefixes):
+            problems.append(f"{path.name}: front-matter command {command!r} is not registered")
+    return problems
 
 
 def main() -> int:
     check_only = "--check" in sys.argv[1:]
 
     if check_only:
-        missing = _missing_front_matter()
-        for key in missing:
-            print(f"  missing front-matter: docs/commands/{slugify(key)}.md")
-        if missing:
-            print(f"\n{len(missing)} command doc(s) missing front-matter — "
-                  "run: python dev/generate_command_docs.py")
+        problems = _invalid_docs()
+        for line in problems:
+            print(f"  {line}")
+        if problems:
+            print(f"\n{len(problems)} command doc(s) reference unregistered commands — "
+                  "rename or delete them (see dev/generate_command_docs.py)")
             return 1
-        print(f"All {len(COMMANDS)} command docs have help front-matter")
+        print("All existing command docs reference registered commands")
         return 0
 
+    removed = prune_generated_stubs()
+    if removed:
+        print(f"Pruned {len(removed)} boilerplate generated-command stub(s)")
     updated = ensure_front_matter()
     # Re-read the freshly written front-matter so the index/API reference reflect
     # the migrated descriptions rather than the pre-migration code defaults.
@@ -373,7 +421,9 @@ def main() -> int:
     command_help.apply_overrides(COMMANDS)
     regenerate_index()
     regenerate_api_reference()
-    print(f"Command docs: {len(COMMANDS)} total, {len(updated)} front-matter block(s) added")
+    doc_count = len(list(COMMAND_DOCS_DIR.glob("*.md")))
+    print(f"Command docs: {doc_count} file(s) for {len(COMMANDS)} commands "
+          f"(no-file commands get registry-synthesized help), {len(updated)} front-matter refresh(es)")
     print("Regenerated: docs/commands/index.md, docs/commands/api-reference.md")
     return 0
 

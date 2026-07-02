@@ -879,11 +879,13 @@ def test_theme() -> None:
     else:
         ok("banner.txt correctly under settings/ only")
 
-    # 9f — every command has a non-empty description after the doc front-matter
-    #      is applied, and every command's docs/commands/<slug>.md carries help
-    #      front-matter (the single source of truth for `?` and `help`).
+    # 9f — every command has a non-empty description (from CommandDef, with doc
+    #      front-matter overrides applied), and every EXISTING command doc's
+    #      front-matter points at a registered command.  Commands without a doc
+    #      file are normal — `help <command>` synthesizes a page from the
+    #      registry (app/docs.py synthesize_command_help).
     from app.commands.registry import COMMANDS
-    from app.settings.command_help import description_overrides, usage_overrides
+    from app.settings.command_help import parse_front_matter, usage_overrides
 
     blank = [k for k, c in COMMANDS.items() if not (c.description or "").strip()]
     if blank:
@@ -891,14 +893,27 @@ def test_theme() -> None:
     else:
         ok(f"All {len(COMMANDS)} commands have a non-empty description")
 
-    missing_fm = sorted(set(COMMANDS) - set(description_overrides()))
-    if missing_fm:
+    _action_prefixes = ("show ", "set ", "update ", "delete ", "request ")
+    orphan_docs = []
+    doc_count = 0
+    for _doc in sorted((ROOT / "docs" / "commands").glob("*.md")):
+        if _doc.name in ("index.md", "api-reference.md"):
+            continue
+        _meta, _ = parse_front_matter(_doc.read_text(encoding="utf-8"))
+        _cmd = _meta.get("command")
+        if not isinstance(_cmd, str) or not _cmd.strip():
+            continue  # plain topic page (builtins etc.)
+        doc_count += 1
+        _cmd = _cmd.strip()
+        if _cmd not in COMMANDS and _cmd.startswith(_action_prefixes):
+            orphan_docs.append(f"{_doc.name} -> {_cmd!r}")
+    if orphan_docs:
         fail(
-            f"{len(missing_fm)} command doc(s) missing help front-matter",
-            "Run: python dev/generate_command_docs.py  (" + ", ".join(missing_fm[:5]) + ")",
+            f"{len(orphan_docs)} command doc(s) reference unregistered commands",
+            "; ".join(orphan_docs[:5]) + "  (rename/delete, or run: python dev/generate_command_docs.py --check)",
         )
     else:
-        ok(f"All {len(COMMANDS)} command docs carry help front-matter")
+        ok(f"All {doc_count} existing command docs reference registered commands")
 
     # 9g — usage front-matter applies onto CommandDef.usage (`<command> ?` syntax)
     usages = usage_overrides()

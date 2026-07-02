@@ -109,18 +109,48 @@ def doc_path_for_topic(topic: str) -> Path | None:
     return None
 
 
+def synthesize_command_help(key: str) -> str:
+    """Build a Markdown help page for a command straight from the registry.
+
+    Most generated commands have no hand-written doc file — their CommandDef
+    already carries everything the operator needs.  Write a real
+    ``docs/commands/<slug>.md`` page only when there is more to say; it then
+    takes precedence over this synthesized text.
+    """
+    cmd = COMMANDS[key]
+    lines = [f"# {key}", "", cmd.description or "(no description)", ""]
+    if cmd.usage:
+        lines += ["**Usage**", "", f"    {cmd.usage}", ""]
+    lines.append(f"- **Category:** {cmd.category}")
+    lines.append(f"- **Scope:** {cmd.scope}")
+    if cmd.feature_flag:
+        lines.append(f"- **Feature flag:** `{cmd.feature_flag}` (see `feature show`)")
+    if cmd.ssh_command is not None:
+        lines.append("- **Remote:** supports `--remote <device>` (SSH)")
+    lines += ["", "_Synthesized from the command registry — no hand-written page exists for this command._"]
+    return "\n".join(lines)
+
+
 def render_help_topic(console: Console, topic: str, use_pager: bool = True) -> bool:
     """Render a Markdown help topic inside the ARC shell.
-    
+
     Args:
         console: Rich console for output
         topic: Topic name to render
         use_pager: If True, automatically paginate long documentation
-    
+
     Returns True when a document was found and printed; False otherwise.
     """
     path = doc_path_for_topic(topic)
     if path is None or not path.exists() or not path.is_file():
+        # Registered commands without a doc file get a registry-synthesized page.
+        normalized = topic.strip().lower()
+        if normalized in COMMANDS:
+            markdown_text = synthesize_command_help(normalized)
+            console.print()
+            console.print(Panel(Markdown(markdown_text), title=f"Help: {normalized}", border_style="cyan"))
+            console.print()
+            return True
         return False
 
     markdown_text = path.read_text(encoding="utf-8")
