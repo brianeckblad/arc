@@ -33,6 +33,7 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 | `show adnsr conn-sources id` | global | `show_adnsr_conn_sources_id` | GET https://api.strata.paloaltonetworks.com/adns-resolver/v1/connection-sources/{connection-source-id} |
 | `show adnsr conn-sources subnets` | global | `show_adnsr_conn_sources_subnets` | GET https://api.strata.paloaltonetworks.com/adns-resolver/v1/connection-sources/subnets |
 | `show adnsr conn-sources subnets id` | global | `show_adnsr_conn_sources_subnets_id` | GET https://api.strata.paloaltonetworks.com/adns-resolver/v1/connection-sources/{connection-source-id}/subnets/{subnet-id} |
+| `show adnsr conn-sources subnets id id` | global | `show_adnsr_conn_sources_subnets_id` | GET https://api.strata.paloaltonetworks.com/adns-resolver/v1/connection-sources/{connection-source-id}/subnets |
 | `show adnsr custom-fqdns` | global | `show_adnsr_custom_fqdns` | GET https://api.strata.paloaltonetworks.com/adns-resolver/v1/custom-fqdns |
 | `show adnsr custom-fqdns id` | global | `show_adnsr_custom_fqdns_id` | GET https://api.strata.paloaltonetworks.com/adns-resolver/v1/custom-fqdns/{custom-fqdn-id} |
 | `show adnsr edls` | global | `show_adnsr_edls` | GET https://api.strata.paloaltonetworks.com/adns-resolver/v1/edls |
@@ -85,6 +86,7 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 | `delete cngfw address-groups` | global | `delete_cngfw_address_groups` | DELETE https://api.strata.paloaltonetworks.com/config/objects/v1/address-groups/{id} |
 | `delete cngfw addresses` | global | `delete_cngfw_addresses` | DELETE https://api.strata.paloaltonetworks.com/config/objects/v1/addresses/{id} |
 | `delete cngfw adv-device-objs` | global | `delete_cngfw_adv_device_objs` | DELETE https://api.strata.paloaltonetworks.com/config/objects/v1/advanced-device-objects |
+| `delete cngfw adv-device-objs id` | global | `delete_cngfw_adv_device_objs` | DELETE https://api.strata.paloaltonetworks.com/config/objects/v1/advanced-device-objects/{id} |
 | `delete cngfw anti-spyware-profiles` | global | `delete_cngfw_anti_spyware_profiles` | DELETE https://api.strata.paloaltonetworks.com/config/security/v1/anti-spyware-profiles/{id} |
 | `delete cngfw anti-spyware-signatures` | global | `delete_cngfw_anti_spyware_signatures` | DELETE https://api.strata.paloaltonetworks.com/config/security/v1/anti-spyware-signatures/{id} |
 | `delete cngfw app-override-rules` | global | `delete_cngfw_app_override_rules` | DELETE https://api.strata.paloaltonetworks.com/config/security/v1/app-override-rules/{id} |
@@ -105,6 +107,7 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 | `delete cngfw decryption-profiles` | global | `delete_cngfw_decryption_profiles` | DELETE https://api.strata.paloaltonetworks.com/config/security/v1/decryption-profiles/{id} |
 | `delete cngfw decryption-rules` | global | `delete_cngfw_decryption_rules` | DELETE https://api.strata.paloaltonetworks.com/config/security/v1/decryption-rules/{id} |
 | `delete cngfw device-contexts` | global | `delete_cngfw_device_contexts` | DELETE https://api.strata.paloaltonetworks.com/config/objects/v1/device-context-segments |
+| `delete cngfw device-contexts id` | global | `delete_cngfw_device_contexts` | DELETE https://api.strata.paloaltonetworks.com/config/objects/v1/device-context-segments/{id} |
 | `delete cngfw dns-security-profiles` | global | `delete_cngfw_dns_security_profiles` | DELETE https://api.strata.paloaltonetworks.com/config/security/v1/dns-security-profiles/{id} |
 | `delete cngfw dos-protection-profiles` | global | `delete_cngfw_dos_protection_profiles` | DELETE https://api.strata.paloaltonetworks.com/config/security/v1/dos-protection-profiles/{id} |
 | `delete cngfw dos-protection-rules` | global | `delete_cngfw_dos_protection_rules` | DELETE https://api.strata.paloaltonetworks.com/config/security/v1/dos-protection-rules/{id} |
@@ -123,8 +126,6 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 | `delete cngfw local-users` | global | `delete_cngfw_local_users` | DELETE https://api.strata.paloaltonetworks.com/config/identity/v1/local-users/{id} |
 | `delete cngfw log-forwarding-profiles` | global | `delete_cngfw_log_forwarding_profiles` | DELETE https://api.strata.paloaltonetworks.com/config/objects/v1/log-forwarding-profiles/{id} |
 | `delete cngfw mfa-servers` | global | `delete_cngfw_mfa_servers` | DELETE https://api.strata.paloaltonetworks.com/config/identity/v1/mfa-servers/{id} |
-| `delete cngfw objects adv-device-objs` | global | `delete_cngfw_adv_device_objs` | DELETE https://api.strata.paloaltonetworks.com/config/objects/v1/advanced-device-objects/{id} |
-| `delete cngfw objects device-contexts` | global | `delete_cngfw_device_contexts` | DELETE https://api.strata.paloaltonetworks.com/config/objects/v1/device-context-segments/{id} |
 | `delete cngfw ocsp-responders` | global | `delete_cngfw_ocsp_responders` | DELETE https://api.strata.paloaltonetworks.com/config/identity/v1/ocsp-responders/{id} |
 | `delete cngfw onboarding-rules` | global | `delete_cngfw_onboarding_rules` | DELETE https://api.strata.paloaltonetworks.com/config/setup/device-onboarding/v1/onboarding-rules/{id} |
 | `delete cngfw profile-groups` | global | `delete_cngfw_profile_groups` | DELETE https://api.strata.paloaltonetworks.com/config/security/v1/profile-groups/{id} |
@@ -397,6 +398,7 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 | `update cngfw address-groups` | global | `update_cngfw_address_groups` | PUT https://api.strata.paloaltonetworks.com/config/objects/v1/address-groups/{id} |
 | `update cngfw addresses` | global | `update_cngfw_addresses` | PUT https://api.strata.paloaltonetworks.com/config/objects/v1/addresses/{id} |
 | `update cngfw adv-device-objs` | global | `update_cngfw_adv_device_objs` | PUT https://api.strata.paloaltonetworks.com/config/objects/v1/advanced-device-objects |
+| `update cngfw adv-device-objs id` | global | `update_cngfw_adv_device_objs` | PUT https://api.strata.paloaltonetworks.com/config/objects/v1/advanced-device-objects/{id} |
 | `update cngfw anti-spyware-profiles` | global | `update_cngfw_anti_spyware_profiles` | PUT https://api.strata.paloaltonetworks.com/config/security/v1/anti-spyware-profiles/{id} |
 | `update cngfw anti-spyware-signatures` | global | `update_cngfw_anti_spyware_signatures` | PUT https://api.strata.paloaltonetworks.com/config/security/v1/anti-spyware-signatures/{id} |
 | `update cngfw app-override-rules` | global | `update_cngfw_app_override_rules` | PUT https://api.strata.paloaltonetworks.com/config/security/v1/app-override-rules/{id} |
@@ -434,7 +436,6 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 | `update cngfw local-users` | global | `update_cngfw_local_users` | PUT https://api.strata.paloaltonetworks.com/config/identity/v1/local-users/{id} |
 | `update cngfw log-forwarding-profiles` | global | `update_cngfw_log_forwarding_profiles` | PUT https://api.strata.paloaltonetworks.com/config/objects/v1/log-forwarding-profiles/{id} |
 | `update cngfw mfa-servers` | global | `update_cngfw_mfa_servers` | PUT https://api.strata.paloaltonetworks.com/config/identity/v1/mfa-servers/{id} |
-| `update cngfw objects adv-device-objs` | global | `update_cngfw_adv_device_objs` | PUT https://api.strata.paloaltonetworks.com/config/objects/v1/advanced-device-objects/{id} |
 | `update cngfw ocsp-responders` | global | `update_cngfw_ocsp_responders` | PUT https://api.strata.paloaltonetworks.com/config/identity/v1/ocsp-responders/{id} |
 | `update cngfw onboarding-rules` | global | `update_cngfw_onboarding_rules` | PUT https://api.strata.paloaltonetworks.com/config/setup/device-onboarding/v1/onboarding-rules/{id} |
 | `update cngfw profile-groups` | global | `update_cngfw_profile_groups` | PUT https://api.strata.paloaltonetworks.com/config/security/v1/profile-groups/{id} |
@@ -474,12 +475,12 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 | `delete content-cloud-settings` | global | `delete_content_cloud_settings` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/content-cloud-settings/{id} |
 | `delete content-id-settings` | global | `delete_content_id_settings` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/content-id-settings/{id} |
 | `delete device-context-segment-association` | global | `delete_device_context_segment_association` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/device-context-segment-association |
+| `delete device-context-segment-association id` | global | `delete_device_context_segment_association` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/device-context-segment-association/{id} |
 | `delete device-redistribution-collector` | global | `delete_device_redistribution_collector` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/device-redistribution-collector/{id} |
 | `delete general-settings` | global | `delete_general_settings` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/general-settings/{id} |
 | `delete ha-configurations` | global | `delete_ha_configurations` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations |
 | `delete management-interface` | global | `delete_management_interface` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/management-interface/{id} |
 | `delete motd-banner-settings` | global | `delete_motd_banner_settings` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/motd-banner-settings/{id} |
-| `delete ngfw device device settings device-context-segment-association` | global | `delete_device_context_segment_association` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/device-context-segment-association/{id} |
 | `delete service-route` | global | `delete_service_route` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/service-route/{id} |
 | `delete service-settings` | global | `delete_service_settings` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/service-settings/{id} |
 | `delete session-settings` | global | `delete_session_settings` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/session-settings/{id} |
@@ -888,6 +889,7 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 | `delete ngts certs revokes approval` | global | `delete_ngts_certs_revokes_approval` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/certificates/revocations/approvalrules/{id} |
 | `delete ngts credential-configs` | global | `delete_ngts_credential_configs` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/credentialmanagerconfigurations/{id} |
 | `delete ngts credentials` | global | `delete_ngts_credentials` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/credentials |
+| `delete ngts credentials id` | global | `delete_ngts_credentials` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/credentials/{id} |
 | `delete ngts dist-issuers configurations` | global | `delete_ngts_dist_issuers_configurations` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/configurations/{id} |
 | `delete ngts dist-issuers policies` | global | `delete_ngts_dist_issuers_policies` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/policies/{id} |
 | `delete ngts dist-issuers subcaproviders` | global | `delete_ngts_dist_issuers_subcaproviders` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/subcaproviders/{id} |
@@ -900,7 +902,6 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 | `delete ngts serviceaccounts` | global | `delete_ngts_serviceaccounts` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/serviceaccounts/{id} |
 | `delete ngts tags` | global | `delete_ngts_tags` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/tags/{name} |
 | `delete ngts tags values` | global | `delete_ngts_tags_values` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/tags/{name}/values/{value} |
-| `delete ngts tlsprotect credentials` | global | `delete_ngts_credentials` | DELETE https://api.strata.paloaltonetworks.com/ngts/v1/credentials/{id} |
 | `set ngts activitylogsearch` | global | `create_ngts_activitylogsearch` | POST https://api.strata.paloaltonetworks.com/ngts/v1/activitylogsearch |
 | `set ngts activitylogsearch export` | global | `create_ngts_activitylogsearch_export` | POST https://api.strata.paloaltonetworks.com/ngts/v1/activitylogsearch/export |
 | `set ngts autorenewal trigger` | global | `create_ngts_autorenewal_trigger` | POST https://api.strata.paloaltonetworks.com/ngts/v1/autorenewal/trigger |
@@ -924,6 +925,7 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 | `set ngts certs validation` | global | `create_ngts_certs_validation` | POST https://api.strata.paloaltonetworks.com/ngts/outagedetection/v1/certificates/validation |
 | `set ngts credential-configs` | global | `create_ngts_credential_configs` | POST https://api.strata.paloaltonetworks.com/ngts/v1/credentialmanagerconfigurations |
 | `set ngts credential-configs test` | global | `create_ngts_credential_configs_test` | POST https://api.strata.paloaltonetworks.com/ngts/v1/credentialmanagerconfigurations/test |
+| `set ngts credential-configs test id` | global | `create_ngts_credential_configs_test` | POST https://api.strata.paloaltonetworks.com/ngts/v1/credentialmanagerconfigurations/{id}/test |
 | `set ngts credentials` | global | `create_ngts_credentials` | POST https://api.strata.paloaltonetworks.com/ngts/v1/credentials |
 | `set ngts credentials test` | global | `create_ngts_credentials_test` | POST https://api.strata.paloaltonetworks.com/ngts/v1/credentials/test |
 | `set ngts dist-issuers configurations` | global | `create_ngts_dist_issuers_configurations` | POST https://api.strata.paloaltonetworks.com/ngts/v1/distributedissuers/configurations |
@@ -952,7 +954,6 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 | `set ngts tags values` | global | `create_ngts_tags_values` | POST https://api.strata.paloaltonetworks.com/ngts/v1/tags/{name}/values |
 | `set ngts tagsassignment aggregates` | global | `create_ngts_tagsassignment_aggregates` | POST https://api.strata.paloaltonetworks.com/ngts/v1/tagsassignment/aggregates |
 | `set ngts tlsprotect cert-requests approval` | global | `create_ngts_cert_requests_approval` | POST https://api.strata.paloaltonetworks.com/ngts/v1/certificaterequests/approvalrules |
-| `set ngts tlsprotect credential-configs test` | global | `create_ngts_credential_configs_test` | POST https://api.strata.paloaltonetworks.com/ngts/v1/credentialmanagerconfigurations/{id}/test |
 | `show ngts activitytypes` | global | `show_ngts_activitytypes` | GET https://api.strata.paloaltonetworks.com/ngts/v1/activitytypes |
 | `show ngts autorenewal status` | global | `show_ngts_autorenewal_status` | GET https://api.strata.paloaltonetworks.com/ngts/v1/autorenewal/status |
 | `show ngts autorenewal tenant-config` | global | `show_ngts_autorenewal_tenant_config` | GET https://api.strata.paloaltonetworks.com/ngts/v1/autorenewal/tenantconfiguration |

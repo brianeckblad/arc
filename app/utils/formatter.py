@@ -282,12 +282,10 @@ def format_interfaces(interfaces: list[dict]) -> Table:
     t.add_column("State / Comment", overflow="fold")
     for iface in interfaces:
         # IP: may be in nested layer3 block (SCM) or flat ip-address (SSH)
-        ip = (
-            iface.get("ip") or
-            iface.get("ip-address") or
-            iface.get("layer3", {}).get("ip", [{}])[0].get("addr", "") if iface.get("layer3") else "" or
-            ""
-        )
+        layer3 = iface.get("layer3") or {}
+        layer3_entries = layer3.get("ip") or [{}]
+        layer3_ip = layer3_entries[0].get("addr") or layer3_entries[0].get("name", "")
+        ip = iface.get("ip") or iface.get("ip-address") or layer3_ip
         state = iface.get("state", "") or iface.get("comment", "") or ""
         if state == "up":
             state = "[green]up[/green]"

@@ -215,8 +215,9 @@ class SSHManager:
         except OSError as exc:
             raise SSHError(f"Cannot reach {host}:{port}: {exc}") from exc
 
+        # Host keys are intentionally not verified: ARC targets firewalls whose
+        # keys rotate on redeploy, and operators connect by inventory hostname.
         transport = paramiko.Transport(sock)
-        transport.set_missing_host_key_policy = lambda *_: None  # not used on Transport
         try:
             transport.start_client(timeout=15)
         except paramiko.SSHException as exc:

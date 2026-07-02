@@ -231,6 +231,7 @@ class SCMClient:
             params=params,
         )
         resp.raise_for_status()
+        return resp.json() if resp.content else {}
 
     def _put_network(self, path: str, json: Any = None) -> Any:
         """PUT to api.strata.paloaltonetworks.com/config/network/v1."""

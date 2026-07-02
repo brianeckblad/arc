@@ -262,7 +262,15 @@ def _build_catalog() -> list[dict]:
                 command_tokens = [prefix] + tokens if prefix else tokens
                 command = f"{_ACTION_BY_METHOD[method]} {' '.join(command_tokens)}"
                 if command in seen_commands:
-                    command = f"{_ACTION_BY_METHOD[method]} {spec_key.replace('cloudngfw', 'cngfw').replace('-', ' ')} {' '.join(tokens)}"
+                    # Usually a path-param variant of an existing command
+                    # (e.g. DELETE /x?name= vs DELETE /x/{id}): follow the
+                    # same "… id" convention GET variants use, falling back
+                    # to a spec-key prefix only if that is taken too.
+                    id_variant = f"{command} id" if _path_params(path) else ""
+                    if id_variant and id_variant not in seen_commands:
+                        command = id_variant
+                    else:
+                        command = f"{_ACTION_BY_METHOD[method]} {spec_key.replace('cloudngfw', 'cngfw').replace('-', ' ')} {' '.join(tokens)}"
                 seen_commands.add(command)
                 resource_flag = "_".join(command_tokens)
                 feature_flag = f"{_FLAG_BY_METHOD[method]}_{resource_flag}".replace("-", "_")

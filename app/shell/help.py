@@ -63,27 +63,6 @@ class HelpMixin:
                 console.print(f"  {token_cell}")
         console.print()
 
-    def _cmd_help(self, args: list[str]) -> None:
-        """Print the command reference.
-
-        Bare `?` / `help` is always context-aware.
-        `help all` forces the full unfiltered reference.
-        """
-        if args and args[0].lower() != "all":
-            topic = " ".join(args)
-            if render_help_topic(console, topic):
-                return
-            console.print(
-                f"[yellow]No docs found for:[/yellow] [bold]{topic}[/bold]\n"
-                "Type [bold]help commands[/bold] to see documented command topics."
-            )
-            return
-
-        if args and args[0].lower() == "all":
-            self._cmd_help_full()
-        else:
-            self._cmd_help_inline([])
-
     def _cmd_help_inline(self, prefix_tokens: list[str]) -> None:
         """Cisco-style compact inline help — one line per command, no panels.
 

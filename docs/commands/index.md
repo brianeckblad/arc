@@ -27,6 +27,7 @@ Use `help <command>` to open detailed docs for a command.
 - `delete cngfw address-groups` — Delete an address group
 - `delete cngfw addresses` — Delete an address
 - `delete cngfw adv-device-objs` — Delete advanced device objects by names
+- `delete cngfw adv-device-objs id` — Delete an advanced device object
 - `delete cngfw anti-spyware-profiles` — Delete an anti-spyware profile
 - `delete cngfw anti-spyware-signatures` — Delete an anti-spyware signature
 - `delete cngfw app-override-rules` — Delete an application override rule
@@ -47,6 +48,7 @@ Use `help <command>` to open detailed docs for a command.
 - `delete cngfw decryption-profiles` — Delete a decryption profile
 - `delete cngfw decryption-rules` — Delete a decryption rule
 - `delete cngfw device-contexts` — Delete device context segments by name
+- `delete cngfw device-contexts id` — Delete a device context segment
 - `delete cngfw dns-security-profiles` — Delete a DNS security profile
 - `delete cngfw dos-protection-profiles` — Delete a DoS protection profile
 - `delete cngfw dos-protection-rules` — Delete a DoS protection rule
@@ -65,8 +67,6 @@ Use `help <command>` to open detailed docs for a command.
 - `delete cngfw local-users` — Delete a local user
 - `delete cngfw log-forwarding-profiles` — Delete a log forwarding profile
 - `delete cngfw mfa-servers` — Delete an MFA server
-- `delete cngfw objects adv-device-objs` — Delete an advanced device object
-- `delete cngfw objects device-contexts` — Delete a device context segment
 - `delete cngfw ocsp-responders` — Delete an OCSP responder
 - `delete cngfw onboarding-rules` — Delete an onboarding rule
 - `delete cngfw profile-groups` — Delete a profile group
@@ -102,6 +102,7 @@ Use `help <command>` to open detailed docs for a command.
 - `delete content-cloud-settings` — Delete Content Cloud settings
 - `delete content-id-settings` — Delete Content-ID settings
 - `delete device-context-segment-association` — Delete device context segment associations by name
+- `delete device-context-segment-association id` — Delete a device context segment association
 - `delete device-redistribution-collector` — Delete device redistribution collector settings
 - `delete dhcp-interfaces` — Delete a DHCP interface
 - `delete dns-proxies` — Delete a DNS proxy
@@ -128,12 +129,12 @@ Use `help <command>` to open detailed docs for a command.
 - `delete management-interface` — Delete management interface settings
 - `delete motd-banner-settings` — Delete login banner settings
 - `delete nat-rules` — Delete a NAT rule
-- `delete ngfw device device settings device-context-segment-association` — Delete a device context segment association
 - `delete ngts cert-requests approval` — Delete certificate request workflow approval rule
 - `delete ngts cert-templates` — Remove an issuing template
 - `delete ngts certs revokes approval` — Delete certificate revocation workflow approval ru
 - `delete ngts credential-configs` — Delete a Credential Manager Service configuration
 - `delete ngts credentials` — Delete shared credentials
+- `delete ngts credentials id` — Delete shared credential by ID
 - `delete ngts dist-issuers configurations` — Remove an Issuer configuration
 - `delete ngts dist-issuers policies` — Remove a Workload Issuance policy
 - `delete ngts dist-issuers subcaproviders` — Remove a Sub CA provider
@@ -146,7 +147,6 @@ Use `help <command>` to open detailed docs for a command.
 - `delete ngts serviceaccounts` — Deletes a Service Account
 - `delete ngts tags` — Delete tag by name
 - `delete ngts tags values` — Delete a tag value
-- `delete ngts tlsprotect credentials` — Delete shared credential by ID
 - `delete npb-profiles` — Delete a Network Packet Broker Profile
 - `delete npb-rules` — Delete a Network Packet Broker Rule
 - `delete ospf-auth-profiles` — Delete an OSPF authentication profile
@@ -381,6 +381,7 @@ Use `help <command>` to open detailed docs for a command.
 - `set ngts certs validation` — Request validation for a set of
 - `set ngts credential-configs` — Add a set of Credential Manager
 - `set ngts credential-configs test` — Test the connection to a privileged
+- `set ngts credential-configs test id` — Test the connection to an external
 - `set ngts credentials` — Add a set of new shared
 - `set ngts credentials test` — Test the access to shared credential
 - `set ngts dist-issuers configurations` — Create a new Issuer configuration
@@ -409,7 +410,6 @@ Use `help <command>` to open detailed docs for a command.
 - `set ngts tags values` — Create tag values
 - `set ngts tagsassignment aggregates` — Bulk operation to retrieve number of
 - `set ngts tlsprotect cert-requests approval` — Create an approval rule for certificate
-- `set ngts tlsprotect credential-configs test` — Test the connection to an external
 - `set npb-profiles` — Create a new Network Packet Broker Profile
 - `set npb-rules` — Create a new Network Packet Broker Rule
 - `set oauth2 access-token` — Create an access token
@@ -486,6 +486,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show adnsr conn-sources id` — Get a Connection Source
 - `show adnsr conn-sources subnets` — List Subnets
 - `show adnsr conn-sources subnets id` — Get a Connection Source Subnet
+- `show adnsr conn-sources subnets id id` — List Connection Source Subnets
 - `show adnsr custom-fqdns` — List Custom FQDNs
 - `show adnsr custom-fqdns id` — Get a custom fqdn
 - `show adnsr edls` — List EDL definitions
@@ -980,6 +981,7 @@ Use `help <command>` to open detailed docs for a command.
 - `update cngfw address-groups` — Update an address group
 - `update cngfw addresses` — Update an address
 - `update cngfw adv-device-objs` — Update an advanced device object by path
+- `update cngfw adv-device-objs id` — Update an advanced device object
 - `update cngfw anti-spyware-profiles` — Update an anti-spyware profile
 - `update cngfw anti-spyware-signatures` — Update an anti-spyware signature
 - `update cngfw app-override-rules` — Update an application override rule
@@ -1017,7 +1019,6 @@ Use `help <command>` to open detailed docs for a command.
 - `update cngfw local-users` — Update a local user
 - `update cngfw log-forwarding-profiles` — Update a log forwarding profile
 - `update cngfw mfa-servers` — Update an MFA server
-- `update cngfw objects adv-device-objs` — Update an advanced device object
 - `update cngfw ocsp-responders` — Update an OCSP responder
 - `update cngfw onboarding-rules` — Update an onboarding rule
 - `update cngfw profile-groups` — Update a profile group

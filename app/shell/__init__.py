@@ -40,9 +40,6 @@ class ArcShell(
         # Prefix to restore in the next prompt after a '?' context-help lookup.
         # e.g. "show ?" prints help then re-seeds the prompt with "show ".
         self._pending_default: str = ""
-        # The command prefix a single '?' last gave brief help for.  Pressing '?'
-        # again on the same prefix escalates to full help (the typed-`??` gesture).
-        self._last_q_prefix: str | None = None
 
         # Feature flags — loaded once at startup; apply to all command dispatch.
         # Each flag is "on" / "dev" / "off".  Edit settings/features.json or set

@@ -87,36 +87,15 @@ from app.utils import formatter as fmt
 console = Console()
 
 
-def paginate_if_needed(content_fn: callable, force_pager: bool = False, styles: bool = False) -> None:
-    """Automatically paginate output if it exceeds terminal height.
-    
-    Args:
-        content_fn: A callable that prints content using console.print()
-        force_pager: If True, always use pager regardless of content length
-        styles: Whether to preserve Rich styles in the pager
-        
-    Usage:
-        paginate_if_needed(lambda: console.print(long_text))
-    """
-    if force_pager:
-        with console.pager(styles=styles):
-            content_fn()
-    else:
-        # For auto-pagination, we'd need to capture output and count lines
-        # For now, use pager for known-long outputs (help all, docs)
-        # Short outputs (inline ?) go direct
-        content_fn()
-
-
 HISTORY_FILE = os.path.join(platformdirs.user_data_dir("arc"), "history")
 GOODBYE_FILE = _GOODBYE_FILE  # settings/goodbye.txt (imported below)
 
 # Width of the command column in all inline help output.
 # All sections (GLOBAL / FOLDER / DEVICE / SHELL) use the same value so
 # descriptions land on the same visual column regardless of indent level.
-# 4-space-indented tiers: 4 + _HELP_CMD_WIDTH = visual col 47
-# 2-space-indented (scoped / full ref): uses +2 → also visual col 47
-_HELP_CMD_WIDTH = 43
+# 4-space-indented tiers: 4 + _HELP_CMD_WIDTH = visual col 48
+# 2-space-indented (scoped / full ref): uses +2 → also visual col 48
+_HELP_CMD_WIDTH = 44
 
 # Shell built-ins accepted by the dispatcher/completer.
 # Metadata lives in app/shell_catalog.py so agents can edit a tiny file first.
