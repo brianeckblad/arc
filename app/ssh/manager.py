@@ -206,9 +206,12 @@ class SSHManager:
                 while _time.monotonic() < deadline:
                     if channel.recv_ready():
                         chunks.append(channel.recv(65536).decode(errors="replace"))
-                        tail = "".join(chunks[-3:]).rstrip()
-                        # PAN-OS prompts end in '>' (op) or '#' (configure).
-                        if tail.endswith((">", "#")):
+                        # PAN-OS prompts end in '>' (op) or '#' (configure) as
+                        # the LAST line — checking only that line avoids false
+                        # triggers on banner text containing those characters.
+                        text = "".join(chunks).rstrip()
+                        last_line = text.splitlines()[-1].strip() if text else ""
+                        if last_line.endswith((">", "#")):
                             break
                     else:
                         _time.sleep(0.1)

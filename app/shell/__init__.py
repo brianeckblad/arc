@@ -45,7 +45,7 @@ class ArcShell(
         self._pending_confirm: dict | None = None
 
         # Feature flags — loaded once at startup; apply to all command dispatch.
-        # Each flag is "on" / "dev" / "off".  Edit settings/features.json or set
+        # Each flag is "on" / "dev" / "off".  Edit settings/features/ or set
         # ARC_FEATURE_<NAME>=on|dev|off env vars.
         self._features: dict[str, str] = load_features()
         

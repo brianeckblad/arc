@@ -40,6 +40,7 @@ from typing import Any, Optional
 
 import httpx
 
+from app.api._auth import oauth_token
 from app.config import SCMConfig
 
 
@@ -117,21 +118,14 @@ class SCMClient:
                 "SCM is not configured. Set SCM_BEARER_TOKEN, or set "
                 "SCM_CLIENT_ID / SCM_CLIENT_SECRET / SCM_TSG_ID."
             )
-        resp = self._http.post(
-            self.AUTH_URL,
-            data={
-                "grant_type": "client_credentials",
-                "scope": f"tsg_id:{self._cfg.tsg_id}",
-            },
-            auth=(self._cfg.client_id, self._cfg.client_secret),
-        )
         try:
-            resp.raise_for_status()
+            self._token = oauth_token(
+                self._http, self._cfg.client_id, self._cfg.client_secret, self._cfg.tsg_id
+            )
         except httpx.HTTPStatusError as exc:
             raise SCMError(f"SCM authentication failed: {exc}") from exc
-        self._token = resp.json().get("access_token", "")
-        if not self._token:
-            raise SCMError("SCM auth returned no access_token.")
+        except ValueError as exc:
+            raise SCMError(f"SCM auth: {exc}.") from exc
 
     def _headers(self) -> dict[str, str]:
         return {"Authorization": f"Bearer {self._token}"}

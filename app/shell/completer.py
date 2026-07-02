@@ -253,7 +253,7 @@ class ArcCompleter(Completer):
                     if flag.startswith(partial_filter.lower()):
                         yield Completion(flag, start_position=-len(partial_filter), display_meta="feature")
             elif second in ("enable", "disable", "dev") and len(parts) <= 3:
-                # Complete feature flag names from settings/features.json
+                # Complete feature flag names from the settings/features/ glossary
                 flag_dict = self._shell._features
                 partial_flag = parts[2] if len(parts) > 2 else ""
                 for flag, enabled in sorted(flag_dict.items()):

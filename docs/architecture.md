@@ -3,7 +3,7 @@
 ## Layers
 
 - `app/cli.py` — Typer entry point and auth/config helper commands.
-- `app/shell.py` — prompt-toolkit REPL, command dispatch, tab completion, docs-backed help.
+- `app/shell/ (mixin package)` — prompt-toolkit REPL, command dispatch, tab completion, docs-backed help.
 - `app/commands/registry.py` — PAN-OS-like command registry and API/SSH mappings.
 - `app/api/client.py` — SCM REST client.
 - `app/ssh/manager.py` — Paramiko SSH connection pool.
@@ -31,7 +31,7 @@ metadata is created for `GET`, `POST`, `PUT`/`PATCH`, and `DELETE` operations.
 - Generated commands cover the long tail from `app/commands/resource_catalog.py`.
   `GET` maps to `show`, `POST` maps to `set`, `PUT`/`PATCH` maps to `update`, and
   `DELETE` maps to `delete`.
-- Generated commands are feature-gated through `settings/features/ (per-domain files)` and new
+- Generated commands are feature-gated through `settings/features/` and new
   flags default to `false`, so API surface stays hidden until intentionally
   enabled.
 - When the API specs are refreshed (`docsupdate`), new endpoints become generated

@@ -20,7 +20,7 @@ class ExecutionMixin:
                 console.print(
                     f"[yellow]Feature not enabled:[/yellow] [bold]{key}[/bold]\n"
                     f"  Flag [bold]{flag}[/bold] is currently off.\n"
-                    f"  To enable: set [bold]\"{flag}\": true[/bold] in [bold]settings/features.json[/bold]\n"
+                    f"  To enable: set [bold]\"{flag}\": true[/bold] in its [bold]settings/features/[/bold] file\n"
                     f"  or set env var [bold]ARC_FEATURE_{flag.upper()}=on[/bold]"
                 )
             return
@@ -231,13 +231,13 @@ class ExecutionMixin:
         dispatch = {
             "system_info":     lambda d: fmt.format_system_info(d),
             "raw":             lambda d: fmt.format_raw(str(d), title=key),
+            "list":            lambda d: fmt._list_table(d if isinstance(d, list) else [], title=key),
             "devices":         lambda d: fmt.format_devices(d),
             "device_detail":   lambda d: fmt.format_device_detail(
                                    d.get("device", d) if isinstance(d, dict) else d),
             "device_snippets": lambda d: fmt.format_snippets(
                                    d.get("snippets", []) if isinstance(d, dict) else d,
                                    device_filter=d.get("device_name", "") if isinstance(d, dict) else ""),
-            "snippets":        lambda d: fmt.format_snippets(d if isinstance(d, list) else []),
             "snippets_scoped": lambda d: fmt.format_snippets_scoped(d if isinstance(d, dict) else {}),
             "snippet_detail":  lambda d: fmt.format_snippet_detail(d if isinstance(d, dict) else {}) or [],
             "snippet_detail_full": lambda d: fmt.format_snippet_detail_full(d if isinstance(d, dict) else {}) or [],

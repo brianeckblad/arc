@@ -8,7 +8,7 @@ modules are just the readers.
 | Module | Reads | Purpose |
 |--------|-------|---------|
 | ``theme`` | ``settings/theme.json`` | CLI colour roles (``ArcTheme``) |
-| ``features`` | ``settings/features.json`` | command on/off flags |
+| ``features`` | ``settings/features/*.json`` | command on/off flags |
 | ``cli_structure`` | ``settings/cli-structure.yaml`` | verb labels, help text, banners |
 | ``command_help`` | ``docs/commands/*.md`` front-matter | per-command description + usage |
 

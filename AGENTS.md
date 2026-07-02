@@ -26,7 +26,7 @@ the smallest file that owns each concern.
 | `commanddef` (field reference) | `docs/COMMANDDEF_REFERENCE.md` | — | — |
 | `shell` (REPL, dispatch, help UX) | `dev/CODE_MAP.md` → one range in `app/shell/<file>.py` | that one mixin file | `--file app/shell/<file>.py` |
 | `catalog` (builtin names, SHELL help rows) | `app/shell_catalog.py` | same | `--file app/shell_catalog.py` |
-| `feature` / `flag <name>` (turn commands on/dev/off) | `settings/features/` (per-domain glossary: scm-<spec>.json, panos-ops/config.json, curated.json) | the one owning file (+ one `CommandDef.feature_flag`) | `--only 1,2,3` |
+| `feature` / `flag <name>` (turn commands on/dev/off) | `settings/features/` (per-domain glossary: scm-<spec>.json, panos-ops/config.json; curated flags live beside their spec siblings) | the one owning file (+ one `CommandDef.feature_flag`) | `--only 1,2,3` |
 | `theme` (colours) | `settings/theme.json`, `app/settings/theme.py` | same | `--only 10` |
 | `terminal` / prefs (pager, width, spinner) | `app/settings/user_prefs.py`, `_cmd_terminal` in `app/shell/configure.py` | same | `--only 4` |
 | `settings` (banner, goodbye, labels — no code) | `settings/` | `settings/banner.txt` etc. | `--only 7,8,9,10` |
@@ -36,6 +36,10 @@ the smallest file that owns each concern.
 | `docsupdate` / docs agent | `dev/DOCS_AGENT.md` | run `python dev/docsupdate.py` | `--self-test` |
 | `panos` (PAN-OS CLI tree: op cmds, break-glass config, live data) | `settings/panos-sources.json` (URLs), `dev/panos_curation.json` (overrides/recovery/scm_map), `app/commands/panos_generated.py` | curation file, or `python dev/panosupdate.py && python dev/generate_panos_catalog.py` | full suite |
 | `watch` (re-run command loop) | `_cmd_watch` in `app/shell/dispatch.py` | same | `--only 1,2` |
+| `logs` (SLS fleet queries: show log traffic/threat/system/detail) | `app/api/sls.py` (client + SQL builder), log handlers in `app/commands/operations.py` | same | `python dev/test_sls.py` + `--only 1,2,3` |
+| `config-view` (show config running/versions/format set, rollback) | `app/commands/config_view.py` (declarative `_FORMAT_SET_SPECS` table) | same | `--only 1,2,3` |
+| `pipes` (match/except/count/json/save filters) | `parse_output_filters` + `_dispatch_piped` in `app/shell/dispatch.py` | same | `--only 4` |
+| `alias` / `history` | `_cmd_alias`/`_cmd_history` in `app/shell/dispatch.py`, prefs in `app/settings/user_prefs.py` | same | `--only 4` |
 | `scaffold <cmd> <module>` | — | run `python dev/scaffold.py "<cmd>" <module>` | `--only 1,2,3` |
 | `map` / `method <name>` (find code) | `dev/CODE_MAP.md` | — | — |
 | `debug` | error table at the bottom of this file | files the error names | targeted smoke |
@@ -58,7 +62,7 @@ arc/
 ├── AGENTS.md                      ← this hub
 ├── settings/                      ← USER-EDITABLE, no code: features/ (per-domain
 │                                    flag glossary: scm-<spec>.json, panos-ops.json,
-│                                    panos-config.json, curated.json), banner.txt,
+│                                    panos-config.json), banner.txt,
 │                                    goodbye.txt, theme.json, cli-structure.yaml,
 │                                    command-structure.json, commands.json,
 │                                    panos-sources.json (PAN-OS docs URL registry)
@@ -115,7 +119,7 @@ layer owns what before editing anything:
 |---|---|---|
 | 1. `CommandDef` in `app/commands/*.py` | everything: handler, description, usage, scope, render, feature_flag | always — the base truth |
 | 2. `docs/commands/<slug>.md` front-matter | description + usage overrides | only when that file exists (hand-written pages) |
-| 3. `settings/features/ (per-domain files)` | on / `"dev"` / off per feature flag | gates visibility + execution |
+| 3. `settings/features/` | on / `"dev"` / off per feature flag | gates visibility + execution |
 | 4. `settings/commands.json` | per-command visibility bool | rarely used; hides individual commands |
 | 5. `settings/command-structure.json` + `app/settings/command_structure.py` | field order + greedy parsing for curated `set <object>` | curated write commands only |
 
@@ -128,7 +132,7 @@ context gates (device scope, configure mode) on top for `?` rendering.
 **Generated commands** (~1,050): every pulled OpenAPI operation becomes a
 feature-gated command via `resource_catalog.py` + `generated.py`
 (GET→show, POST→set, PUT/PATCH→update, DELETE→delete). All default **off** in
-`settings/features/ (per-domain files)` — fail-closed until an operator enables them. Explicit
+`settings/features/` — fail-closed until an operator enables them. Explicit
 commands with the same key shadow generated ones (merged last in registry.py).
 Generated commands have **no doc file** — `help <cmd>` synthesizes a page from
 the CommandDef (`app/docs.py synthesize_command_help`). Never create doc stubs.
@@ -171,7 +175,7 @@ commands are NOT wired through the catalog — they opt in via the hand-written
     api_handler=show_handler('get_bgp_peers'),
     ssh_command='show routing protocol bgp peer',   # str or named Callable(args)->str
     render='list',                           # key into _render(); see docs/RENDER_CATALOG.md
-    feature_flag='bgp_peers',                # optional gate; add to settings/features/ (per-domain files)
+    feature_flag='bgp_peers',                # optional gate; add to settings/features/
 ),
 # anything with real logic (filtering, payloads, multiple calls) gets a named
 # module-level handler: def _show_x(ctx: ExecutionContext, args: dict) -> Any
@@ -182,7 +186,7 @@ commands are NOT wired through the catalog — they opt in via the hand-written
    getter to `SCMClient` using `self._request(...)` / `_get_<domain>(...)`.
 2. Add the `CommandDef` with **explicit `scope=`**. Registry, tab completion,
    and help pick it up automatically — no dispatcher changes.
-3. Feature-flag it: `"your_flag": "dev"` in `settings/features/ (per-domain files)` while
+3. Feature-flag it: `"your_flag": "dev"` in `settings/features/` while
    building; flip to `true` to ship. (`dev` command / `ARC_DEV_MODE=1` reveals
    dev-flagged commands; `feature enable|disable|dev <flag>` toggles one session.)
 4. Doc file only if you have something to say beyond description/usage —
@@ -357,7 +361,7 @@ Version is `0.1.<commit-count>` from `app/__init__.py` — never hand-edit
 | `require_scm` / `require_device` raises | `app/commands/base.py` + `scope=` | missing SCM config / no `cd <device>` |
 | builtin not dispatched | `app/shell_catalog.py` + `app/shell/dispatch.py` | name not in catalog or no elif branch |
 | tab completion wrong/empty | `app/shell/completer.py` | missing case / empty cache |
-| feature hidden unexpectedly | `settings/features/ (per-domain files)` | flag missing (absent = off) or `"dev"` outside dev mode |
+| feature hidden unexpectedly | `settings/features/` | flag missing (absent = off) or `"dev"` outside dev mode |
 | theme colour ignored | `settings/theme.json` + THEME_KEYS | key not in ArcTheme |
 | profile/keychain error | `app/config.py` | profile name mismatch; keychain read failed |
 

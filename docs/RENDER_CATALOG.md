@@ -1,10 +1,12 @@
 # Render Type Catalog — Quick Reference
 
-**Use this instead of reading `formatter.py` or `app/shell.py._render()` to see what `render=` values are available.**
+**Use this instead of reading `formatter.py` or `_render()` in `app/shell/execution.py` to see what `render=` values are available.**
 
 | render= key | Formatter function | Data type | Output | Common pattern |
 |---|---|---|---|---|
 | `"list"` | `_list_table()` | `list[dict]` | Table with auto-columns | `show X` list commands |
+| `"system_info"` | `format_system_info()` | `dict` | Key/value system panel | `show system info` |
+| `"logs"` | `format_logs()` | `(log_type, list[dict])` tuple | Log table titled by type | `show log traffic/threat/system` |
 | `"dict"` | `format_dict()` | `dict` | Pretty-printed dict | Singular object detail |
 | `"raw"` | `format_raw()` | `Any` | Direct JSON/console | Unstructured data |
 | `"devices"` | `format_devices()` | `list[dict]` | Device table w/ connected indicator | `show devices` |

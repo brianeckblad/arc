@@ -46,6 +46,7 @@ from typing import Any, Optional
 
 import httpx
 
+from app.api._auth import oauth_token
 from app.config import SCMConfig
 
 
@@ -192,25 +193,18 @@ class SLSClient:
     # -- auth ----------------------------------------------------------------
 
     def _authenticate(self) -> None:
-        """OAuth client-credentials flow — mirrors SCMClient._authenticate."""
-        resp = self._http.post(
-            self.AUTH_URL,
-            data={
-                "grant_type": "client_credentials",
-                "scope": f"tsg_id:{self._cfg.tsg_id}",
-            },
-            auth=(self._cfg.client_id, self._cfg.client_secret),
-        )
+        """OAuth client-credentials flow — shared with SCMClient (app/api/_auth.py)."""
         try:
-            resp.raise_for_status()
+            self._token = oauth_token(
+                self._http, self._cfg.client_id, self._cfg.client_secret, self._cfg.tsg_id
+            )
         except httpx.HTTPStatusError as exc:
             raise SLSError(
                 f"SLS authentication failed: {exc}. Verify SCM_CLIENT_ID / "
                 "SCM_CLIENT_SECRET / SCM_TSG_ID (same credentials SCM uses)."
             ) from exc
-        self._token = resp.json().get("access_token", "")
-        if not self._token:
-            raise SLSError("SLS auth returned no access_token.")
+        except ValueError as exc:
+            raise SLSError(f"SLS auth: {exc}.") from exc
 
     def _headers(self) -> dict[str, str]:
         return {"Authorization": f"Bearer {self._token}"}

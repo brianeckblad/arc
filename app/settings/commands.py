@@ -1,7 +1,7 @@
 """Command visibility loader — reads settings/commands.json for per-command enable/disable.
 
-This is INDEPENDENT of feature flags (settings/features.json).
-- features.json: enables/disables entire functional areas (e.g. "nat_rules")
+This is INDEPENDENT of feature flags (settings/features/).
+- settings/features/: enables/disables entire functional areas (e.g. "nat_rules")
 - commands.json: hides/shows specific individual commands regardless of features
 
 Use case: Deprecate a command without removing code, or hide experimental commands.

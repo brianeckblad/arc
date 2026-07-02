@@ -146,7 +146,7 @@ The full PAN-OS op-command tree (show / clear / request / test …) is built in
 (enable families with `feature enable panos_<family>`). Three execution paths:
 
 ```text
-show advanced-routing route        # SCM serves it over the device tunnel —
+show dns-proxy statistics all      # SCM serves it over the device tunnel —
                                    # no SSH, no 2FA, just your token (cd <device> first)
 show routing protocol bgp peer     # SCM can't serve it → arc prints the exact
                                    # --remote / connect syntax to run instead

@@ -96,7 +96,7 @@ class WriteMixin:
                     f"[yellow]Feature not enabled:[/yellow] [bold]{candidate_key}[/bold]\n"
                     f"  Flag [bold]{flag}[/bold] is currently off.\n"
                     f"  To enable this session: [bold]feature enable {flag}[/bold]\n"
-                    f"  To persist: add [bold]{{\"{flag}\": true}}[/bold] to [bold]settings/features.json[/bold]\n"
+                    f"  To persist: add [bold]{{\"{flag}\": true}}[/bold] to its [bold]settings/features/[/bold] file\n"
                     f"  Or use env var: [bold]ARC_FEATURE_{flag.upper()}=1 arc[/bold]"
                 )
             else:

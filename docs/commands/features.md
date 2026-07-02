@@ -1,7 +1,7 @@
 # feature — Feature Flags
 
 ARC commands are turned on/off by **feature flags** stored in
-**`settings/features/ (per-domain files)`**.  The file is generated from the pulled OpenAPI
+**`settings/features/`**.  The file is generated from the pulled OpenAPI
 specs plus explicit ARC commands, then edited by operators to enable the pieces
 they want.  New generated flags default to `false` so API surface fails closed
 until intentionally enabled.
@@ -21,9 +21,9 @@ feature show <name>          List flags/commands matching a name fragment
 show feature on              Alias for feature show on
 show feature off             Alias for feature show off
 show feature <name>          Alias for feature show <name>
-feature enable <flag>        Set one ON and save to settings/features/ (per-domain files)
-feature disable <flag>       Set one OFF and save to settings/features/ (per-domain files)
-feature dev <flag>           Mark one DEV and save to settings/features/ (per-domain files)
+feature enable <flag>        Set one ON and save to settings/features/
+feature disable <flag>       Set one OFF and save to settings/features/
+feature dev <flag>           Mark one DEV and save to settings/features/
 feature ?                    Show the sub-command summary
 feature enable ?             List flags not yet ON
 feature disable ?            List flags not yet OFF
@@ -42,7 +42,7 @@ dev                          Toggle development mode (reveal DEV commands)
 | **absent** | Treated as `false` (safe default — unlisted features are off) |
 
 `feature enable/disable/dev` update the running session and save immediately to
-`settings/features/ (per-domain files)`. Restart ARC in another terminal/session to pick up the
+`settings/features/`. Restart ARC in another terminal/session to pick up the
 same persisted state there.
 
 ## Development mode — the hidden `dev` command
@@ -61,9 +61,9 @@ This enables a CI/CD lifecycle: ship a command as `"dev"`, test it in
 development mode, then flip its flag to `true` when it is ready. For automation
 or CI, start ARC with `ARC_DEV_MODE=1` to enter development mode immediately.
 
-## Editing settings/features/ (per-domain files)
+## Editing settings/features/
 
-`settings/features/ (per-domain files)` is organized for browsing:
+`settings/features/` is organized for browsing:
 
 1. A `_GLOSSARY` explains abbreviations such as ADNSR, CDUG, CIE-DSS, cngfw,
    IAM, NGTS, and SASE.
@@ -108,7 +108,7 @@ ARC_DEV_MODE=1 arc              # start in development mode (reveal dev commands
 ## Regenerating from pan.dev
 
 `python dev/docsupdate.py` refreshes the local OpenAPI specs, discovers new SCM
-spec files, regenerates the command catalog, and rewrites `settings/features/ (per-domain files)`
+spec files, regenerates the command catalog, and rewrites `settings/features/`
 in the feature-first format above. Existing flag states are preserved when the
 same flag still exists; newly discovered flags default to `false`.
 
@@ -121,7 +121,7 @@ Run `feature show` to see the currently loaded states grouped by ON / DEV / OFF.
 2. For hand-written commands, set `feature_flag='your_flag'` on the `CommandDef`.
 3. Run `python dev/generate_feature_flags.py`; the new flag appears defaulted to
    `false`.
-4. Edit `settings/features/ (per-domain files)` to set the flag to `"dev"` or `true` when ready.
+4. Edit `settings/features/` to set the flag to `"dev"` or `true` when ready.
 
 ## Related
 

@@ -263,9 +263,10 @@ def _show_log_sls(log_type: str):
                   f"  To widen the window: show log {log_type} last 24h"
             )
         mapped = [_map_sls_row(log_type, row) for row in rows]
-        # (log_type, rows) tuple → fmt.format_logs(rows, log_type=…).
+        # (log_type, rows) tuple → fmt.format_logs(rows, log_type=…) titles the
+        # table; the short type string IS the contract (not a descriptive title).
         # Full records: `show log detail <n>`; text filtering: `| match <text>`.
-        return (f"{log_type} — SLS fleet-wide, {len(rows)} row(s)", mapped)
+        return (log_type, mapped)
 
     handler.__name__ = f"_show_log_{log_type}_sls"
     handler.__doc__ = (

@@ -1,30 +1,48 @@
-# ARC Help
+# ARC Help — the `docs/` folder
 
 ARC — Assisted Remote Console — is a PAN-OS-style shell for Palo Alto Networks
 SCM environments with interactive SSH access to managed PAN-OS devices.
+This folder is the **user manual**: ARC reads this Markdown at runtime and
+renders it in the CLI (`help <topic>`), and `arc cliup` bundles it into an
+offline browser site (`docs/index.html`, opened by the `docs` builtin).
 
 ## How help works inside ARC
 
-- `?` prints the short command reference immediately.
-- `help <topic>` reads Markdown from this `docs/` folder and renders it inside the ARC CLI.
-- `help commands` lists documented command topics.
-- `help show system info` opens the command detail page for `show system info`.
-- `help remote` explains the interactive SSH session model.
+- `?` — short, context-aware command reference (only what you can run now).
+- `help <topic>` — renders a Markdown file from this folder (e.g. `help usage`).
+- `help <command>` — the command's page from `docs/commands/`, or a page
+  synthesized from the registry when no file exists.
+- `help config osx|win|nix` — OS-specific credential setup.
 
-## Configuration help
+## What lives here
 
-- `help config` — general configuration overview
-- `help config osx` — macOS-specific setup (Keychain, Touch ID)
-- `help config win` — Windows setup (Credential Manager)
-- `help config nix` — Linux setup (Secret Service, headless/CI)
+| Path | One line |
+|---|---|
+| `usage.md` / `setup.md` / `configuration.md` / `config-*.md` / `architecture.md` / `dev-versioning.md` | Hand-written user/operator topics for `help <topic>` |
+| `commands/` | Hand-written command pages with YAML front-matter (+ generated `index.md`, `api-reference.md`) |
+| `scm-api/` | Mirrored pan.dev OpenAPI specs + guides (pulled by `dev/docsupdate.py`; includes `CHANGES.md`, `MANIFEST.md`) |
+| `panos-cli/` | Diffable PAN-OS CLI command mirrors (pulled by `dev/panosupdate.py`) |
+| `COMMAND_PATTERNS.md` / `RENDER_CATALOG.md` / `COMMANDDEF_REFERENCE.md` | Agent spoke files — minimal patterns, `render=` keys, CommandDef fields |
+| `agent-patterns/` | Python/JS standards + security checklist for contributors |
+| `index.html` / `docs-bundle.js` / `vendor/` / `static/` | The offline browser docs site, rebuilt by `arc cliup` |
 
-## Core workflows
+## How to change things here
 
-1. Set the SCM folder with `folder <name>`.
-2. List managed devices with `show devices`.
-3. Change API context with `cd <device>`.
-4. Run supported commands through SCM APIs by default.
-5. Use `connect` or `remote <device>` to open an interactive SSH session on a device.
+- Reword a command's `?` description or usage: edit the front-matter of
+  `docs/commands/<slug>.md` — the single source of truth when the file exists.
+  Validate: `python dev/smoke_test.py --only 10`.
+- New/changed topic pages: just edit the Markdown; `help <topic>` picks it up
+  on next launch. Rebuild the browser bundle with `arc cliup` if you use `docs`.
+- Refresh the mirrored API/PAN-OS references: `python dev/docsupdate.py`
+  (never edit `scm-api/` or `panos-cli/` by hand — they are overwritten).
+- Rebuild `commands/index.md` + `api-reference.md`:
+  `python dev/generate_command_docs.py`.
 
-See also: `help usage`, `help architecture`, and `help configuration`.
+## Do not
 
+- Do not create doc stubs for generated commands — commands without a file get
+  help synthesized from the registry at runtime (`app/docs.py`).
+- Do not hand-edit `scm-api/**`, `panos-cli/**`, `commands/index.md`,
+  `commands/api-reference.md`, or `docs-bundle.js` — all generated.
+- Do not put developer/agent instructions here — that's `AGENTS.md` (the hub);
+  this folder is user-facing content only.

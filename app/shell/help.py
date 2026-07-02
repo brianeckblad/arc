@@ -286,7 +286,7 @@ class HelpMixin:
         """Single source of truth: does this command exist for this operator?
 
         Context-independent gates only — settings/commands.json visibility
-        and the feature flag (settings/features.json, honoring dev mode).
+        and the feature flag (settings/features/, honoring dev mode).
         Dispatch, tab completion, and help must all use this same check so a
         command can never tab-complete yet be missing from `?` (or vice versa).
         """

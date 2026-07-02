@@ -2,7 +2,7 @@
 
 ``dev/generate_resource_catalog.py`` reads every pulled OpenAPI spec and writes
 ``app/commands/resource_catalog.py``.  This module turns those entries into
-feature-gated ``CommandDef`` objects.  Defaults live in ``settings/features.json``
+feature-gated ``CommandDef`` objects.  Defaults live in ``settings/features/``
 and are intentionally OFF until an operator enables the feature.
 
 GET endpoints are directly usable as ``show`` commands.  Generic write endpoints

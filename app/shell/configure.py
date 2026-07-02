@@ -641,7 +641,7 @@ class ConfigureMixin:
             if sub == "enable":
                 candidates = [f for f in _all_flags() if feature_state(self._features, f) != "on"]
                 console.print(f"  [bold yellow]feature enable <flag>[/bold yellow]  [dim]— flags not yet ON[/dim]")
-                console.print(f"  [dim]  Saves immediately to settings/features.json[/dim]")
+                console.print(f"  [dim]  Saves immediately to the flag's settings/features/ file[/dim]")
             elif sub == "dev":
                 candidates = [f for f in _all_flags() if feature_state(self._features, f) != "dev"]
                 console.print(f"  [bold yellow]feature dev <flag>[/bold yellow]  [dim]— flags not yet DEV[/dim]")
@@ -719,7 +719,7 @@ class ConfigureMixin:
             console.print(
                 f"  [bold yellow]Feature Flags[/bold yellow]  "
                 f"[dim]— development mode:[/dim] {mode}  "
-                f"[dim](changes save to settings/features.json)[/dim]"
+                f"[dim](changes save to the flag's settings/features/ file)[/dim]"
             )
 
             if filter_token in ("on", "enabled", "true"):
@@ -779,7 +779,7 @@ class ConfigureMixin:
                 note = "  [dim](type 'dev' to reveal dev commands)[/dim]"
             console.print(
                 f"  {flag_name}  →  [{colour}]{new_state}[/{colour}]{note}  "
-                f"[dim](saved to settings/features.json)[/dim]"
+                f"[dim](saved to its settings/features/ file)[/dim]"
             )
             return
 
@@ -794,7 +794,7 @@ class ConfigureMixin:
         Development mode reveals every command whose feature flag is "dev" —
         work-in-progress commands that normal users never see.  This supports a
         CI/CD lifecycle: ship a command as "dev", test it in development mode,
-        then flip its flag to true in settings/features.json when it is ready.
+        then flip its flag to true in its settings/features/ file when it is ready.
 
           dev            toggle development mode on/off
           dev on         force development mode on
