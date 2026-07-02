@@ -131,170 +131,97 @@ class SCMClient:
     # Generic request helpers
     # ------------------------------------------------------------------
 
-    def get(self, path: str, params: Optional[dict] = None) -> Any:
-        """GET against the IAM/sase gateway (api.sase.paloaltonetworks.com)."""
-        resp = self._http.get(
-            f"{self.BASE_URL}{path}",
+    def _request(
+        self,
+        method: str,
+        base_url: str,
+        path: str,
+        *,
+        params: Optional[dict] = None,
+        json: Any = None,
+    ) -> Any:
+        """Single HTTP core behind every per-domain wrapper.
+
+        Sends *method* to ``base_url + path`` with the bearer token, raises
+        httpx.HTTPStatusError on 4xx/5xx, and returns the parsed JSON body
+        (or {} when the response has no content, e.g. 204 on DELETE).
+        """
+        resp = self._http.request(
+            method,
+            f"{base_url}{path}",
             headers=self._headers(),
             params=params,
+            json=json,
         )
         resp.raise_for_status()
-        return resp.json()
+        return resp.json() if resp.content else {}
+
+    def get(self, path: str, params: Optional[dict] = None) -> Any:
+        """GET against the IAM/sase gateway (api.sase.paloaltonetworks.com)."""
+        return self._request("GET", self.BASE_URL, path, params=params)
 
     def post(self, path: str, json: Optional[dict] = None) -> Any:
         """POST against the IAM/sase gateway."""
-        resp = self._http.post(
-            f"{self.BASE_URL}{path}",
-            headers=self._headers(),
-            json=json,
-        )
-        resp.raise_for_status()
-        return resp.json()
+        return self._request("POST", self.BASE_URL, path, json=json)
 
     def _get_objects(self, path: str, params: Optional[dict] = None) -> Any:
         """GET from api.strata.paloaltonetworks.com/config/objects/v1."""
-        resp = self._http.get(
-            f"{self.OBJECTS_URL}{path}",
-            headers=self._headers(),
-            params=params,
-        )
-        resp.raise_for_status()
-        return resp.json()
+        return self._request("GET", self.OBJECTS_URL, path, params=params)
 
     def _post_objects(self, path: str, json: Any = None) -> Any:
         """POST to api.strata.paloaltonetworks.com/config/objects/v1."""
-        resp = self._http.post(
-            f"{self.OBJECTS_URL}{path}",
-            headers=self._headers(),
-            json=json,
-        )
-        resp.raise_for_status()
-        return resp.json()
+        return self._request("POST", self.OBJECTS_URL, path, json=json)
 
     def _put_objects(self, path: str, json: Any = None) -> Any:
         """PUT to api.strata.paloaltonetworks.com/config/objects/v1."""
-        resp = self._http.put(
-            f"{self.OBJECTS_URL}{path}",
-            headers=self._headers(),
-            json=json,
-        )
-        resp.raise_for_status()
-        return resp.json()
+        return self._request("PUT", self.OBJECTS_URL, path, json=json)
 
     def _delete_objects(self, path: str, params: Optional[dict] = None) -> Any:
         """DELETE from api.strata.paloaltonetworks.com/config/objects/v1."""
-        resp = self._http.delete(
-            f"{self.OBJECTS_URL}{path}",
-            headers=self._headers(),
-            params=params,
-        )
-        resp.raise_for_status()
-        return resp.json() if resp.content else {}
+        return self._request("DELETE", self.OBJECTS_URL, path, params=params)
 
     def _post_security(self, path: str, json: Any = None, params: Optional[dict] = None) -> Any:
         """POST to api.strata.paloaltonetworks.com/config/security/v1."""
-        resp = self._http.post(
-            f"{self.SECURITY_URL}{path}",
-            headers=self._headers(),
-            json=json,
-            params=params,
-        )
-        resp.raise_for_status()
-        return resp.json()
+        return self._request("POST", self.SECURITY_URL, path, json=json, params=params)
 
     def _put_security(self, path: str, json: Any = None) -> Any:
         """PUT to api.strata.paloaltonetworks.com/config/security/v1."""
-        resp = self._http.put(
-            f"{self.SECURITY_URL}{path}",
-            headers=self._headers(),
-            json=json,
-        )
-        resp.raise_for_status()
-        return resp.json()
+        return self._request("PUT", self.SECURITY_URL, path, json=json)
 
     def _delete_security(self, path: str, params: Optional[dict] = None) -> Any:
         """DELETE from api.strata.paloaltonetworks.com/config/security/v1."""
-        resp = self._http.delete(
-            f"{self.SECURITY_URL}{path}",
-            headers=self._headers(),
-            params=params,
-        )
-        resp.raise_for_status()
-        return resp.json() if resp.content else {}
+        return self._request("DELETE", self.SECURITY_URL, path, params=params)
 
     def _post_network(self, path: str, json: Any = None, params: Optional[dict] = None) -> Any:
         """POST to api.strata.paloaltonetworks.com/config/network/v1."""
-        resp = self._http.post(
-            f"{self.NETWORK_URL}{path}",
-            headers=self._headers(),
-            json=json,
-            params=params,
-        )
-        resp.raise_for_status()
-        return resp.json() if resp.content else {}
+        return self._request("POST", self.NETWORK_URL, path, json=json, params=params)
 
     def _put_network(self, path: str, json: Any = None) -> Any:
         """PUT to api.strata.paloaltonetworks.com/config/network/v1."""
-        resp = self._http.put(
-            f"{self.NETWORK_URL}{path}",
-            headers=self._headers(),
-            json=json,
-        )
-        resp.raise_for_status()
-        return resp.json()
+        return self._request("PUT", self.NETWORK_URL, path, json=json)
 
     def _delete_network(self, path: str, params: Optional[dict] = None) -> Any:
         """DELETE from api.strata.paloaltonetworks.com/config/network/v1."""
-        resp = self._http.delete(
-            f"{self.NETWORK_URL}{path}",
-            headers=self._headers(),
-            params=params,
-        )
-        resp.raise_for_status()
-        return resp.json() if resp.content else {}
+        return self._request("DELETE", self.NETWORK_URL, path, params=params)
 
     def _get_security(self, path: str, params: Optional[dict] = None) -> Any:
         """GET from api.strata.paloaltonetworks.com/config/security/v1."""
-        resp = self._http.get(
-            f"{self.SECURITY_URL}{path}",
-            headers=self._headers(),
-            params=params,
-        )
-        resp.raise_for_status()
-        return resp.json()
+        return self._request("GET", self.SECURITY_URL, path, params=params)
 
     def _get_setup(self, path: str, params: Optional[dict] = None) -> Any:
         """GET from api.strata.paloaltonetworks.com/config/setup/v1."""
-        resp = self._http.get(
-            f"{self.SETUP_URL}{path}",
-            headers=self._headers(),
-            params=params,
-        )
-        resp.raise_for_status()
-        return resp.json()
+        return self._request("GET", self.SETUP_URL, path, params=params)
 
     def _post_setup(self, path: str, json: Optional[dict] = None) -> Any:
         """POST to api.strata.paloaltonetworks.com/config/setup/v1."""
-        resp = self._http.post(
-            f"{self.SETUP_URL}{path}",
-            headers=self._headers(),
-            json=json or {},
-        )
-        resp.raise_for_status()
-        return resp.json()
+        return self._request("POST", self.SETUP_URL, path, json=json or {})
 
     def _get_network(self, path: str, params: Optional[dict] = None) -> Any:
         """GET from api.strata.paloaltonetworks.com/config/network/v1.
 
         pan.dev: https://pan.dev/scm/api/config/cloudngfw/network/
         """
-        resp = self._http.get(
-            f"{self.NETWORK_URL}{path}",
-            headers=self._headers(),
-            params=params,
-        )
-        resp.raise_for_status()
-        return resp.json()
+        return self._request("GET", self.NETWORK_URL, path, params=params)
 
     # Keep the public alias used by shell.py _cmd_tsg and auth_test
     def get_setup(self, path: str, params: Optional[dict] = None) -> Any:
@@ -336,9 +263,7 @@ class SCMClient:
             raise SCMError(f"Unknown config domain: {domain!r}")
         query = dict(params or {})
         query.setdefault("folder", folder)
-        resp = self._http.get(f"{base}{path}", headers=self._headers(), params=query)
-        resp.raise_for_status()
-        data = resp.json()
+        data = self._request("GET", base, path, params=query)
         if isinstance(data, dict) and isinstance(data.get("data"), list):
             return data["data"]
         return data
@@ -358,17 +283,13 @@ class SCMClient:
         surface broad enough for spec coverage while still routing only to
         checked-in pan.dev base URLs.
         """
-        resp = self._http.request(
+        data = self._request(
             method.upper(),
-            f"{base_url.rstrip('/')}/{path.lstrip('/')}",
-            headers=self._headers(),
+            base_url.rstrip("/"),
+            f"/{path.lstrip('/')}",
             params=params or None,
             json=json,
         )
-        resp.raise_for_status()
-        if not resp.content:
-            return {}
-        data = resp.json()
         if isinstance(data, dict) and isinstance(data.get("data"), list):
             return data["data"]
         return data
@@ -585,8 +506,9 @@ class SCMClient:
         caller can tell at a glance what the snippet actually contains.
 
         pan.dev: GET /config/objects/v1/addresses?snippet=<name>  (and others)
-        Returns {} on any total failure; per-endpoint failures are swallowed
-        so a 403 on one type doesn't prevent other types from loading.
+        Per-endpoint 403/404 responses are tolerated (a missing object type in
+        a snippet is normal) so one denied type doesn't hide the rest; any
+        other error (401, 5xx, network) propagates to the caller.
         """
         p = {"snippet": snippet_name}
         sections: dict[str, list[dict]] = {}
@@ -615,10 +537,12 @@ class SCMClient:
                 items = data.get("data", [])
                 if items:
                     sections[label] = items
-            except Exception:
-                # Individual endpoint failures are swallowed — some object
-                # types may not exist in a given snippet; 404/403 is normal.
-                pass
+            except httpx.HTTPStatusError as exc:
+                # Some object types may not exist in a given snippet; 404/403
+                # per endpoint is normal.  Anything else (401, 5xx, …) is a
+                # real failure and must propagate.
+                if exc.response.status_code not in (403, 404):
+                    raise
 
         return sections
 
@@ -968,83 +892,53 @@ class SCMClient:
 
     def get_nat_rules(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/nat-rules"""
-        try:
-            data = self._get_network("/nat-rules", params={"folder": folder})
-            return data.get("data", [])
-        except Exception:
-            return []
+        data = self._get_network("/nat-rules", params={"folder": folder})
+        return data.get("data", [])
 
     def get_pbf_rules(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/pbf-rules"""
-        try:
-            data = self._get_network("/pbf-rules", params={"folder": folder})
-            return data.get("data", [])
-        except Exception:
-            return []
+        data = self._get_network("/pbf-rules", params={"folder": folder})
+        return data.get("data", [])
 
     def get_ike_gateways(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/ike-gateways"""
-        try:
-            data = self._get_network("/ike-gateways", params={"folder": folder})
-            return data.get("data", [])
-        except Exception:
-            return []
+        data = self._get_network("/ike-gateways", params={"folder": folder})
+        return data.get("data", [])
 
     def get_ipsec_tunnels(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/ipsec-tunnels"""
-        try:
-            data = self._get_network("/ipsec-tunnels", params={"folder": folder})
-            return data.get("data", [])
-        except Exception:
-            return []
+        data = self._get_network("/ipsec-tunnels", params={"folder": folder})
+        return data.get("data", [])
 
     def get_bgp_routing_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/bgp-address-family-profiles"""
-        try:
-            data = self._get_network("/bgp-address-family-profiles", params={"folder": folder})
-            return data.get("data", [])
-        except Exception:
-            return []
+        data = self._get_network("/bgp-address-family-profiles", params={"folder": folder})
+        return data.get("data", [])
 
     def get_dns_proxies(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/dns-proxies"""
-        try:
-            data = self._get_network("/dns-proxies", params={"folder": folder})
-            return data.get("data", [])
-        except Exception:
-            return []
+        data = self._get_network("/dns-proxies", params={"folder": folder})
+        return data.get("data", [])
 
     def get_qos_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/qos-profiles"""
-        try:
-            data = self._get_network("/qos-profiles", params={"folder": folder})
-            return data.get("data", [])
-        except Exception:
-            return []
+        data = self._get_network("/qos-profiles", params={"folder": folder})
+        return data.get("data", [])
 
     def get_sdwan_rules(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/sdwan-rules"""
-        try:
-            data = self._get_network("/sdwan-rules", params={"folder": folder})
-            return data.get("data", [])
-        except Exception:
-            return []
+        data = self._get_network("/sdwan-rules", params={"folder": folder})
+        return data.get("data", [])
 
     def get_tunnel_interfaces(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/tunnel-interfaces"""
-        try:
-            data = self._get_network("/tunnel-interfaces", params={"folder": folder})
-            return data.get("data", [])
-        except Exception:
-            return []
+        data = self._get_network("/tunnel-interfaces", params={"folder": folder})
+        return data.get("data", [])
 
     def get_vlan_interfaces(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/network/v1/vlan-interfaces"""
-        try:
-            data = self._get_network("/vlan-interfaces", params={"folder": folder})
-            return data.get("data", [])
-        except Exception:
-            return []
+        data = self._get_network("/vlan-interfaces", params={"folder": folder})
+        return data.get("data", [])
 
     # ------------------------------------------------------------------
     # Identity  (api.strata.paloaltonetworks.com/config/identity/v1)
@@ -1053,77 +947,47 @@ class SCMClient:
 
     def _get_identity(self, path: str, params: Optional[dict] = None) -> Any:
         """GET from api.strata.paloaltonetworks.com/config/identity/v1."""
-        resp = self._http.get(
-            f"{self.IDENTITY_URL}{path}",
-            headers=self._headers(),
-            params=params,
-        )
-        resp.raise_for_status()
-        return resp.json()
+        return self._request("GET", self.IDENTITY_URL, path, params=params)
 
     def get_authentication_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/identity/v1/authentication-profiles"""
-        try:
-            data = self._get_identity("/authentication-profiles", params={"folder": folder})
-            return data.get("data", [])
-        except Exception:
-            return []
+        data = self._get_identity("/authentication-profiles", params={"folder": folder})
+        return data.get("data", [])
 
     def get_authentication_rules(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/identity/v1/authentication-rules"""
-        try:
-            data = self._get_identity("/authentication-rules", params={"folder": folder})
-            return data.get("data", [])
-        except Exception:
-            return []
+        data = self._get_identity("/authentication-rules", params={"folder": folder})
+        return data.get("data", [])
 
     def get_certificate_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/identity/v1/certificate-profiles"""
-        try:
-            data = self._get_identity("/certificate-profiles", params={"folder": folder})
-            return data.get("data", [])
-        except Exception:
-            return []
+        data = self._get_identity("/certificate-profiles", params={"folder": folder})
+        return data.get("data", [])
 
     def get_local_users(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/identity/v1/local-users"""
-        try:
-            data = self._get_identity("/local-users", params={"folder": folder})
-            return data.get("data", [])
-        except Exception:
-            return []
+        data = self._get_identity("/local-users", params={"folder": folder})
+        return data.get("data", [])
 
     def get_local_user_groups(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/identity/v1/local-user-groups"""
-        try:
-            data = self._get_identity("/local-user-groups", params={"folder": folder})
-            return data.get("data", [])
-        except Exception:
-            return []
+        data = self._get_identity("/local-user-groups", params={"folder": folder})
+        return data.get("data", [])
 
     def get_radius_server_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/identity/v1/radius-server-profiles"""
-        try:
-            data = self._get_identity("/radius-server-profiles", params={"folder": folder})
-            return data.get("data", [])
-        except Exception:
-            return []
+        data = self._get_identity("/radius-server-profiles", params={"folder": folder})
+        return data.get("data", [])
 
     def get_tls_service_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/identity/v1/tls-service-profiles"""
-        try:
-            data = self._get_identity("/tls-service-profiles", params={"folder": folder})
-            return data.get("data", [])
-        except Exception:
-            return []
+        data = self._get_identity("/tls-service-profiles", params={"folder": folder})
+        return data.get("data", [])
 
     def get_mfa_servers(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/identity/v1/mfa-servers"""
-        try:
-            data = self._get_identity("/mfa-servers", params={"folder": folder})
-            return data.get("data", [])
-        except Exception:
-            return []
+        data = self._get_identity("/mfa-servers", params={"folder": folder})
+        return data.get("data", [])
 
     # ------------------------------------------------------------------
     # Network  (api.strata.paloaltonetworks.com/config/network/v1)

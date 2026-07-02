@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.commands.base import CommandDef, ExecutionContext, require_device, require_scm
+from app.commands.base import CommandDef, ExecutionContext, require_device, require_scm, show_handler
 
 
 # ---------------------------------------------------------------------------
@@ -37,12 +37,6 @@ def _show_system_info(ctx: ExecutionContext, args: dict) -> Any:
         device,   # fall back to the cached device record we already have
     )
     return {"_render": "device_detail", "device": match}
-
-
-def _show_jobs_all(ctx: ExecutionContext, args: dict) -> list[dict]:
-    """Fetch all SCM jobs — TSG-wide, no folder scope required."""
-    scm = require_scm(ctx)
-    return scm.get_jobs()
 
 
 def _show_jobs_id(ctx: ExecutionContext, args: dict) -> list[dict]:
@@ -181,7 +175,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show all SCM jobs (TSG-wide)",
         category="operations",
         scope="global",
-        api_handler=_show_jobs_all,
+        api_handler=show_handler("get_jobs", folder_scoped=False),
         ssh_command="show jobs all",
         render="jobs",
         feature_flag="show_jobs",

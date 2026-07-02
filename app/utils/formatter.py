@@ -40,6 +40,41 @@ def _list_table(rows: list[dict], title: str = "") -> Table:
     return t
 
 
+def _simple_table(
+    rows: list[dict],
+    title: str,
+    columns: list[tuple[str, str, dict]],
+    value_fn=None,
+) -> Table:
+    """Build a fixed-column ROUNDED table from a list of dicts.
+
+    ``columns`` is a list of ``(key, header, column-kwargs)`` tuples.
+    ``value_fn(row, key)`` overrides the default cell value ``row.get(key, "")``.
+    """
+    t = Table(box=box.ROUNDED, title=title, header_style="bold cyan")
+    for _key, header, kwargs in columns:
+        t.add_column(header, **kwargs)
+    for row in rows:
+        if value_fn is not None:
+            t.add_row(*[value_fn(row, key) for key, _h, _kw in columns])
+        else:
+            t.add_row(*[row.get(key, "") for key, _h, _kw in columns])
+    return t
+
+
+def _style_action(action: str, red_fallback: bool = False) -> str:
+    """Colour a rule action: green for allow, red for deny.
+
+    With ``red_fallback`` any non-allow value (including empty) is red;
+    otherwise unrecognised actions are returned unstyled.
+    """
+    if action == "allow":
+        return f"[green]{action}[/green]"
+    if action == "deny" or red_fallback:
+        return f"[red]{action}[/red]"
+    return action
+
+
 # ---------------------------------------------------------------------------
 # Command-specific renderers
 # ---------------------------------------------------------------------------
@@ -274,92 +309,80 @@ def format_interfaces(interfaces: list[dict]) -> Table:
     SSH operational output returns state fields (state, speed, etc.).
     Both are handled by showing whatever fields are present.
     """
-    t = Table(box=box.ROUNDED, title="Interfaces", header_style="bold cyan")
-    t.add_column("Name", style="bold", no_wrap=True)
-    t.add_column("Type", no_wrap=True)
-    t.add_column("IP / Layer3", overflow="fold")
-    t.add_column("Zone", no_wrap=True)
-    t.add_column("State / Comment", overflow="fold")
-    for iface in interfaces:
-        # IP: may be in nested layer3 block (SCM) or flat ip-address (SSH)
-        layer3 = iface.get("layer3") or {}
-        layer3_entries = layer3.get("ip") or [{}]
-        layer3_ip = layer3_entries[0].get("addr") or layer3_entries[0].get("name", "")
-        ip = iface.get("ip") or iface.get("ip-address") or layer3_ip
-        state = iface.get("state", "") or iface.get("comment", "") or ""
-        if state == "up":
-            state = "[green]up[/green]"
-        elif state in ("down", "disabled"):
-            state = "[red]down[/red]"
-        t.add_row(
-            iface.get("name", ""),
-            iface.get("type", ""),
-            ip,
-            iface.get("zone", ""),
-            state,
-        )
-    return t
+    def _cell(iface: dict, key: str) -> str:
+        if key == "ip":
+            # IP: may be in nested layer3 block (SCM) or flat ip-address (SSH)
+            layer3 = iface.get("layer3") or {}
+            layer3_entries = layer3.get("ip") or [{}]
+            layer3_ip = layer3_entries[0].get("addr") or layer3_entries[0].get("name", "")
+            return iface.get("ip") or iface.get("ip-address") or layer3_ip
+        if key == "state":
+            state = iface.get("state", "") or iface.get("comment", "") or ""
+            if state == "up":
+                return "[green]up[/green]"
+            if state in ("down", "disabled"):
+                return "[red]down[/red]"
+            return state
+        return iface.get(key, "")
+
+    return _simple_table(interfaces, "Interfaces", [
+        ("name",  "Name",            {"style": "bold", "no_wrap": True}),
+        ("type",  "Type",            {"no_wrap": True}),
+        ("ip",    "IP / Layer3",     {"overflow": "fold"}),
+        ("zone",  "Zone",            {"no_wrap": True}),
+        ("state", "State / Comment", {"overflow": "fold"}),
+    ], value_fn=_cell)
 
 
 def format_routes(routes: list[dict]) -> Table:
-    t = Table(box=box.ROUNDED, title="Routing Table", header_style="bold cyan")
-    for col in ["Destination", "Next Hop", "Interface", "Metric", "Flags", "Age"]:
-        t.add_column(col, overflow="fold")
-    for r in routes:
-        t.add_row(
-            r.get("destination", ""),
-            r.get("nexthop", ""),
-            r.get("interface", ""),
-            r.get("metric", ""),
-            r.get("flags", ""),
-            r.get("age", ""),
-        )
-    return t
+    return _simple_table(routes, "Routing Table", [
+        ("destination", "Destination", {"overflow": "fold"}),
+        ("nexthop",     "Next Hop",    {"overflow": "fold"}),
+        ("interface",   "Interface",   {"overflow": "fold"}),
+        ("metric",      "Metric",      {"overflow": "fold"}),
+        ("flags",       "Flags",       {"overflow": "fold"}),
+        ("age",         "Age",         {"overflow": "fold"}),
+    ])
 
 
 def format_security_policy(rules: list[dict]) -> Table:
-    t = Table(box=box.ROUNDED, title="Security Policy", header_style="bold cyan")
-    t.add_column("Name", style="bold")
-    t.add_column("From Zone")
-    t.add_column("To Zone")
-    t.add_column("Source")
-    t.add_column("Dest")
-    t.add_column("Application")
-    t.add_column("Action")
-    for r in rules:
-        action = r.get("action", "")
-        action_str = f"[green]{action}[/green]" if action == "allow" else f"[red]{action}[/red]"
-        t.add_row(
-            r.get("name", ""),
-            ", ".join(r.get("from", [])),
-            ", ".join(r.get("to", [])),
-            ", ".join(r.get("source", [])),
-            ", ".join(r.get("destination", [])),
-            ", ".join(r.get("application", [])),
-            action_str,
-        )
-    return t
+    def _cell(r: dict, key: str) -> str:
+        if key == "name":
+            return r.get("name", "")
+        if key == "action":
+            return _style_action(r.get("action", ""), red_fallback=True)
+        return ", ".join(r.get(key, []))
+
+    return _simple_table(rules, "Security Policy", [
+        ("name",        "Name",        {"style": "bold"}),
+        ("from",        "From Zone",   {}),
+        ("to",          "To Zone",     {}),
+        ("source",      "Source",      {}),
+        ("destination", "Dest",        {}),
+        ("application", "Application", {}),
+        ("action",      "Action",      {}),
+    ], value_fn=_cell)
 
 
 def format_jobs(jobs: list[dict]) -> Table:
-    t = Table(box=box.ROUNDED, title="Jobs", header_style="bold cyan")
-    for col in ["ID", "Type", "Status", "Result", "Progress", "User", "Details"]:
-        t.add_column(col)
-    for j in jobs:
-        status = j.get("status", "")
-        result = j.get("result", "")
-        status_str = f"[green]{status}[/green]" if status == "FIN" else f"[yellow]{status}[/yellow]"
-        result_str = f"[green]{result}[/green]" if result == "OK" else f"[red]{result}[/red]" if result else ""
-        t.add_row(
-            j.get("id", ""),
-            j.get("type", ""),
-            status_str,
-            result_str,
-            j.get("progress", ""),
-            j.get("user", ""),
-            j.get("details", ""),
-        )
-    return t
+    def _cell(j: dict, key: str) -> str:
+        if key == "status":
+            status = j.get("status", "")
+            return f"[green]{status}[/green]" if status == "FIN" else f"[yellow]{status}[/yellow]"
+        if key == "result":
+            result = j.get("result", "")
+            return f"[green]{result}[/green]" if result == "OK" else f"[red]{result}[/red]" if result else ""
+        return j.get(key, "")
+
+    return _simple_table(jobs, "Jobs", [
+        ("id",       "ID",       {}),
+        ("type",     "Type",     {}),
+        ("status",   "Status",   {}),
+        ("result",   "Result",   {}),
+        ("progress", "Progress", {}),
+        ("user",     "User",     {}),
+        ("details",  "Details",  {}),
+    ], value_fn=_cell)
 
 
 def format_logs(logs: list[dict], log_type: str = "system") -> Table:
@@ -380,75 +403,74 @@ def format_logs(logs: list[dict], log_type: str = "system") -> Table:
 
 
 def format_address_objects(addresses: list[dict]) -> Table:
-    t = Table(box=box.ROUNDED, title="Address Objects", header_style="bold cyan")
-    t.add_column("Name", style="bold")
-    t.add_column("IP / FQDN")
-    t.add_column("Description")
-    for a in addresses:
-        value = a.get("ip-netmask") or a.get("ip_netmask") or a.get("ip-range") or a.get("fqdn") or ""
-        t.add_row(a.get("name", ""), value, a.get("description", ""))
-    return t
+    def _cell(a: dict, key: str) -> str:
+        if key == "value":
+            return a.get("ip-netmask") or a.get("ip_netmask") or a.get("ip-range") or a.get("fqdn") or ""
+        return a.get(key, "")
+
+    return _simple_table(addresses, "Address Objects", [
+        ("name",        "Name",        {"style": "bold"}),
+        ("value",       "IP / FQDN",   {}),
+        ("description", "Description", {}),
+    ], value_fn=_cell)
 
 
 def format_address_groups(groups: list[dict]) -> Table:
-    t = Table(box=box.ROUNDED, title="Address Groups", header_style="bold cyan")
-    t.add_column("Name", style="bold")
-    t.add_column("Members")
-    t.add_column("Dynamic Filter")
-    t.add_column("Description")
-    for g in groups:
-        members = g.get("members", [])
-        if isinstance(members, list):
-            members_str = ", ".join(members)
-        else:
-            members_str = str(members)
-        t.add_row(
-            g.get("name", ""),
-            members_str,
-            g.get("dynamic") or g.get("filter") or "",
-            g.get("description", ""),
-        )
-    return t
+    def _cell(g: dict, key: str) -> str:
+        if key == "members":
+            members = g.get("members", [])
+            return ", ".join(members) if isinstance(members, list) else str(members)
+        if key == "dynamic":
+            return g.get("dynamic") or g.get("filter") or ""
+        return g.get(key, "")
+
+    return _simple_table(groups, "Address Groups", [
+        ("name",        "Name",           {"style": "bold"}),
+        ("members",     "Members",        {}),
+        ("dynamic",     "Dynamic Filter", {}),
+        ("description", "Description",    {}),
+    ], value_fn=_cell)
 
 
 def format_services(services: list[dict]) -> Table:
-    t = Table(box=box.ROUNDED, title="Services", header_style="bold cyan")
-    t.add_column("Name", style="bold")
-    t.add_column("Protocol")
-    t.add_column("Port")
-    t.add_column("Description")
-    for s in services:
-        proto = s.get("protocol", "")
-        if isinstance(proto, dict):
-            proto = list(proto.keys())[0] if proto else ""
-        port = s.get("port", "")
-        if not port and isinstance(s.get("protocol"), dict):
-            for _p, _v in (s["protocol"].items()):
-                if isinstance(_v, dict):
-                    port = _v.get("port", "")
-        t.add_row(s.get("name", ""), str(proto), str(port), s.get("description", ""))
-    return t
+    # NB: the SCM object API shape ({tcp: {destination_port: ...}}) is handled
+    # separately by _snippet_services_table; this renderer expects the flat
+    # SSH/op shape with 'port' nested under the protocol dict.
+    def _cell(s: dict, key: str) -> str:
+        if key == "protocol":
+            proto = s.get("protocol", "")
+            if isinstance(proto, dict):
+                proto = list(proto.keys())[0] if proto else ""
+            return str(proto)
+        if key == "port":
+            port = s.get("port", "")
+            if not port and isinstance(s.get("protocol"), dict):
+                for _p, _v in (s["protocol"].items()):
+                    if isinstance(_v, dict):
+                        port = _v.get("port", "")
+            return str(port)
+        return s.get(key, "")
+
+    return _simple_table(services, "Services", [
+        ("name",        "Name",        {"style": "bold"}),
+        ("protocol",    "Protocol",    {}),
+        ("port",        "Port",        {}),
+        ("description", "Description", {}),
+    ], value_fn=_cell)
 
 
 def format_tags(tags: list[dict]) -> Table:
-    t = Table(box=box.ROUNDED, title="Tags", header_style="bold cyan")
-    t.add_column("Name", style="bold")
-    t.add_column("Color")
-    t.add_column("Comments")
-    for tag in tags:
-        t.add_row(tag.get("name", ""), tag.get("color", ""), tag.get("comments", ""))
-    return t
+    return _simple_table(tags, "Tags", [
+        ("name",     "Name",     {"style": "bold"}),
+        ("color",    "Color",    {}),
+        ("comments", "Comments", {}),
+    ])
 
 
 def format_edl_list(edls: list[dict]) -> Table:
     """Render external dynamic lists."""
-    t = Table(box=box.ROUNDED, title="External Dynamic Lists", header_style="bold cyan")
-    t.add_column("Name",        style="bold")
-    t.add_column("Type",        no_wrap=True)
-    t.add_column("URL / Source", overflow="fold")
-    t.add_column("Repeat",      no_wrap=True)
-    t.add_column("Description", overflow="fold")
-    for e in edls:
+    def _parse_type(e: dict) -> tuple[str, str, str]:
+        """Extract (type, source, repeat) from the nested EDL type dict."""
         edl_type = e.get("type", "")
         source = ""
         repeat = ""
@@ -461,26 +483,37 @@ def format_edl_list(edls: list[dict]) -> Table:
                     if isinstance(repeat, dict):
                         repeat = next(iter(repeat.keys()), "")
                 break
-        t.add_row(
-            e.get("name", ""),
-            str(edl_type),
-            source,
-            str(repeat),
-            e.get("description", "") or "",
-        )
-    return t
+        return str(edl_type), source, str(repeat)
+
+    def _cell(e: dict, key: str) -> str:
+        if key in ("type", "source", "repeat"):
+            edl_type, source, repeat = _parse_type(e)
+            return {"type": edl_type, "source": source, "repeat": repeat}[key]
+        if key == "description":
+            return e.get("description", "") or ""
+        return e.get(key, "")
+
+    return _simple_table(edls, "External Dynamic Lists", [
+        ("name",        "Name",         {"style": "bold"}),
+        ("type",        "Type",         {"no_wrap": True}),
+        ("source",      "URL / Source", {"overflow": "fold"}),
+        ("repeat",      "Repeat",       {"no_wrap": True}),
+        ("description", "Description",  {"overflow": "fold"}),
+    ], value_fn=_cell)
 
 
 def format_zones(zones: list[dict]) -> Table:
-    t = Table(box=box.ROUNDED, title="Zones", header_style="bold cyan")
-    t.add_column("Name", style="bold")
-    t.add_column("Type")
-    t.add_column("Interfaces")
-    for z in zones:
-        ifaces = z.get("interfaces", [])
-        ifaces_str = ", ".join(ifaces) if isinstance(ifaces, list) else str(ifaces)
-        t.add_row(z.get("name", ""), z.get("type", ""), ifaces_str)
-    return t
+    def _cell(z: dict, key: str) -> str:
+        if key == "interfaces":
+            ifaces = z.get("interfaces", [])
+            return ", ".join(ifaces) if isinstance(ifaces, list) else str(ifaces)
+        return z.get(key, "")
+
+    return _simple_table(zones, "Zones", [
+        ("name",       "Name",       {"style": "bold"}),
+        ("type",       "Type",       {}),
+        ("interfaces", "Interfaces", {}),
+    ], value_fn=_cell)
 
 
 def format_ha(data: Any, title: str = "High Availability") -> Table:
@@ -518,23 +551,22 @@ def format_snippets(snippets: list[dict], device_filter: str = "") -> Table:
     to a specific device.
     """
     title = f"Snippets — {device_filter}" if device_filter else f"Snippets ({len(snippets)})"
-    t = Table(box=box.ROUNDED, title=title, header_style="bold cyan")
-    t.add_column("Name", style="bold", no_wrap=True)
-    t.add_column("Type",    no_wrap=True)
-    t.add_column("Prefix",  no_wrap=True)
-    t.add_column("Shared",  no_wrap=True)
-    t.add_column("Folders attached", overflow="fold")
-    for s in snippets:
-        folders = s.get("folders", [])
-        folder_names = ", ".join(f.get("name", "") for f in folders) if isinstance(folders, list) else ""
-        t.add_row(
-            s.get("name", ""),
-            s.get("type", "") or "",
-            "yes" if s.get("enable_prefix") else "no",
-            s.get("shared_in", "") or "",
-            folder_names,
-        )
-    return t
+
+    def _cell(s: dict, key: str) -> str:
+        if key == "enable_prefix":
+            return "yes" if s.get("enable_prefix") else "no"
+        if key == "folders":
+            folders = s.get("folders", [])
+            return ", ".join(f.get("name", "") for f in folders) if isinstance(folders, list) else ""
+        return s.get(key, "") or ""
+
+    return _simple_table(snippets, title, [
+        ("name",          "Name",             {"style": "bold", "no_wrap": True}),
+        ("type",          "Type",             {"no_wrap": True}),
+        ("enable_prefix", "Prefix",           {"no_wrap": True}),
+        ("shared_in",     "Shared",           {"no_wrap": True}),
+        ("folders",       "Folders attached", {"overflow": "fold"}),
+    ], value_fn=_cell)
 
 
 def format_snippets_scoped(data: dict) -> list:
@@ -734,96 +766,111 @@ def _append_variables(renderables: list, variables: list) -> None:
 
 
 def _snippet_addresses_table(items: list[dict], title: str) -> Table:
-    t = Table(box=box.ROUNDED, title=f"{title} ({len(items)})", header_style="bold cyan")
-    t.add_column("Name",        style="bold", no_wrap=True)
-    t.add_column("Type",        no_wrap=True)
-    t.add_column("Value",       overflow="fold")
-    t.add_column("Description", overflow="fold")
-    for a in items:
-        addr_type = ""
-        value = ""
+    def _addr(a: dict) -> tuple[str, str]:
         for key in ("ip_netmask", "ip_range", "ip_wildcard", "fqdn"):
             if a.get(key):
-                addr_type = key.replace("_", "-")
-                value = str(a[key])
-                break
-        t.add_row(a.get("name", ""), addr_type, value, a.get("description", "") or "")
-    return t
+                return key.replace("_", "-"), str(a[key])
+        return "", ""
+
+    def _cell(a: dict, key: str) -> str:
+        if key == "type":
+            return _addr(a)[0]
+        if key == "value":
+            return _addr(a)[1]
+        return a.get(key, "") or ""
+
+    return _simple_table(items, f"{title} ({len(items)})", [
+        ("name",        "Name",        {"style": "bold", "no_wrap": True}),
+        ("type",        "Type",        {"no_wrap": True}),
+        ("value",       "Value",       {"overflow": "fold"}),
+        ("description", "Description", {"overflow": "fold"}),
+    ], value_fn=_cell)
 
 
 def _snippet_address_groups_table(items: list[dict], title: str) -> Table:
-    t = Table(box=box.ROUNDED, title=f"{title} ({len(items)})", header_style="bold cyan")
-    t.add_column("Name",    style="bold", no_wrap=True)
-    t.add_column("Type",    no_wrap=True)
-    t.add_column("Members", overflow="fold")
-    for g in items:
+    def _cell(g: dict, key: str) -> str:
         if g.get("static"):
+            kind = "static"
             members = ", ".join(g["static"]) if isinstance(g["static"], list) else str(g["static"])
-            t.add_row(g.get("name", ""), "static", members)
         elif g.get("dynamic"):
-            t.add_row(g.get("name", ""), "dynamic", str(g["dynamic"].get("filter", "")))
+            kind = "dynamic"
+            members = str(g["dynamic"].get("filter", ""))
         else:
-            t.add_row(g.get("name", ""), "", "")
-    return t
+            kind, members = "", ""
+        if key == "type":
+            return kind
+        if key == "members":
+            return members
+        return g.get(key, "")
+
+    return _simple_table(items, f"{title} ({len(items)})", [
+        ("name",    "Name",    {"style": "bold", "no_wrap": True}),
+        ("type",    "Type",    {"no_wrap": True}),
+        ("members", "Members", {"overflow": "fold"}),
+    ], value_fn=_cell)
 
 
 def _snippet_services_table(items: list[dict], title: str) -> Table:
-    t = Table(box=box.ROUNDED, title=f"{title} ({len(items)})", header_style="bold cyan")
-    t.add_column("Name",     style="bold", no_wrap=True)
-    t.add_column("Protocol", no_wrap=True)
-    t.add_column("Port",     no_wrap=True)
-    t.add_column("Description", overflow="fold")
-    for s in items:
+    # NB: intentionally distinct from format_services — SCM objects carry
+    # {tcp|udp: {destination_port: ...}}, not the flat 'port' key.
+    def _proto(s: dict) -> tuple[str, str]:
         proto = s.get("protocol", {})
         if isinstance(proto, dict):
             if "tcp" in proto:
-                p, port = "tcp", str(proto["tcp"].get("destination_port", ""))
-            elif "udp" in proto:
-                p, port = "udp", str(proto["udp"].get("destination_port", ""))
-            else:
-                p, port = "", ""
-        else:
-            p, port = str(proto), ""
-        t.add_row(s.get("name", ""), p, port, s.get("description", "") or "")
-    return t
+                return "tcp", str(proto["tcp"].get("destination_port", ""))
+            if "udp" in proto:
+                return "udp", str(proto["udp"].get("destination_port", ""))
+            return "", ""
+        return str(proto), ""
+
+    def _cell(s: dict, key: str) -> str:
+        if key == "protocol":
+            return _proto(s)[0]
+        if key == "port":
+            return _proto(s)[1]
+        return s.get(key, "") or ""
+
+    return _simple_table(items, f"{title} ({len(items)})", [
+        ("name",        "Name",        {"style": "bold", "no_wrap": True}),
+        ("protocol",    "Protocol",    {"no_wrap": True}),
+        ("port",        "Port",        {"no_wrap": True}),
+        ("description", "Description", {"overflow": "fold"}),
+    ], value_fn=_cell)
 
 
 def _snippet_security_rules_table(items: list[dict], title: str) -> Table:
-    t = Table(box=box.ROUNDED, title=f"{title} ({len(items)})", header_style="bold cyan")
-    t.add_column("Name",        style="bold", no_wrap=True)
-    t.add_column("From",        no_wrap=True)
-    t.add_column("Source",      overflow="fold")
-    t.add_column("To",          no_wrap=True)
-    t.add_column("Destination", overflow="fold")
-    t.add_column("Application", overflow="fold")
-    t.add_column("Action",      no_wrap=True, style="bold")
-    for r in items:
-        def _join(val):
-            if isinstance(val, list):
-                return ", ".join(str(v) for v in val)
-            return str(val) if val else ""
-        action = r.get("action", "")
-        action_style = "green" if action == "allow" else "red" if action == "deny" else ""
-        t.add_row(
-            r.get("name", ""),
-            _join(r.get("from", [])),
-            _join(r.get("source", [])),
-            _join(r.get("to", [])),
-            _join(r.get("destination", [])),
-            _join(r.get("application", [])),
-            f"[{action_style}]{action}[/{action_style}]" if action_style else action,
-        )
-    return t
+    def _join(val):
+        if isinstance(val, list):
+            return ", ".join(str(v) for v in val)
+        return str(val) if val else ""
+
+    def _cell(r: dict, key: str) -> str:
+        if key == "name":
+            return r.get("name", "")
+        if key == "action":
+            return _style_action(r.get("action", ""))
+        return _join(r.get(key, []))
+
+    return _simple_table(items, f"{title} ({len(items)})", [
+        ("name",        "Name",        {"style": "bold", "no_wrap": True}),
+        ("from",        "From",        {"no_wrap": True}),
+        ("source",      "Source",      {"overflow": "fold"}),
+        ("to",          "To",          {"no_wrap": True}),
+        ("destination", "Destination", {"overflow": "fold"}),
+        ("application", "Application", {"overflow": "fold"}),
+        ("action",      "Action",      {"no_wrap": True, "style": "bold"}),
+    ], value_fn=_cell)
 
 
 def _snippet_tags_table(items: list[dict], title: str) -> Table:
-    t = Table(box=box.ROUNDED, title=f"{title} ({len(items)})", header_style="bold cyan")
-    t.add_column("Name",    style="bold", no_wrap=True)
-    t.add_column("Color",   no_wrap=True)
-    t.add_column("Comments", overflow="fold")
-    for tag in items:
-        t.add_row(tag.get("name", ""), tag.get("color", "") or "", tag.get("comments", "") or "")
-    return t
+    def _cell(tag: dict, key: str) -> str:
+        return tag.get(key, "") or ""
+
+    return _simple_table(items, f"{title} ({len(items)})", [
+        ("name",     "Name",     {"style": "bold", "no_wrap": True}),
+        ("color",    "Color",    {"no_wrap": True}),
+        ("comments", "Comments", {"overflow": "fold"}),
+    ], value_fn=_cell)
 
 
 def _generic_objects_table(items: list[dict], title: str) -> Table:

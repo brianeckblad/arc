@@ -14,34 +14,17 @@ from typing import Any
 from app.commands.base import (
     CommandDef,
     ExecutionContext,
+    delete_handler,
     require_scm,
+    show_handler,
 )
 
 
 # ---------------------------------------------------------------------------
-# Handlers
-# ---------------------------------------------------------------------------
-
-def _show_security_policy(ctx: ExecutionContext, args: dict) -> Any:
-    """List security rules (pre-position) in the active SCM folder.
-
-    pan.dev: GET /config/security/v1/security-rules?folder=<folder>&position=pre
-    """
-    scm = require_scm(ctx)
-    return scm.get_security_policy(folder=ctx.folder)
-
-
-def _show_url_categories(ctx: ExecutionContext, args: dict) -> Any:
-    """List custom URL categories in the active SCM folder.
-
-    pan.dev: GET /config/security/v1/url-categories?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_url_categories(folder=ctx.folder)
-
-
-# ---------------------------------------------------------------------------
 # Command table — merged into COMMANDS by registry.py
+#
+# Plain list commands use show_handler(<SCMClient method>) from base.py;
+# pan.dev: GET /config/security/v1/<resource>?folder=<folder>
 #
 # NOTE: `test security-policy-match` and `packet-tracer` live in
 # app/commands/packet_tracer.py (they simulate the folder rule base).
@@ -52,7 +35,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show security policy rules in the active folder",
         category="security",
         scope="folder",
-        api_handler=_show_security_policy,
+        api_handler=show_handler("get_security_policy"),
         ssh_command=None,
         render="security_policy",
         feature_flag="show_security_policy",
@@ -61,7 +44,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show custom URL categories in the active folder",
         category="security",
         scope="folder",
-        api_handler=_show_url_categories,
+        api_handler=show_handler("get_url_categories"),
         ssh_command=None,
         render="url_categories",
         feature_flag="show_url_categories",
@@ -69,70 +52,12 @@ COMMANDS: dict[str, CommandDef] = {
 }
 
 
-# ---------------------------------------------------------------------------
-# Additional handlers — unimplemented security commands
-# ---------------------------------------------------------------------------
-
-def _show_decryption_rules(ctx: ExecutionContext, args: dict) -> Any:
-    """pan.dev: GET /config/security/v1/decryption-rules?folder=<folder>"""
-    scm = require_scm(ctx)
-    return scm.get_decryption_rules(folder=ctx.folder)
-
-
-def _show_decryption_profiles(ctx: ExecutionContext, args: dict) -> Any:
-    """pan.dev: GET /config/security/v1/decryption-profiles?folder=<folder>"""
-    scm = require_scm(ctx)
-    return scm.get_decryption_profiles(folder=ctx.folder)
-
-
-def _show_dos_protection_rules(ctx: ExecutionContext, args: dict) -> Any:
-    """pan.dev: GET /config/security/v1/dos-protection-rules?folder=<folder>"""
-    scm = require_scm(ctx)
-    return scm.get_dos_protection_rules(folder=ctx.folder)
-
-
-def _show_dos_protection_profiles(ctx: ExecutionContext, args: dict) -> Any:
-    """pan.dev: GET /config/security/v1/dos-protection-profiles?folder=<folder>"""
-    scm = require_scm(ctx)
-    return scm.get_dos_protection_profiles(folder=ctx.folder)
-
-
-def _show_app_override_rules(ctx: ExecutionContext, args: dict) -> Any:
-    """pan.dev: GET /config/security/v1/app-override-rules?folder=<folder>"""
-    scm = require_scm(ctx)
-    return scm.get_app_override_rules(folder=ctx.folder)
-
-
-def _show_profile_groups(ctx: ExecutionContext, args: dict) -> Any:
-    """pan.dev: GET /config/security/v1/profile-groups?folder=<folder>"""
-    scm = require_scm(ctx)
-    return scm.get_profile_groups(folder=ctx.folder)
-
-
-def _show_anti_spyware_profiles(ctx: ExecutionContext, args: dict) -> Any:
-    """pan.dev: GET /config/security/v1/anti-spyware-profiles?folder=<folder>"""
-    scm = require_scm(ctx)
-    return scm.get_anti_spyware_profiles(folder=ctx.folder)
-
-
-def _show_vulnerability_profiles(ctx: ExecutionContext, args: dict) -> Any:
-    """pan.dev: GET /config/security/v1/vulnerability-protection-profiles?folder=<folder>"""
-    scm = require_scm(ctx)
-    return scm.get_vulnerability_protection_profiles(folder=ctx.folder)
-
-
-def _show_wildfire_profiles(ctx: ExecutionContext, args: dict) -> Any:
-    """pan.dev: GET /config/security/v1/wildfire-anti-virus-profiles?folder=<folder>"""
-    scm = require_scm(ctx)
-    return scm.get_wildfire_profiles(folder=ctx.folder)
-
-
 _EXTRA_COMMANDS: dict[str, CommandDef] = {
     "show decryption-rules": CommandDef(
         description="Show decryption rules in the active folder",
         category="security",
         scope="folder",
-        api_handler=_show_decryption_rules,
+        api_handler=show_handler("get_decryption_rules"),
         ssh_command="show running decryption-policy",
         render="list",
         feature_flag="decryption_policy",
@@ -141,7 +66,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show decryption profiles in the active folder",
         category="security",
         scope="folder",
-        api_handler=_show_decryption_profiles,
+        api_handler=show_handler("get_decryption_profiles"),
         ssh_command=None,
         render="list",
         feature_flag="decryption_policy",
@@ -150,7 +75,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show DoS protection rules in the active folder",
         category="security",
         scope="folder",
-        api_handler=_show_dos_protection_rules,
+        api_handler=show_handler("get_dos_protection_rules"),
         ssh_command="show dos-protection rule all",
         render="list",
         feature_flag="dos_protection",
@@ -159,7 +84,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show DoS protection profiles in the active folder",
         category="security",
         scope="folder",
-        api_handler=_show_dos_protection_profiles,
+        api_handler=show_handler("get_dos_protection_profiles"),
         ssh_command=None,
         render="list",
         feature_flag="dos_protection",
@@ -168,7 +93,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show application override rules in the active folder",
         category="security",
         scope="folder",
-        api_handler=_show_app_override_rules,
+        api_handler=show_handler("get_app_override_rules"),
         ssh_command=None,
         render="list",
         feature_flag="app_override",
@@ -177,7 +102,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show security profile groups in the active folder",
         category="security",
         scope="folder",
-        api_handler=_show_profile_groups,
+        api_handler=show_handler("get_profile_groups"),
         ssh_command=None,
         render="list",
         feature_flag="profile_groups",
@@ -186,7 +111,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show anti-spyware profiles in the active folder",
         category="security",
         scope="folder",
-        api_handler=_show_anti_spyware_profiles,
+        api_handler=show_handler("get_anti_spyware_profiles"),
         ssh_command=None,
         render="list",
         feature_flag="security_profiles",
@@ -195,7 +120,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show vulnerability protection profiles in the active folder",
         category="security",
         scope="folder",
-        api_handler=_show_vulnerability_profiles,
+        api_handler=show_handler("get_vulnerability_protection_profiles"),
         ssh_command=None,
         render="list",
         feature_flag="security_profiles",
@@ -204,7 +129,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show WildFire anti-virus profiles in the active folder",
         category="security",
         scope="folder",
-        api_handler=_show_wildfire_profiles,
+        api_handler=show_handler("get_wildfire_profiles"),
         ssh_command=None,
         render="list",
         feature_flag="security_profiles",
@@ -217,24 +142,6 @@ COMMANDS.update(_EXTRA_COMMANDS)
 # ---------------------------------------------------------------------------
 # Write handlers — security config (configure mode)
 # ---------------------------------------------------------------------------
-
-def _delete_security_rule(ctx: ExecutionContext, args: dict) -> Any:
-    """Delete a security rule by name.
-
-    Usage: delete security-rule <name>
-    pan.dev: DELETE /config/security/v1/security-rules/{id}
-    """
-    scm  = require_scm(ctx)
-    name = (args.get("name") or "").strip()
-    if not name:
-        raise ValueError("Usage: delete security-rule <name>")
-    rules  = scm.get_security_policy(folder=ctx.folder)
-    obj_id = scm._find_id_by_name(rules, name)
-    if not obj_id:
-        raise ValueError(f"Security rule '{name}' not found in folder '{ctx.folder}'")
-    scm.delete_security_rule(obj_id)
-    return f"[green]✓[/green] Security rule [bold]{name}[/bold] deleted."
-
 
 def _set_url_category(ctx: ExecutionContext, args: dict) -> Any:
     """Create a custom URL category.
@@ -261,26 +168,15 @@ def _set_url_category(ctx: ExecutionContext, args: dict) -> Any:
     return f"[green]✓[/green] URL category [bold]{name}[/bold] created  (id: {result.get('id', '?')})"
 
 
-def _delete_url_category(ctx: ExecutionContext, args: dict) -> Any:
-    """Delete a URL category.  Usage: delete url-category <name>"""
-    scm  = require_scm(ctx)
-    name = (args.get("name") or "").strip()
-    if not name:
-        raise ValueError("Usage: delete url-category <name>")
-    cats   = scm.get_url_categories(folder=ctx.folder)
-    obj_id = scm._find_id_by_name(cats, name)
-    if not obj_id:
-        raise ValueError(f"URL category '{name}' not found in folder '{ctx.folder}'")
-    scm.delete_url_category(obj_id)
-    return f"[green]✓[/green] URL category [bold]{name}[/bold] deleted."
-
-
 _WRITE_COMMANDS: dict[str, CommandDef] = {
     "delete security-rule": CommandDef(
         description="Delete a security rule — delete security-rule <name>",
         category="security",
         scope="folder",
-        api_handler=_delete_security_rule,
+        api_handler=delete_handler(
+            "Security rule", "get_security_policy", "delete_security_rule",
+            usage="Usage: delete security-rule <name>",
+        ),
         ssh_command=None,
         render="raw",
         feature_flag="delete_security",
@@ -298,7 +194,10 @@ _WRITE_COMMANDS: dict[str, CommandDef] = {
         description="Delete a URL category — delete url-category <name>",
         category="security",
         scope="folder",
-        api_handler=_delete_url_category,
+        api_handler=delete_handler(
+            "URL category", "get_url_categories", "delete_url_category",
+            usage="Usage: delete url-category <name>",
+        ),
         ssh_command=None,
         render="raw",
         feature_flag="delete_security",

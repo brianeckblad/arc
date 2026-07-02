@@ -128,6 +128,62 @@ def translation_pending(command: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Handler factories — build the common read/delete handlers declaratively.
+#
+# Most 'show <resource>' handlers are a single SCM list call, and most
+# 'delete <resource>' handlers are the same find-by-name-then-DELETE
+# sequence.  These factories replace that copy-paste boilerplate; handlers
+# with any extra logic (client-side filtering, payload building, multiple
+# calls) stay hand-written in their command module.
+# ---------------------------------------------------------------------------
+
+def show_handler(scm_method: str, *, folder_scoped: bool = True) -> Callable:
+    """Return a read handler that calls a single SCMClient list method.
+
+    The handler calls ``getattr(require_scm(ctx), scm_method)(folder=ctx.folder)``
+    — or with no arguments when *folder_scoped* is False (TSG-wide resources
+    such as regions or devices).
+
+    e.g.  api_handler=show_handler("get_addresses")
+          api_handler=show_handler("get_regions", folder_scoped=False)
+    """
+    def handler(ctx: ExecutionContext, args: dict):
+        scm = require_scm(ctx)
+        method = getattr(scm, scm_method)
+        if folder_scoped:
+            return method(folder=ctx.folder)
+        return method()
+    return handler
+
+
+def delete_handler(resource_label: str, get_method: str, delete_method: str, *, usage: str) -> Callable:
+    """Return a delete-by-name handler (list → resolve id → DELETE).
+
+    The handler reads ``args["name"]`` (raising ValueError with *usage* when
+    missing), lists the resource via *get_method* in the active folder,
+    resolves the object id with ``SCMClient._find_id_by_name``, raises
+    ValueError when no object matches, then calls *delete_method* with the id.
+
+    e.g.  api_handler=delete_handler(
+              "Tag", "get_tags", "delete_tag",
+              usage="Usage: delete tag <name>",
+          )
+    """
+    def handler(ctx: ExecutionContext, args: dict):
+        scm = require_scm(ctx)
+        name = (args.get("name") or "").strip()
+        if not name:
+            raise ValueError(usage)
+        items  = getattr(scm, get_method)(folder=ctx.folder)
+        obj_id = scm._find_id_by_name(items, name)
+        if not obj_id:
+            raise ValueError(f"{resource_label} '{name}' not found in folder '{ctx.folder}'")
+        getattr(scm, delete_method)(obj_id)
+        return f"[green]✓[/green] {resource_label} [bold]{name}[/bold] deleted."
+    return handler
+
+
+# ---------------------------------------------------------------------------
 # Write-command helpers — used by objects.py, security.py, network.py etc.
 # ---------------------------------------------------------------------------
 

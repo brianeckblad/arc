@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.commands.base import CommandDef, ExecutionContext, require_scm
+from app.commands.base import CommandDef, ExecutionContext, require_scm, show_handler
 
 
 # ---------------------------------------------------------------------------
@@ -43,16 +43,6 @@ def _snippet_names_for_folder(scm, folder_name: str) -> set[str]:
 # ---------------------------------------------------------------------------
 # Handlers
 # ---------------------------------------------------------------------------
-
-def _show_devices(ctx: ExecutionContext, args: dict) -> Any:
-    """List all SCM-managed devices.
-
-    Scope: global — devices are not folder-scoped in SCM.
-    pan.dev: GET /config/setup/v1/devices  (no folder parameter)
-    """
-    scm = require_scm(ctx)
-    return scm.get_devices()
-
 
 def _show_device_detail(ctx: ExecutionContext, args: dict) -> Any:
     """Show detail for a named device — show device <hostname|serial>.
@@ -286,7 +276,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="List all SCM-managed devices",
         category="setup",
         scope="global",
-        api_handler=_show_devices,
+        api_handler=show_handler("get_devices", folder_scoped=False),
         ssh_command=None,
         render="devices",
         feature_flag="show_devices",

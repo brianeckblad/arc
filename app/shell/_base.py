@@ -39,6 +39,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
+import httpx
+
 # termios / tty are Unix-only.  On Windows the interactive PTY session will
 # fall back to a friendlier error rather than crashing at import time.
 try:

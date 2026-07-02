@@ -14,7 +14,13 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.commands.base import CommandDef, ExecutionContext, require_scm, require_device
+from app.commands.base import (
+    CommandDef,
+    ExecutionContext,
+    require_device,
+    require_scm,
+    show_handler,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -75,44 +81,6 @@ def _show_interface(ctx: ExecutionContext, args: dict) -> Any:
     return [match]
 
 
-def _show_routing_route(ctx: ExecutionContext, args: dict) -> Any:
-    """List static routes configured in the active SCM folder.
-
-    pan.dev: GET /config/network/v1/routing/static-routes?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_static_routes(folder=ctx.folder)
-
-
-def _show_routing_summary(ctx: ExecutionContext, args: dict) -> Any:
-    """List virtual routers (routing profiles) in the active SCM folder.
-
-    pan.dev: GET /config/network/v1/virtual-routers?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    profiles = scm.get_routing_profiles(folder=ctx.folder)
-    # format as generic list-of-dicts; 'dict' render handles it
-    return profiles
-
-
-def _show_zone(ctx: ExecutionContext, args: dict) -> Any:
-    """List security zones configured in the active SCM folder.
-
-    pan.dev: GET /config/network/v1/zones?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_zones(folder=ctx.folder)
-
-
-def _show_ha_all(ctx: ExecutionContext, args: dict) -> Any:
-    """Show full HA configuration from the active SCM folder.
-
-    pan.dev: GET /config/network/v1/ha?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_ha_config(folder=ctx.folder)
-
-
 def _show_ha_state(ctx: ExecutionContext, args: dict) -> Any:
     """Show HA state summary — first HA entry as a key/value panel.
 
@@ -161,7 +129,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show static routes in the active folder",
         category="network",
         scope="folder",
-        api_handler=_show_routing_route,
+        api_handler=show_handler("get_static_routes"),
         ssh_command="show routing route",
         render="routes",
         feature_flag="show_routing",
@@ -170,7 +138,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show virtual routers / routing profiles in the active folder",
         category="network",
         scope="folder",
-        api_handler=_show_routing_summary,
+        api_handler=show_handler("get_routing_profiles"),
         ssh_command="show routing summary",
         render="dict",
         feature_flag="show_routing",
@@ -179,7 +147,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show security zones in the active folder",
         category="network",
         scope="folder",
-        api_handler=_show_zone,
+        api_handler=show_handler("get_zones"),
         ssh_command="show zone",
         render="zones",
         feature_flag="show_zone",
@@ -188,7 +156,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show full HA configuration from the active folder",
         category="network",
         scope="folder",
-        api_handler=_show_ha_all,
+        api_handler=show_handler("get_ha_config"),
         ssh_command="show high-availability all",
         render="ha",
         feature_flag="show_high_availability",
@@ -203,75 +171,6 @@ COMMANDS: dict[str, CommandDef] = {
         feature_flag="show_high_availability",
     ),
 }
-
-
-# ---------------------------------------------------------------------------
-# Additional handlers — unimplemented SCM config commands
-# ---------------------------------------------------------------------------
-
-def _show_nat_rules(ctx: ExecutionContext, args: dict) -> Any:
-    """List NAT rules in the active folder.  PAN-OS: show running nat-policy
-    pan.dev: GET /config/network/v1/nat-rules?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_nat_rules(folder=ctx.folder)
-
-
-def _show_pbf_rules(ctx: ExecutionContext, args: dict) -> Any:
-    """List policy-based forwarding rules.  PAN-OS: show pbf rule all
-    pan.dev: GET /config/network/v1/pbf-rules?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_pbf_rules(folder=ctx.folder)
-
-
-def _show_ike_gateways(ctx: ExecutionContext, args: dict) -> Any:
-    """List IKE gateway configurations (VPN).  PAN-OS: show vpn ike-sa gateway <name>
-    pan.dev: GET /config/network/v1/ike-gateways?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_ike_gateways(folder=ctx.folder)
-
-
-def _show_ipsec_tunnels(ctx: ExecutionContext, args: dict) -> Any:
-    """List IPsec tunnel configurations (VPN).  PAN-OS: show vpn ipsec-sa
-    pan.dev: GET /config/network/v1/ipsec-tunnels?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_ipsec_tunnels(folder=ctx.folder)
-
-
-def _show_bgp_profiles(ctx: ExecutionContext, args: dict) -> Any:
-    """List BGP address-family profiles (SCM configuration, not live BGP state).
-    For live BGP peer state use --remote.
-    pan.dev: GET /config/network/v1/bgp-address-family-profiles?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_bgp_routing_profiles(folder=ctx.folder)
-
-
-def _show_dns_proxy(ctx: ExecutionContext, args: dict) -> Any:
-    """List DNS proxy configurations.
-    pan.dev: GET /config/network/v1/dns-proxies?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_dns_proxies(folder=ctx.folder)
-
-
-def _show_qos_profiles(ctx: ExecutionContext, args: dict) -> Any:
-    """List QoS profiles.
-    pan.dev: GET /config/network/v1/qos-profiles?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_qos_profiles(folder=ctx.folder)
-
-
-def _show_sdwan_rules(ctx: ExecutionContext, args: dict) -> Any:
-    """List SD-WAN rules.
-    pan.dev: GET /config/network/v1/sdwan-rules?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_sdwan_rules(folder=ctx.folder)
 
 
 # ---------------------------------------------------------------------------
@@ -377,7 +276,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show NAT rules in the active folder",
         category="network",
         scope="folder",
-        api_handler=_show_nat_rules,
+        api_handler=show_handler("get_nat_rules"),
         ssh_command="show running nat-policy",
         render="list",
         feature_flag="nat_rules",
@@ -386,7 +285,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show policy-based forwarding rules in the active folder",
         category="network",
         scope="folder",
-        api_handler=_show_pbf_rules,
+        api_handler=show_handler("get_pbf_rules"),
         ssh_command="show pbf rule all",
         render="list",
         feature_flag="pbf_rules",
@@ -395,7 +294,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show IKE gateway configurations (VPN) in the active folder",
         category="network",
         scope="folder",
-        api_handler=_show_ike_gateways,
+        api_handler=show_handler("get_ike_gateways"),
         ssh_command="show vpn ike-sa gateway all",
         render="list",
         feature_flag="ipsec_vpn",
@@ -404,7 +303,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show IPsec tunnel configurations in the active folder",
         category="network",
         scope="folder",
-        api_handler=_show_ipsec_tunnels,
+        api_handler=show_handler("get_ipsec_tunnels"),
         ssh_command="show vpn ipsec-sa",
         render="list",
         feature_flag="ipsec_vpn",
@@ -413,7 +312,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show BGP routing profiles (configuration) in the active folder",
         category="network",
         scope="folder",
-        api_handler=_show_bgp_profiles,
+        api_handler=show_handler("get_bgp_routing_profiles"),
         ssh_command="show routing protocol bgp summary",
         render="list",
         feature_flag="bgp_routing",
@@ -422,7 +321,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show DNS proxy configurations in the active folder",
         category="network",
         scope="folder",
-        api_handler=_show_dns_proxy,
+        api_handler=show_handler("get_dns_proxies"),
         ssh_command="show dns-proxy dns-signature statistics",
         render="list",
         feature_flag="dns_proxy",
@@ -431,7 +330,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show QoS profiles in the active folder",
         category="network",
         scope="folder",
-        api_handler=_show_qos_profiles,
+        api_handler=show_handler("get_qos_profiles"),
         ssh_command=None,
         render="list",
         feature_flag="qos",
@@ -440,7 +339,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show SD-WAN rules in the active folder",
         category="network",
         scope="folder",
-        api_handler=_show_sdwan_rules,
+        api_handler=show_handler("get_sdwan_rules"),
         ssh_command="show sdwan traffic",
         render="list",
         feature_flag="sdwan",

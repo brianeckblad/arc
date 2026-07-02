@@ -15,87 +15,14 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.commands.base import CommandDef, ExecutionContext, require_scm, require_device
+from app.commands.base import CommandDef, ExecutionContext, require_device, show_handler
 
 
 # ---------------------------------------------------------------------------
-# Handlers — SCM config (folder-scoped)
-# ---------------------------------------------------------------------------
-
-def _show_authentication_profiles(ctx: ExecutionContext, args: dict) -> Any:
-    """List authentication profiles in the active SCM folder.
-
-    pan.dev: GET /config/identity/v1/authentication-profiles?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_authentication_profiles(folder=ctx.folder)
-
-
-def _show_authentication_rules(ctx: ExecutionContext, args: dict) -> Any:
-    """List authentication rules in the active SCM folder.
-
-    pan.dev: GET /config/identity/v1/authentication-rules?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_authentication_rules(folder=ctx.folder)
-
-
-def _show_certificate_profiles(ctx: ExecutionContext, args: dict) -> Any:
-    """List certificate profiles in the active SCM folder.
-
-    pan.dev: GET /config/identity/v1/certificate-profiles?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_certificate_profiles(folder=ctx.folder)
-
-
-def _show_tls_service_profiles(ctx: ExecutionContext, args: dict) -> Any:
-    """List TLS service profiles in the active SCM folder.
-
-    pan.dev: GET /config/identity/v1/tls-service-profiles?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_tls_service_profiles(folder=ctx.folder)
-
-
-def _show_radius_server_profiles(ctx: ExecutionContext, args: dict) -> Any:
-    """List RADIUS server profiles in the active SCM folder.
-
-    pan.dev: GET /config/identity/v1/radius-server-profiles?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_radius_server_profiles(folder=ctx.folder)
-
-
-def _show_mfa_servers(ctx: ExecutionContext, args: dict) -> Any:
-    """List MFA server profiles in the active SCM folder.
-
-    pan.dev: GET /config/identity/v1/mfa-servers?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_mfa_servers(folder=ctx.folder)
-
-
-def _show_local_users(ctx: ExecutionContext, args: dict) -> Any:
-    """List local users in the active SCM folder.
-
-    pan.dev: GET /config/identity/v1/local-users?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_local_users(folder=ctx.folder)
-
-
-def _show_local_user_groups(ctx: ExecutionContext, args: dict) -> Any:
-    """List local user groups in the active SCM folder.
-
-    pan.dev: GET /config/identity/v1/local-user-groups?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_local_user_groups(folder=ctx.folder)
-
-
-# ---------------------------------------------------------------------------
-# Handler — live device only (SSH / --remote)
+# Handlers — SCM config commands are built with show_handler() from base.py;
+# pan.dev: GET /config/identity/v1/<resource>?folder=<folder>
+#
+# Handler below — live device only (SSH / --remote)
 # ---------------------------------------------------------------------------
 
 def _show_user_ip_mapping(ctx: ExecutionContext, args: dict) -> Any:
@@ -121,7 +48,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show authentication profiles in the active folder",
         category="identity",
         scope="folder",
-        api_handler=_show_authentication_profiles,
+        api_handler=show_handler("get_authentication_profiles"),
         ssh_command="show authentication-profile",
         render="list",
         feature_flag="authentication",
@@ -130,7 +57,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show authentication rules in the active folder",
         category="identity",
         scope="folder",
-        api_handler=_show_authentication_rules,
+        api_handler=show_handler("get_authentication_rules"),
         ssh_command="show authentication-rule",
         render="list",
         feature_flag="authentication",
@@ -139,7 +66,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show certificate profiles in the active folder",
         category="identity",
         scope="folder",
-        api_handler=_show_certificate_profiles,
+        api_handler=show_handler("get_certificate_profiles"),
         ssh_command="show certificate-profile",
         render="list",
         feature_flag="certificates",
@@ -148,7 +75,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show TLS service profiles in the active folder",
         category="identity",
         scope="folder",
-        api_handler=_show_tls_service_profiles,
+        api_handler=show_handler("get_tls_service_profiles"),
         ssh_command="show tls-service-profile",
         render="list",
         feature_flag="certificates",
@@ -157,7 +84,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show RADIUS server profiles in the active folder",
         category="identity",
         scope="folder",
-        api_handler=_show_radius_server_profiles,
+        api_handler=show_handler("get_radius_server_profiles"),
         ssh_command="show radius-server",
         render="list",
         feature_flag="authentication",
@@ -166,7 +93,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show MFA server profiles in the active folder",
         category="identity",
         scope="folder",
-        api_handler=_show_mfa_servers,
+        api_handler=show_handler("get_mfa_servers"),
         ssh_command=None,
         render="list",
         feature_flag="authentication",
@@ -175,7 +102,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show local users in the active folder",
         category="identity",
         scope="folder",
-        api_handler=_show_local_users,
+        api_handler=show_handler("get_local_users"),
         ssh_command="show local-user",
         render="list",
         feature_flag="local_users",
@@ -184,7 +111,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show local user groups in the active folder",
         category="identity",
         scope="folder",
-        api_handler=_show_local_user_groups,
+        api_handler=show_handler("get_local_user_groups"),
         ssh_command="show local-user-group",
         render="list",
         feature_flag="local_users",

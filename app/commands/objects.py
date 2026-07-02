@@ -12,63 +12,19 @@ from typing import Any
 from app.commands.base import (
     CommandDef,
     ExecutionContext,
+    delete_handler,
     merge_common_fields,
     parse_kv_tail,
     require_scm,
+    show_handler,
 )
 
 
 # ---------------------------------------------------------------------------
-# Handlers
-# ---------------------------------------------------------------------------
-
-def _show_address(ctx: ExecutionContext, args: dict) -> Any:
-    """List address objects in the active SCM folder.
-
-    pan.dev: GET /config/objects/v1/addresses?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_addresses(folder=ctx.folder)
-
-
-def _show_address_group(ctx: ExecutionContext, args: dict) -> Any:
-    """List address groups in the active SCM folder.
-
-    pan.dev: GET /config/objects/v1/address-groups?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_address_groups(folder=ctx.folder)
-
-
-def _show_service(ctx: ExecutionContext, args: dict) -> Any:
-    """List service objects in the active SCM folder.
-
-    pan.dev: GET /config/objects/v1/services?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_services(folder=ctx.folder)
-
-
-def _show_tag(ctx: ExecutionContext, args: dict) -> Any:
-    """List tags in the active SCM folder.
-
-    pan.dev: GET /config/objects/v1/tags?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_tags(folder=ctx.folder)
-
-
-def _show_external_dynamic_list(ctx: ExecutionContext, args: dict) -> Any:
-    """List external dynamic lists (EDLs) in the active SCM folder.
-
-    pan.dev: GET /config/objects/v1/external-dynamic-lists?folder=<folder>
-    """
-    scm = require_scm(ctx)
-    return scm.get_external_dynamic_lists(folder=ctx.folder)
-
-
-# ---------------------------------------------------------------------------
 # Command table — merged into COMMANDS by registry.py
+#
+# Plain list commands use show_handler(<SCMClient method>) from base.py;
+# pan.dev: GET /config/objects/v1/<resource>?folder=<folder>
 # ---------------------------------------------------------------------------
 
 COMMANDS: dict[str, CommandDef] = {
@@ -76,7 +32,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show address objects in the active folder",
         category="objects",
         scope="folder",
-        api_handler=_show_address,
+        api_handler=show_handler("get_addresses"),
         ssh_command=None,
         render="address_objects",
         feature_flag="show_address",
@@ -85,7 +41,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show address groups in the active folder",
         category="objects",
         scope="folder",
-        api_handler=_show_address_group,
+        api_handler=show_handler("get_address_groups"),
         ssh_command=None,
         render="address_groups",
         feature_flag="show_address_group",
@@ -94,7 +50,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show service objects in the active folder",
         category="objects",
         scope="folder",
-        api_handler=_show_service,
+        api_handler=show_handler("get_services"),
         ssh_command=None,
         render="services",
         feature_flag="show_service",
@@ -103,7 +59,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show tags in the active folder",
         category="objects",
         scope="folder",
-        api_handler=_show_tag,
+        api_handler=show_handler("get_tags"),
         ssh_command=None,
         render="tags",
         feature_flag="show_tag",
@@ -112,7 +68,7 @@ COMMANDS: dict[str, CommandDef] = {
         description="Show external dynamic lists (EDLs) in the active folder",
         category="objects",
         scope="folder",
-        api_handler=_show_external_dynamic_list,
+        api_handler=show_handler("get_external_dynamic_lists"),
         ssh_command=None,
         render="edl_list",
         feature_flag="show_external_dynamic_list",
@@ -120,64 +76,12 @@ COMMANDS: dict[str, CommandDef] = {
 }
 
 
-# ---------------------------------------------------------------------------
-# Additional handlers — unimplemented objects commands
-# ---------------------------------------------------------------------------
-
-def _show_service_groups(ctx: ExecutionContext, args: dict) -> Any:
-    """pan.dev: GET /config/objects/v1/service-groups?folder=<folder>"""
-    scm = require_scm(ctx)
-    return scm.get_service_groups(folder=ctx.folder)
-
-
-def _show_application_groups(ctx: ExecutionContext, args: dict) -> Any:
-    """pan.dev: GET /config/objects/v1/application-groups?folder=<folder>"""
-    scm = require_scm(ctx)
-    return scm.get_application_groups(folder=ctx.folder)
-
-
-def _show_application_filters(ctx: ExecutionContext, args: dict) -> Any:
-    """pan.dev: GET /config/objects/v1/application-filters?folder=<folder>"""
-    scm = require_scm(ctx)
-    return scm.get_application_filters(folder=ctx.folder)
-
-
-def _show_schedules(ctx: ExecutionContext, args: dict) -> Any:
-    """pan.dev: GET /config/objects/v1/schedules?folder=<folder>"""
-    scm = require_scm(ctx)
-    return scm.get_schedules(folder=ctx.folder)
-
-
-def _show_regions(ctx: ExecutionContext, args: dict) -> Any:
-    """pan.dev: GET /config/objects/v1/regions  (global — no folder filter)"""
-    scm = require_scm(ctx)
-    return scm.get_regions()
-
-
-def _show_hip_objects(ctx: ExecutionContext, args: dict) -> Any:
-    """pan.dev: GET /config/objects/v1/hip-objects?folder=<folder>"""
-    scm = require_scm(ctx)
-    return scm.get_hip_objects(folder=ctx.folder)
-
-
-def _show_hip_profiles(ctx: ExecutionContext, args: dict) -> Any:
-    """pan.dev: GET /config/objects/v1/hip-profiles?folder=<folder>"""
-    scm = require_scm(ctx)
-    return scm.get_hip_profiles(folder=ctx.folder)
-
-
-def _show_log_forwarding_profiles(ctx: ExecutionContext, args: dict) -> Any:
-    """pan.dev: GET /config/objects/v1/log-forwarding-profiles?folder=<folder>"""
-    scm = require_scm(ctx)
-    return scm.get_log_forwarding_profiles(folder=ctx.folder)
-
-
 _EXTRA_COMMANDS: dict[str, CommandDef] = {
     "show service-group": CommandDef(
         description="Show service groups in the active folder",
         category="objects",
         scope="folder",
-        api_handler=_show_service_groups,
+        api_handler=show_handler("get_service_groups"),
         ssh_command="show objects service-group",
         render="list",
         feature_flag="service_groups",
@@ -186,7 +90,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show application groups in the active folder",
         category="objects",
         scope="folder",
-        api_handler=_show_application_groups,
+        api_handler=show_handler("get_application_groups"),
         ssh_command="show objects application-group",
         render="list",
         feature_flag="app_groups",
@@ -195,7 +99,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show application filters in the active folder",
         category="objects",
         scope="folder",
-        api_handler=_show_application_filters,
+        api_handler=show_handler("get_application_filters"),
         ssh_command=None,
         render="list",
         feature_flag="app_groups",
@@ -204,7 +108,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show schedules in the active folder",
         category="objects",
         scope="folder",
-        api_handler=_show_schedules,
+        api_handler=show_handler("get_schedules"),
         ssh_command=None,
         render="list",
         feature_flag="schedules",
@@ -213,7 +117,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show regions (TSG-wide, no folder filter)",
         category="objects",
         scope="global",
-        api_handler=_show_regions,
+        api_handler=show_handler("get_regions", folder_scoped=False),
         ssh_command=None,
         render="list",
         feature_flag="regions",
@@ -222,7 +126,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show GlobalProtect HIP objects in the active folder",
         category="objects",
         scope="folder",
-        api_handler=_show_hip_objects,
+        api_handler=show_handler("get_hip_objects"),
         ssh_command=None,
         render="list",
         feature_flag="hip",
@@ -231,7 +135,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show GlobalProtect HIP profiles in the active folder",
         category="objects",
         scope="folder",
-        api_handler=_show_hip_profiles,
+        api_handler=show_handler("get_hip_profiles"),
         ssh_command=None,
         render="list",
         feature_flag="hip",
@@ -240,7 +144,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         description="Show log forwarding profiles in the active folder",
         category="objects",
         scope="folder",
-        api_handler=_show_log_forwarding_profiles,
+        api_handler=show_handler("get_log_forwarding_profiles"),
         ssh_command=None,
         render="list",
         feature_flag="log_profiles",
@@ -430,20 +334,6 @@ def _set_address_group(ctx: ExecutionContext, args: dict) -> Any:
     )
 
 
-def _delete_address_group(ctx: ExecutionContext, args: dict) -> Any:
-    """Delete an address group.  Usage: delete address-group <name>"""
-    scm = require_scm(ctx)
-    name = (args.get("name") or "").strip()
-    if not name:
-        raise ValueError("Usage: delete address-group <name>")
-    items  = scm.get_address_groups(folder=ctx.folder)
-    obj_id = scm._find_id_by_name(items, name)
-    if not obj_id:
-        raise ValueError(f"Address group '{name}' not found in folder '{ctx.folder}'")
-    scm.delete_address_group(obj_id)
-    return f"[green]✓[/green] Address group [bold]{name}[/bold] deleted."
-
-
 def _set_service(ctx: ExecutionContext, args: dict) -> Any:
     """Create a TCP or UDP service object in the active folder.
 
@@ -517,20 +407,6 @@ def _set_service(ctx: ExecutionContext, args: dict) -> Any:
     )
 
 
-def _delete_service(ctx: ExecutionContext, args: dict) -> Any:
-    """Delete a service object.  Usage: delete service <name>"""
-    scm = require_scm(ctx)
-    name = (args.get("name") or "").strip()
-    if not name:
-        raise ValueError("Usage: delete service <name>")
-    items  = scm.get_services(folder=ctx.folder)
-    obj_id = scm._find_id_by_name(items, name)
-    if not obj_id:
-        raise ValueError(f"Service '{name}' not found in folder '{ctx.folder}'")
-    scm.delete_service(obj_id)
-    return f"[green]✓[/green] Service [bold]{name}[/bold] deleted."
-
-
 def _set_service_group(ctx: ExecutionContext, args: dict) -> Any:
     """Create a service group (named collection of service objects).
 
@@ -578,20 +454,6 @@ def _set_service_group(ctx: ExecutionContext, args: dict) -> Any:
         f"[green]✓[/green] Service group [bold]{name}[/bold] ({len(members)} members: {', '.join(members)}) created\n"
         f"  folder: {ctx.folder}  id: {result.get('id', '?')}"
     )
-
-
-def _delete_service_group(ctx: ExecutionContext, args: dict) -> Any:
-    """Delete a service group.  Usage: delete service-group <name>"""
-    scm = require_scm(ctx)
-    name = (args.get("name") or "").strip()
-    if not name:
-        raise ValueError("Usage: delete service-group <name>")
-    items  = scm.get_service_groups(folder=ctx.folder)
-    obj_id = scm._find_id_by_name(items, name)
-    if not obj_id:
-        raise ValueError(f"Service group '{name}' not found in folder '{ctx.folder}'")
-    scm.delete_service_group(obj_id)
-    return f"[green]✓[/green] Service group [bold]{name}[/bold] deleted."
 
 
 def _set_tag(ctx: ExecutionContext, args: dict) -> Any:
@@ -646,20 +508,6 @@ def _set_tag(ctx: ExecutionContext, args: dict) -> Any:
         f"[green]✓[/green] Tag [bold]{name}[/bold] created{color_info}\n"
         f"  folder: {ctx.folder}  id: {result.get('id', '?')}"
     )
-
-
-def _delete_tag(ctx: ExecutionContext, args: dict) -> Any:
-    """Delete a tag.  Usage: delete tag <name>"""
-    scm = require_scm(ctx)
-    name = (args.get("name") or "").strip()
-    if not name:
-        raise ValueError("Usage: delete tag <name>")
-    items  = scm.get_tags(folder=ctx.folder)
-    obj_id = scm._find_id_by_name(items, name)
-    if not obj_id:
-        raise ValueError(f"Tag '{name}' not found in folder '{ctx.folder}'")
-    scm.delete_tag(obj_id)
-    return f"[green]✓[/green] Tag [bold]{name}[/bold] deleted."
 
 
 def _set_external_dynamic_list(ctx: ExecutionContext, args: dict) -> Any:
@@ -743,20 +591,6 @@ def _set_external_dynamic_list(ctx: ExecutionContext, args: dict) -> Any:
     )
 
 
-def _delete_external_dynamic_list(ctx: ExecutionContext, args: dict) -> Any:
-    """Delete an EDL.  Usage: delete external-dynamic-list <name>"""
-    scm = require_scm(ctx)
-    name = (args.get("name") or "").strip()
-    if not name:
-        raise ValueError("Usage: delete external-dynamic-list <name>")
-    items  = scm.get_external_dynamic_lists(folder=ctx.folder)
-    obj_id = scm._find_id_by_name(items, name)
-    if not obj_id:
-        raise ValueError(f"EDL '{name}' not found in folder '{ctx.folder}'")
-    scm.delete_external_dynamic_list(obj_id)
-    return f"[green]✓[/green] EDL [bold]{name}[/bold] deleted."
-
-
 _WRITE_COMMANDS: dict[str, CommandDef] = {
     "set address": CommandDef(
         description="Create address — set address <name> ip-netmask|ip-range|ip-wildcard|fqdn <value>",
@@ -789,7 +623,10 @@ _WRITE_COMMANDS: dict[str, CommandDef] = {
         description="Delete an address group — delete address-group <name>",
         category="objects",
         scope="folder",
-        api_handler=_delete_address_group,
+        api_handler=delete_handler(
+            "Address group", "get_address_groups", "delete_address_group",
+            usage="Usage: delete address-group <name>",
+        ),
         ssh_command=None,
         render="raw",
         feature_flag="delete_objects",
@@ -807,7 +644,10 @@ _WRITE_COMMANDS: dict[str, CommandDef] = {
         description="Delete a service object — delete service <name>",
         category="objects",
         scope="folder",
-        api_handler=_delete_service,
+        api_handler=delete_handler(
+            "Service", "get_services", "delete_service",
+            usage="Usage: delete service <name>",
+        ),
         ssh_command=None,
         render="raw",
         feature_flag="delete_objects",
@@ -825,7 +665,10 @@ _WRITE_COMMANDS: dict[str, CommandDef] = {
         description="Delete a service group — delete service-group <name>",
         category="objects",
         scope="folder",
-        api_handler=_delete_service_group,
+        api_handler=delete_handler(
+            "Service group", "get_service_groups", "delete_service_group",
+            usage="Usage: delete service-group <name>",
+        ),
         ssh_command=None,
         render="raw",
         feature_flag="delete_objects",
@@ -843,7 +686,10 @@ _WRITE_COMMANDS: dict[str, CommandDef] = {
         description="Delete a tag — delete tag <name>",
         category="objects",
         scope="folder",
-        api_handler=_delete_tag,
+        api_handler=delete_handler(
+            "Tag", "get_tags", "delete_tag",
+            usage="Usage: delete tag <name>",
+        ),
         ssh_command=None,
         render="raw",
         feature_flag="delete_objects",
@@ -861,7 +707,10 @@ _WRITE_COMMANDS: dict[str, CommandDef] = {
         description="Delete an EDL — delete external-dynamic-list <name>",
         category="objects",
         scope="folder",
-        api_handler=_delete_external_dynamic_list,
+        api_handler=delete_handler(
+            "EDL", "get_external_dynamic_lists", "delete_external_dynamic_list",
+            usage="Usage: delete external-dynamic-list <name>",
+        ),
         ssh_command=None,
         render="raw",
         feature_flag="delete_objects",

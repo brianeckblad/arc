@@ -61,8 +61,41 @@ class ExecutionMixin:
             console.print(f"[yellow]No API handler for '{key}'.[/yellow]")
             return
 
-        data = cmd_def.api_handler(ctx, args)
-        self._render(key, cmd_def, data)
+        try:
+            data = cmd_def.api_handler(ctx, args)
+            self._render(key, cmd_def, data)
+        except httpx.HTTPStatusError as exc:
+            status = exc.response.status_code
+            if status == 401:
+                console.print(
+                    "[red]Authentication failed (401).[/red] Token may be expired — "
+                    "run [bold]arc auth test[/bold] outside the shell, or "
+                    "[bold]account <profile>[/bold] to re-select credentials."
+                )
+            elif status == 403:
+                console.print(
+                    "[red]Permission denied (403).[/red] Your role or TSG scope may "
+                    "not allow this — check [bold]tsg[/bold] and your "
+                    "service-account role."
+                )
+            elif status == 404:
+                console.print(
+                    "[red]Not found (404)[/red] — the resource or folder may not "
+                    "exist in this TSG. Active folder: "
+                    f"[bold]{self._state.folder}[/bold]."
+                )
+            else:
+                detail = " ".join((exc.response.text or "").split())[:200]
+                console.print(
+                    f"[red]API error ({status}).[/red] {detail}"
+                    if detail else f"[red]API error ({status}).[/red]"
+                )
+        except httpx.HTTPError as exc:
+            console.print(
+                f"[red]Cannot reach SCM API:[/red] {exc}. Check network/VPN and retry."
+            )
+        except ValueError as exc:
+            console.print(f"[yellow]{exc}[/yellow]")
 
     def _execute_remote(self, key: str, cmd_def: CommandDef, args: dict) -> None:
         if cmd_def.ssh_command is None:
