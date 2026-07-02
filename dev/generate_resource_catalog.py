@@ -38,12 +38,17 @@ _ACTION_BY_METHOD = {
     "delete": "delete",
 }
 
+# Feature flags are per-RESOURCE with a read/write split (not per command):
+#   GET operations              -> <resource>_read
+#   POST/PUT/PATCH/DELETE       -> <resource>_write
+# so `adnsr_bad_domains_read` covers list + get-by-id, and `_write` covers
+# create/update/delete together. One boundary that matters, no verb noise.
 _FLAG_BY_METHOD = {
-    "get": "show",
-    "post": "create",
-    "put": "update",
-    "patch": "update",
-    "delete": "delete",
+    "get": "read",
+    "post": "write",
+    "put": "write",
+    "patch": "write",
+    "delete": "write",
 }
 
 _VERSION_TOKEN = re.compile(r"^v\d+(?:\.\d+)?$", re.IGNORECASE)
@@ -272,8 +277,11 @@ def _build_catalog() -> list[dict]:
                     else:
                         command = f"{_ACTION_BY_METHOD[method]} {spec_key.replace('cloudngfw', 'cngfw').replace('-', ' ')} {' '.join(tokens)}"
                 seen_commands.add(command)
-                resource_flag = "_".join(command_tokens)
-                feature_flag = f"{_FLAG_BY_METHOD[method]}_{resource_flag}".replace("-", "_")
+                # Strip the "id" disambiguator so GET /x and GET /x/{id}
+                # (and by-name vs by-id deletes) share one resource flag.
+                flag_tokens = [t for t in command_tokens if t != "id"]
+                resource_flag = "_".join(flag_tokens)
+                feature_flag = f"{resource_flag}_{_FLAG_BY_METHOD[method]}".replace("-", "_")
                 entries.append({
                     "command": command,
                     "method": method.upper(),

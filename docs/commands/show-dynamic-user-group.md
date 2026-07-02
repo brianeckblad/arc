@@ -1,3 +1,14 @@
+---
+command: "show dynamic-user-group"
+description: "Show dynamic user group — device-local config (break-glass)"
+usage: "show dynamic-user-group
+show dynamic-user-group <name>"
+feature_flag: panos_config_misc
+category: panos-config
+scope: device
+api: "(live device state — SSH via --remote)"
+---
+
 # show dynamic-user-group
 
 List **dynamic-user-group** objects in the active SCM folder.

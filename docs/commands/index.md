@@ -2,9 +2,1675 @@
 
 Use `help <command>` to open detailed docs for a command.
 
+- `check data-access-passwd system` — Check data access passwd system — device-local config (break-glass)
+- `check full-commit-required` — Check full commit required — device-local config (break-glass)
+- `check pending-changes` — Check pending changes — device-local config (break-glass)
+- `clear advanced-routing bfd counters session-id` — Clear advanced routing bfd counters session id — live device data
+- `clear advanced-routing bfd session-state session-id` — Clear advanced routing bfd session state session id — live device data
+- `clear advanced-routing bgp logical-router` — Clear advanced routing bgp logical router — live device data
+- `clear advanced-routing multicast igmp membership logical-router` — Clear advanced routing multicast igmp membership logical router — live device data
+- `clear advanced-routing multicast igmp statistics logical-router` — Clear advanced routing multicast igmp statistics logical router — live device data
+- `clear advanced-routing multicast mroute logical-router` — Clear advanced routing multicast mroute logical router — live device data
+- `clear advanced-routing multicast msdp sa logical-router` — Clear advanced routing multicast msdp sa logical router — live device data
+- `clear advanced-routing multicast msdp statistics logical-router` — Clear advanced routing multicast msdp statistics logical router — live device data
+- `clear advanced-routing multicast pim statistics logical-router` — Clear advanced routing multicast pim statistics logical router — live device data
+- `clear application-signature statistics` — Clear application signature statistics — live device data
+- `clear arp interface` — Clear arp interface — live device data
+- `clear audit-comment xpath` — Clear audit comment xpath — live device data
+- `clear auto-tag vsys` — Clear auto tag vsys — live device data
+- `clear bonjour interface` — Clear bonjour interface — live device data
+- `clear cluster-flow all` — Clear cluster flow all — live device data
+- `clear cluster-flow id` — Clear cluster flow id — live device data
+- `clear cookie-surrogate-cache all` — Clear cookie surrogate cache all — live device data
+- `clear cookie-surrogate-cache username` — Clear cookie surrogate cache username — live device data
+- `clear counter all` — Clear counter all — live device data
+- `clear counter global filter category` — Clear counter global filter category — live device data
+- `clear counter global name` — Clear counter global name — live device data
+- `clear counter interface` — Clear counter interface — live device data
+- `clear device-cache-mp all` — Clear device cache mp all — live device data
+- `clear device-cache-mp ip` — Clear device cache mp ip — live device data
+- `clear dhcp lease all expired-only` — Clear dhcp lease all expired only — live device data
+- `clear dhcp lease interface` — Clear dhcp lease interface — live device data
+- `clear dns-proxy cache all domain-name` — Clear dns proxy cache all domain name — live device data
+- `clear dns-proxy cache name` — Clear dns proxy cache name — live device data
+- `clear dns-proxy dns-signature cache fqdn` — Clear dns proxy dns signature cache fqdn — live device data
+- `clear dns-proxy dns-signature counters` — Clear dns proxy dns signature counters — live device data
+- `clear dns-proxy encrypted-dns` — Clear dns proxy encrypted dns — live device data
+- `clear dns-proxy statistics all` — Clear dns proxy statistics all — live device data
+- `clear dns-proxy statistics name` — Clear dns proxy statistics name — live device data
+- `clear dos-block-table all filter source-ip` — Clear dos block table all filter source ip — live device data
+- `clear dos-block-table drop-counter` — Clear dos block table drop counter — live device data
+- `clear dos-protection rule` — Clear dos protection rule — live device data
+- `clear dos-protection zone` — Clear dos protection zone — live device data
+- `clear global-protect redirect location` — Clear global protect redirect location — live device data
+- `clear global-protect-portal statistics portal` — Clear global protect portal statistics portal — live device data
+- `clear high-availability cluster statistics` — Clear high availability cluster statistics — live device data
+- `clear high-availability control-link statistics` — Clear high availability control link statistics — live device data
+- `clear high-availability transitions` — Clear high availability transitions — live device data
+- `clear job id` — Clear job id — live device data
+- `clear lacp counters aggregate-ethernet` — Clear lacp counters aggregate ethernet — live device data
+- `clear lldp counters all` — Clear lldp counters all — live device data
+- `clear lldp counters interface` — Clear lldp counters interface — live device data
+- `clear log` — Clear log — live device data
+- `clear logrcvr offline-logpurger` — Clear logrcvr offline logpurger — live device data
+- `clear mac` — Clear mac — live device data
+- `clear nat-rule-cache rule` — Clear nat rule cache rule — live device data
+- `clear neighbor interface` — Clear neighbor interface — live device data
+- `clear neighbor ndp-monitor` — Clear neighbor ndp monitor — live device data
+- `clear net-inspection filter` — Clear net inspection filter — live device data
+- `clear pbf return-mac all` — Clear pbf return mac all — live device data
+- `clear pbf return-mac name` — Clear pbf return mac name — live device data
+- `clear pbf rule all` — Clear pbf rule all — live device data
+- `clear pbf rule name` — Clear pbf rule name — live device data
+- `clear policy-app-usage-data ruleuuid` — Clear policy app usage data ruleuuid — live device data
+- `clear pppoe interface` — Clear pppoe interface — live device data
+- `clear pppoe ipv6 interface` — Clear pppoe ipv6 interface — live device data
+- `clear query all-by-session` — Clear query all by session — live device data
+- `clear query id` — Clear query id — live device data
+- `clear report all-by-session` — Clear report all by session — live device data
+- `clear report cache` — Clear report cache — live device data
+- `clear report id` — Clear report id — live device data
+- `clear resiliency statistics` — Clear resiliency statistics — live device data
+- `clear routing bfd counters session-id` — Clear routing bfd counters session id — live device data
+- `clear routing bfd session-state session-id` — Clear routing bfd session state session id — live device data
+- `clear routing bgp virtual-router` — Clear routing bgp virtual router — live device data
+- `clear routing multicast igmp statistics virtual-router` — Clear routing multicast igmp statistics virtual router — live device data
+- `clear routing multicast pim statistics virtual-router` — Clear routing multicast pim statistics virtual router — live device data
+- `clear rule-hit-count vsys` — Clear rule hit count vsys — live device data
+- `clear sdwan event` — Clear sdwan event — live device data
+- `clear sdwan pool unsuccess` — Clear sdwan pool unsuccess — live device data
+- `clear session all filter nat` — Clear session all filter nat — live device data
+- `clear session id` — Clear session id — live device data
+- `clear snmpd refresh-timer-period` — Clear snmpd refresh timer period — live device data
+- `clear ssl-cert-cn` — Clear ssl cert cn — live device data
+- `clear ssl-decrypt exclude-cache server` — Clear ssl decrypt exclude cache server — live device data
+- `clear statistics` — Clear statistics — live device data
+- `clear uappid-filtergroup-mapping all` — Clear uappid filtergroup mapping all — live device data
+- `clear uappid-filtergroup-mapping id` — Clear uappid filtergroup mapping id — live device data
+- `clear uappid-policy-cache all` — Clear uappid policy cache all — live device data
+- `clear uappid-policy-cache id` — Clear uappid policy cache id — live device data
+- `clear ueip address` — Clear ueip address — live device data
+- `clear ueip all` — Clear ueip all — live device data
+- `clear uid-cache all` — Clear uid cache all — live device data
+- `clear uid-cache uid` — Clear uid cache uid — live device data
+- `clear uid-map-cache all` — Clear uid map cache all — live device data
+- `clear uid-map-cache uid` — Clear uid map cache uid — live device data
+- `clear url-cache all` — Clear url cache all — live device data
+- `clear url-cache url` — Clear url cache url — live device data
+- `clear user-cache all type` — Clear user cache all type — live device data
+- `clear user-cache ip` — Clear user cache ip — live device data
+- `clear user-cache-mp all type` — Clear user cache mp all type — live device data
+- `clear user-cache-mp ip` — Clear user cache mp ip — live device data
+- `clear user-policy-cache all` — Clear user policy cache all — live device data
+- `clear user-policy-cache uid` — Clear user policy cache uid — live device data
+- `clear vpn flow tunnel-id` — Clear vpn flow tunnel id — live device data
+- `clear vpn ike-hashurl` — Clear vpn ike hashurl — live device data
+- `clear vpn ike-preferred-version gateway` — Clear vpn ike preferred version gateway — live device data
+- `clear vpn ike-sa gateway` — Clear vpn ike sa gateway — live device data
+- `clear vpn ipsec-sa tunnel` — Clear vpn ipsec sa tunnel — live device data
+- `clear wildfire counters` — Clear wildfire counters — live device data
+- `clear xml-api multiusersystem cloud` — Clear xml api multiusersystem cloud — live device data
+- `clear zone-protection zone` — Clear zone protection zone — live device data
 - `commit` — Apply staged changes and push to devices
+- `commit description` — Commit description — device-local config (break-glass)
+- `debug advanced-routing` — Debug advanced routing — live device data
+- `debug advanced-routing bgp` — Debug advanced routing bgp — live device data
+- `debug advanced-routing bgp updates in peer-name` — Debug advanced routing bgp updates in peer name — live device data
+- `debug advanced-routing bgp updates out peer-name` — Debug advanced routing bgp updates out peer name — live device data
+- `debug advanced-routing daemon-status logical-router` — Debug advanced routing daemon status logical router — live device data
+- `debug advanced-routing fib check` — Debug advanced routing fib check — live device data
+- `debug advanced-routing fib clear logical-router` — Debug advanced routing fib clear logical router — live device data
+- `debug advanced-routing fib flush` — Debug advanced routing fib flush — live device data
+- `debug advanced-routing fib stats` — Debug advanced routing fib stats — live device data
+- `debug advanced-routing fqdn display logical-router` — Debug advanced routing fqdn display logical router — live device data
+- `debug advanced-routing global off` — Debug advanced routing global off — live device data
+- `debug advanced-routing global on` — Debug advanced routing global on — live device data
+- `debug advanced-routing global show` — Debug advanced routing global show — live device data
+- `debug advanced-routing mpf offload` — Debug advanced routing mpf offload — live device data
+- `debug advanced-routing mpf stats` — Debug advanced routing mpf stats — live device data
+- `debug advanced-routing ospfv3 logical-router` — Debug advanced routing ospfv3 logical router — live device data
+- `debug advanced-routing path-monitor id` — Debug advanced routing path monitor id — live device data
+- `debug advanced-routing pcap` — Debug advanced routing pcap — live device data
+- `debug advanced-routing pcap show` — Debug advanced routing pcap show — live device data
+- `debug advanced-routing qtrace disable afi` — Debug advanced routing qtrace disable afi — live device data
+- `debug advanced-routing qtrace enable afi` — Debug advanced routing qtrace enable afi — live device data
+- `debug advanced-routing qtrace flush-log` — Debug advanced routing qtrace flush log — live device data
+- `debug advanced-routing qtrace show afi` — Debug advanced routing qtrace show afi — live device data
+- `debug advanced-routing restart` — Debug advanced routing restart — live device data
+- `debug advanced-routing zebra events enable` — Debug advanced routing zebra events enable — live device data
+- `debug advanced-routing zebra fpm enable` — Debug advanced routing zebra fpm enable — live device data
+- `debug advanced-routing zebra kernel msgdump logical-router` — Debug advanced routing zebra kernel msgdump logical router — live device data
+- `debug advanced-routing zebra nht detailed` — Debug advanced routing zebra nht detailed — live device data
+- `debug advanced-routing zebra packet logical-router` — Debug advanced routing zebra packet logical router — live device data
+- `debug advanced-routing zebra rib detailed` — Debug advanced routing zebra rib detailed — live device data
+- `debug authentication` — Debug authentication — live device data
+- `debug authentication api-key-show key` — Debug authentication api key show key — live device data
+- `debug authentication connection-debug-off protocol-type` — Debug authentication connection debug off protocol type — live device data
+- `debug authentication connection-debug-on protocol-type` — Debug authentication connection debug on protocol type — live device data
+- `debug authentication connection-show protocol-type` — Debug authentication connection show protocol type — live device data
+- `debug authentication on` — Debug authentication on — live device data
+- `debug authentication set-tacacs-acct-task-q-size qsize` — Debug authentication set tacacs acct task q size qsize — live device data
+- `debug authentication test-tacacs-acct-server-connection address` — Debug authentication test tacacs acct server connection address — live device data
+- `debug bfd global off` — Debug bfd global off — live device data
+- `debug bfd global on` — Debug bfd global on — live device data
+- `debug bfd global show` — Debug bfd global show — live device data
+- `debug cli` — Debug cli — live device data
+- `debug cloud-appid ace-server` — Debug cloud appid ace server — live device data
+- `debug cloud-appid cloud-manual-pull` — Debug cloud appid cloud manual pull — live device data
+- `debug cloud-appid delete-signature-data app-name` — Debug cloud appid delete signature data app name — live device data
+- `debug cloud-appid delete-signature-data appid` — Debug cloud appid delete signature data appid — live device data
+- `debug cloud-appid delete-signature-data filter-signature-id` — Debug cloud appid delete signature data filter signature id — live device data
+- `debug cloud-appid dump config` — Debug cloud appid dump config — live device data
+- `debug cloud-appid keep-task-file` — Debug cloud appid keep task file — live device data
+- `debug cloud-appid reset` — Debug cloud appid reset — live device data
+- `debug cloud-appid reset signature-dp option` — Debug cloud appid reset signature dp option — live device data
+- `debug cloud-appid set config` — Debug cloud appid set config — live device data
+- `debug cloud-appid unknown-signature-query app-name` — Debug cloud appid unknown signature query app name — live device data
+- `debug cloud-appid unknown-signature-query appid` — Debug cloud appid unknown signature query appid — live device data
+- `debug cloud-appid unknown-signature-query filter-sig-id` — Debug cloud appid unknown signature query filter sig id — live device data
+- `debug cloud-userid clear-cookie type` — Debug cloud userid clear cookie type — live device data
+- `debug cloud-userid reset-connection` — Debug cloud userid reset connection — live device data
+- `debug cloud-userid reset-counters` — Debug cloud userid reset counters — live device data
+- `debug contentd status` — Debug contentd status — live device data
+- `debug cord corr-mgr off` — Debug cord corr mgr off — live device data
+- `debug cord corr-mgr on` — Debug cord corr mgr on — live device data
+- `debug cord corr-mgr show back-query status` — Debug cord corr mgr show back query status — live device data
+- `debug cord corr-mgr show brief` — Debug cord corr mgr show brief — live device data
+- `debug cord corr-mgr show failed` — Debug cord corr mgr show failed — live device data
+- `debug cord corr-mgr show filter search object` — Debug cord corr mgr show filter search object — live device data
+- `debug cord corr-mgr show instance search category` — Debug cord corr mgr show instance search category — live device data
+- `debug cord corr-mgr show instance summary` — Debug cord corr mgr show instance summary — live device data
+- `debug cord corr-mgr show object id` — Debug cord corr mgr show object id — live device data
+- `debug cord corr-mgr show object list` — Debug cord corr mgr show object list — live device data
+- `debug cord corr-mgr stats clear object` — Debug cord corr mgr stats clear object — live device data
+- `debug cord corr-mgr stats show object` — Debug cord corr mgr stats show object — live device data
+- `debug cord delete db` — Debug cord delete db — live device data
+- `debug cord delete events objectname` — Debug cord delete events objectname — live device data
+- `debug cord delete instances match` — Debug cord delete instances match — live device data
+- `debug cord object-stats clear` — Debug cord object stats clear — live device data
+- `debug cord object-stats set` — Debug cord object stats set — live device data
+- `debug cord object-stats show` — Debug cord object stats show — live device data
+- `debug cord object-stats show-setting` — Debug cord object stats show setting — live device data
+- `debug cord off` — Debug cord off — live device data
+- `debug cord on` — Debug cord on — live device data
+- `debug cord show` — Debug cord show — live device data
+- `debug cord stats` — Debug cord stats — live device data
+- `debug cryptod clear hsm-key-cache` — Debug cryptod clear hsm key cache — live device data
+- `debug cryptod global off` — Debug cryptod global off — live device data
+- `debug cryptod global on` — Debug cryptod global on — live device data
+- `debug cryptod global show` — Debug cryptod global show — live device data
+- `debug cryptod show counters` — Debug cryptod show counters — live device data
+- `debug cryptod show hsm-thread all` — Debug cryptod show hsm thread all — live device data
+- `debug cryptod show hsm-thread index` — Debug cryptod show hsm thread index — live device data
+- `debug dataplane appinfo clear` — Debug dataplane appinfo clear — live device data
+- `debug dataplane cloud-appid lookup filter-sig-id` — Debug dataplane cloud appid lookup filter sig id — live device data
+- `debug dataplane cloud-appid lookup global-id` — Debug dataplane cloud appid lookup global id — live device data
+- `debug dataplane cloud-appid lookup local-id` — Debug dataplane cloud appid lookup local id — live device data
+- `debug dataplane cloud-appid lookup name` — Debug dataplane cloud appid lookup name — live device data
+- `debug dataplane cloud-appid reset cache all` — Debug dataplane cloud appid reset cache all — live device data
+- `debug dataplane cloud-appid reset cache appid` — Debug dataplane cloud appid reset cache appid — live device data
+- `debug dataplane cloud-appid reset cache hash-slot` — Debug dataplane cloud appid reset cache hash slot — live device data
+- `debug dataplane cloud-appid set report-overlap` — Debug dataplane cloud appid set report overlap — live device data
+- `debug dataplane cloud-appid show` — Debug dataplane cloud appid show — live device data
+- `debug dataplane cloud-appid show app-sig type` — Debug dataplane cloud appid show app sig type — live device data
+- `debug dataplane cloud-appid show cache` — Debug dataplane cloud appid show cache — live device data
+- `debug dataplane cloud-appid show database details` — Debug dataplane cloud appid show database details — live device data
+- `debug dataplane cloud-appid show detection` — Debug dataplane cloud appid show detection — live device data
+- `debug dataplane ctd-agent adns-telemetry debug` — Debug dataplane ctd agent adns telemetry debug — live device data
+- `debug dataplane ctd-agent adns-telemetry debug-log` — Debug dataplane ctd agent adns telemetry debug log — live device data
+- `debug dataplane ctd-agent adns-telemetry freeze` — Debug dataplane ctd agent adns telemetry freeze — live device data
+- `debug dataplane ctd-agent adns-telemetry set interval-ms` — Debug dataplane ctd agent adns telemetry set interval ms — live device data
+- `debug dataplane ctd-agent adns-telemetry set max-cache-entry` — Debug dataplane ctd agent adns telemetry set max cache entry — live device data
+- `debug dataplane ctd-agent adns-telemetry show` — Debug dataplane ctd agent adns telemetry show — live device data
+- `debug dataplane ctd-agent adns-telemetry stop` — Debug dataplane ctd agent adns telemetry stop — live device data
+- `debug dataplane ctd-agent clear all` — Debug dataplane ctd agent clear all — live device data
+- `debug dataplane ctd-agent config` — Debug dataplane ctd agent config — live device data
+- `debug dataplane ctd-agent device-cert` — Debug dataplane ctd agent device cert — live device data
+- `debug dataplane ctd-agent global off` — Debug dataplane ctd agent global off — live device data
+- `debug dataplane ctd-agent global on` — Debug dataplane ctd agent global on — live device data
+- `debug dataplane ctd-agent global show` — Debug dataplane ctd agent global show — live device data
+- `debug dataplane ctd-agent license` — Debug dataplane ctd agent license — live device data
+- `debug dataplane ctd-agent reset security-client` — Debug dataplane ctd agent reset security client — live device data
+- `debug dataplane ctd-agent session id` — Debug dataplane ctd agent session id — live device data
+- `debug dataplane ctd-agent set ace-debug` — Debug dataplane ctd agent set ace debug — live device data
+- `debug dataplane ctd-agent set cloud-trace` — Debug dataplane ctd agent set cloud trace — live device data
+- `debug dataplane ctd-agent set host` — Debug dataplane ctd agent set host — live device data
+- `debug dataplane ctd-agent set port` — Debug dataplane ctd agent set port — live device data
+- `debug dataplane ctd-agent set source` — Debug dataplane ctd agent set source — live device data
+- `debug dataplane flow-control disable slot` — Debug dataplane flow control disable slot — live device data
+- `debug dataplane flow-control enable slot` — Debug dataplane flow control enable slot — live device data
+- `debug dataplane flush-log` — Debug dataplane flush log — live device data
+- `debug dataplane fpga hw_aho offload-bytes-threshold` — Debug dataplane fpga hw_aho offload bytes threshold — live device data
+- `debug dataplane fpga hw_aho offload-request-threshold` — Debug dataplane fpga hw_aho offload request threshold — live device data
+- `debug dataplane fpga hw_dfa offload-bytes-threshold` — Debug dataplane fpga hw_dfa offload bytes threshold — live device data
+- `debug dataplane fpga hw_dfa offload-request-threshold` — Debug dataplane fpga hw_dfa offload request threshold — live device data
+- `debug dataplane fpga set sw_aho` — Debug dataplane fpga set sw_aho — live device data
+- `debug dataplane fpga set sw_dfa` — Debug dataplane fpga set sw_dfa — live device data
+- `debug dataplane fpga state` — Debug dataplane fpga state — live device data
+- `debug dataplane internal pdt abort` — Debug dataplane internal pdt abort — live device data
+- `debug dataplane internal pdt bcm counters` — Debug dataplane internal pdt bcm counters — live device data
+- `debug dataplane internal pdt bcm lport shaper get lport` — Debug dataplane internal pdt bcm lport shaper get lport — live device data
+- `debug dataplane internal pdt bcm show congestion` — Debug dataplane internal pdt bcm show congestion — live device data
+- `debug dataplane internal pdt bcm show flow flow_id` — Debug dataplane internal pdt bcm show flow flow_id — live device data
+- `debug dataplane internal pdt bcm show port` — Debug dataplane internal pdt bcm show port — live device data
+- `debug dataplane internal pdt bcm show queue` — Debug dataplane internal pdt bcm show queue — live device data
+- `debug dataplane internal pdt ce10 cip` — Debug dataplane internal pdt ce10 cip — live device data
+- `debug dataplane internal pdt ce10 dfa` — Debug dataplane internal pdt ce10 dfa — live device data
+- `debug dataplane internal pdt ce10 dxaui info instance` — Debug dataplane internal pdt ce10 dxaui info instance — live device data
+- `debug dataplane internal pdt ce10 dxge info instance` — Debug dataplane internal pdt ce10 dxge info instance — live device data
+- `debug dataplane internal pdt ce10 dxge stats instance` — Debug dataplane internal pdt ce10 dxge stats instance — live device data
+- `debug dataplane internal pdt ce10 pbm status instance` — Debug dataplane internal pdt ce10 pbm status instance — live device data
+- `debug dataplane internal pdt ce10 rd instance` — Debug dataplane internal pdt ce10 rd instance — live device data
+- `debug dataplane internal pdt ce10 show` — Debug dataplane internal pdt ce10 show — live device data
+- `debug dataplane internal pdt ce10 show-all` — Debug dataplane internal pdt ce10 show all — live device data
+- `debug dataplane internal pdt fe100` — Debug dataplane internal pdt fe100 — live device data
+- `debug dataplane internal pdt fe100 acl dump count` — Debug dataplane internal pdt fe100 acl dump count — live device data
+- `debug dataplane internal pdt fe100 csr` — Debug dataplane internal pdt fe100 csr — live device data
+- `debug dataplane internal pdt fe100 csr rd addr` — Debug dataplane internal pdt fe100 csr rd addr — live device data
+- `debug dataplane internal pdt fe100 csr scan regex` — Debug dataplane internal pdt fe100 csr scan regex — live device data
+- `debug dataplane internal pdt fe100 csr wr_sem_ctrl_ctr_scan_dis value` — Debug dataplane internal pdt fe100 csr wr_sem_ctrl_ctr_scan_dis value — live device data
+- `debug dataplane internal pdt fe100 csr wr_sem_fcr_max_upd_thresh_cfg_pkt_ctr value` — Debug dataplane internal pdt fe100 csr wr_sem_fcr_max_upd_thresh_cfg_pkt_ctr value — live device data
+- `debug dataplane internal pdt fe100 ddr eye intf` — Debug dataplane internal pdt fe100 ddr eye intf — live device data
+- `debug dataplane internal pdt fe100 debug check` — Debug dataplane internal pdt fe100 debug check — live device data
+- `debug dataplane internal pdt fe100 dphy_reg rd dcfg` — Debug dataplane internal pdt fe100 dphy_reg rd dcfg — live device data
+- `debug dataplane internal pdt fe100 event dump count` — Debug dataplane internal pdt fe100 event dump count — live device data
+- `debug dataplane internal pdt fe100 event fetch offset` — Debug dataplane internal pdt fe100 event fetch offset — live device data
+- `debug dataplane internal pdt fe100 flow ctrs` — Debug dataplane internal pdt fe100 flow ctrs — live device data
+- `debug dataplane internal pdt fe100 flow dump offset` — Debug dataplane internal pdt fe100 flow dump offset — live device data
+- `debug dataplane internal pdt fe100 flow histo` — Debug dataplane internal pdt fe100 flow histo — live device data
+- `debug dataplane internal pdt fe100 flow lookup saddr` — Debug dataplane internal pdt fe100 flow lookup saddr — live device data
+- `debug dataplane internal pdt fe100 flow tbl_size` — Debug dataplane internal pdt fe100 flow tbl_size — live device data
+- `debug dataplane internal pdt fe100 lag dump count` — Debug dataplane internal pdt fe100 lag dump count — live device data
+- `debug dataplane internal pdt fe100 lef dump count` — Debug dataplane internal pdt fe100 lef dump count — live device data
+- `debug dataplane internal pdt fe100 lif access table` — Debug dataplane internal pdt fe100 lif access table — live device data
+- `debug dataplane internal pdt fe100 lif dump count` — Debug dataplane internal pdt fe100 lif dump count — live device data
+- `debug dataplane internal pdt fe100 lif lookup table` — Debug dataplane internal pdt fe100 lif lookup table — live device data
+- `debug dataplane internal pdt fe100 lif stats clear` — Debug dataplane internal pdt fe100 lif stats clear — live device data
+- `debug dataplane internal pdt fe100 lif tbl_size` — Debug dataplane internal pdt fe100 lif tbl_size — live device data
+- `debug dataplane internal pdt fe100 mac dump offset` — Debug dataplane internal pdt fe100 mac dump offset — live device data
+- `debug dataplane internal pdt fe100 mem rd target_mem` — Debug dataplane internal pdt fe100 mem rd target_mem — live device data
+- `debug dataplane internal pdt fe100 nexthop dump type` — Debug dataplane internal pdt fe100 nexthop dump type — live device data
+- `debug dataplane internal pdt fe100 nif check_port` — Debug dataplane internal pdt fe100 nif check_port — live device data
+- `debug dataplane internal pdt fe100 nif pkt_cap disable intf` — Debug dataplane internal pdt fe100 nif pkt_cap disable intf — live device data
+- `debug dataplane internal pdt fe100 nif pkt_cap display intf` — Debug dataplane internal pdt fe100 nif pkt_cap display intf — live device data
+- `debug dataplane internal pdt fe100 nif pkt_cap enable intf` — Debug dataplane internal pdt fe100 nif pkt_cap enable intf — live device data
+- `debug dataplane internal pdt fe100 nif pkt_cap help` — Debug dataplane internal pdt fe100 nif pkt_cap help — live device data
+- `debug dataplane internal pdt fe100 predict dump count` — Debug dataplane internal pdt fe100 predict dump count — live device data
+- `debug dataplane internal pdt fe100 qmap dump pt` — Debug dataplane internal pdt fe100 qmap dump pt — live device data
+- `debug dataplane internal pdt fe100 rd offset` — Debug dataplane internal pdt fe100 rd offset — live device data
+- `debug dataplane internal pdt fe100 route dump pt` — Debug dataplane internal pdt fe100 route dump pt — live device data
+- `debug dataplane internal pdt fe100 show config` — Debug dataplane internal pdt fe100 show config — live device data
+- `debug dataplane internal pdt fe100 show fc clear` — Debug dataplane internal pdt fe100 show fc clear — live device data
+- `debug dataplane internal pdt fe100 show intr` — Debug dataplane internal pdt fe100 show intr — live device data
+- `debug dataplane internal pdt fe100 show latency` — Debug dataplane internal pdt fe100 show latency — live device data
+- `debug dataplane internal pdt fe100 show stats` — Debug dataplane internal pdt fe100 show stats — live device data
+- `debug dataplane internal pdt fe100 show stats port port` — Debug dataplane internal pdt fe100 show stats port port — live device data
+- `debug dataplane internal pdt fe100 show status` — Debug dataplane internal pdt fe100 show status — live device data
+- `debug dataplane internal pdt fe100 tmi check_port` — Debug dataplane internal pdt fe100 tmi check_port — live device data
+- `debug dataplane internal pdt fe100 tmi pkt_cap disable intf` — Debug dataplane internal pdt fe100 tmi pkt_cap disable intf — live device data
+- `debug dataplane internal pdt fe100 tmi pkt_cap display intf` — Debug dataplane internal pdt fe100 tmi pkt_cap display intf — live device data
+- `debug dataplane internal pdt fe100 tmi pkt_cap enable intf` — Debug dataplane internal pdt fe100 tmi pkt_cap enable intf — live device data
+- `debug dataplane internal pdt fe100 tmi pkt_cap help` — Debug dataplane internal pdt fe100 tmi pkt_cap help — live device data
+- `debug dataplane internal pdt fe100 traffic info` — Debug dataplane internal pdt fe100 traffic info — live device data
+- `debug dataplane internal pdt fe100 umctl2_reg rd dcfg` — Debug dataplane internal pdt fe100 umctl2_reg rd dcfg — live device data
+- `debug dataplane internal pdt fe100 vsys dump count` — Debug dataplane internal pdt fe100 vsys dump count — live device data
+- `debug dataplane internal pdt nac aho dump instance` — Debug dataplane internal pdt nac aho dump instance — live device data
+- `debug dataplane internal pdt nac dfa dump instance` — Debug dataplane internal pdt nac dfa dump instance — live device data
+- `debug dataplane internal pdt nac info instance` — Debug dataplane internal pdt nac info instance — live device data
+- `debug dataplane internal pdt nac show-all` — Debug dataplane internal pdt nac show all — live device data
+- `debug dataplane internal pdt nac stats instance` — Debug dataplane internal pdt nac stats instance — live device data
+- `debug dataplane internal pdt oct bgx config bgx` — Debug dataplane internal pdt oct bgx config bgx — live device data
+- `debug dataplane internal pdt oct bgx status bgx` — Debug dataplane internal pdt oct bgx status bgx — live device data
+- `debug dataplane internal pdt oct bootmem` — Debug dataplane internal pdt oct bootmem — live device data
+- `debug dataplane internal pdt oct csr rd reg` — Debug dataplane internal pdt oct csr rd reg — live device data
+- `debug dataplane internal pdt oct fpa show` — Debug dataplane internal pdt oct fpa show — live device data
+- `debug dataplane internal pdt oct gmx stats port` — Debug dataplane internal pdt oct gmx stats port — live device data
+- `debug dataplane internal pdt oct ilk` — Debug dataplane internal pdt oct ilk — live device data
+- `debug dataplane internal pdt oct pip stats port` — Debug dataplane internal pdt oct pip stats port — live device data
+- `debug dataplane internal pdt oct pki dump` — Debug dataplane internal pdt oct pki dump — live device data
+- `debug dataplane internal pdt oct pki port_config port` — Debug dataplane internal pdt oct pki port_config port — live device data
+- `debug dataplane internal pdt oct pki stats` — Debug dataplane internal pdt oct pki stats — live device data
+- `debug dataplane internal pdt oct pko debug port` — Debug dataplane internal pdt oct pko debug port — live device data
+- `debug dataplane internal pdt oct pko stats all` — Debug dataplane internal pdt oct pko stats all — live device data
+- `debug dataplane internal pdt oct pko stats port` — Debug dataplane internal pdt oct pko stats port — live device data
+- `debug dataplane internal pdt oct pko3` — Debug dataplane internal pdt oct pko3 — live device data
+- `debug dataplane internal pdt oct portmap show` — Debug dataplane internal pdt oct portmap show — live device data
+- `debug dataplane internal pdt oct pow debug all` — Debug dataplane internal pdt oct pow debug all — live device data
+- `debug dataplane internal pdt pci list` — Debug dataplane internal pdt pci list — live device data
+- `debug dataplane internal vif` — Debug dataplane internal vif — live device data
+- `debug dataplane internal vif route` — Debug dataplane internal vif route — live device data
+- `debug dataplane memory dump bootmem delete file` — Debug dataplane memory dump bootmem delete file — live device data
+- `debug dataplane memory dump bootmem disable` — Debug dataplane memory dump bootmem disable — live device data
+- `debug dataplane memory dump bootmem enable log_disk_percent` — Debug dataplane memory dump bootmem enable log_disk_percent — live device data
+- `debug dataplane memory dump bootmem show` — Debug dataplane memory dump bootmem show — live device data
+- `debug dataplane memory status` — Debug dataplane memory status — live device data
+- `debug dataplane mica reset cache` — Debug dataplane mica reset cache — live device data
+- `debug dataplane mica reset request-meta-cache adns` — Debug dataplane mica reset request meta cache adns — live device data
+- `debug dataplane mica reset rtt` — Debug dataplane mica reset rtt — live device data
+- `debug dataplane mica set cache adns` — Debug dataplane mica set cache adns — live device data
+- `debug dataplane mica set cache default` — Debug dataplane mica set cache default — live device data
+- `debug dataplane mica set cache disable` — Debug dataplane mica set cache disable — live device data
+- `debug dataplane mica set cache enable` — Debug dataplane mica set cache enable — live device data
+- `debug dataplane mica set cache tp` — Debug dataplane mica set cache tp — live device data
+- `debug dataplane mica set cache url` — Debug dataplane mica set cache url — live device data
+- `debug dataplane mica set inwf-mlav-prefilter` — Debug dataplane mica set inwf mlav prefilter — live device data
+- `debug dataplane mica set mlc2-http-ldl-prefilter` — Debug dataplane mica set mlc2 http ldl prefilter — live device data
+- `debug dataplane mica set mlc2-micaflag-prefilter` — Debug dataplane mica set mlc2 micaflag prefilter — live device data
+- `debug dataplane mica set request-meta-cache adns` — Debug dataplane mica set request meta cache adns — live device data
+- `debug dataplane mica set telemetry adns-interval` — Debug dataplane mica set telemetry adns interval — live device data
+- `debug dataplane mica show cache adns` — Debug dataplane mica show cache adns — live device data
+- `debug dataplane mica show cache tp` — Debug dataplane mica show cache tp — live device data
+- `debug dataplane mica show cache url` — Debug dataplane mica show cache url — live device data
+- `debug dataplane mica show config` — Debug dataplane mica show config — live device data
+- `debug dataplane mica show request-meta-cache adns entries` — Debug dataplane mica show request meta cache adns entries — live device data
+- `debug dataplane mica show rtt service` — Debug dataplane mica show rtt service — live device data
+- `debug dataplane mmdbg leakiller memory-pool enable` — Debug dataplane mmdbg leakiller memory pool enable — live device data
+- `debug dataplane mmdbg leakiller memory-pool show` — Debug dataplane mmdbg leakiller memory pool show — live device data
+- `debug dataplane mmdbg leakiller swbuf-pool enable` — Debug dataplane mmdbg leakiller swbuf pool enable — live device data
+- `debug dataplane mmdbg leakiller swbuf-pool show` — Debug dataplane mmdbg leakiller swbuf pool show — live device data
+- `debug dataplane mmdbg obj-trace ev_num_per_q set` — Debug dataplane mmdbg obj trace ev_num_per_q set — live device data
+- `debug dataplane mmdbg obj-trace session level` — Debug dataplane mmdbg obj trace session level — live device data
+- `debug dataplane mmdbg obj-trace shared-pool-192 level` — Debug dataplane mmdbg obj trace shared pool 192 level — live device data
+- `debug dataplane mmdbg obj-trace shared-pool-24 level` — Debug dataplane mmdbg obj trace shared pool 24 level — live device data
+- `debug dataplane mmdbg obj-trace stop` — Debug dataplane mmdbg obj trace stop — live device data
+- `debug dataplane mmdbg obj-trace symbol lvl` — Debug dataplane mmdbg obj trace symbol lvl — live device data
+- `debug dataplane mmdbg obj-trace wqe delay-free` — Debug dataplane mmdbg obj trace wqe delay free — live device data
+- `debug dataplane mmdbg obj-trace wqe extra-trace` — Debug dataplane mmdbg obj trace wqe extra trace — live device data
+- `debug dataplane mmdbg obj-trace wqe leak-dump num` — Debug dataplane mmdbg obj trace wqe leak dump num — live device data
+- `debug dataplane mmdbg obj-trace wqe level` — Debug dataplane mmdbg obj trace wqe level — live device data
+- `debug dataplane mmdbg obj-trace wqe trace-type` — Debug dataplane mmdbg obj trace wqe trace type — live device data
+- `debug dataplane mmdbg pool-debug overflow-check` — Debug dataplane mmdbg pool debug overflow check — live device data
+- `debug dataplane mmdbg pool-debug reuse-check` — Debug dataplane mmdbg pool debug reuse check — live device data
+- `debug dataplane mmdbg status` — Debug dataplane mmdbg status — live device data
+- `debug dataplane mmdbg watchpoint address s1dp0` — Debug dataplane mmdbg watchpoint address s1dp0 — live device data
+- `debug dataplane monitor detail` — Debug dataplane monitor detail — live device data
+- `debug dataplane nat static-mapping add from-ip` — Debug dataplane nat static mapping add from ip — live device data
+- `debug dataplane nat static-mapping del from-ip` — Debug dataplane nat static mapping del from ip — live device data
+- `debug dataplane nat static-mapping show` — Debug dataplane nat static mapping show — live device data
+- `debug dataplane nat sync-ippool rule` — Debug dataplane nat sync ippool rule — live device data
+- `debug dataplane netflow` — Debug dataplane netflow — live device data
+- `debug dataplane oprofile opcontrol` — Debug dataplane oprofile opcontrol — live device data
+- `debug dataplane oprofile opreport` — Debug dataplane oprofile opreport — live device data
+- `debug dataplane packet-diag aggregate-logs log_name` — Debug dataplane packet diag aggregate logs log_name — live device data
+- `debug dataplane packet-diag clear all` — Debug dataplane packet diag clear all — live device data
+- `debug dataplane packet-diag clear capture all` — Debug dataplane packet diag clear capture all — live device data
+- `debug dataplane packet-diag clear capture snaplen` — Debug dataplane packet diag clear capture snaplen — live device data
+- `debug dataplane packet-diag clear capture stage` — Debug dataplane packet diag clear capture stage — live device data
+- `debug dataplane packet-diag clear capture trigger` — Debug dataplane packet diag clear capture trigger — live device data
+- `debug dataplane packet-diag clear capture username` — Debug dataplane packet diag clear capture username — live device data
+- `debug dataplane packet-diag clear filter index` — Debug dataplane packet diag clear filter index — live device data
+- `debug dataplane packet-diag clear filter-marked-session all` — Debug dataplane packet diag clear filter marked session all — live device data
+- `debug dataplane packet-diag clear filter-marked-session id` — Debug dataplane packet diag clear filter marked session id — live device data
+- `debug dataplane packet-diag clear log counter` — Debug dataplane packet diag clear log counter — live device data
+- `debug dataplane packet-diag clear log feature` — Debug dataplane packet diag clear log feature — live device data
+- `debug dataplane packet-diag clear log feature all` — Debug dataplane packet diag clear log feature all — live device data
+- `debug dataplane packet-diag clear log feature appid` — Debug dataplane packet diag clear log feature appid — live device data
+- `debug dataplane packet-diag clear log feature base` — Debug dataplane packet diag clear log feature base — live device data
+- `debug dataplane packet-diag clear log feature cfg` — Debug dataplane packet diag clear log feature cfg — live device data
+- `debug dataplane packet-diag clear log feature ctd` — Debug dataplane packet diag clear log feature ctd — live device data
+- `debug dataplane packet-diag clear log feature flow` — Debug dataplane packet diag clear log feature flow — live device data
+- `debug dataplane packet-diag clear log feature misc` — Debug dataplane packet diag clear log feature misc — live device data
+- `debug dataplane packet-diag clear log feature module` — Debug dataplane packet diag clear log feature module — live device data
+- `debug dataplane packet-diag clear log feature ssl` — Debug dataplane packet diag clear log feature ssl — live device data
+- `debug dataplane packet-diag clear log feature tcp` — Debug dataplane packet diag clear log feature tcp — live device data
+- `debug dataplane packet-diag clear log feature tdb` — Debug dataplane packet diag clear log feature tdb — live device data
+- `debug dataplane packet-diag clear log feature tunnel` — Debug dataplane packet diag clear log feature tunnel — live device data
+- `debug dataplane packet-diag clear log feature url_trie` — Debug dataplane packet diag clear log feature url_trie — live device data
+- `debug dataplane packet-diag clear log log` — Debug dataplane packet diag clear log log — live device data
+- `debug dataplane packet-diag set capture off` — Debug dataplane packet diag set capture off — live device data
+- `debug dataplane packet-diag set capture on` — Debug dataplane packet diag set capture on — live device data
+- `debug dataplane packet-diag set capture snaplen` — Debug dataplane packet diag set capture snaplen — live device data
+- `debug dataplane packet-diag set capture stage` — Debug dataplane packet diag set capture stage — live device data
+- `debug dataplane packet-diag set capture stage clientless-vpn-client file` — Debug dataplane packet diag set capture stage clientless vpn client file — live device data
+- `debug dataplane packet-diag set capture stage clientless-vpn-server file` — Debug dataplane packet diag set capture stage clientless vpn server file — live device data
+- `debug dataplane packet-diag set capture trigger application from` — Debug dataplane packet diag set capture trigger application from — live device data
+- `debug dataplane packet-diag set capture username` — Debug dataplane packet diag set capture username — live device data
+- `debug dataplane packet-diag set filter index` — Debug dataplane packet diag set filter index — live device data
+- `debug dataplane packet-diag set filter match ingress-interface` — Debug dataplane packet diag set filter match ingress interface — live device data
+- `debug dataplane packet-diag set filter off` — Debug dataplane packet diag set filter off — live device data
+- `debug dataplane packet-diag set filter offload` — Debug dataplane packet diag set filter offload — live device data
+- `debug dataplane packet-diag set filter on` — Debug dataplane packet diag set filter on — live device data
+- `debug dataplane packet-diag set filter pre-parse-match` — Debug dataplane packet diag set filter pre parse match — live device data
+- `debug dataplane packet-diag set filter-marked-session id` — Debug dataplane packet diag set filter marked session id — live device data
+- `debug dataplane packet-diag set log buffer-threshold` — Debug dataplane packet diag set log buffer threshold — live device data
+- `debug dataplane packet-diag set log counter` — Debug dataplane packet diag set log counter — live device data
+- `debug dataplane packet-diag set log cpu-threshold` — Debug dataplane packet diag set log cpu threshold — live device data
+- `debug dataplane packet-diag set log feature` — Debug dataplane packet diag set log feature — live device data
+- `debug dataplane packet-diag set log feature all` — Debug dataplane packet diag set log feature all — live device data
+- `debug dataplane packet-diag set log feature appid` — Debug dataplane packet diag set log feature appid — live device data
+- `debug dataplane packet-diag set log feature base` — Debug dataplane packet diag set log feature base — live device data
+- `debug dataplane packet-diag set log feature cfg` — Debug dataplane packet diag set log feature cfg — live device data
+- `debug dataplane packet-diag set log feature ctd` — Debug dataplane packet diag set log feature ctd — live device data
+- `debug dataplane packet-diag set log feature flow` — Debug dataplane packet diag set log feature flow — live device data
+- `debug dataplane packet-diag set log feature misc` — Debug dataplane packet diag set log feature misc — live device data
+- `debug dataplane packet-diag set log feature module` — Debug dataplane packet diag set log feature module — live device data
+- `debug dataplane packet-diag set log feature ssl` — Debug dataplane packet diag set log feature ssl — live device data
+- `debug dataplane packet-diag set log feature tcp` — Debug dataplane packet diag set log feature tcp — live device data
+- `debug dataplane packet-diag set log feature tdb` — Debug dataplane packet diag set log feature tdb — live device data
+- `debug dataplane packet-diag set log feature tunnel` — Debug dataplane packet diag set log feature tunnel — live device data
+- `debug dataplane packet-diag set log feature url_trie` — Debug dataplane packet diag set log feature url_trie — live device data
+- `debug dataplane packet-diag set log log-option throttle` — Debug dataplane packet diag set log log option throttle — live device data
+- `debug dataplane packet-diag set log off` — Debug dataplane packet diag set log off — live device data
+- `debug dataplane packet-diag set log on` — Debug dataplane packet diag set log on — live device data
+- `debug dataplane packet-diag set log timeout` — Debug dataplane packet diag set log timeout — live device data
+- `debug dataplane packet-diag set tag` — Debug dataplane packet diag set tag — live device data
+- `debug dataplane packet-diag show` — Debug dataplane packet diag show — live device data
+- `debug dataplane packet-path-test counter` — Debug dataplane packet path test counter — live device data
+- `debug dataplane packet-path-test test proc` — Debug dataplane packet path test test proc — live device data
+- `debug dataplane policy cache-usage-threshold` — Debug dataplane policy cache usage threshold — live device data
+- `debug dataplane policy switch-cache` — Debug dataplane policy switch cache — live device data
+- `debug dataplane pool check hardware` — Debug dataplane pool check hardware — live device data
+- `debug dataplane pool check software` — Debug dataplane pool check software — live device data
+- `debug dataplane pool elastic delete profile name` — Debug dataplane pool elastic delete profile name — live device data
+- `debug dataplane pool elastic reset-defaults` — Debug dataplane pool elastic reset defaults — live device data
+- `debug dataplane pool elastic select-profile name` — Debug dataplane pool elastic select profile name — live device data
+- `debug dataplane pool elastic set mode` — Debug dataplane pool elastic set mode — live device data
+- `debug dataplane pool elastic set profile name` — Debug dataplane pool elastic set profile name — live device data
+- `debug dataplane pool elastic show config` — Debug dataplane pool elastic show config — live device data
+- `debug dataplane pool elastic show profile active` — Debug dataplane pool elastic show profile active — live device data
+- `debug dataplane pool elastic show profile all` — Debug dataplane pool elastic show profile all — live device data
+- `debug dataplane pool elastic show profile capacity` — Debug dataplane pool elastic show profile capacity — live device data
+- `debug dataplane pool elastic show profile name` — Debug dataplane pool elastic show profile name — live device data
+- `debug dataplane pool mem file` — Debug dataplane pool mem file — live device data
+- `debug dataplane pool memseg name common sz-pct` — Debug dataplane pool memseg name common sz pct — live device data
+- `debug dataplane pool reset-max-usage` — Debug dataplane pool reset max usage — live device data
+- `debug dataplane pool set` — Debug dataplane pool set — live device data
+- `debug dataplane pool set off` — Debug dataplane pool set off — live device data
+- `debug dataplane pool set on name dthreat` — Debug dataplane pool set on name dthreat — live device data
+- `debug dataplane pool set on name fptcp sessid-cid` — Debug dataplane pool set on name fptcp sessid cid — live device data
+- `debug dataplane pool set on name vcheck` — Debug dataplane pool set on name vcheck — live device data
+- `debug dataplane pool show all top` — Debug dataplane pool show all top — live device data
+- `debug dataplane pool show history top` — Debug dataplane pool show history top — live device data
+- `debug dataplane pool show in-use top` — Debug dataplane pool show in use top — live device data
+- `debug dataplane pool statistics` — Debug dataplane pool statistics — live device data
+- `debug dataplane pow performance all core` — Debug dataplane pow performance all core — live device data
+- `debug dataplane pow performance core` — Debug dataplane pow performance core — live device data
+- `debug dataplane pow performance filter` — Debug dataplane pow performance filter — live device data
+- `debug dataplane pow performance rx_tx_ltncy` — Debug dataplane pow performance rx_tx_ltncy — live device data
+- `debug dataplane pow status filter worker` — Debug dataplane pow status filter worker — live device data
+- `debug dataplane pow status global-counters pretty` — Debug dataplane pow status global counters pretty — live device data
+- `debug dataplane pow status high-watermark reset` — Debug dataplane pow status high watermark reset — live device data
+- `debug dataplane pow status inflightonly reset` — Debug dataplane pow status inflightonly reset — live device data
+- `debug dataplane pow status niconly brief` — Debug dataplane pow status niconly brief — live device data
+- `debug dataplane pow status niconly filter worker` — Debug dataplane pow status niconly filter worker — live device data
+- `debug dataplane pow status nonic reset` — Debug dataplane pow status nonic reset — live device data
+- `debug dataplane pow status nosleep filter worker` — Debug dataplane pow status nosleep filter worker — live device data
+- `debug dataplane process` — Debug dataplane process — live device data
+- `debug dataplane process cmd off` — Debug dataplane process cmd off — live device data
+- `debug dataplane process cmd on` — Debug dataplane process cmd on — live device data
+- `debug dataplane process cmd show` — Debug dataplane process cmd show — live device data
+- `debug dataplane process comm off` — Debug dataplane process comm off — live device data
+- `debug dataplane process comm on` — Debug dataplane process comm on — live device data
+- `debug dataplane process comm profile-cache` — Debug dataplane process comm profile cache — live device data
+- `debug dataplane process comm show` — Debug dataplane process comm show — live device data
+- `debug dataplane process mprelay off` — Debug dataplane process mprelay off — live device data
+- `debug dataplane process mprelay on` — Debug dataplane process mprelay on — live device data
+- `debug dataplane process mprelay show` — Debug dataplane process mprelay show — live device data
+- `debug dataplane process task dynamic-filter` — Debug dataplane process task dynamic filter — live device data
+- `debug dataplane process task off` — Debug dataplane process task off — live device data
+- `debug dataplane process task on` — Debug dataplane process task on — live device data
+- `debug dataplane process task show` — Debug dataplane process task show — live device data
+- `debug dataplane pvst sys-id-ext-rewrite` — Debug dataplane pvst sys id ext rewrite — live device data
+- `debug dataplane reset` — Debug dataplane reset — live device data
+- `debug dataplane reset appid cache` — Debug dataplane reset appid cache — live device data
+- `debug dataplane reset appid statistics` — Debug dataplane reset appid statistics — live device data
+- `debug dataplane reset appid unknown-cache destination` — Debug dataplane reset appid unknown cache destination — live device data
+- `debug dataplane reset ctd` — Debug dataplane reset ctd — live device data
+- `debug dataplane reset ctd dns-cache host` — Debug dataplane reset ctd dns cache host — live device data
+- `debug dataplane reset ctd feature-forward stats` — Debug dataplane reset ctd feature forward stats — live device data
+- `debug dataplane reset ctd url-block-cache lockout` — Debug dataplane reset ctd url block cache lockout — live device data
+- `debug dataplane reset ctd wf-cache virus-pattern-type` — Debug dataplane reset ctd wf cache virus pattern type — live device data
+- `debug dataplane reset dns-cache all` — Debug dataplane reset dns cache all — live device data
+- `debug dataplane reset dns-cache fqdn` — Debug dataplane reset dns cache fqdn — live device data
+- `debug dataplane reset dos block-table` — Debug dataplane reset dos block table — live device data
+- `debug dataplane reset dos classification-table` — Debug dataplane reset dos classification table — live device data
+- `debug dataplane reset dos rule` — Debug dataplane reset dos rule — live device data
+- `debug dataplane reset dos zone` — Debug dataplane reset dos zone — live device data
+- `debug dataplane reset ml-block-cache all` — Debug dataplane reset ml block cache all — live device data
+- `debug dataplane reset ml-block-cache url` — Debug dataplane reset ml block cache url — live device data
+- `debug dataplane reset ssl-decrypt` — Debug dataplane reset ssl decrypt — live device data
+- `debug dataplane reset ssl-decrypt notify-cache source` — Debug dataplane reset ssl decrypt notify cache source — live device data
+- `debug dataplane set` — Debug dataplane set — live device data
+- `debug dataplane set blocked-forward upload` — Debug dataplane set blocked forward upload — live device data
+- `debug dataplane set ctd autogen` — Debug dataplane set ctd autogen — live device data
+- `debug dataplane set ctd ldl-model-enable` — Debug dataplane set ctd ldl model enable — live device data
+- `debug dataplane set ctd wildfire max` — Debug dataplane set ctd wildfire max — live device data
+- `debug dataplane set ip6-mcast-fwd-check` — Debug dataplane set ip6 mcast fwd check — live device data
+- `debug dataplane set pbf-no-return-mac-learning` — Debug dataplane set pbf no return mac learning — live device data
+- `debug dataplane set pow no-desched` — Debug dataplane set pow no desched — live device data
+- `debug dataplane set qos-setting qos-param qlimit` — Debug dataplane set qos setting qos param qlimit — live device data
+- `debug dataplane set ssl-decrypt blk-send-reset` — Debug dataplane set ssl decrypt blk send reset — live device data
+- `debug dataplane set ssl-decrypt ecdhe-aggressive-keying` — Debug dataplane set ssl decrypt ecdhe aggressive keying — live device data
+- `debug dataplane show` — Debug dataplane show — live device data
+- `debug dataplane show app-filter-policy vsys` — Debug dataplane show app filter policy vsys — live device data
+- `debug dataplane show app-group-policy vsys` — Debug dataplane show app group policy vsys — live device data
+- `debug dataplane show ctd` — Debug dataplane show ctd — live device data
+- `debug dataplane show ctd credential-enforcement domain-credential` — Debug dataplane show ctd credential enforcement domain credential — live device data
+- `debug dataplane show ctd credential-enforcement group-mapping vsys` — Debug dataplane show ctd credential enforcement group mapping vsys — live device data
+- `debug dataplane show ctd dns-cache entries host` — Debug dataplane show ctd dns cache entries host — live device data
+- `debug dataplane show ctd dns-cache stats` — Debug dataplane show ctd dns cache stats — live device data
+- `debug dataplane show ctd feature-forward` — Debug dataplane show ctd feature forward — live device data
+- `debug dataplane show ctd feature-forward forward-info session-id` — Debug dataplane show ctd feature forward forward info session id — live device data
+- `debug dataplane show ctd ldl status` — Debug dataplane show ctd ldl status — live device data
+- `debug dataplane show ctd lscan app-sig type` — Debug dataplane show ctd lscan app sig type — live device data
+- `debug dataplane show ctd lscan database context prefix` — Debug dataplane show ctd lscan database context prefix — live device data
+- `debug dataplane show ctd lscan database context-list` — Debug dataplane show ctd lscan database context list — live device data
+- `debug dataplane show ctd lscan database details` — Debug dataplane show ctd lscan database details — live device data
+- `debug dataplane show ctd lscan sml-scope appid` — Debug dataplane show ctd lscan sml scope appid — live device data
+- `debug dataplane show ctd lscan sml-token appid` — Debug dataplane show ctd lscan sml token appid — live device data
+- `debug dataplane show ctd regex-group dump` — Debug dataplane show ctd regex group dump — live device data
+- `debug dataplane show ctd regex-stats dump` — Debug dataplane show ctd regex stats dump — live device data
+- `debug dataplane show ctd session` — Debug dataplane show ctd session — live device data
+- `debug dataplane show ctd threat id` — Debug dataplane show ctd threat id — live device data
+- `debug dataplane show ctd wf-cache virus-pattern-type` — Debug dataplane show ctd wf cache virus pattern type — live device data
+- `debug dataplane show ctd wif service-mapping` — Debug dataplane show ctd wif service mapping — live device data
+- `debug dataplane show ctd wildfire max` — Debug dataplane show ctd wildfire max — live device data
+- `debug dataplane show dns-cache print` — Debug dataplane show dns cache print — live device data
+- `debug dataplane show dns-cache query fqdn` — Debug dataplane show dns cache query fqdn — live device data
+- `debug dataplane show dns-cache statistics` — Debug dataplane show dns cache statistics — live device data
+- `debug dataplane show dos block-table` — Debug dataplane show dos block table — live device data
+- `debug dataplane show dos classification-table` — Debug dataplane show dos classification table — live device data
+- `debug dataplane show dos free-list` — Debug dataplane show dos free list — live device data
+- `debug dataplane show dos rule` — Debug dataplane show dos rule — live device data
+- `debug dataplane show dos zone` — Debug dataplane show dos zone — live device data
+- `debug dataplane show gtp session-qinfo` — Debug dataplane show gtp session qinfo — live device data
+- `debug dataplane show http2` — Debug dataplane show http2 — live device data
+- `debug dataplane show http2 session` — Debug dataplane show http2 session — live device data
+- `debug dataplane show pow no-desched` — Debug dataplane show pow no desched — live device data
+- `debug dataplane show qos-param qos-qlimit-sw` — Debug dataplane show qos param qos qlimit sw — live device data
+- `debug dataplane show ssl-decrypt bitmask-cipher` — Debug dataplane show ssl decrypt bitmask cipher — live device data
+- `debug dataplane show ssl-decrypt bitmask-version` — Debug dataplane show ssl decrypt bitmask version — live device data
+- `debug dataplane show ssl-decrypt dns-cache` — Debug dataplane show ssl decrypt dns cache — live device data
+- `debug dataplane show ssl-decrypt session` — Debug dataplane show ssl decrypt session — live device data
+- `debug dataplane show ssl-decrypt ssl-stats` — Debug dataplane show ssl decrypt ssl stats — live device data
+- `debug dataplane show uappid-filtergroup-mapping id` — Debug dataplane show uappid filtergroup mapping id — live device data
+- `debug dataplane show uappid-in-policy id` — Debug dataplane show uappid in policy id — live device data
+- `debug dataplane show uappid-policy-cache uappid` — Debug dataplane show uappid policy cache uappid — live device data
+- `debug dataplane show unknown-uappid-cache id` — Debug dataplane show unknown uappid cache id — live device data
+- `debug dataplane task-heartbeat` — Debug dataplane task heartbeat — live device data
+- `debug dataplane tcp state` — Debug dataplane tcp state — live device data
+- `debug dataplane test dump-nw-id-ebl-tble` — Debug dataplane test dump nw id ebl tble — live device data
+- `debug dataplane test dump-nw-id-vsys-tble vsysid` — Debug dataplane test dump nw id vsys tble vsysid — live device data
+- `debug dataplane test nat-policy-add from` — Debug dataplane test nat policy add from — live device data
+- `debug dataplane test nat-policy-del from` — Debug dataplane test nat policy del from — live device data
+- `debug dataplane test nw-id-lookup vsysid` — Debug dataplane test nw id lookup vsysid — live device data
+- `debug dataplane test tunnel-tables` — Debug dataplane test tunnel tables — live device data
+- `debug dataplane test uappid-filtergroup-mapping uappid` — Debug dataplane test uappid filtergroup mapping uappid — live device data
+- `debug dataplane test uappid-policy-cache uappid` — Debug dataplane test uappid policy cache uappid — live device data
+- `debug dataplane test url` — Debug dataplane test url — live device data
+- `debug dataplane test url-bloom` — Debug dataplane test url bloom — live device data
+- `debug dataplane test url-from-file max-per-sec` — Debug dataplane test url from file max per sec — live device data
+- `debug device-server` — Debug device server — live device data
+- `debug device-server clear` — Debug device server clear — live device data
+- `debug device-server dump app-containers name` — Debug device server dump app containers name — live device data
+- `debug device-server dump app-filters vsys` — Debug device server dump app filters vsys — live device data
+- `debug device-server dump app-groups vsys` — Debug device server dump app groups vsys — live device data
+- `debug device-server dump apps vsys` — Debug device server dump apps vsys — live device data
+- `debug device-server dump com` — Debug device server dump com — live device data
+- `debug device-server dump dynamic-address-group vsys` — Debug device server dump dynamic address group vsys — live device data
+- `debug device-server dump fqdn type dnat vsys` — Debug device server dump fqdn type dnat vsys — live device data
+- `debug device-server dump fqdn type pbf vsys` — Debug device server dump fqdn type pbf vsys — live device data
+- `debug device-server dump fqdn type policy vsys` — Debug device server dump fqdn type policy vsys — live device data
+- `debug device-server dump idmgr global` — Debug device server dump idmgr global — live device data
+- `debug device-server dump idmgr high-availability state` — Debug device server dump idmgr high availability state — live device data
+- `debug device-server dump idmgr redis type` — Debug device server dump idmgr redis type — live device data
+- `debug device-server dump idmgr redis type dns-proxy all` — Debug device server dump idmgr redis type dns proxy all — live device data
+- `debug device-server dump idmgr redis type dns-proxy id` — Debug device server dump idmgr redis type dns proxy id — live device data
+- `debug device-server dump idmgr redis type dns-proxy name` — Debug device server dump idmgr redis type dns proxy name — live device data
+- `debug device-server dump idmgr redis type edl-domain all` — Debug device server dump idmgr redis type edl domain all — live device data
+- `debug device-server dump idmgr redis type edl-domain id` — Debug device server dump idmgr redis type edl domain id — live device data
+- `debug device-server dump idmgr redis type edl-domain name` — Debug device server dump idmgr redis type edl domain name — live device data
+- `debug device-server dump idmgr redis type edl-ip all` — Debug device server dump idmgr redis type edl ip all — live device data
+- `debug device-server dump idmgr redis type edl-ip id` — Debug device server dump idmgr redis type edl ip id — live device data
+- `debug device-server dump idmgr redis type edl-ip name` — Debug device server dump idmgr redis type edl ip name — live device data
+- `debug device-server dump idmgr redis type hip-profile all` — Debug device server dump idmgr redis type hip profile all — live device data
+- `debug device-server dump idmgr redis type hip-profile id` — Debug device server dump idmgr redis type hip profile id — live device data
+- `debug device-server dump idmgr redis type hip-profile name` — Debug device server dump idmgr redis type hip profile name — live device data
+- `debug device-server dump idmgr redis type http-header-insert-header-value-l all` — Debug device server dump idmgr redis type http header insert header value l all — live device data
+- `debug device-server dump idmgr redis type http-header-insert-header-value-l id` — Debug device server dump idmgr redis type http header insert header value l id — live device data
+- `debug device-server dump idmgr redis type http-header-insert-header-value-l name` — Debug device server dump idmgr redis type http header insert header value l name — live device data
+- `debug device-server dump idmgr redis type http-header-insert-header-value-s all` — Debug device server dump idmgr redis type http header insert header value s all — live device data
+- `debug device-server dump idmgr redis type http-header-insert-header-value-s id` — Debug device server dump idmgr redis type http header insert header value s id — live device data
+- `debug device-server dump idmgr redis type http-header-insert-header-value-s name` — Debug device server dump idmgr redis type http header insert header value s name — live device data
+- `debug device-server dump idmgr redis type interface-group all` — Debug device server dump idmgr redis type interface group all — live device data
+- `debug device-server dump idmgr redis type interface-group id` — Debug device server dump idmgr redis type interface group id — live device data
+- `debug device-server dump idmgr redis type interface-group name` — Debug device server dump idmgr redis type interface group name — live device data
+- `debug device-server dump idmgr redis type macl-rule all` — Debug device server dump idmgr redis type macl rule all — live device data
+- `debug device-server dump idmgr redis type macl-rule id` — Debug device server dump idmgr redis type macl rule id — live device data
+- `debug device-server dump idmgr redis type macl-rule name` — Debug device server dump idmgr redis type macl rule name — live device data
+- `debug device-server dump idmgr redis type monitor-tag all` — Debug device server dump idmgr redis type monitor tag all — live device data
+- `debug device-server dump idmgr redis type monitor-tag id` — Debug device server dump idmgr redis type monitor tag id — live device data
+- `debug device-server dump idmgr redis type monitor-tag name` — Debug device server dump idmgr redis type monitor tag name — live device data
+- `debug device-server dump idmgr redis type ospfv3-virtual-link all` — Debug device server dump idmgr redis type ospfv3 virtual link all — live device data
+- `debug device-server dump idmgr redis type ospfv3-virtual-link id` — Debug device server dump idmgr redis type ospfv3 virtual link id — live device data
+- `debug device-server dump idmgr redis type ospfv3-virtual-link name` — Debug device server dump idmgr redis type ospfv3 virtual link name — live device data
+- `debug device-server dump idmgr redis type sdwan-link-tag all` — Debug device server dump idmgr redis type sdwan link tag all — live device data
+- `debug device-server dump idmgr redis type sdwan-link-tag id` — Debug device server dump idmgr redis type sdwan link tag id — live device data
+- `debug device-server dump idmgr redis type sdwan-link-tag name` — Debug device server dump idmgr redis type sdwan link tag name — live device data
+- `debug device-server dump idmgr redis type shared-app-signature all` — Debug device server dump idmgr redis type shared app signature all — live device data
+- `debug device-server dump idmgr redis type shared-app-signature id` — Debug device server dump idmgr redis type shared app signature id — live device data
+- `debug device-server dump idmgr redis type shared-app-signature name` — Debug device server dump idmgr redis type shared app signature name — live device data
+- `debug device-server dump idmgr redis type shared-application-filter all` — Debug device server dump idmgr redis type shared application filter all — live device data
+- `debug device-server dump idmgr redis type shared-application-filter id` — Debug device server dump idmgr redis type shared application filter id — live device data
+- `debug device-server dump idmgr redis type shared-application-filter name` — Debug device server dump idmgr redis type shared application filter name — live device data
+- `debug device-server dump idmgr redis type shared-application-group all` — Debug device server dump idmgr redis type shared application group all — live device data
+- `debug device-server dump idmgr redis type shared-application-group id` — Debug device server dump idmgr redis type shared application group id — live device data
+- `debug device-server dump idmgr redis type shared-application-group name` — Debug device server dump idmgr redis type shared application group name — live device data
+- `debug device-server dump idmgr redis type shared-bgp-aggr-address all` — Debug device server dump idmgr redis type shared bgp aggr address all — live device data
+- `debug device-server dump idmgr redis type shared-bgp-aggr-address id` — Debug device server dump idmgr redis type shared bgp aggr address id — live device data
+- `debug device-server dump idmgr redis type shared-bgp-aggr-address name` — Debug device server dump idmgr redis type shared bgp aggr address name — live device data
+- `debug device-server dump idmgr redis type shared-bgp-peer all` — Debug device server dump idmgr redis type shared bgp peer all — live device data
+- `debug device-server dump idmgr redis type shared-bgp-peer id` — Debug device server dump idmgr redis type shared bgp peer id — live device data
+- `debug device-server dump idmgr redis type shared-bgp-peer name` — Debug device server dump idmgr redis type shared bgp peer name — live device data
+- `debug device-server dump idmgr redis type shared-bgp-peergrp all` — Debug device server dump idmgr redis type shared bgp peergrp all — live device data
+- `debug device-server dump idmgr redis type shared-bgp-peergrp id` — Debug device server dump idmgr redis type shared bgp peergrp id — live device data
+- `debug device-server dump idmgr redis type shared-bgp-peergrp name` — Debug device server dump idmgr redis type shared bgp peergrp name — live device data
+- `debug device-server dump idmgr redis type shared-qos-group all` — Debug device server dump idmgr redis type shared qos group all — live device data
+- `debug device-server dump idmgr redis type shared-qos-group id` — Debug device server dump idmgr redis type shared qos group id — live device data
+- `debug device-server dump idmgr redis type shared-qos-group name` — Debug device server dump idmgr redis type shared qos group name — live device data
+- `debug device-server dump idmgr redis type shared-region all` — Debug device server dump idmgr redis type shared region all — live device data
+- `debug device-server dump idmgr redis type shared-region id` — Debug device server dump idmgr redis type shared region id — live device data
+- `debug device-server dump idmgr redis type shared-region name` — Debug device server dump idmgr redis type shared region name — live device data
+- `debug device-server dump idmgr redis type shared-spyware all` — Debug device server dump idmgr redis type shared spyware all — live device data
+- `debug device-server dump idmgr redis type shared-spyware id` — Debug device server dump idmgr redis type shared spyware id — live device data
+- `debug device-server dump idmgr redis type shared-spyware name` — Debug device server dump idmgr redis type shared spyware name — live device data
+- `debug device-server dump idmgr redis type shared-url-filtering all` — Debug device server dump idmgr redis type shared url filtering all — live device data
+- `debug device-server dump idmgr redis type shared-url-filtering id` — Debug device server dump idmgr redis type shared url filtering id — live device data
+- `debug device-server dump idmgr redis type shared-url-filtering name` — Debug device server dump idmgr redis type shared url filtering name — live device data
+- `debug device-server dump idmgr redis type tci-rule all` — Debug device server dump idmgr redis type tci rule all — live device data
+- `debug device-server dump idmgr redis type tci-rule id` — Debug device server dump idmgr redis type tci rule id — live device data
+- `debug device-server dump idmgr redis type tci-rule name` — Debug device server dump idmgr redis type tci rule name — live device data
+- `debug device-server dump idmgr redis type vsys-app-signature all` — Debug device server dump idmgr redis type vsys app signature all — live device data
+- `debug device-server dump idmgr redis type vsys-app-signature id` — Debug device server dump idmgr redis type vsys app signature id — live device data
+- `debug device-server dump idmgr redis type vsys-app-signature name` — Debug device server dump idmgr redis type vsys app signature name — live device data
+- `debug device-server dump idmgr redis type vsys-application-filter all` — Debug device server dump idmgr redis type vsys application filter all — live device data
+- `debug device-server dump idmgr redis type vsys-application-filter id` — Debug device server dump idmgr redis type vsys application filter id — live device data
+- `debug device-server dump idmgr redis type vsys-application-filter name` — Debug device server dump idmgr redis type vsys application filter name — live device data
+- `debug device-server dump idmgr redis type vsys-application-group all` — Debug device server dump idmgr redis type vsys application group all — live device data
+- `debug device-server dump idmgr redis type vsys-application-group id` — Debug device server dump idmgr redis type vsys application group id — live device data
+- `debug device-server dump idmgr redis type vsys-application-group name` — Debug device server dump idmgr redis type vsys application group name — live device data
+- `debug device-server dump idmgr redis type vsys-region all` — Debug device server dump idmgr redis type vsys region all — live device data
+- `debug device-server dump idmgr redis type vsys-region id` — Debug device server dump idmgr redis type vsys region id — live device data
+- `debug device-server dump idmgr redis type vsys-region name` — Debug device server dump idmgr redis type vsys region name — live device data
+- `debug device-server dump idmgr redis type vsys-spyware all` — Debug device server dump idmgr redis type vsys spyware all — live device data
+- `debug device-server dump idmgr redis type vsys-spyware id` — Debug device server dump idmgr redis type vsys spyware id — live device data
+- `debug device-server dump idmgr redis type vsys-spyware name` — Debug device server dump idmgr redis type vsys spyware name — live device data
+- `debug device-server dump idmgr redis type vsys-url-filtering all` — Debug device server dump idmgr redis type vsys url filtering all — live device data
+- `debug device-server dump idmgr redis type vsys-url-filtering id` — Debug device server dump idmgr redis type vsys url filtering id — live device data
+- `debug device-server dump idmgr redis type vsys-url-filtering name` — Debug device server dump idmgr redis type vsys url filtering name — live device data
+- `debug device-server dump idmgr type` — Debug device server dump idmgr type — live device data
+- `debug device-server dump idmgr type dns-proxy all` — Debug device server dump idmgr type dns proxy all — live device data
+- `debug device-server dump idmgr type dns-proxy id` — Debug device server dump idmgr type dns proxy id — live device data
+- `debug device-server dump idmgr type dns-proxy name` — Debug device server dump idmgr type dns proxy name — live device data
+- `debug device-server dump idmgr type edl-domain all` — Debug device server dump idmgr type edl domain all — live device data
+- `debug device-server dump idmgr type edl-domain id` — Debug device server dump idmgr type edl domain id — live device data
+- `debug device-server dump idmgr type edl-domain name` — Debug device server dump idmgr type edl domain name — live device data
+- `debug device-server dump idmgr type edl-ip all` — Debug device server dump idmgr type edl ip all — live device data
+- `debug device-server dump idmgr type edl-ip id` — Debug device server dump idmgr type edl ip id — live device data
+- `debug device-server dump idmgr type edl-ip name` — Debug device server dump idmgr type edl ip name — live device data
+- `debug device-server dump idmgr type hip-profile all` — Debug device server dump idmgr type hip profile all — live device data
+- `debug device-server dump idmgr type hip-profile id` — Debug device server dump idmgr type hip profile id — live device data
+- `debug device-server dump idmgr type hip-profile name` — Debug device server dump idmgr type hip profile name — live device data
+- `debug device-server dump idmgr type http-header-insert-header-value-l all` — Debug device server dump idmgr type http header insert header value l all — live device data
+- `debug device-server dump idmgr type http-header-insert-header-value-l id` — Debug device server dump idmgr type http header insert header value l id — live device data
+- `debug device-server dump idmgr type http-header-insert-header-value-l name` — Debug device server dump idmgr type http header insert header value l name — live device data
+- `debug device-server dump idmgr type http-header-insert-header-value-s all` — Debug device server dump idmgr type http header insert header value s all — live device data
+- `debug device-server dump idmgr type http-header-insert-header-value-s id` — Debug device server dump idmgr type http header insert header value s id — live device data
+- `debug device-server dump idmgr type http-header-insert-header-value-s name` — Debug device server dump idmgr type http header insert header value s name — live device data
+- `debug device-server dump idmgr type interface-group all` — Debug device server dump idmgr type interface group all — live device data
+- `debug device-server dump idmgr type interface-group id` — Debug device server dump idmgr type interface group id — live device data
+- `debug device-server dump idmgr type interface-group name` — Debug device server dump idmgr type interface group name — live device data
+- `debug device-server dump idmgr type macl-rule all` — Debug device server dump idmgr type macl rule all — live device data
+- `debug device-server dump idmgr type macl-rule id` — Debug device server dump idmgr type macl rule id — live device data
+- `debug device-server dump idmgr type macl-rule name` — Debug device server dump idmgr type macl rule name — live device data
+- `debug device-server dump idmgr type monitor-tag all` — Debug device server dump idmgr type monitor tag all — live device data
+- `debug device-server dump idmgr type monitor-tag id` — Debug device server dump idmgr type monitor tag id — live device data
+- `debug device-server dump idmgr type monitor-tag name` — Debug device server dump idmgr type monitor tag name — live device data
+- `debug device-server dump idmgr type ospfv3-virtual-link all` — Debug device server dump idmgr type ospfv3 virtual link all — live device data
+- `debug device-server dump idmgr type ospfv3-virtual-link id` — Debug device server dump idmgr type ospfv3 virtual link id — live device data
+- `debug device-server dump idmgr type ospfv3-virtual-link name` — Debug device server dump idmgr type ospfv3 virtual link name — live device data
+- `debug device-server dump idmgr type sdwan-link-tag all` — Debug device server dump idmgr type sdwan link tag all — live device data
+- `debug device-server dump idmgr type sdwan-link-tag id` — Debug device server dump idmgr type sdwan link tag id — live device data
+- `debug device-server dump idmgr type sdwan-link-tag name` — Debug device server dump idmgr type sdwan link tag name — live device data
+- `debug device-server dump idmgr type shared-app-signature all` — Debug device server dump idmgr type shared app signature all — live device data
+- `debug device-server dump idmgr type shared-app-signature id` — Debug device server dump idmgr type shared app signature id — live device data
+- `debug device-server dump idmgr type shared-app-signature name` — Debug device server dump idmgr type shared app signature name — live device data
+- `debug device-server dump idmgr type shared-application-filter all` — Debug device server dump idmgr type shared application filter all — live device data
+- `debug device-server dump idmgr type shared-application-filter id` — Debug device server dump idmgr type shared application filter id — live device data
+- `debug device-server dump idmgr type shared-application-filter name` — Debug device server dump idmgr type shared application filter name — live device data
+- `debug device-server dump idmgr type shared-application-group all` — Debug device server dump idmgr type shared application group all — live device data
+- `debug device-server dump idmgr type shared-application-group id` — Debug device server dump idmgr type shared application group id — live device data
+- `debug device-server dump idmgr type shared-application-group name` — Debug device server dump idmgr type shared application group name — live device data
+- `debug device-server dump idmgr type shared-bgp-aggr-address all` — Debug device server dump idmgr type shared bgp aggr address all — live device data
+- `debug device-server dump idmgr type shared-bgp-aggr-address id` — Debug device server dump idmgr type shared bgp aggr address id — live device data
+- `debug device-server dump idmgr type shared-bgp-aggr-address name` — Debug device server dump idmgr type shared bgp aggr address name — live device data
+- `debug device-server dump idmgr type shared-bgp-peer all` — Debug device server dump idmgr type shared bgp peer all — live device data
+- `debug device-server dump idmgr type shared-bgp-peer id` — Debug device server dump idmgr type shared bgp peer id — live device data
+- `debug device-server dump idmgr type shared-bgp-peer name` — Debug device server dump idmgr type shared bgp peer name — live device data
+- `debug device-server dump idmgr type shared-bgp-peergrp all` — Debug device server dump idmgr type shared bgp peergrp all — live device data
+- `debug device-server dump idmgr type shared-bgp-peergrp id` — Debug device server dump idmgr type shared bgp peergrp id — live device data
+- `debug device-server dump idmgr type shared-bgp-peergrp name` — Debug device server dump idmgr type shared bgp peergrp name — live device data
+- `debug device-server dump idmgr type shared-qos-group all` — Debug device server dump idmgr type shared qos group all — live device data
+- `debug device-server dump idmgr type shared-qos-group id` — Debug device server dump idmgr type shared qos group id — live device data
+- `debug device-server dump idmgr type shared-qos-group name` — Debug device server dump idmgr type shared qos group name — live device data
+- `debug device-server dump idmgr type shared-region all` — Debug device server dump idmgr type shared region all — live device data
+- `debug device-server dump idmgr type shared-region id` — Debug device server dump idmgr type shared region id — live device data
+- `debug device-server dump idmgr type shared-region name` — Debug device server dump idmgr type shared region name — live device data
+- `debug device-server dump idmgr type shared-spyware all` — Debug device server dump idmgr type shared spyware all — live device data
+- `debug device-server dump idmgr type shared-spyware id` — Debug device server dump idmgr type shared spyware id — live device data
+- `debug device-server dump idmgr type shared-spyware name` — Debug device server dump idmgr type shared spyware name — live device data
+- `debug device-server dump idmgr type shared-url-filtering all` — Debug device server dump idmgr type shared url filtering all — live device data
+- `debug device-server dump idmgr type shared-url-filtering id` — Debug device server dump idmgr type shared url filtering id — live device data
+- `debug device-server dump idmgr type shared-url-filtering name` — Debug device server dump idmgr type shared url filtering name — live device data
+- `debug device-server dump idmgr type tci-rule all` — Debug device server dump idmgr type tci rule all — live device data
+- `debug device-server dump idmgr type tci-rule id` — Debug device server dump idmgr type tci rule id — live device data
+- `debug device-server dump idmgr type tci-rule name` — Debug device server dump idmgr type tci rule name — live device data
+- `debug device-server dump idmgr type vsys-app-signature all` — Debug device server dump idmgr type vsys app signature all — live device data
+- `debug device-server dump idmgr type vsys-app-signature id` — Debug device server dump idmgr type vsys app signature id — live device data
+- `debug device-server dump idmgr type vsys-app-signature name` — Debug device server dump idmgr type vsys app signature name — live device data
+- `debug device-server dump idmgr type vsys-application-filter all` — Debug device server dump idmgr type vsys application filter all — live device data
+- `debug device-server dump idmgr type vsys-application-filter id` — Debug device server dump idmgr type vsys application filter id — live device data
+- `debug device-server dump idmgr type vsys-application-filter name` — Debug device server dump idmgr type vsys application filter name — live device data
+- `debug device-server dump idmgr type vsys-application-group all` — Debug device server dump idmgr type vsys application group all — live device data
+- `debug device-server dump idmgr type vsys-application-group id` — Debug device server dump idmgr type vsys application group id — live device data
+- `debug device-server dump idmgr type vsys-application-group name` — Debug device server dump idmgr type vsys application group name — live device data
+- `debug device-server dump idmgr type vsys-region all` — Debug device server dump idmgr type vsys region all — live device data
+- `debug device-server dump idmgr type vsys-region id` — Debug device server dump idmgr type vsys region id — live device data
+- `debug device-server dump idmgr type vsys-region name` — Debug device server dump idmgr type vsys region name — live device data
+- `debug device-server dump idmgr type vsys-spyware all` — Debug device server dump idmgr type vsys spyware all — live device data
+- `debug device-server dump idmgr type vsys-spyware id` — Debug device server dump idmgr type vsys spyware id — live device data
+- `debug device-server dump idmgr type vsys-spyware name` — Debug device server dump idmgr type vsys spyware name — live device data
+- `debug device-server dump idmgr type vsys-url-filtering all` — Debug device server dump idmgr type vsys url filtering all — live device data
+- `debug device-server dump idmgr type vsys-url-filtering id` — Debug device server dump idmgr type vsys url filtering id — live device data
+- `debug device-server dump idmgr type vsys-url-filtering name` — Debug device server dump idmgr type vsys url filtering name — live device data
+- `debug device-server dump logging statistics` — Debug device server dump logging statistics — live device data
+- `debug device-server dump memory` — Debug device server dump memory — live device data
+- `debug device-server dump ml7-idblob-flatbuf statistics` — Debug device server dump ml7 idblob flatbuf statistics — live device data
+- `debug device-server dump pan-url-db statistics` — Debug device server dump pan url db statistics — live device data
+- `debug device-server dump regips ip` — Debug device server dump regips ip — live device data
+- `debug device-server dump regips iprange` — Debug device server dump regips iprange — live device data
+- `debug device-server dump regips summary` — Debug device server dump regips summary — live device data
+- `debug device-server dump regips tag` — Debug device server dump regips tag — live device data
+- `debug device-server dump tag-table tag` — Debug device server dump tag table tag — live device data
+- `debug device-server ldl show status` — Debug device server ldl show status — live device data
+- `debug device-server mlav clear-cache` — Debug device server mlav clear cache — live device data
+- `debug device-server mlav revert-model filetype-id` — Debug device server mlav revert model filetype id — live device data
+- `debug device-server mlav set-cloud-url default` — Debug device server mlav set cloud url default — live device data
+- `debug device-server mlav set-cloud-url url` — Debug device server mlav set cloud url url — live device data
+- `debug device-server off` — Debug device server off — live device data
+- `debug device-server on` — Debug device server on — live device data
+- `debug device-server pan-url-db` — Debug device server pan url db — live device data
+- `debug device-server pan-url-db db-backup back-duration` — Debug device server pan url db db backup back duration — live device data
+- `debug device-server pcap` — Debug device server pcap — live device data
+- `debug device-server pcap logical-router on logicalrouter` — Debug device server pcap logical router on logicalrouter — live device data
+- `debug device-server pcap virtual-router on virtualrouter` — Debug device server pcap virtual router on virtualrouter — live device data
+- `debug device-server reset com statistics` — Debug device server reset com statistics — live device data
+- `debug device-server reset config` — Debug device server reset config — live device data
+- `debug device-server reset id-manager type` — Debug device server reset id manager type — live device data
+- `debug device-server reset logging statistics` — Debug device server reset logging statistics — live device data
+- `debug device-server set all` — Debug device server set all — live device data
+- `debug device-server set base` — Debug device server set base — live device data
+- `debug device-server set config` — Debug device server set config — live device data
+- `debug device-server set misc` — Debug device server set misc — live device data
+- `debug device-server set mlav` — Debug device server set mlav — live device data
+- `debug device-server set tdb` — Debug device server set tdb — live device data
+- `debug device-server set third-party` — Debug device server set third party — live device data
+- `debug device-server set url` — Debug device server set url — live device data
+- `debug device-server set url_trie` — Debug device server set url_trie — live device data
+- `debug device-server set wfrt` — Debug device server set wfrt — live device data
+- `debug device-server show` — Debug device server show — live device data
+- `debug device-server test admin-override-password` — Debug device server test admin override password — live device data
+- `debug device-server test botnet-domain` — Debug device server test botnet domain — live device data
+- `debug device-server test dynamic-url cloud` — Debug device server test dynamic url cloud — live device data
+- `debug device-server test idmgr-change-max type` — Debug device server test idmgr change max type — live device data
+- `debug device-server test idmgr-change-max type global-router new-max-id` — Debug device server test idmgr change max type global router new max id — live device data
+- `debug device-server test idmgr-change-max type shared-custom-url-category new-max-id` — Debug device server test idmgr change max type shared custom url category new max id — live device data
+- `debug device-server test idmgr-change-max type ssl-rule new-max-id` — Debug device server test idmgr change max type ssl rule new max id — live device data
+- `debug device-server test idmgr-change-max type vsys-application new-max-id` — Debug device server test idmgr change max type vsys application new max id — live device data
+- `debug device-server test idmgr-change-max type vsys-custom-url-category new-max-id` — Debug device server test idmgr change max type vsys custom url category new max id — live device data
+- `debug device-server test idmgr-restore-default-max type` — Debug device server test idmgr restore default max type — live device data
+- `debug device-server test ldl-model path` — Debug device server test ldl model path — live device data
+- `debug device-server test ml7-blob path` — Debug device server test ml7 blob path — live device data
+- `debug device-server test nw_id options` — Debug device server test nw_id options — live device data
+- `debug device-server test url-category` — Debug device server test url category — live device data
+- `debug device-server trigger addrobjrefresh` — Debug device server trigger addrobjrefresh — live device data
+- `debug device-server unset all` — Debug device server unset all — live device data
+- `debug device-server unset base` — Debug device server unset base — live device data
+- `debug device-server unset config` — Debug device server unset config — live device data
+- `debug device-server unset misc` — Debug device server unset misc — live device data
+- `debug device-server unset mlav` — Debug device server unset mlav — live device data
+- `debug device-server unset tdb` — Debug device server unset tdb — live device data
+- `debug device-server unset third-party` — Debug device server unset third party — live device data
+- `debug device-server unset url` — Debug device server unset url — live device data
+- `debug device-server unset url_trie` — Debug device server unset url_trie — live device data
+- `debug device-server unset wfrt` — Debug device server unset wfrt — live device data
+- `debug device-telemetry` — Debug device telemetry — live device data
+- `debug dhcpd cluster` — Debug dhcpd cluster — live device data
+- `debug dhcpd downgrade convert-db` — Debug dhcpd downgrade convert db — live device data
+- `debug dhcpd global off` — Debug dhcpd global off — live device data
+- `debug dhcpd global on` — Debug dhcpd global on — live device data
+- `debug dhcpd global show` — Debug dhcpd global show — live device data
+- `debug dhcpd high-availability ignore-config-sync` — Debug dhcpd high availability ignore config sync — live device data
+- `debug dhcpd pcap` — Debug dhcpd pcap — live device data
+- `debug dhcpd pcap logical-router on logicalrouter` — Debug dhcpd pcap logical router on logicalrouter — live device data
+- `debug dhcpd pcap virtual-router on virtualrouter` — Debug dhcpd pcap virtual router on virtualrouter — live device data
+- `debug dhcpd show objects` — Debug dhcpd show objects — live device data
+- `debug distributord dump relay` — Debug distributord dump relay — live device data
+- `debug distributord dump relay-ipc-iotd state` — Debug distributord dump relay ipc iotd state — live device data
+- `debug distributord dump relay-ipc-useridd` — Debug distributord dump relay ipc useridd — live device data
+- `debug distributord hip-relay hip-report-dedup-cache-size set` — Debug distributord hip relay hip report dedup cache size set — live device data
+- `debug distributord hip-relay hip-report-dedup-cache-size show` — Debug distributord hip relay hip report dedup cache size show — live device data
+- `debug distributord hip-relay hip-report-in-cache-aging-interval set` — Debug distributord hip relay hip report in cache aging interval set — live device data
+- `debug distributord hip-relay hip-report-in-cache-aging-interval show` — Debug distributord hip relay hip report in cache aging interval show — live device data
+- `debug distributord hip-relay reset-hip-report-dedup-cache` — Debug distributord hip relay reset hip report dedup cache — live device data
+- `debug distributord max-handle-concurrent-clients set` — Debug distributord max handle concurrent clients set — live device data
+- `debug distributord max-handle-concurrent-clients show` — Debug distributord max handle concurrent clients show — live device data
+- `debug distributord off` — Debug distributord off — live device data
+- `debug distributord on` — Debug distributord on — live device data
+- `debug distributord redis-connection-pool ip-user set` — Debug distributord redis connection pool ip user set — live device data
+- `debug distributord redis-connection-pool ip-user show` — Debug distributord redis connection pool ip user show — live device data
+- `debug distributord redis-connection-pool other-data-types enable` — Debug distributord redis connection pool other data types enable — live device data
+- `debug distributord redis-connection-pool other-data-types set` — Debug distributord redis connection pool other data types set — live device data
+- `debug distributord redis-connection-pool other-data-types show` — Debug distributord redis connection pool other data types show — live device data
+- `debug distributord relay relay-ipc-iotd set qsize` — Debug distributord relay relay ipc iotd set qsize — live device data
+- `debug distributord relay relay-ipc-iotd set relay-iotd-recv-cache-qsize` — Debug distributord relay relay ipc iotd set relay iotd recv cache qsize — live device data
+- `debug distributord relay relay-ipc-iotd set relay-iotd-recv-read-batch-size` — Debug distributord relay relay ipc iotd set relay iotd recv read batch size — live device data
+- `debug distributord relay relay-ipc-iotd show` — Debug distributord relay relay ipc iotd show — live device data
+- `debug distributord relay relay-ipc-useridd set qsize` — Debug distributord relay relay ipc useridd set qsize — live device data
+- `debug distributord relay relay-ipc-useridd set relay-useridd-recv-cache-qsize` — Debug distributord relay relay ipc useridd set relay useridd recv cache qsize — live device data
+- `debug distributord relay relay-ipc-useridd set relay-useridd-recv-read-batch-size` — Debug distributord relay relay ipc useridd set relay useridd recv read batch size — live device data
+- `debug distributord relay relay-ipc-useridd show` — Debug distributord relay relay ipc useridd show — live device data
+- `debug distributord relay relay-mode set-dcom-relay-mode-only` — Debug distributord relay relay mode set dcom relay mode only — live device data
+- `debug distributord relay relay-mode show-dcom-relay-mode` — Debug distributord relay relay mode show dcom relay mode — live device data
+- `debug distributord reset redistribution-agent` — Debug distributord reset redistribution agent — live device data
+- `debug distributord reset relay-statistics` — Debug distributord reset relay statistics — live device data
+- `debug distributord set agent` — Debug distributord set agent — live device data
+- `debug distributord set client` — Debug distributord set client — live device data
+- `debug distributord set distribute` — Debug distributord set distribute — live device data
+- `debug distributord set relay` — Debug distributord set relay — live device data
+- `debug distributord show` — Debug distributord show — live device data
+- `debug distributord test debug-log-category` — Debug distributord test debug log category — live device data
+- `debug distributord unset agent` — Debug distributord unset agent — live device data
+- `debug distributord unset client` — Debug distributord unset client — live device data
+- `debug distributord unset distribute` — Debug distributord unset distribute — live device data
+- `debug distributord unset relay` — Debug distributord unset relay — live device data
+- `debug dnsproxyd` — Debug dnsproxyd — live device data
+- `debug dnsproxyd clear cache-statistics` — Debug dnsproxyd clear cache statistics — live device data
+- `debug dnsproxyd clear fqdn counters` — Debug dnsproxyd clear fqdn counters — live device data
+- `debug dnsproxyd clear sys-stats` — Debug dnsproxyd clear sys stats — live device data
+- `debug dnsproxyd dns-signature allow-list download` — Debug dnsproxyd dns signature allow list download — live device data
+- `debug dnsproxyd dns-signature cache fqdn` — Debug dnsproxyd dns signature cache fqdn — live device data
+- `debug dnsproxyd dns-signature counters` — Debug dnsproxyd dns signature counters — live device data
+- `debug dnsproxyd dns-signature info` — Debug dnsproxyd dns signature info — live device data
+- `debug dnsproxyd dns-signature query bypass-cache` — Debug dnsproxyd dns signature query bypass cache — live device data
+- `debug dnsproxyd dns-signature query_n bypass-cache` — Debug dnsproxyd dns signature query_n bypass cache — live device data
+- `debug dnsproxyd dns-signature response fqdn` — Debug dnsproxyd dns signature response fqdn — live device data
+- `debug dnsproxyd dns-signature response_n` — Debug dnsproxyd dns signature response_n — live device data
+- `debug dnsproxyd dns-signature response_n fqdns` — Debug dnsproxyd dns signature response_n fqdns — live device data
+- `debug dnsproxyd dns-signature response_n match-subdomains` — Debug dnsproxyd dns signature response_n match subdomains — live device data
+- `debug dnsproxyd dns-signature threat-info fqdn` — Debug dnsproxyd dns signature threat info fqdn — live device data
+- `debug dnsproxyd dns-signature ut threat-info-api api-query-domain fqdn` — Debug dnsproxyd dns signature ut threat info api api query domain fqdn — live device data
+- `debug dnsproxyd fqdn counters delta` — Debug dnsproxyd fqdn counters delta — live device data
+- `debug dnsproxyd fqdn dump brief` — Debug dnsproxyd fqdn dump brief — live device data
+- `debug dnsproxyd global off` — Debug dnsproxyd global off — live device data
+- `debug dnsproxyd global on` — Debug dnsproxyd global on — live device data
+- `debug dnsproxyd global show` — Debug dnsproxyd global show — live device data
+- `debug dnsproxyd show` — Debug dnsproxyd show — live device data
+- `debug evtmgr` — Debug evtmgr — live device data
+- `debug evtmgr ms` — Debug evtmgr ms — live device data
+- `debug evtmgr ms debug-log clfy` — Debug evtmgr ms debug log clfy — live device data
+- `debug evtmgr ms debug-log client` — Debug evtmgr ms debug log client — live device data
+- `debug evtmgr ms debug-log msg` — Debug evtmgr ms debug log msg — live device data
+- `debug evtmgr ms debug-log multicast` — Debug evtmgr ms debug log multicast — live device data
+- `debug evtmgr ms msg-filter msg-class` — Debug evtmgr ms msg filter msg class — live device data
+- `debug evtmgr ms show basic` — Debug evtmgr ms show basic — live device data
+- `debug evtmgr ms show client-id` — Debug evtmgr ms show client id — live device data
+- `debug evtmgr ms show detail` — Debug evtmgr ms show detail — live device data
+- `debug evtmgr ms syslog-enabled` — Debug evtmgr ms syslog enabled — live device data
+- `debug external-list delete-file all` — Debug external list delete file all — live device data
+- `debug external-list delete-file type domain name` — Debug external list delete file type domain name — live device data
+- `debug external-list delete-file type ip name` — Debug external list delete file type ip name — live device data
+- `debug external-list delete-file type url name` — Debug external list delete file type url name — live device data
+- `debug global-protect hip set-dp-query-interval` — Debug global protect hip set dp query interval — live device data
+- `debug global-protect hip show-dp-query-interval` — Debug global protect hip show dp query interval — live device data
+- `debug global-protect portal clientlessvpn gzip-encoding` — Debug global protect portal clientlessvpn gzip encoding — live device data
+- `debug global-protect portal clientlessvpn host-match-referer` — Debug global protect portal clientlessvpn host match referer — live device data
+- `debug global-protect portal interval` — Debug global protect portal interval — live device data
+- `debug global-protect portal off` — Debug global protect portal off — live device data
+- `debug global-protect portal on` — Debug global protect portal on — live device data
+- `debug global-protect portal show` — Debug global protect portal show — live device data
+- `debug gp-broker gpsvc key-value` — Debug gp broker gpsvc key value — live device data
+- `debug gp-broker gpsvc reload-template` — Debug gp broker gpsvc reload template — live device data
+- `debug gp-broker gpsvc reset counter` — Debug gp broker gpsvc reset counter — live device data
+- `debug gp-broker gpsvc reset key-value` — Debug gp broker gpsvc reset key value — live device data
+- `debug gp-broker gpsvc task` — Debug gp broker gpsvc task — live device data
+- `debug gp-broker gpsvc test rpc api-name` — Debug gp broker gpsvc test rpc api name — live device data
+- `debug gp-broker gpsvc trace add user` — Debug gp broker gpsvc trace add user — live device data
+- `debug gp-broker gpsvc trace clear` — Debug gp broker gpsvc trace clear — live device data
+- `debug gp-broker gpsvc trace delete user` — Debug gp broker gpsvc trace delete user — live device data
+- `debug gp-broker gpsvc trace global-log` — Debug gp broker gpsvc trace global log — live device data
+- `debug gp-broker gpsvc trace show` — Debug gp broker gpsvc trace show — live device data
+- `debug gp-broker off` — Debug gp broker off — live device data
+- `debug gp-broker on` — Debug gp broker on — live device data
+- `debug gp-broker show` — Debug gp broker show — live device data
+- `debug high-availability` — Debug high availability — live device data
+- `debug high-availability flap-interface interface` — Debug high availability flap interface interface — live device data
+- `debug high-availability knob set encrypt-init-hold-time` — Debug high availability knob set encrypt init hold time — live device data
+- `debug high-availability knob set init-hold-time` — Debug high availability knob set init hold time — live device data
+- `debug high-availability knob show` — Debug high availability knob show — live device data
+- `debug high-availability on` — Debug high availability on — live device data
+- `debug ifmgr dump-detail-history port` — Debug ifmgr dump detail history port — live device data
+- `debug ifmgr dump-history port` — Debug ifmgr dump history port — live device data
+- `debug ifmgr dump-portdb` — Debug ifmgr dump portdb — live device data
+- `debug ifmgr pstate port` — Debug ifmgr pstate port — live device data
+- `debug ike gateway` — Debug ike gateway — live device data
+- `debug ike global off` — Debug ike global off — live device data
+- `debug ike global on` — Debug ike global on — live device data
+- `debug ike global show` — Debug ike global show — live device data
+- `debug ike pcap` — Debug ike pcap — live device data
+- `debug ike socket` — Debug ike socket — live device data
+- `debug ike stat` — Debug ike stat — live device data
+- `debug ike stat fqdn name` — Debug ike stat fqdn name — live device data
+- `debug ike stat ipsec counter` — Debug ike stat ipsec counter — live device data
+- `debug ike stat isakmp counter` — Debug ike stat isakmp counter — live device data
+- `debug ike stat sched filter gwid` — Debug ike stat sched filter gwid — live device data
+- `debug ike tunnel` — Debug ike tunnel — live device data
+- `debug iot clear-all type` — Debug iot clear all type — live device data
+- `debug iot disable-device-id` — Debug iot disable device id — live device data
+- `debug iot dump relay` — Debug iot dump relay — live device data
+- `debug iot dump relay-ipc-distributord state` — Debug iot dump relay ipc distributord state — live device data
+- `debug iot eal cortex-server` — Debug iot eal cortex server — live device data
+- `debug iot eal key-value` — Debug iot eal key value — live device data
+- `debug iot eal on` — Debug iot eal on — live device data
+- `debug iot eal reset aggregation-non-ack` — Debug iot eal reset aggregation non ack — live device data
+- `debug iot eal reset aggregation-num` — Debug iot eal reset aggregation num — live device data
+- `debug iot eal reset connection` — Debug iot eal reset connection — live device data
+- `debug iot eal reset counter` — Debug iot eal reset counter — live device data
+- `debug iot eal reset key-value` — Debug iot eal reset key value — live device data
+- `debug iot eal sending-format` — Debug iot eal sending format — live device data
+- `debug iot eal test load-dpi` — Debug iot eal test load dpi — live device data
+- `debug iot eal track` — Debug iot eal track — live device data
+- `debug iot eal track filter add subtype` — Debug iot eal track filter add subtype — live device data
+- `debug iot eal track filter clear` — Debug iot eal track filter clear — live device data
+- `debug iot eal track filter show` — Debug iot eal track filter show — live device data
+- `debug iot eal validate-dpi` — Debug iot eal validate dpi — live device data
+- `debug iot global counter` — Debug iot global counter — live device data
+- `debug iot global off` — Debug iot global off — live device data
+- `debug iot global on` — Debug iot global on — live device data
+- `debug iot global show` — Debug iot global show — live device data
+- `debug iot icd key-value` — Debug iot icd key value — live device data
+- `debug iot icd on` — Debug iot icd on — live device data
+- `debug iot icd reset connection` — Debug iot icd reset connection — live device data
+- `debug iot icd reset cookie` — Debug iot icd reset cookie — live device data
+- `debug iot icd reset key-value` — Debug iot icd reset key value — live device data
+- `debug iot icd set-app-match-workers` — Debug iot icd set app match workers — live device data
+- `debug iot icd trigger-app-match` — Debug iot icd trigger app match — live device data
+- `debug iot icd verdict-server` — Debug iot icd verdict server — live device data
+- `debug iot memory` — Debug iot memory — live device data
+- `debug iot relay-ipc-distributord set qsize` — Debug iot relay ipc distributord set qsize — live device data
+- `debug iot relay-ipc-distributord set relay-distd-recv-cache-qsize` — Debug iot relay ipc distributord set relay distd recv cache qsize — live device data
+- `debug iot relay-ipc-distributord set relay-distd-recv-read-batch-size` — Debug iot relay ipc distributord set relay distd recv read batch size — live device data
+- `debug iot relay-ipc-distributord show` — Debug iot relay ipc distributord show — live device data
+- `debug keymgr gateway id` — Debug keymgr gateway id — live device data
+- `debug keymgr global off` — Debug keymgr global off — live device data
+- `debug keymgr global on` — Debug keymgr global on — live device data
+- `debug keymgr global show` — Debug keymgr global show — live device data
+- `debug keymgr list-sa` — Debug keymgr list sa — live device data
+- `debug keymgr queue` — Debug keymgr queue — live device data
+- `debug keymgr socket` — Debug keymgr socket — live device data
+- `debug keymgr tunnel id` — Debug keymgr tunnel id — live device data
+- `debug l2ctrld global off` — Debug l2ctrld global off — live device data
+- `debug l2ctrld global on` — Debug l2ctrld global on — live device data
+- `debug l2ctrld global show` — Debug l2ctrld global show — live device data
+- `debug l2ctrld lacp off` — Debug l2ctrld lacp off — live device data
+- `debug l2ctrld lacp on` — Debug l2ctrld lacp on — live device data
+- `debug l2ctrld lacp set hold-time aggregate-ethernet` — Debug l2ctrld lacp set hold time aggregate ethernet — live device data
+- `debug l2ctrld lacp show` — Debug l2ctrld lacp show — live device data
+- `debug l2ctrld lldp delete neighbor` — Debug l2ctrld lldp delete neighbor — live device data
+- `debug l2ctrld lldp off` — Debug l2ctrld lldp off — live device data
+- `debug l2ctrld lldp on` — Debug l2ctrld lldp on — live device data
+- `debug l2ctrld lldp pcap` — Debug l2ctrld lldp pcap — live device data
+- `debug l2ctrld lldp pcap logical-router on logicalrouter` — Debug l2ctrld lldp pcap logical router on logicalrouter — live device data
+- `debug l2ctrld lldp pcap virtual-router on virtualrouter` — Debug l2ctrld lldp pcap virtual router on virtualrouter — live device data
+- `debug l2ctrld lldp set stagger-limit` — Debug l2ctrld lldp set stagger limit — live device data
+- `debug l2ctrld lldp show` — Debug l2ctrld lldp show — live device data
+- `debug l3svc captive-portal kerberos-timeout interval` — Debug l3svc captive portal kerberos timeout interval — live device data
+- `debug l3svc captive-portal kerberos-timeout off` — Debug l3svc captive portal kerberos timeout off — live device data
+- `debug l3svc captive-portal kerberos-timeout on` — Debug l3svc captive portal kerberos timeout on — live device data
+- `debug l3svc captive-portal kerberos-timeout show` — Debug l3svc captive portal kerberos timeout show — live device data
+- `debug l3svc clear` — Debug l3svc clear — live device data
+- `debug l3svc off` — Debug l3svc off — live device data
+- `debug l3svc on` — Debug l3svc on — live device data
+- `debug l3svc pcap` — Debug l3svc pcap — live device data
+- `debug l3svc pcap logical-router on logicalrouter` — Debug l3svc pcap logical router on logicalrouter — live device data
+- `debug l3svc pcap virtual-router on virtualrouter` — Debug l3svc pcap virtual router on virtualrouter — live device data
+- `debug l3svc reset user-cache` — Debug l3svc reset user cache — live device data
+- `debug l3svc show user-cache` — Debug l3svc show user cache — live device data
+- `debug list-admin-history` — Debug list admin history — live device data
+- `debug list-blocked-partial-xpaths` — Debug list blocked partial xpaths — live device data
+- `debug log-output-need-utf8` — Debug log output need utf8 — live device data
+- `debug log-receiver` — Debug log receiver — live device data
+- `debug log-receiver container-page entries` — Debug log receiver container page entries — live device data
+- `debug log-receiver container-page off` — Debug log receiver container page off — live device data
+- `debug log-receiver container-page on` — Debug log receiver container page on — live device data
+- `debug log-receiver container-page timeout` — Debug log receiver container page timeout — live device data
+- `debug log-receiver contmgr status` — Debug log receiver contmgr status — live device data
+- `debug log-receiver corr-mgr off` — Debug log receiver corr mgr off — live device data
+- `debug log-receiver corr-mgr on` — Debug log receiver corr mgr on — live device data
+- `debug log-receiver corr-mgr show back-query status` — Debug log receiver corr mgr show back query status — live device data
+- `debug log-receiver corr-mgr show brief` — Debug log receiver corr mgr show brief — live device data
+- `debug log-receiver corr-mgr show failed` — Debug log receiver corr mgr show failed — live device data
+- `debug log-receiver corr-mgr show filter search object` — Debug log receiver corr mgr show filter search object — live device data
+- `debug log-receiver corr-mgr show instance search category` — Debug log receiver corr mgr show instance search category — live device data
+- `debug log-receiver corr-mgr show instance summary` — Debug log receiver corr mgr show instance summary — live device data
+- `debug log-receiver corr-mgr show object id` — Debug log receiver corr mgr show object id — live device data
+- `debug log-receiver corr-mgr show object list` — Debug log receiver corr mgr show object list — live device data
+- `debug log-receiver corr-mgr stats clear object` — Debug log receiver corr mgr stats clear object — live device data
+- `debug log-receiver corr-mgr stats show object` — Debug log receiver corr mgr stats show object — live device data
+- `debug log-receiver correlation filters show` — Debug log receiver correlation filters show — live device data
+- `debug log-receiver correlation stats show` — Debug log receiver correlation stats show — live device data
+- `debug log-receiver counters filter delta` — Debug log receiver counters filter delta — live device data
+- `debug log-receiver dag always-include-dag` — Debug log receiver dag always include dag — live device data
+- `debug log-receiver dag disable-dag-logging` — Debug log receiver dag disable dag logging — live device data
+- `debug log-receiver dag dump dag-id vsysid` — Debug log receiver dag dump dag id vsysid — live device data
+- `debug log-receiver dag dump id-dag dag-idx` — Debug log receiver dag dump id dag dag idx — live device data
+- `debug log-receiver dag dump ip-dag ip` — Debug log receiver dag dump ip dag ip — live device data
+- `debug log-receiver dag dump rule-dag rule_uuid` — Debug log receiver dag dump rule dag rule_uuid — live device data
+- `debug log-receiver dag off` — Debug log receiver dag off — live device data
+- `debug log-receiver dag on` — Debug log receiver dag on — live device data
+- `debug log-receiver dag show` — Debug log receiver dag show — live device data
+- `debug log-receiver dpi dump clear` — Debug log receiver dpi dump clear — live device data
+- `debug log-receiver dpi dump format` — Debug log receiver dpi dump format — live device data
+- `debug log-receiver dpi dump off` — Debug log receiver dpi dump off — live device data
+- `debug log-receiver dpi dump on` — Debug log receiver dpi dump on — live device data
+- `debug log-receiver dump users all` — Debug log receiver dump users all — live device data
+- `debug log-receiver dump users id` — Debug log receiver dump users id — live device data
+- `debug log-receiver dumplog off` — Debug log receiver dumplog off — live device data
+- `debug log-receiver dumplog on count` — Debug log receiver dumplog on count — live device data
+- `debug log-receiver edl disable-edl-logging` — Debug log receiver edl disable edl logging — live device data
+- `debug log-receiver edl dump edl-id vsysid` — Debug log receiver edl dump edl id vsysid — live device data
+- `debug log-receiver edl dump id-edl edl-idx` — Debug log receiver edl dump id edl edl idx — live device data
+- `debug log-receiver edl dump ip-edl ip` — Debug log receiver edl dump ip edl ip — live device data
+- `debug log-receiver edl dump rule-edl rule_uuid` — Debug log receiver edl dump rule edl rule_uuid — live device data
+- `debug log-receiver edl off` — Debug log receiver edl off — live device data
+- `debug log-receiver edl on` — Debug log receiver edl on — live device data
+- `debug log-receiver edl show` — Debug log receiver edl show — live device data
+- `debug log-receiver fwd` — Debug log receiver fwd — live device data
+- `debug log-receiver ip-cache clear node-data vsysid` — Debug log receiver ip cache clear node data vsysid — live device data
+- `debug log-receiver ip-cache clear vsys-data vsysid` — Debug log receiver ip cache clear vsys data vsysid — live device data
+- `debug log-receiver log-flow counters` — Debug log receiver log flow counters — live device data
+- `debug log-receiver log-flow trace show` — Debug log receiver log flow trace show — live device data
+- `debug log-receiver log-forwarding per-second-stats` — Debug log receiver log forwarding per second stats — live device data
+- `debug log-receiver log-forwarding status` — Debug log receiver log forwarding status — live device data
+- `debug log-receiver log-forwarding-connections per-second-stats` — Debug log receiver log forwarding connections per second stats — live device data
+- `debug log-receiver log-forwarding-connections status` — Debug log receiver log forwarding connections status — live device data
+- `debug log-receiver log-purger debug` — Debug log receiver log purger debug — live device data
+- `debug log-receiver logdb-writer-stats latest` — Debug log receiver logdb writer stats latest — live device data
+- `debug log-receiver memory info verbose` — Debug log receiver memory info verbose — live device data
+- `debug log-receiver memory per-second-stats` — Debug log receiver memory per second stats — live device data
+- `debug log-receiver memory trim` — Debug log receiver memory trim — live device data
+- `debug log-receiver netflow` — Debug log receiver netflow — live device data
+- `debug log-receiver on` — Debug log receiver on — live device data
+- `debug log-receiver param-tuning rollup` — Debug log receiver param tuning rollup — live device data
+- `debug log-receiver param-tuning syslog-threads show` — Debug log receiver param tuning syslog threads show — live device data
+- `debug log-receiver param-tuning syslog-threads size` — Debug log receiver param tuning syslog threads size — live device data
+- `debug log-receiver param-tuning task-queue show` — Debug log receiver param tuning task queue show — live device data
+- `debug log-receiver param-tuning task-queue size` — Debug log receiver param tuning task queue size — live device data
+- `debug log-receiver per-second-stats off` — Debug log receiver per second stats off — live device data
+- `debug log-receiver per-second-stats on` — Debug log receiver per second stats on — live device data
+- `debug log-receiver rawlog_fwd clear hints-all` — Debug log receiver rawlog_fwd clear hints all — live device data
+- `debug log-receiver rawlog_fwd off` — Debug log receiver rawlog_fwd off — live device data
+- `debug log-receiver rawlog_fwd on` — Debug log receiver rawlog_fwd on — live device data
+- `debug log-receiver rawlog_fwd set hints-expiration-duration` — Debug log receiver rawlog_fwd set hints expiration duration — live device data
+- `debug log-receiver rawlog_fwd set hints-max` — Debug log receiver rawlog_fwd set hints max — live device data
+- `debug log-receiver rawlog_fwd show` — Debug log receiver rawlog_fwd show — live device data
+- `debug log-receiver rawlog_fwd show connmgr verbose` — Debug log receiver rawlog_fwd show connmgr verbose — live device data
+- `debug log-receiver rawlog_fwd stats global clear` — Debug log receiver rawlog_fwd stats global clear — live device data
+- `debug log-receiver rawlog_fwd stats global show verbose` — Debug log receiver rawlog_fwd stats global show verbose — live device data
+- `debug log-receiver rawlog_fwd stats per-lc` — Debug log receiver rawlog_fwd stats per lc — live device data
+- `debug log-receiver rawlog_fwd_trial connmgr` — Debug log receiver rawlog_fwd_trial connmgr — live device data
+- `debug log-receiver rawlog_fwd_trial evtmgr` — Debug log receiver rawlog_fwd_trial evtmgr — live device data
+- `debug log-receiver rawlog_fwd_trial stats global show verbose` — Debug log receiver rawlog_fwd_trial stats global show verbose — live device data
+- `debug log-receiver telemetry-triggers` — Debug log receiver telemetry triggers — live device data
+- `debug logdb-usage` — Debug logdb usage — live device data
+- `debug logview role` — Debug logview role — live device data
+- `debug lpmgrd dump idmgr type` — Debug lpmgrd dump idmgr type — live device data
+- `debug lpmgrd dump idmgr type edl-domain all` — Debug lpmgrd dump idmgr type edl domain all — live device data
+- `debug lpmgrd dump idmgr type edl-domain id` — Debug lpmgrd dump idmgr type edl domain id — live device data
+- `debug lpmgrd dump idmgr type edl-domain name` — Debug lpmgrd dump idmgr type edl domain name — live device data
+- `debug lpmgrd dump idmgr type edl-ip all` — Debug lpmgrd dump idmgr type edl ip all — live device data
+- `debug lpmgrd dump idmgr type edl-ip id` — Debug lpmgrd dump idmgr type edl ip id — live device data
+- `debug lpmgrd dump idmgr type edl-ip name` — Debug lpmgrd dump idmgr type edl ip name — live device data
+- `debug lpmgrd dump idmgr type hip-profile all` — Debug lpmgrd dump idmgr type hip profile all — live device data
+- `debug lpmgrd dump idmgr type hip-profile id` — Debug lpmgrd dump idmgr type hip profile id — live device data
+- `debug lpmgrd dump idmgr type hip-profile name` — Debug lpmgrd dump idmgr type hip profile name — live device data
+- `debug lpmgrd dump idmgr type interface-group all` — Debug lpmgrd dump idmgr type interface group all — live device data
+- `debug lpmgrd dump idmgr type interface-group id` — Debug lpmgrd dump idmgr type interface group id — live device data
+- `debug lpmgrd dump idmgr type interface-group name` — Debug lpmgrd dump idmgr type interface group name — live device data
+- `debug lpmgrd dump idmgr type macl-rule all` — Debug lpmgrd dump idmgr type macl rule all — live device data
+- `debug lpmgrd dump idmgr type macl-rule id` — Debug lpmgrd dump idmgr type macl rule id — live device data
+- `debug lpmgrd dump idmgr type macl-rule name` — Debug lpmgrd dump idmgr type macl rule name — live device data
+- `debug lpmgrd dump idmgr type ospfv3-virtual-link all` — Debug lpmgrd dump idmgr type ospfv3 virtual link all — live device data
+- `debug lpmgrd dump idmgr type ospfv3-virtual-link id` — Debug lpmgrd dump idmgr type ospfv3 virtual link id — live device data
+- `debug lpmgrd dump idmgr type ospfv3-virtual-link name` — Debug lpmgrd dump idmgr type ospfv3 virtual link name — live device data
+- `debug lpmgrd dump idmgr type sdwan-link-tag all` — Debug lpmgrd dump idmgr type sdwan link tag all — live device data
+- `debug lpmgrd dump idmgr type sdwan-link-tag id` — Debug lpmgrd dump idmgr type sdwan link tag id — live device data
+- `debug lpmgrd dump idmgr type sdwan-link-tag name` — Debug lpmgrd dump idmgr type sdwan link tag name — live device data
+- `debug lpmgrd dump idmgr type shared-app-signature all` — Debug lpmgrd dump idmgr type shared app signature all — live device data
+- `debug lpmgrd dump idmgr type shared-app-signature id` — Debug lpmgrd dump idmgr type shared app signature id — live device data
+- `debug lpmgrd dump idmgr type shared-app-signature name` — Debug lpmgrd dump idmgr type shared app signature name — live device data
+- `debug lpmgrd dump idmgr type shared-bgp-aggr-address all` — Debug lpmgrd dump idmgr type shared bgp aggr address all — live device data
+- `debug lpmgrd dump idmgr type shared-bgp-aggr-address id` — Debug lpmgrd dump idmgr type shared bgp aggr address id — live device data
+- `debug lpmgrd dump idmgr type shared-bgp-aggr-address name` — Debug lpmgrd dump idmgr type shared bgp aggr address name — live device data
+- `debug lpmgrd dump idmgr type shared-bgp-peer all` — Debug lpmgrd dump idmgr type shared bgp peer all — live device data
+- `debug lpmgrd dump idmgr type shared-bgp-peer id` — Debug lpmgrd dump idmgr type shared bgp peer id — live device data
+- `debug lpmgrd dump idmgr type shared-bgp-peer name` — Debug lpmgrd dump idmgr type shared bgp peer name — live device data
+- `debug lpmgrd dump idmgr type shared-bgp-peergrp all` — Debug lpmgrd dump idmgr type shared bgp peergrp all — live device data
+- `debug lpmgrd dump idmgr type shared-bgp-peergrp id` — Debug lpmgrd dump idmgr type shared bgp peergrp id — live device data
+- `debug lpmgrd dump idmgr type shared-bgp-peergrp name` — Debug lpmgrd dump idmgr type shared bgp peergrp name — live device data
+- `debug lpmgrd dump idmgr type shared-qos-group all` — Debug lpmgrd dump idmgr type shared qos group all — live device data
+- `debug lpmgrd dump idmgr type shared-qos-group id` — Debug lpmgrd dump idmgr type shared qos group id — live device data
+- `debug lpmgrd dump idmgr type shared-qos-group name` — Debug lpmgrd dump idmgr type shared qos group name — live device data
+- `debug lpmgrd dump idmgr type shared-region all` — Debug lpmgrd dump idmgr type shared region all — live device data
+- `debug lpmgrd dump idmgr type shared-region id` — Debug lpmgrd dump idmgr type shared region id — live device data
+- `debug lpmgrd dump idmgr type shared-region name` — Debug lpmgrd dump idmgr type shared region name — live device data
+- `debug lpmgrd dump idmgr type shared-spyware all` — Debug lpmgrd dump idmgr type shared spyware all — live device data
+- `debug lpmgrd dump idmgr type shared-spyware id` — Debug lpmgrd dump idmgr type shared spyware id — live device data
+- `debug lpmgrd dump idmgr type shared-spyware name` — Debug lpmgrd dump idmgr type shared spyware name — live device data
+- `debug lpmgrd dump idmgr type shared-url-filtering all` — Debug lpmgrd dump idmgr type shared url filtering all — live device data
+- `debug lpmgrd dump idmgr type shared-url-filtering id` — Debug lpmgrd dump idmgr type shared url filtering id — live device data
+- `debug lpmgrd dump idmgr type shared-url-filtering name` — Debug lpmgrd dump idmgr type shared url filtering name — live device data
+- `debug lpmgrd dump idmgr type tci-rule all` — Debug lpmgrd dump idmgr type tci rule all — live device data
+- `debug lpmgrd dump idmgr type tci-rule id` — Debug lpmgrd dump idmgr type tci rule id — live device data
+- `debug lpmgrd dump idmgr type tci-rule name` — Debug lpmgrd dump idmgr type tci rule name — live device data
+- `debug lpmgrd dump idmgr type vsys-app-signature all` — Debug lpmgrd dump idmgr type vsys app signature all — live device data
+- `debug lpmgrd dump idmgr type vsys-app-signature id` — Debug lpmgrd dump idmgr type vsys app signature id — live device data
+- `debug lpmgrd dump idmgr type vsys-app-signature name` — Debug lpmgrd dump idmgr type vsys app signature name — live device data
+- `debug lpmgrd dump idmgr type vsys-region all` — Debug lpmgrd dump idmgr type vsys region all — live device data
+- `debug lpmgrd dump idmgr type vsys-region id` — Debug lpmgrd dump idmgr type vsys region id — live device data
+- `debug lpmgrd dump idmgr type vsys-region name` — Debug lpmgrd dump idmgr type vsys region name — live device data
+- `debug lpmgrd dump idmgr type vsys-spyware all` — Debug lpmgrd dump idmgr type vsys spyware all — live device data
+- `debug lpmgrd dump idmgr type vsys-spyware id` — Debug lpmgrd dump idmgr type vsys spyware id — live device data
+- `debug lpmgrd dump idmgr type vsys-spyware name` — Debug lpmgrd dump idmgr type vsys spyware name — live device data
+- `debug lpmgrd dump idmgr type vsys-url-filtering all` — Debug lpmgrd dump idmgr type vsys url filtering all — live device data
+- `debug lpmgrd dump idmgr type vsys-url-filtering id` — Debug lpmgrd dump idmgr type vsys url filtering id — live device data
+- `debug lpmgrd dump idmgr type vsys-url-filtering name` — Debug lpmgrd dump idmgr type vsys url filtering name — live device data
+- `debug lpmgrd status` — Debug lpmgrd status — live device data
+- `debug macsec global off` — Debug macsec global off — live device data
+- `debug macsec global on` — Debug macsec global on — live device data
+- `debug macsec global show` — Debug macsec global show — live device data
+- `debug macsec pcap` — Debug macsec pcap — live device data
+- `debug management-interface dhcp client debug` — Debug management interface dhcp client debug — live device data
+- `debug management-interface dhcp client log` — Debug management interface dhcp client log — live device data
+- `debug management-server` — Debug management server — live device data
+- `debug management-server app-config-trigger` — Debug management server app config trigger — live device data
+- `debug management-server autofocus` — Debug management server autofocus — live device data
+- `debug management-server client disable` — Debug management server client disable — live device data
+- `debug management-server client enable` — Debug management server client enable — live device data
+- `debug management-server configd-mem` — Debug management server configd mem — live device data
+- `debug management-server contmgr status` — Debug management server contmgr status — live device data
+- `debug management-server corr-mgr off` — Debug management server corr mgr off — live device data
+- `debug management-server corr-mgr on` — Debug management server corr mgr on — live device data
+- `debug management-server corr-mgr show back-query status` — Debug management server corr mgr show back query status — live device data
+- `debug management-server corr-mgr show brief` — Debug management server corr mgr show brief — live device data
+- `debug management-server corr-mgr show failed` — Debug management server corr mgr show failed — live device data
+- `debug management-server corr-mgr show filter search object` — Debug management server corr mgr show filter search object — live device data
+- `debug management-server corr-mgr show instance search category` — Debug management server corr mgr show instance search category — live device data
+- `debug management-server corr-mgr show instance summary` — Debug management server corr mgr show instance summary — live device data
+- `debug management-server corr-mgr show object id` — Debug management server corr mgr show object id — live device data
+- `debug management-server corr-mgr show object list` — Debug management server corr mgr show object list — live device data
+- `debug management-server corr-mgr stats clear object` — Debug management server corr mgr stats clear object — live device data
+- `debug management-server corr-mgr stats show object` — Debug management server corr mgr stats show object — live device data
+- `debug management-server db-intervals start-time` — Debug management server db intervals start time — live device data
+- `debug management-server db-rollup` — Debug management server db rollup — live device data
+- `debug management-server device-monitoring enable` — Debug management server device monitoring enable — live device data
+- `debug management-server dg-ctxt vsys` — Debug management server dg ctxt vsys — live device data
+- `debug management-server disable-cms-conn-check` — Debug management server disable cms conn check — live device data
+- `debug management-server last-candidatecfg-audit diff base-version` — Debug management server last candidatecfg audit diff base version — live device data
+- `debug management-server last-candidatecfg-audit info` — Debug management server last candidatecfg audit info — live device data
+- `debug management-server last-candidatecfg-audit show version` — Debug management server last candidatecfg audit show version — live device data
+- `debug management-server log-forwarding-congestion-ctrl set` — Debug management server log forwarding congestion ctrl set — live device data
+- `debug management-server log-forwarding-congestion-ctrl show` — Debug management server log forwarding congestion ctrl show — live device data
+- `debug management-server max-config-size set size` — Debug management server max config size set size — live device data
+- `debug management-server max-config-size show` — Debug management server max config size show — live device data
+- `debug management-server memory` — Debug management server memory — live device data
+- `debug management-server ml7 anti-virus install` — Debug management server ml7 anti virus install — live device data
+- `debug management-server ml7 content install` — Debug management server ml7 content install — live device data
+- `debug management-server ml7 iot install` — Debug management server ml7 iot install — live device data
+- `debug management-server on` — Debug management server on — live device data
+- `debug management-server req-stats` — Debug management server req stats — live device data
+- `debug management-server rolledup-intervals start-time` — Debug management server rolledup intervals start time — live device data
+- `debug management-server rule-hit` — Debug management server rule hit — live device data
+- `debug management-server secure-conn set scep-cert-renewal-time` — Debug management server secure conn set scep cert renewal time — live device data
+- `debug management-server secure-conn set scep-cert-retry-on-failure-interval` — Debug management server secure conn set scep cert retry on failure interval — live device data
+- `debug management-server secure-conn show ha config file` — Debug management server secure conn show ha config file — live device data
+- `debug management-server secure-conn show mgmt config file` — Debug management server secure conn show mgmt config file — live device data
+- `debug management-server secure-conn show mgmt detail` — Debug management server secure conn show mgmt detail — live device data
+- `debug management-server secure-conn show scep-cert-renewal-time` — Debug management server secure conn show scep cert renewal time — live device data
+- `debug management-server secure-conn show scep-cert-retry-on-failure-interval` — Debug management server secure conn show scep cert retry on failure interval — live device data
+- `debug management-server set` — Debug management server set — live device data
+- `debug management-server set all` — Debug management server set all — live device data
+- `debug management-server snmp-memory-map` — Debug management server snmp memory map — live device data
+- `debug management-server telemetry-triggers correlated-threat-log-limit` — Debug management server telemetry triggers correlated threat log limit — live device data
+- `debug management-server telemetry-triggers counters` — Debug management server telemetry triggers counters — live device data
+- `debug management-server telemetry-triggers per-signature-limit` — Debug management server telemetry triggers per signature limit — live device data
+- `debug management-server telemetry-triggers raw-threat-log-limit` — Debug management server telemetry triggers raw threat log limit — live device data
+- `debug management-server telemetry-triggers related-threat-log-limit` — Debug management server telemetry triggers related threat log limit — live device data
+- `debug management-server template dump-config from` — Debug management server template dump config from — live device data
+- `debug management-server toggle-ui-notification` — Debug management server toggle ui notification — live device data
+- `debug management-server unified-log` — Debug management server unified log — live device data
+- `debug management-server unset` — Debug management server unset — live device data
+- `debug management-server unset all` — Debug management server unset all — live device data
+- `debug management-server user bitmap` — Debug management server user bitmap — live device data
+- `debug management-server user info name` — Debug management server user info name — live device data
+- `debug management-server vld stats cc` — Debug management server vld stats cc — live device data
+- `debug management-websrvr backend off` — Debug management websrvr backend off — live device data
+- `debug management-websrvr backend on` — Debug management websrvr backend on — live device data
+- `debug management-websrvr backend show` — Debug management websrvr backend show — live device data
+- `debug md-service internal-dump` — Debug md service internal dump — live device data
+- `debug md-service off` — Debug md service off — live device data
+- `debug md-service on` — Debug md service on — live device data
+- `debug md-service show` — Debug md service show — live device data
+- `debug mprelay off` — Debug mprelay off — live device data
+- `debug mprelay on` — Debug mprelay on — live device data
+- `debug mprelay show` — Debug mprelay show — live device data
+- `debug net-inspection packet-limit` — Debug net inspection packet limit — live device data
+- `debug net-inspection reset` — Debug net inspection reset — live device data
+- `debug net-inspection show` — Debug net inspection show — live device data
+- `debug net-inspection trace` — Debug net inspection trace — live device data
+- `debug net-inspection trace-limit` — Debug net inspection trace limit — live device data
+- `debug netconfig-agent off` — Debug netconfig agent off — live device data
+- `debug netconfig-agent on` — Debug netconfig agent on — live device data
+- `debug netconfig-agent show` — Debug netconfig agent show — live device data
+- `debug object registered-ip` — Debug object registered ip — live device data
+- `debug object registered-ip clear all source-name` — Debug object registered ip clear all source name — live device data
+- `debug object registered-ip redis-entry ip` — Debug object registered ip redis entry ip — live device data
+- `debug object registered-ip redis-entry iprange` — Debug object registered ip redis entry iprange — live device data
+- `debug object registered-ip show tag-source tag` — Debug object registered ip show tag source tag — live device data
+- `debug object registered-ip test cuid-upload` — Debug object registered ip test cuid upload — live device data
+- `debug object registered-ip test download` — Debug object registered ip test download — live device data
+- `debug object registered-ip test download-mode` — Debug object registered ip test download mode — live device data
+- `debug object registered-ip test register tag` — Debug object registered ip test register tag — live device data
+- `debug object registered-ip test unregister tag` — Debug object registered ip test unregister tag — live device data
+- `debug object registered-user clear all tag-source` — Debug object registered user clear all tag source — live device data
+- `debug object registered-user show tag-source user` — Debug object registered user show tag source user — live device data
+- `debug object registered-user test cuid-upload` — Debug object registered user test cuid upload — live device data
+- `debug object registered-user test register user` — Debug object registered user test register user — live device data
+- `debug object registered-user test unregister user` — Debug object registered user test unregister user — live device data
+- `debug online diagnostics get execution-time` — Debug online diagnostics get execution time — live device data
+- `debug online diagnostics run` — Debug online diagnostics run — live device data
+- `debug pancfg-directory-usage clean config saved` — Debug pancfg directory usage clean config saved — live device data
+- `debug pancfg-directory-usage clean dynamic-updates anti-virus update` — Debug pancfg directory usage clean dynamic updates anti virus update — live device data
+- `debug pancfg-directory-usage clean dynamic-updates content update` — Debug pancfg directory usage clean dynamic updates content update — live device data
+- `debug pancfg-directory-usage clean software-images version` — Debug pancfg directory usage clean software images version — live device data
+- `debug pppoed global off` — Debug pppoed global off — live device data
+- `debug pppoed global on` — Debug pppoed global on — live device data
+- `debug pppoed global show` — Debug pppoed global show — live device data
+- `debug pppoed pcap` — Debug pppoed pcap — live device data
+- `debug pppoed pcap on file_size` — Debug pppoed pcap on file_size — live device data
+- `debug pppoed show config` — Debug pppoed show config — live device data
+- `debug pppoed show interface` — Debug pppoed show interface — live device data
+- `debug predefined-report-default` — Debug predefined report default — live device data
+- `debug preserve-prenat feature show` — Debug preserve prenat feature show — live device data
+- `debug proxy discard-partial-client-hello enable` — Debug proxy discard partial client hello enable — live device data
+- `debug proxy discard-partial-client-hello show` — Debug proxy discard partial client hello show — live device data
+- `debug proxy fast-session-delete enable` — Debug proxy fast session delete enable — live device data
+- `debug proxy-protocol debug-level` — Debug proxy protocol debug level — live device data
+- `debug proxy-protocol debug-mode normal` — Debug proxy protocol debug mode normal — live device data
+- `debug proxy-protocol debug-mode session-limit` — Debug proxy protocol debug mode session limit — live device data
+- `debug proxy-protocol debug-mode trace-limit` — Debug proxy protocol debug mode trace limit — live device data
+- `debug proxy-protocol feature enabled` — Debug proxy protocol feature enabled — live device data
+- `debug proxy-protocol feature hostid-subtlv-type` — Debug proxy protocol feature hostid subtlv type — live device data
+- `debug proxy-protocol feature show` — Debug proxy protocol feature show — live device data
+- `debug proxy-protocol feature userid-subtlv-type` — Debug proxy protocol feature userid subtlv type — live device data
+- `debug proxy-protocol packet-dump-max-bytes` — Debug proxy protocol packet dump max bytes — live device data
+- `debug rasmgr delay-nh-update` — Debug rasmgr delay nh update — live device data
+- `debug rasmgr delay-nh-update reset` — Debug rasmgr delay nh update reset — live device data
+- `debug rasmgr gateway` — Debug rasmgr gateway — live device data
+- `debug rasmgr ippool reset-all` — Debug rasmgr ippool reset all — live device data
+- `debug rasmgr off` — Debug rasmgr off — live device data
+- `debug rasmgr on` — Debug rasmgr on — live device data
+- `debug rasmgr satellite` — Debug rasmgr satellite — live device data
+- `debug rasmgr show` — Debug rasmgr show — live device data
+- `debug rasmgr src-ip-trie gateway-name` — Debug rasmgr src ip trie gateway name — live device data
+- `debug rasmgr statistics` — Debug rasmgr statistics — live device data
+- `debug rasmgr user` — Debug rasmgr user — live device data
+- `debug rawlog_fwd enable` — Debug rawlog_fwd enable — live device data
+- `debug reportd contmgr status` — Debug reportd contmgr status — live device data
+- `debug reportd corr-mgr off` — Debug reportd corr mgr off — live device data
+- `debug reportd corr-mgr on` — Debug reportd corr mgr on — live device data
+- `debug reportd corr-mgr show back-query status` — Debug reportd corr mgr show back query status — live device data
+- `debug reportd corr-mgr show brief` — Debug reportd corr mgr show brief — live device data
+- `debug reportd corr-mgr show failed` — Debug reportd corr mgr show failed — live device data
+- `debug reportd corr-mgr show filter search object` — Debug reportd corr mgr show filter search object — live device data
+- `debug reportd corr-mgr show instance search category` — Debug reportd corr mgr show instance search category — live device data
+- `debug reportd corr-mgr show instance summary` — Debug reportd corr mgr show instance summary — live device data
+- `debug reportd corr-mgr show object id` — Debug reportd corr mgr show object id — live device data
+- `debug reportd corr-mgr show object list` — Debug reportd corr mgr show object list — live device data
+- `debug reportd corr-mgr stats clear object` — Debug reportd corr mgr stats clear object — live device data
+- `debug reportd corr-mgr stats show object` — Debug reportd corr mgr stats show object — live device data
+- `debug reportd off` — Debug reportd off — live device data
+- `debug reportd on` — Debug reportd on — live device data
+- `debug reportd schedule-reports` — Debug reportd schedule reports — live device data
+- `debug reportd send-request-to-7k` — Debug reportd send request to 7k — live device data
+- `debug reportd set-timeout` — Debug reportd set timeout — live device data
+- `debug reportd show` — Debug reportd show — live device data
+- `debug routing` — Debug routing — live device data
+- `debug routing dctrace both enable` — Debug routing dctrace both enable — live device data
+- `debug routing dctrace ips enable` — Debug routing dctrace ips enable — live device data
+- `debug routing dctrace pd enable` — Debug routing dctrace pd enable — live device data
+- `debug routing dctrace show` — Debug routing dctrace show — live device data
+- `debug routing fib clear virtual-router` — Debug routing fib clear virtual router — live device data
+- `debug routing fib flush` — Debug routing fib flush — live device data
+- `debug routing fib stats` — Debug routing fib stats — live device data
+- `debug routing fqdn display virtual-router` — Debug routing fqdn display virtual router — live device data
+- `debug routing global off` — Debug routing global off — live device data
+- `debug routing global on` — Debug routing global on — live device data
+- `debug routing global show` — Debug routing global show — live device data
+- `debug routing mib` — Debug routing mib — live device data
+- `debug routing mpf offload` — Debug routing mpf offload — live device data
+- `debug routing mpf stats` — Debug routing mpf stats — live device data
+- `debug routing path-monitor id` — Debug routing path monitor id — live device data
+- `debug routing pcap` — Debug routing pcap — live device data
+- `debug routing pcap show` — Debug routing pcap show — live device data
+- `debug routing qtrace disable afi` — Debug routing qtrace disable afi — live device data
+- `debug routing qtrace enable afi` — Debug routing qtrace enable afi — live device data
+- `debug routing qtrace flush-log` — Debug routing qtrace flush log — live device data
+- `debug routing qtrace show afi` — Debug routing qtrace show afi — live device data
+- `debug run-panorama-predefined-report` — Debug run panorama predefined report — live device data
+- `debug satd dump certificate-pool global` — Debug satd dump certificate pool global — live device data
+- `debug satd dump certificate-pool satellite` — Debug satd dump certificate pool satellite — live device data
+- `debug satd failed-refresh-timeout satellite name` — Debug satd failed refresh timeout satellite name — live device data
+- `debug satd off` — Debug satd off — live device data
+- `debug satd on` — Debug satd on — live device data
+- `debug satd show` — Debug satd show — live device data
+- `debug satd statistics` — Debug satd statistics — live device data
+- `debug sdwand clear all` — Debug sdwand clear all — live device data
+- `debug sdwand event-log filter delete all` — Debug sdwand event log filter delete all — live device data
+- `debug sdwand event-log filter delete idx` — Debug sdwand event log filter delete idx — live device data
+- `debug sdwand event-log filter off` — Debug sdwand event log filter off — live device data
+- `debug sdwand event-log filter on` — Debug sdwand event log filter on — live device data
+- `debug sdwand event-log filter set index` — Debug sdwand event log filter set index — live device data
+- `debug sdwand event-log filter set match ingress-interface` — Debug sdwand event log filter set match ingress interface — live device data
+- `debug sdwand event-log filter show` — Debug sdwand event log filter show — live device data
+- `debug sdwand feature show` — Debug sdwand feature show — live device data
+- `debug sdwand global off` — Debug sdwand global off — live device data
+- `debug sdwand global on` — Debug sdwand global on — live device data
+- `debug sdwand global show` — Debug sdwand global show — live device data
+- `debug sdwand path-monitor disable all` — Debug sdwand path monitor disable all — live device data
+- `debug sdwand path-monitor disable tunnel-id` — Debug sdwand path monitor disable tunnel id — live device data
+- `debug sdwand path-monitor enable all` — Debug sdwand path monitor enable all — live device data
+- `debug sdwand path-monitor enable tunnel-id` — Debug sdwand path monitor enable tunnel id — live device data
+- `debug sdwand saas branch interval` — Debug sdwand saas branch interval — live device data
+- `debug sdwand saas hub interval` — Debug sdwand saas hub interval — live device data
+- `debug set-content-download-retry attempts` — Debug set content download retry attempts — live device data
+- `debug snmpd async` — Debug snmpd async — live device data
+- `debug snmpd clear_persistence` — Debug snmpd clear_persistence — live device data
+- `debug snmpd off` — Debug snmpd off — live device data
+- `debug snmpd on debug` — Debug snmpd on debug — live device data
+- `debug snmpd sysd-disable-retry` — Debug snmpd sysd disable retry — live device data
+- `debug snmpd sysd-timeout` — Debug snmpd sysd timeout — live device data
+- `debug software` — Debug software — live device data
+- `debug software core` — Debug software core — live device data
+- `debug software disk-usage aggressive-cleaning` — Debug software disk usage aggressive cleaning — live device data
+- `debug software disk-usage cleanup threshold` — Debug software disk usage cleanup threshold — live device data
+- `debug software disk-usage dagger-fds-cleaning` — Debug software disk usage dagger fds cleaning — live device data
+- `debug software disk-usage dangling-fds target-name` — Debug software disk usage dangling fds target name — live device data
+- `debug software fd-limit service` — Debug software fd limit service — live device data
+- `debug software generate-sar-report current-date` — Debug software generate sar report current date — live device data
+- `debug software kernelcfg thp` — Debug software kernelcfg thp — live device data
+- `debug software kernelcfg zram-swap disable` — Debug software kernelcfg zram swap disable — live device data
+- `debug software kernelcfg zram-swap enable` — Debug software kernelcfg zram swap enable — live device data
+- `debug software kernelcfg zram-swap modify num-dev` — Debug software kernelcfg zram swap modify num dev — live device data
+- `debug software kernelcfg zram-swap show` — Debug software kernelcfg zram swap show — live device data
+- `debug software large-core show-reserved-space` — Debug software large core show reserved space — live device data
+- `debug software logging-level set feature service` — Debug software logging level set feature service — live device data
+- `debug software logging-level set level` — Debug software logging level set level — live device data
+- `debug software logging-level show feature service` — Debug software logging level show feature service — live device data
+- `debug software logging-level show feature-defs service` — Debug software logging level show feature defs service — live device data
+- `debug software logging-level show level service` — Debug software logging level show level service — live device data
+- `debug software logging-size set ratio` — Debug software logging size set ratio — live device data
+- `debug software logging-size show ratio service` — Debug software logging size show ratio service — live device data
+- `debug software memsize_tracked` — Debug software memsize_tracked — live device data
+- `debug software monitor_smaps_threshold percentage` — Debug software monitor_smaps_threshold percentage — live device data
+- `debug software phy-limit service` — Debug software phy limit service — live device data
+- `debug software resource subsystem` — Debug software resource subsystem — live device data
+- `debug software restart process` — Debug software restart process — live device data
+- `debug software trace` — Debug software trace — live device data
+- `debug software virt-limit service` — Debug software virt limit service — live device data
+- `debug sslmgr clear log` — Debug sslmgr clear log — live device data
+- `debug sslmgr delete crl` — Debug sslmgr delete crl — live device data
+- `debug sslmgr delete ocsp` — Debug sslmgr delete ocsp — live device data
+- `debug sslmgr delete ocsp-host` — Debug sslmgr delete ocsp host — live device data
+- `debug sslmgr off` — Debug sslmgr off — live device data
+- `debug sslmgr on` — Debug sslmgr on — live device data
+- `debug sslmgr reset` — Debug sslmgr reset — live device data
+- `debug sslmgr save ocsp` — Debug sslmgr save ocsp — live device data
+- `debug sslmgr set` — Debug sslmgr set — live device data
+- `debug sslmgr set crl-background-download` — Debug sslmgr set crl background download — live device data
+- `debug sslmgr set crl-recv-speed-limit` — Debug sslmgr set crl recv speed limit — live device data
+- `debug sslmgr set disable-scep-auth-cookie` — Debug sslmgr set disable scep auth cookie — live device data
+- `debug sslmgr set max-crl-file-size` — Debug sslmgr set max crl file size — live device data
+- `debug sslmgr set max-inflated-crl-file-size` — Debug sslmgr set max inflated crl file size — live device data
+- `debug sslmgr set ocsp-host-failure-threshold` — Debug sslmgr set ocsp host failure threshold — live device data
+- `debug sslmgr set ocsp-next-update-time` — Debug sslmgr set ocsp next update time — live device data
+- `debug sslmgr set parallel-processing` — Debug sslmgr set parallel processing — live device data
+- `debug sslmgr show` — Debug sslmgr show — live device data
+- `debug sslmgr show memory` — Debug sslmgr show memory — live device data
+- `debug sslmgr statistics` — Debug sslmgr statistics — live device data
+- `debug sslmgr tar-all-crl` — Debug sslmgr tar all crl — live device data
+- `debug sslmgr test gp-client-cert-check cert-file` — Debug sslmgr test gp client cert check cert file — live device data
+- `debug sslmgr test show-cert-check-jobs` — Debug sslmgr test show cert check jobs — live device data
+- `debug sslmgr view crl` — Debug sslmgr view crl — live device data
+- `debug sslmgr view ocsp` — Debug sslmgr view ocsp — live device data
+- `debug sslmgr view ocsp-host` — Debug sslmgr view ocsp host — live device data
+- `debug sslmgr view pending-crl-downloads` — Debug sslmgr view pending crl downloads — live device data
+- `debug streaming dump` — Debug streaming dump — live device data
+- `debug streaming tdb` — Debug streaming tdb — live device data
+- `debug streaming-telemetry set-logging-reporting-timeout` — Debug streaming telemetry set logging reporting timeout — live device data
+- `debug streaming-telemetry show-region-list` — Debug streaming telemetry show region list — live device data
+- `debug streaming-telemetry show-schedule` — Debug streaming telemetry show schedule — live device data
+- `debug streaming-telemetry show-schedule-path-list` — Debug streaming telemetry show schedule path list — live device data
+- `debug swm` — Debug swm — live device data
+- `debug swm install image` — Debug swm install image — live device data
+- `debug swm refresh content` — Debug swm refresh content — live device data
+- `debug swm show revert-status` — Debug swm show revert status — live device data
+- `debug sysd prefix-query command` — Debug sysd prefix query command — live device data
+- `debug sysd process-query command` — Debug sysd process query command — live device data
+- `debug sysd summary` — Debug sysd summary — live device data
+- `debug sysd top` — Debug sysd top — live device data
+- `debug syslog-params reset-to-default-settings` — Debug syslog params reset to default settings — live device data
+- `debug syslog-params settings time-reopen` — Debug syslog params settings time reopen — live device data
+- `debug syslog-params show` — Debug syslog params show — live device data
+- `debug system` — Debug system — live device data
+- `debug system disk-life disk-1` — Debug system disk life disk 1 — live device data
+- `debug system disk-smart-info disk-1` — Debug system disk smart info disk 1 — live device data
+- `debug system ssh-key-reset` — Debug system ssh key reset — live device data
+- `debug tac-login` — Debug tac login — live device data
+- `debug techsupport duts` — Debug techsupport duts — live device data
+- `debug techsupport duts add-search-dir` — Debug techsupport duts add search dir — live device data
+- `debug techsupport duts set-byte-threshold` — Debug techsupport duts set byte threshold — live device data
+- `debug tund clear all` — Debug tund clear all — live device data
+- `debug tund global off` — Debug tund global off — live device data
+- `debug tund global on` — Debug tund global on — live device data
+- `debug tund global show` — Debug tund global show — live device data
+- `debug tund tunnel id` — Debug tund tunnel id — live device data
+- `debug ui telemetry` — Debug ui telemetry — live device data
+- `debug use-proxy-for-email-server` — Debug use proxy for email server — live device data
+- `debug user-id` — Debug user id — live device data
+- `debug user-id agent` — Debug user id agent — live device data
+- `debug user-id agent-getall-rate rate` — Debug user id agent getall rate rate — live device data
+- `debug user-id agent-getall-rate show` — Debug user id agent getall rate show — live device data
+- `debug user-id clear cloud-identity-engine type` — Debug user id clear cloud identity engine type — live device data
+- `debug user-id clear domain-map from-disk` — Debug user id clear domain map from disk — live device data
+- `debug user-id clear email-cache` — Debug user id clear email cache — live device data
+- `debug user-id clear gm-srvc-query` — Debug user id clear gm srvc query — live device data
+- `debug user-id clear group` — Debug user id clear group — live device data
+- `debug user-id clear ip-port-user-dp ip` — Debug user id clear ip port user dp ip — live device data
+- `debug user-id clear log` — Debug user id clear log — live device data
+- `debug user-id cluster-get-all` — Debug user id cluster get all — live device data
+- `debug user-id cluster-peer-ip` — Debug user id cluster peer ip — live device data
+- `debug user-id cluster-state` — Debug user id cluster state — live device data
+- `debug user-id cp-redirect-host-v6 clear` — Debug user id cp redirect host v6 clear — live device data
+- `debug user-id cp-redirect-host-v6 show` — Debug user id cp redirect host v6 show — live device data
+- `debug user-id cp-redirect-host-v6 value` — Debug user id cp redirect host v6 value — live device data
+- `debug user-id dscd off` — Debug user id dscd off — live device data
+- `debug user-id dscd on` — Debug user id dscd on — live device data
+- `debug user-id dscd subdomains` — Debug user id dscd subdomains — live device data
+- `debug user-id dump` — Debug user id dump — live device data
+- `debug user-id dump cloud-identity-engine type` — Debug user id dump cloud identity engine type — live device data
+- `debug user-id dump com statistics` — Debug user id dump com statistics — live device data
+- `debug user-id dump conn-mgr statistics` — Debug user id dump conn mgr statistics — live device data
+- `debug user-id dump domain-id-table domain all` — Debug user id dump domain id table domain all — live device data
+- `debug user-id dump domain-id-table domain name` — Debug user id dump domain id table domain name — live device data
+- `debug user-id dump edir-user all` — Debug user id dump edir user all — live device data
+- `debug user-id dump edir-user user` — Debug user id dump edir user user — live device data
+- `debug user-id dump email-cache all` — Debug user id dump email cache all — live device data
+- `debug user-id dump email-cache email` — Debug user id dump email cache email — live device data
+- `debug user-id dump hip-mdm-cache start-from` — Debug user id dump hip mdm cache start from — live device data
+- `debug user-id dump hip-profile-database entry start-from` — Debug user id dump hip profile database entry start from — live device data
+- `debug user-id dump hip-profile-database ipmapping` — Debug user id dump hip profile database ipmapping — live device data
+- `debug user-id dump hip-profile-database statistics` — Debug user id dump hip profile database statistics — live device data
+- `debug user-id dump hip-report user` — Debug user id dump hip report user — live device data
+- `debug user-id dump idmgr high-availability state` — Debug user id dump idmgr high availability state — live device data
+- `debug user-id dump idmgr redis type computer all` — Debug user id dump idmgr redis type computer all — live device data
+- `debug user-id dump idmgr redis type computer id` — Debug user id dump idmgr redis type computer id — live device data
+- `debug user-id dump idmgr redis type computer name` — Debug user id dump idmgr redis type computer name — live device data
+- `debug user-id dump idmgr redis type user all` — Debug user id dump idmgr redis type user all — live device data
+- `debug user-id dump idmgr redis type user id` — Debug user id dump idmgr redis type user id — live device data
+- `debug user-id dump idmgr redis type user name` — Debug user id dump idmgr redis type user name — live device data
+- `debug user-id dump idmgr redis type user-group all` — Debug user id dump idmgr redis type user group all — live device data
+- `debug user-id dump idmgr redis type user-group id` — Debug user id dump idmgr redis type user group id — live device data
+- `debug user-id dump idmgr redis type user-group name` — Debug user id dump idmgr redis type user group name — live device data
+- `debug user-id dump idmgr type computer all` — Debug user id dump idmgr type computer all — live device data
+- `debug user-id dump idmgr type computer id` — Debug user id dump idmgr type computer id — live device data
+- `debug user-id dump idmgr type computer name` — Debug user id dump idmgr type computer name — live device data
+- `debug user-id dump idmgr type user all` — Debug user id dump idmgr type user all — live device data
+- `debug user-id dump idmgr type user id` — Debug user id dump idmgr type user id — live device data
+- `debug user-id dump idmgr type user name` — Debug user id dump idmgr type user name — live device data
+- `debug user-id dump idmgr type user-group all` — Debug user id dump idmgr type user group all — live device data
+- `debug user-id dump idmgr type user-group id` — Debug user id dump idmgr type user group id — live device data
+- `debug user-id dump idmgr type user-group name` — Debug user id dump idmgr type user group name — live device data
+- `debug user-id dump memory` — Debug user id dump memory — live device data
+- `debug user-id dump relay-ipc-distributord` — Debug user id dump relay ipc distributord — live device data
+- `debug user-id dump ts-agent` — Debug user id dump ts agent — live device data
+- `debug user-id dump uid-2-metadata user all` — Debug user id dump uid 2 metadata user all — live device data
+- `debug user-id dump uid-2-metadata user id` — Debug user id dump uid 2 metadata user id — live device data
+- `debug user-id dump uid-2-primeuid user all` — Debug user id dump uid 2 primeuid user all — live device data
+- `debug user-id dump uid-2-primeuid user id` — Debug user id dump uid 2 primeuid user id — live device data
+- `debug user-id dump userprefix-2-uid user all` — Debug user id dump userprefix 2 uid user all — live device data
+- `debug user-id dump userprefix-2-uid user name` — Debug user id dump userprefix 2 uid user name — live device data
+- `debug user-id dump vm-monitored-objects all` — Debug user id dump vm monitored objects all — live device data
+- `debug user-id dump vm-monitored-objects ref-id` — Debug user id dump vm monitored objects ref id — live device data
+- `debug user-id dump vm-monitored-objects source-name` — Debug user id dump vm monitored objects source name — live device data
+- `debug user-id dump vm-monitored-objects type` — Debug user id dump vm monitored objects type — live device data
+- `debug user-id get` — Debug user id get — live device data
+- `debug user-id kerberos list server-monitor` — Debug user id kerberos list server monitor — live device data
+- `debug user-id kerberos purge server-monitor` — Debug user id kerberos purge server monitor — live device data
+- `debug user-id kerberos test default` — Debug user id kerberos test default — live device data
+- `debug user-id kerberos test server-name` — Debug user id kerberos test server name — live device data
+- `debug user-id l3svc-max-retry rate` — Debug user id l3svc max retry rate — live device data
+- `debug user-id l3svc-max-retry show` — Debug user id l3svc max retry show — live device data
+- `debug user-id l3svc-max-write-retry rate` — Debug user id l3svc max write retry rate — live device data
+- `debug user-id l3svc-max-write-retry show` — Debug user id l3svc max write retry show — live device data
+- `debug user-id measure-handle-messages-duration` — Debug user id measure handle messages duration — live device data
+- `debug user-id off` — Debug user id off — live device data
+- `debug user-id on` — Debug user id on — live device data
+- `debug user-id refresh cloud-identity-engine all` — Debug user id refresh cloud identity engine all — live device data
+- `debug user-id refresh cloud-identity-engine config-data` — Debug user id refresh cloud identity engine config data — live device data
+- `debug user-id refresh cloud-identity-engine name` — Debug user id refresh cloud identity engine name — live device data
+- `debug user-id refresh dp-uid-gid` — Debug user id refresh dp uid gid — live device data
+- `debug user-id refresh group-mapping all` — Debug user id refresh group mapping all — live device data
+- `debug user-id refresh group-mapping group-mapping-name` — Debug user id refresh group mapping group mapping name — live device data
+- `debug user-id refresh group-mapping xmlapi-groups` — Debug user id refresh group mapping xmlapi groups — live device data
+- `debug user-id refresh user-id agent` — Debug user id refresh user id agent — live device data
+- `debug user-id relay-ipc-distributord set qsize` — Debug user id relay ipc distributord set qsize — live device data
+- `debug user-id relay-ipc-distributord set relay-distd-recv-cache-qsize` — Debug user id relay ipc distributord set relay distd recv cache qsize — live device data
+- `debug user-id relay-ipc-distributord set relay-distd-recv-read-batch-size` — Debug user id relay ipc distributord set relay distd recv read batch size — live device data
+- `debug user-id relay-ipc-distributord show` — Debug user id relay ipc distributord show — live device data
+- `debug user-id reset` — Debug user id reset — live device data
+- `debug user-id reset captive-portal ip-address` — Debug user id reset captive portal ip address — live device data
+- `debug user-id reset cloud-identity-engine all` — Debug user id reset cloud identity engine all — live device data
+- `debug user-id reset cloud-identity-engine name` — Debug user id reset cloud identity engine name — live device data
+- `debug user-id reset cluster-state` — Debug user id reset cluster state — live device data
+- `debug user-id reset com statistics` — Debug user id reset com statistics — live device data
+- `debug user-id reset conn-mgr statistics` — Debug user id reset conn mgr statistics — live device data
+- `debug user-id reset ip-user-mapping-stats` — Debug user id reset ip user mapping stats — live device data
+- `debug user-id reset relay-statistics` — Debug user id reset relay statistics — live device data
+- `debug user-id reset user-id-manager type` — Debug user id reset user id manager type — live device data
+- `debug user-id save hip-profile-database` — Debug user id save hip profile database — live device data
+- `debug user-id set agent` — Debug user id set agent — live device data
+- `debug user-id set all` — Debug user id set all — live device data
+- `debug user-id set base` — Debug user id set base — live device data
+- `debug user-id set features` — Debug user id set features — live device data
+- `debug user-id set hip` — Debug user id set hip — live device data
+- `debug user-id set ldap` — Debug user id set ldap — live device data
+- `debug user-id set misc` — Debug user id set misc — live device data
+- `debug user-id set relay` — Debug user id set relay — live device data
+- `debug user-id set third-party` — Debug user id set third party — live device data
+- `debug user-id set userid` — Debug user id set userid — live device data
+- `debug user-id test agentless` — Debug user id test agentless — live device data
+- `debug user-id test cp-login ip-address` — Debug user id test cp login ip address — live device data
+- `debug user-id test cp-logout ip-address` — Debug user id test cp logout ip address — live device data
+- `debug user-id test debug-log-category` — Debug user id test debug log category — live device data
+- `debug user-id test gp-login ip-address` — Debug user id test gp login ip address — live device data
+- `debug user-id test gp-logout ip-address` — Debug user id test gp logout ip address — live device data
+- `debug user-id test hip-profile-database size` — Debug user id test hip profile database size — live device data
+- `debug user-id test hip-report user` — Debug user id test hip report user — live device data
+- `debug user-id test hip-update ip` — Debug user id test hip update ip — live device data
+- `debug user-id test idmgr-change-max type user-group new-max-id` — Debug user id test idmgr change max type user group new max id — live device data
+- `debug user-id test idmgr-restore-default-max type user-group` — Debug user id test idmgr restore default max type user group — live device data
+- `debug user-id test probing` — Debug user id test probing — live device data
+- `debug user-id test sso-login ip-address` — Debug user id test sso login ip address — live device data
+- `debug user-id unset agent` — Debug user id unset agent — live device data
+- `debug user-id unset all` — Debug user id unset all — live device data
+- `debug user-id unset base` — Debug user id unset base — live device data
+- `debug user-id unset features` — Debug user id unset features — live device data
+- `debug user-id unset hip` — Debug user id unset hip — live device data
+- `debug user-id unset ldap` — Debug user id unset ldap — live device data
+- `debug user-id unset misc` — Debug user id unset misc — live device data
+- `debug user-id unset relay` — Debug user id unset relay — live device data
+- `debug user-id unset third-party` — Debug user id unset third party — live device data
+- `debug user-id unset userid` — Debug user id unset userid — live device data
+- `debug vardata-receiver off` — Debug vardata receiver off — live device data
+- `debug vardata-receiver on` — Debug vardata receiver on — live device data
+- `debug vardata-receiver set all` — Debug vardata receiver set all — live device data
+- `debug vardata-receiver set third-party` — Debug vardata receiver set third party — live device data
+- `debug vardata-receiver show` — Debug vardata receiver show — live device data
+- `debug vardata-receiver statistics` — Debug vardata receiver statistics — live device data
+- `debug vardata-receiver unset all` — Debug vardata receiver unset all — live device data
+- `debug vardata-receiver unset third-party` — Debug vardata receiver unset third party — live device data
+- `debug vm-monitor clear source-name` — Debug vm monitor clear source name — live device data
+- `debug vm-monitor reset source-name` — Debug vm monitor reset source name — live device data
+- `debug wildfire batch-forward set disable` — Debug wildfire batch forward set disable — live device data
+- `debug wildfire batch-forward set max-count` — Debug wildfire batch forward set max count — live device data
+- `debug wildfire batch-forward set timeout` — Debug wildfire batch forward set timeout — live device data
+- `debug wildfire cloud-info channel` — Debug wildfire cloud info channel — live device data
+- `debug wildfire content-info` — Debug wildfire content info — live device data
+- `debug wildfire dp-status` — Debug wildfire dp status — live device data
+- `debug wildfire file-cache` — Debug wildfire file cache — live device data
+- `debug wildfire file-digest sha256` — Debug wildfire file digest sha256 — live device data
+- `debug wildfire monitor-log` — Debug wildfire monitor log — live device data
+- `debug wildfire monitor-log interval` — Debug wildfire monitor log interval — live device data
+- `debug wildfire monitor-log max-size` — Debug wildfire monitor log max size — live device data
+- `debug wildfire report-process channel` — Debug wildfire report process channel — live device data
+- `debug wildfire reset all` — Debug wildfire reset all — live device data
+- `debug wildfire reset dp-receiver` — Debug wildfire reset dp receiver — live device data
+- `debug wildfire reset file-cache` — Debug wildfire reset file cache — live device data
+- `debug wildfire reset forwarding channel` — Debug wildfire reset forwarding channel — live device data
+- `debug wildfire reset log-cache channel` — Debug wildfire reset log cache channel — live device data
+- `debug wildfire reset report-cache channel` — Debug wildfire reset report cache channel — live device data
+- `debug wildfire server-selection` — Debug wildfire server selection — live device data
+- `debug wildfire transition-file-list` — Debug wildfire transition file list — live device data
+- `debug wildfire upload-log log disable` — Debug wildfire upload log log disable — live device data
+- `debug wildfire upload-log log enable` — Debug wildfire upload log log enable — live device data
+- `debug wildfire upload-log log extended-log` — Debug wildfire upload log log extended log — live device data
+- `debug wildfire upload-log log max-size` — Debug wildfire upload log log max size — live device data
+- `debug wildfire upload-log log settings` — Debug wildfire upload log log settings — live device data
+- `debug wildfire upload-log show channel` — Debug wildfire upload log show channel — live device data
 - `delete address` — Delete an address object — delete address <name>
 - `delete address-group` — Delete an address group — delete address-group <name>
+- `delete admin-sessions username` — Delete admin sessions username — live device data
 - `delete adnsr bad-domains` — Delete a misconfigured domain
 - `delete adnsr ca-certs` — Delete an EDL CA certificate
 - `delete adnsr conn-sources` — Delete a Connection Source
@@ -14,6 +1680,11 @@ Use `help <command>` to open detailed docs for a command.
 - `delete adnsr internal-domains` — Delete a custom internal domain
 - `delete adnsr profiles` — Delete a profile
 - `delete aggregate-interfaces` — Delete an Aggregate Interface
+- `delete anti-virus update` — Delete anti virus update — live device data
+- `delete auth` — Delete auth — live device data
+- `delete authentication system-lock-files` — Delete authentication system lock files — live device data
+- `delete authentication user-file ssh-known-hosts self` — Delete authentication user file ssh known hosts self — live device data
+- `delete authentication user-file ssh-known-hosts user username` — Delete authentication user file ssh known hosts user username — live device data
 - `delete authentication-settings` — Delete authentication settings
 - `delete auto-vpn-clusters` — Delete an Auto VPN cluster
 - `delete autoscale` — Delete autoscale settings
@@ -98,33 +1769,68 @@ Use `help <command>` to open detailed docs for a command.
 - `delete cngfw vuln-profiles` — Delete a vulnerability protection profile
 - `delete cngfw vuln-signatures` — Delete a vulnerability protection signature
 - `delete cngfw wildfire-profiles` — Delete a WildFire and anti-virus profile
+- `delete config saved` — Delete config saved — live device data
+- `delete config-audit-history` — Delete config audit history — live device data
 - `delete config-match-list` — Delete a config match list entry
+- `delete content cache curr-content version` — Delete content cache curr content version — live device data
+- `delete content cache old-content` — Delete content cache old content — live device data
+- `delete content update` — Delete content update — live device data
 - `delete content-cloud-settings` — Delete Content Cloud settings
 - `delete content-id-settings` — Delete Content-ID settings
+- `delete core data-plane file` — Delete core data plane file — live device data
+- `delete core large-core file` — Delete core large core file — live device data
+- `delete core management-plane file` — Delete core management plane file — live device data
+- `delete data-capture directory` — Delete data capture directory — live device data
+- `delete debug-filter file` — Delete debug filter file — live device data
+- `delete debug-log dp-log file` — Delete debug log dp log file — live device data
+- `delete debug-log mp-global file` — Delete debug log mp global file — live device data
+- `delete debug-log mp-log file` — Delete debug log mp log file — live device data
 - `delete device-context-segment-association` — Delete device context segment associations by name
 - `delete device-context-segment-association id` — Delete a device context segment association
 - `delete device-redistribution-collector` — Delete device redistribution collector settings
+- `delete device-serialno host all` — Delete device serialno host all — live device data
+- `delete device-serialno host all-from-cloud` — Delete device serialno host all from cloud — live device data
+- `delete device-serialno host all-from-ldap` — Delete device serialno host all from ldap — live device data
+- `delete device-serialno host serialno` — Delete device serialno host serialno — live device data
 - `delete dhcp-interfaces` — Delete a DHCP interface
 - `delete dns-proxies` — Delete a DNS proxy
+- `delete dnsproxy file` — Delete dnsproxy file — live device data
 - `delete ethernet-interfaces` — Delete an ethernet interface
 - `delete external-dynamic-list` — Delete an EDL — delete external-dynamic-list <name>
 - `delete general-settings` — Delete general settings
+- `delete global-protect global-protect-portal portal` — Delete global protect global protect portal portal — live device data
+- `delete global-protect-client image` — Delete global protect client image — live device data
+- `delete global-protect-client version` — Delete global protect client version — live device data
+- `delete global-protect-clientless-vpn update` — Delete global protect clientless vpn update — live device data
 - `delete gp-match-list` — Delete a globalprotect match list entry
 - `delete ha-configurations` — Delete high availability configuration
+- `delete high-availability-key` — Delete high availability key — live device data
+- `delete high-availability-known-hosts` — Delete high availability known hosts — live device data
+- `delete hip-mdm-cache mobile-id` — Delete hip mdm cache mobile id — live device data
+- `delete hip-profile-database all` — Delete hip profile database all — live device data
+- `delete hip-profile-database check-delete-all-status` — Delete hip profile database check delete all status — live device data
+- `delete hip-profile-database entry ip` — Delete hip profile database entry ip — live device data
+- `delete hip-report all logout-only` — Delete hip report all logout only — live device data
+- `delete hip-report report user` — Delete hip report report user — live device data
 - `delete hipmatch-match-list` — Delete a hipmatch match list entry
 - `delete iam access-policies` — Delete an access policy
 - `delete iam custom-roles` — Delete a custom role
 - `delete if-mgmt-profiles` — Delete an interface management profile
 - `delete ike-crypto-profiles` — Delete an IKE crypto profile
 - `delete ike-gateways` — Delete an IKE gateway
+- `delete iot cache curr-iot version` — Delete iot cache curr iot version — live device data
+- `delete iot cache old-iot` — Delete iot cache old iot — live device data
 - `delete ipsec-crypto-profiles` — Delete an IPsec crypto profile
 - `delete ipsec-tunnels` — Delete an IPsec tunnel
 - `delete iptag-match-list` — Delete an iptag match list entry
 - `delete layer2-subinterfaces` — Delete a layer 2 subinterface
 - `delete layer3-subinterfaces` — Delete a layer 3 subinterface
+- `delete license key` — Delete license key — live device data
+- `delete license token-file` — Delete license token file — live device data
 - `delete link-tags` — Delete a link tag
 - `delete lldp-profiles` — Delete an LLDP profile
 - `delete logical-routers` — Delete a logical router
+- `delete logo` — Delete logo — live device data
 - `delete loopback-interfaces` — Delete a loopback interface
 - `delete management-interface` — Delete management interface settings
 - `delete motd-banner-settings` — Delete login banner settings
@@ -151,13 +1857,20 @@ Use `help <command>` to open detailed docs for a command.
 - `delete npb-rules` — Delete a Network Packet Broker Rule
 - `delete ospf-auth-profiles` — Delete an OSPF authentication profile
 - `delete pbf-rules` — Delete a PBF rule
+- `delete pcap directory` — Delete pcap directory — live device data
+- `delete policy-cache` — Delete policy cache — live device data
 - `delete posture root` — Delete Posture Check
+- `delete pprof management-plane file` — Delete pprof management plane file — live device data
 - `delete qos-policy-rules` — Delete a QoS policy rule
 - `delete qos-profiles` — Delete a QoS profile
+- `delete report custom scope` — Delete report custom scope — live device data
+- `delete report predefined scope` — Delete report predefined scope — live device data
+- `delete report summary scope` — Delete report summary scope — live device data
 - `delete route-access-lists` — Delete a route access list
 - `delete route-community-lists` — Delete a route community list
 - `delete route-path-acls` — Delete a route path access list
 - `delete route-prefix-lists` — Delete a route prefix list
+- `delete runtime-user-db` — Delete runtime user db — live device data
 - `delete sase agent-profiles` — Delete a GlobalProtect agent profile
 - `delete sase authentication-settings` — Delete a GlobalProtect authentication setting
 - `delete sase bandwidth-allocations` — Delete a bandwidth allocation
@@ -180,6 +1893,7 @@ Use `help <command>` to open detailed docs for a command.
 - `delete sdwan-saas-profiles` — Delete an SD-WAN SaaS quality profile
 - `delete sdwan-traffic-profiles` — Delete an SD-WAN traffic distribution profile
 - `delete security-rule` — Delete a security rule — delete security-rule <name>
+- `delete server cert` — Delete server cert — live device data
 - `delete service` — Delete a service object — delete service <name>
 - `delete service-accounts` — Delete a service account
 - `delete service-group` — Delete a service group — delete service-group <name>
@@ -187,23 +1901,281 @@ Use `help <command>` to open detailed docs for a command.
 - `delete service-settings` — Delete service settings
 - `delete session-settings` — Delete session settings
 - `delete session-timeouts` — Delete session settings
+- `delete software version` — Delete software version — live device data
+- `delete ssh-authentication-public-key` — Delete ssh authentication public key — live device data
+- `delete sslmgr-store certificate-info portal name` — Delete sslmgr store certificate info portal name — live device data
+- `delete sslmgr-store satellite-info portal name` — Delete sslmgr store satellite info portal name — live device data
+- `delete sslmgr-store satellite-info-revoke-certificate portal` — Delete sslmgr store satellite info revoke certificate portal — live device data
 - `delete system-match-list` — Delete a system match list entry
 - `delete tag` — Delete a tag — delete tag <name>
 - `delete tcp-settings` — Delete TCP settings
 - `delete tenant-service-groups` — Delete a tenant service group
 - `delete tunnel-interfaces` — Delete a tunnel interface
+- `delete unknown-pcap directory` — Delete unknown pcap directory — live device data
 - `delete update-schedule` — Delete update schedule settings
 - `delete url-category` — Delete a URL category — delete url-category <name>
+- `delete url-database all` — Delete url database all — live device data
+- `delete url-database url` — Delete url database url — live device data
+- `delete user-group-cache` — Delete user group cache — live device data
 - `delete userid-match-list` — Delete a userid match list entry
 - `delete vlan-interfaces` — Delete a VLAN interface
 - `delete vpn-settings` — Delete VPN settings
+- `delete wf-private update` — Delete wf private update — live device data
+- `delete wildfire update` — Delete wildfire update — live device data
+- `delete wildfire-realtime-cache virus-pattern-type` — Delete wildfire realtime cache virus pattern type — live device data
+- `delete wildfire-realtime-stats` — Delete wildfire realtime stats — live device data
 - `delete zone-profiles` — Delete a zone protection profile
 - `delete zones` — Delete a security zone
+- `diff config num-context-lines` — Diff config num context lines — live device data
+- `ftp export log` — Ftp export log — live device data
+- `grep invert-match` — Grep invert match — live device data
+- `less agent-log` — Less agent log — live device data
+- `less custom-page` — Less custom page — live device data
+- `less db-log` — Less db log — live device data
+- `less dp-backtrace` — Less dp backtrace — live device data
+- `less dp-log` — Less dp log — live device data
+- `less largecore-mp-backtrace` — Less largecore mp backtrace — live device data
+- `less mp-backtrace` — Less mp backtrace — live device data
+- `less mp-global` — Less mp global — live device data
+- `less mp-log` — Less mp log — live device data
+- `less plugins-log` — Less plugins log — live device data
+- `less webserver-log` — Less webserver log — live device data
+- `load config key` — Load config key — device-local config (break-glass)
+- `load device-state` — Load device state — device-local config (break-glass)
 - `packet-tracer` — Trace a packet through the folder's security rule base
+- `ping bypass-routing` — Ping bypass routing — live device data
 - `ping host` — Ping a host from a managed device (use --remote)
+- `request acknowledge logid` — Request acknowledge logid — live device data
+- `request address-expansion expand object-name` — Request address expansion expand object name — live device data
+- `request anti-virus downgrade install` — Request anti virus downgrade install — live device data
+- `request anti-virus upgrade check` — Request anti virus upgrade check — live device data
+- `request anti-virus upgrade download sync-to-peer` — Request anti virus upgrade download sync to peer — live device data
+- `request anti-virus upgrade info` — Request anti virus upgrade info — live device data
+- `request anti-virus upgrade install commit` — Request anti virus upgrade install commit — live device data
+- `request api key expiration` — Request api key expiration — live device data
+- `request authentication unlock-admin user` — Request authentication unlock admin user — live device data
+- `request authentication unlock-user vsys` — Request authentication unlock user vsys — live device data
+- `request authkey set` — Request authkey set — live device data
+- `request certificate fetch otp` — Request certificate fetch otp — live device data
+- `request certificate generate certificate-name` — Request certificate generate certificate name — live device data
+- `request certificate generate-scep-client-cert certificate-name` — Request certificate generate scep client cert certificate name — live device data
+- `request certificate import-scep-ca-cert certificate-name` — Request certificate import scep ca cert certificate name — live device data
+- `request certificate is-blocked certificate-name` — Request certificate is blocked certificate name — live device data
+- `request certificate renew certificate-name` — Request certificate renew certificate name — live device data
+- `request certificate revoke certificate-name` — Request certificate revoke certificate name — live device data
+- `request certificate revoke sslmgr-store db-serialno` — Request certificate revoke sslmgr store db serialno — live device data
+- `request certificate show certificate-name` — Request certificate show certificate name — live device data
+- `request certificate show-blocked` — Request certificate show blocked — live device data
+- `request certificate show-blocked shared` — Request certificate show blocked shared — live device data
+- `request clean-replay entries` — Request clean replay entries — live device data
+- `request clear-commit-tasks` — Request clear commit tasks — live device data
+- `request commit-lock add comment` — Request commit lock add comment — live device data
+- `request commit-lock remove admin` — Request commit lock remove admin — live device data
+- `request config diff ver1` — Request config diff ver1 — live device data
+- `request config list commit-versions filter filter-data` — Request config list commit versions filter filter data — live device data
+- `request config list commit-versions filter filter-query` — Request config list commit versions filter filter query — live device data
+- `request config list commit-versions locations version` — Request config list commit versions locations version — live device data
+- `request config-lock add comment` — Request config lock add comment — live device data
+- `request config-lock remove` — Request config lock remove — live device data
+- `request content downgrade skip-content-validity-check` — Request content downgrade skip content validity check — live device data
+- `request content upgrade check` — Request content upgrade check — live device data
+- `request content upgrade download sync-to-peer` — Request content upgrade download sync to peer — live device data
+- `request content upgrade info` — Request content upgrade info — live device data
+- `request content upgrade install commit` — Request content upgrade install commit — live device data
+- `request content validity-check` — Request content validity check — live device data
+- `request cpld-restart` — Request cpld restart — live device data
+- `request data-filtering access-password create password` — Request data filtering access password create password — live device data
+- `request data-filtering access-password delete` — Request data filtering access password delete — live device data
+- `request data-filtering access-password modify old-password` — Request data filtering access password modify old password — live device data
+- `request determine-new-applications version` — Request determine new applications version — live device data
+- `request device-quarantine-list add ip` — Request device quarantine list add ip — live device data
+- `request device-quarantine-list delete host` — Request device quarantine list delete host — live device data
+- `request device-quarantine-list show all option` — Request device quarantine list show all option — live device data
+- `request device-quarantine-list show hostid` — Request device quarantine list show hostid — live device data
+- `request device-quarantine-list show serialno` — Request device quarantine list show serialno — live device data
+- `request device-registration username` — Request device registration username — live device data
+- `request device-telemetry` — Request device telemetry — live device data
+- `request dhcp client ipv6 release` — Request dhcp client ipv6 release — live device data
+- `request dhcp client ipv6 renew` — Request dhcp client ipv6 renew — live device data
+- `request dhcp client management-interface` — Request dhcp client management interface — live device data
+- `request dhcp client release` — Request dhcp client release — live device data
+- `request dhcp client renew` — Request dhcp client renew — live device data
+- `request dhcpv6 client management-interface` — Request dhcpv6 client management interface — live device data
+- `request disable-ztp` — Request disable ztp — live device data
+- `request dnsproxy license refresh` — Request dnsproxy license refresh — live device data
+- `request encryption-level level` — Request encryption level level — live device data
+- `request get-application-status application` — Request get application status application — live device data
+- `request get-disabled-applications` — Request get disabled applications — live device data
+- `request global-protect-client software activate file` — Request global protect client software activate file — live device data
+- `request global-protect-client software activate version` — Request global protect client software activate version — live device data
+- `request global-protect-client software check` — Request global protect client software check — live device data
+- `request global-protect-client software download sync-to-peer` — Request global protect client software download sync to peer — live device data
+- `request global-protect-client software info` — Request global protect client software info — live device data
+- `request global-protect-clientless-vpn downgrade install` — Request global protect clientless vpn downgrade install — live device data
+- `request global-protect-clientless-vpn upgrade check` — Request global protect clientless vpn upgrade check — live device data
+- `request global-protect-clientless-vpn upgrade download latest sync-to-peer` — Request global protect clientless vpn upgrade download latest sync to peer — live device data
+- `request global-protect-clientless-vpn upgrade info` — Request global protect clientless vpn upgrade info — live device data
+- `request global-protect-clientless-vpn upgrade install commit` — Request global protect clientless vpn upgrade install commit — live device data
+- `request global-protect-gateway check-client-logout-all-status` — Request global protect gateway check client logout all status — live device data
+- `request global-protect-gateway client-logout gateway` — Request global protect gateway client logout gateway — live device data
+- `request global-protect-gateway client-logout-all gateway` — Request global protect gateway client logout all gateway — live device data
+- `request global-protect-gateway satellite-logout gateway` — Request global protect gateway satellite logout gateway — live device data
+- `request global-protect-portal client-logout portal` — Request global protect portal client logout portal — live device data
+- `request global-protect-portal refresh-csc-cookie-key` — Request global protect portal refresh csc cookie key — live device data
+- `request global-protect-portal refresh-scep-cookie-key` — Request global protect portal refresh scep cookie key — live device data
+- `request global-protect-portal restore-satellite-cookie-expiration` — Request global protect portal restore satellite cookie expiration — live device data
+- `request global-protect-portal set-satellite-cookie-expiration value` — Request global protect portal set satellite cookie expiration value — live device data
+- `request global-protect-portal ticket portal` — Request global protect portal ticket portal — live device data
+- `request global-protect-satellite get-gateway-config satellite` — Request global protect satellite get gateway config satellite — live device data
+- `request global-protect-satellite get-portal-config satellite` — Request global protect satellite get portal config satellite — live device data
+- `request global-protect-satellite refresh-cookie-key` — Request global protect satellite refresh cookie key — live device data
+- `request high-availability cluster clear-cache` — Request high availability cluster clear cache — live device data
+- `request high-availability cluster sync-from` — Request high availability cluster sync from — live device data
+- `request high-availability session-reestablish force` — Request high availability session reestablish force — live device data
+- `request high-availability state functional` — Request high availability state functional — live device data
+- `request high-availability state peer` — Request high availability state peer — live device data
+- `request high-availability state suspend` — Request high availability state suspend — live device data
+- `request high-availability sync-to-remote` — Request high availability sync to remote — live device data
+- `request high-availability sync-to-remote id-manager` — Request high availability sync to remote id manager — live device data
+- `request hsm` — Request hsm — live device data
+- `request hsm authenticate server` — Request hsm authenticate server — live device data
+- `request hsm client-version` — Request hsm client version — live device data
+- `request hsm ha create-ha-group password` — Request hsm ha create ha group password — live device data
+- `request hsm ha recover` — Request hsm ha recover — live device data
+- `request hsm ha replace-server password` — Request hsm ha replace server password — live device data
+- `request hsm ha synchronize password` — Request hsm ha synchronize password — live device data
+- `request hsm login password` — Request hsm login password — live device data
+- `request hsm server-enroll` — Request hsm server enroll — live device data
+- `request iot upgrade` — Request iot upgrade — live device data
+- `request iot validity-check` — Request iot validity check — live device data
+- `request last-acknowledge-time` — Request last acknowledge time — live device data
+- `request license api-key delete` — Request license api key delete — live device data
+- `request license api-key set key` — Request license api key set key — live device data
+- `request license api-key show` — Request license api key show — live device data
+- `request license deactivate key mode` — Request license deactivate key mode — live device data
+- `request license deactivate vm-capacity mode` — Request license deactivate vm capacity mode — live device data
+- `request license fetch auth-code` — Request license fetch auth code — live device data
+- `request license info` — Request license info — live device data
+- `request license install` — Request license install — live device data
+- `request list-content-downloads` — Request list content downloads — live device data
+- `request log-collector-forwarding status` — Request log collector forwarding status — live device data
+- `request logdb migrate-to-panorama start type` — Request logdb migrate to panorama start type — live device data
+- `request logdb migrate-to-panorama status type` — Request logdb migrate to panorama status type — live device data
+- `request logdb migrate-to-panorama stop type` — Request logdb migrate to panorama stop type — live device data
+- `request logging-service-forwarding certificate delete` — Request logging service forwarding certificate delete — live device data
+- `request logging-service-forwarding certificate fetch` — Request logging service forwarding certificate fetch — live device data
+- `request logging-service-forwarding certificate fetch-noproxy pre-shared-key` — Request logging service forwarding certificate fetch noproxy pre shared key — live device data
+- `request logging-service-forwarding certificate info` — Request logging service forwarding certificate info — live device data
+- `request logging-service-forwarding customerinfo` — Request logging service forwarding customerinfo — live device data
+- `request logging-service-forwarding status` — Request logging service forwarding status — live device data
+- `request master-key new-master-key` — Request master key new master key — live device data
+- `request mongo set storage-engine instance` — Request mongo set storage engine instance — live device data
+- `request mongo show storage-engine instance` — Request mongo show storage engine instance — live device data
+- `request multi-config` — Request multi config — live device data
+- `request panorama-connectivity-check` — Request panorama connectivity check — live device data
+- `request password-change-history dump-history` — Request password change history dump history — live device data
+- `request password-change-history re-encrypt old-master-key` — Request password change history re encrypt old master key — live device data
+- `request password-hash password` — Request password hash password — live device data
+- `request pppoe ipv6 dhcpv6 release` — Request pppoe ipv6 dhcpv6 release — live device data
+- `request pppoe ipv6 dhcpv6 renew` — Request pppoe ipv6 dhcpv6 renew — live device data
+- `request quota-enforcement` — Request quota enforcement — live device data
+- `request resolve vsys` — Request resolve vsys — live device data
+- `request restart dataplane` — Request restart dataplane — live device data
+- `request restart software` — Request restart software — live device data
+- `request restart system with-swap-scrub` — Request restart system with swap scrub — live device data
+- `request routing` — Request routing — live device data
+- `request routing show-config virtual-router` — Request routing show config virtual router — live device data
+- `request routing show-error virtual-router` — Request routing show error virtual router — live device data
+- `request saas_agent certificate info` — Request saas_agent certificate info — live device data
+- `request session-discard id` — Request session discard id — live device data
+- `request set-application-status-recursive enable-dependent-apps` — Request set application status recursive enable dependent apps — live device data
+- `request shutdown system with-swap-scrub` — Request shutdown system with swap scrub — live device data
+- `request stats dump` — Request stats dump — live device data
+- `request streaming-telemetry reload-config` — Request streaming telemetry reload config — live device data
+- `request support` — Request support — live device data
+- `request system bootstrap-usb delete bundle` — Request system bootstrap usb delete bundle — live device data
+- `request system bootstrap-usb prepare from` — Request system bootstrap usb prepare from — live device data
+- `request system external-list global-find string` — Request system external list global find string — live device data
+- `request system external-list list-capacities` — Request system external list list capacities — live device data
+- `request system external-list refresh type domain name` — Request system external list refresh type domain name — live device data
+- `request system external-list refresh type ip name` — Request system external list refresh type ip name — live device data
+- `request system external-list refresh type url name` — Request system external list refresh type url name — live device data
+- `request system external-list show type` — Request system external list show type — live device data
+- `request system external-list stats type` — Request system external list stats type — live device data
+- `request system external-list url-test` — Request system external list url test — live device data
+- `request system fqdn` — Request system fqdn — live device data
+- `request system idmap-sync` — Request system idmap sync — live device data
+- `request system patch apply` — Request system patch apply — live device data
+- `request system patch check` — Request system patch check — live device data
+- `request system patch download version` — Request system patch download version — live device data
+- `request system patch info version` — Request system patch info version — live device data
+- `request system patch install version` — Request system patch install version — live device data
+- `request system patch revert` — Request system patch revert — live device data
+- `request system patch scp-export profile-name` — Request system patch scp export profile name — live device data
+- `request system patch scp-import profile-name` — Request system patch scp import profile name — live device data
+- `request system private-data-reset shutdown` — Request system private data reset shutdown — live device data
 - `request system reboot` — Reboot a managed device (CAUTION: device will restart)
+- `request system self-test crypto` — Request system self test crypto — live device data
+- `request system self-test force-crypto-failure dp` — Request system self test force crypto failure dp — live device data
+- `request system self-test force-crypto-failure mp` — Request system self test force crypto failure mp — live device data
+- `request system self-test force-software-integrity-failure` — Request system self test force software integrity failure — live device data
+- `request system self-test software-integrity` — Request system self test software integrity — live device data
+- `request system self-test-job` — Request system self test job — live device data
 - `request system shutdown` — Shut down a managed device (CAUTION: device will go offline)
 - `request system software check` — Check available software updates (use --remote for live data)
+- `request system software download scp-profile` — Request system software download scp profile — live device data
+- `request system software eligible to-version` — Request system software eligible to version — live device data
+- `request system software info` — Request system software info — live device data
+- `request system software install load-config` — Request system software install load config — live device data
+- `request system software scp-export profile-name` — Request system software scp export profile name — live device data
+- `request system software scp-import profile-name` — Request system software scp import profile name — live device data
+- `request tech-support copy-to-remote-host remote-hostname` — Request tech support copy to remote host remote hostname — live device data
+- `request tech-support dump` — Request tech support dump — live device data
+- `request telemetry-data dump` — Request telemetry data dump — live device data
+- `request ui telemetry` — Request ui telemetry — live device data
+- `request url-filtering install pandb-database` — Request url filtering install pandb database — live device data
+- `request url-filtering save url-database` — Request url filtering save url database — live device data
+- `request url-filtering update url` — Request url filtering update url — live device data
+- `request user-id cloud-identity-engine config-data status` — Request user id cloud identity engine config data status — live device data
+- `request wf-private downgrade install` — Request wf private downgrade install — live device data
+- `request wf-private upgrade check` — Request wf private upgrade check — live device data
+- `request wf-private upgrade download latest sync-to-peer` — Request wf private upgrade download latest sync to peer — live device data
+- `request wf-private upgrade info` — Request wf private upgrade info — live device data
+- `request wf-private upgrade install commit` — Request wf private upgrade install commit — live device data
+- `request wildfire downgrade install` — Request wildfire downgrade install — live device data
+- `request wildfire registration channel` — Request wildfire registration channel — live device data
+- `request wildfire upgrade check` — Request wildfire upgrade check — live device data
+- `request wildfire upgrade download latest sync-to-peer` — Request wildfire upgrade download latest sync to peer — live device data
+- `request wildfire upgrade info` — Request wildfire upgrade info — live device data
+- `request wildfire upgrade install commit` — Request wildfire upgrade install commit — live device data
+- `request wildfire-realtime-cache add virus-pattern-type` — Request wildfire realtime cache add virus pattern type — live device data
+- `request wildfire-realtime-cache delete virus-pattern-type` — Request wildfire realtime cache delete virus pattern type — live device data
+- `save config to` — Save config to — device-local config (break-glass)
+- `save device-state` — Save device state — device-local config (break-glass)
+- `schedule botnet-report period` — Schedule botnet report period — live device data
+- `schedule saas-applications-usage-report skip-detailed-report` — Schedule saas applications usage report skip detailed report — live device data
+- `schedule uar-report user` — Schedule uar report user — live device data
+- `scp export` — Scp export — live device data
+- `scp export certificate to` — Scp export certificate to — live device data
+- `scp export core-file data-plane from` — Scp export core file data plane from — live device data
+- `scp export core-file large-corefile from` — Scp export core file large corefile from — live device data
+- `scp export core-file management-plane from` — Scp export core file management plane from — live device data
+- `scp export debug bootmem_file from` — Scp export debug bootmem_file from — live device data
+- `scp export log` — Scp export log — live device data
+- `scp export log-file data-plane to` — Scp export log file data plane to — live device data
+- `scp export log-file management-plane to` — Scp export log file management plane to — live device data
+- `scp export pprof-file management-plane from` — Scp export pprof file management plane from — live device data
+- `scp export stats-dump to` — Scp export stats dump to — live device data
+- `scp export threat-pcap pcap-id` — Scp export threat pcap pcap id — live device data
+- `scp import` — Scp import — live device data
+- `scp import certificate from` — Scp import certificate from — live device data
+- `scp import hsm-ciphertrust-client-cert from` — Scp import hsm ciphertrust client cert from — live device data
+- `scp import hsm-ciphertrust-client-key from` — Scp import hsm ciphertrust client key from — live device data
+- `scp import hsm-ciphertrust-server-cert from` — Scp import hsm ciphertrust server cert from — live device data
+- `scp import hsm-server-cert from` — Scp import hsm server cert from — live device data
+- `scp import idp-metadata profile-name` — Scp import idp metadata profile name — live device data
+- `scp import keypair from` — Scp import keypair from — live device data
+- `scp import private-key from` — Scp import private key from — live device data
 - `set address` — Create address — set address <name> ip-netmask|ip-range|ip-wildcard|fqdn <value>
 - `set address-group` — Create address group — set address-group <name> static <m1> [m2] | dynamic filter '<expr>'
 - `set adnsr bad-domains` — Create a misconfigured domain
@@ -215,7 +2187,22 @@ Use `help <command>` to open detailed docs for a command.
 - `set adnsr edls` — Create an EDL definition
 - `set adnsr internal-domains` — Create a custom internal domain
 - `set adnsr profiles` — Create a profile
+- `set advanced-routing fib check default-interval` — Set advanced routing fib check default interval — live device data
+- `set advanced-routing fib check disable` — Set advanced routing fib check disable — live device data
+- `set advanced-routing fib check disable-auto-recovery` — Set advanced routing fib check disable auto recovery — live device data
+- `set advanced-routing fib check interval` — Set advanced routing fib check interval — live device data
+- `set advanced-routing fib check recovery-failure-threshold` — Set advanced routing fib check recovery failure threshold — live device data
 - `set aggregate-interfaces` — Create an Aggregate Interface
+- `set application dump off` — Set application dump off — live device data
+- `set application dump on limit` — Set application dump on limit — live device data
+- `set application traceroute enable` — Set application traceroute enable — live device data
+- `set application traceroute ttl-threshold` — Set application traceroute ttl threshold — live device data
+- `set audit-comment xpath` — Set audit comment xpath — live device data
+- `set auth remote-host-check` — Set auth remote host check — live device data
+- `set auth strict-username-check` — Set auth strict username check — live device data
+- `set authentication radius-vsa-off` — Set authentication radius vsa off — live device data
+- `set authentication radius-vsa-on` — Set authentication radius vsa on — live device data
+- `set authentication saml_signature_digest_algorithm` — Set authentication saml_signature_digest_algorithm — live device data
 - `set authentication-settings` — Create authentication settings
 - `set auto-vpn-clusters` — Create an Auto VPN cluster
 - `set auto-vpn-push` — Push Auto VPN configs
@@ -230,6 +2217,15 @@ Use `help <command>` to open detailed docs for a command.
 - `set ciedss cache-groups` — Fetch group information from the CIE Directory Sync Service across multiple scenarios.
 - `set ciedss cache-users` — Fetch user information from the CIE Directory Sync Service across multiple scenarios.
 - `set ciedss connection update-secret` — Update directory connection client secret
+- `set cli` — Set cli — live device data
+- `set cli config-output-format` — Set cli config output format — live device data
+- `set cli hide-ip value` — Set cli hide ip value — live device data
+- `set cli hide-user value` — Set cli hide user value — live device data
+- `set cli terminal height` — Set cli terminal height — live device data
+- `set cli terminal type` — Set cli terminal type — live device data
+- `set cli terminal width` — Set cli terminal width — live device data
+- `set cli timeout idle` — Set cli timeout idle — live device data
+- `set clock date` — Set clock date — live device data
 - `set cngfw address-groups` — Create an address group
 - `set cngfw addresses` — Create an address
 - `set cngfw adv-device-objs` — Create an advanced device object
@@ -322,13 +2318,235 @@ Use `help <command>` to open detailed docs for a command.
 - `set config-match-list` — Create a config match list entry
 - `set content-cloud-settings` — Create Content Cloud settings
 - `set content-id-settings` — Create Content-ID settings
+- `set data-access-password` — Set data access password — live device data
 - `set device-context-segment-association` — Create a device context segment association
+- `set device-inventory-edit add-device mac` — Set device inventory edit add device mac — live device data
+- `set device-inventory-edit edit-devices hostname` — Set device inventory edit edit devices hostname — live device data
+- `set device-inventory-upload csvfile` — Set device inventory upload csvfile — live device data
 - `set device-redistribution-collector` — Create device redistribution collector settings
+- `set deviceconfig` — Set deviceconfig — device-local config (break-glass)
+- `set deviceconfig high-availability` — Set deviceconfig high availability — device-local config (break-glass)
+- `set deviceconfig high-availability enabled` — Set deviceconfig high availability enabled — device-local config (break-glass)
+- `set deviceconfig setting autofocus` — Set deviceconfig setting autofocus — device-local config (break-glass)
+- `set deviceconfig setting autofocus autofocus-url` — Set deviceconfig setting autofocus autofocus url — device-local config (break-glass)
+- `set deviceconfig setting autofocus enabled` — Set deviceconfig setting autofocus enabled — device-local config (break-glass)
+- `set deviceconfig setting autofocus query-timeout` — Set deviceconfig setting autofocus query timeout — device-local config (break-glass)
+- `set deviceconfig setting cloud-userid` — Set deviceconfig setting cloud userid — device-local config (break-glass)
+- `set deviceconfig setting cloud-userid address` — Set deviceconfig setting cloud userid address — device-local config (break-glass)
+- `set deviceconfig setting cloud-userid disabled` — Set deviceconfig setting cloud userid disabled — device-local config (break-glass)
+- `set deviceconfig setting cloud-userid segment-assignment` — Set deviceconfig setting cloud userid segment assignment — device-local config (break-glass)
+- `set deviceconfig setting cloudapp` — Set deviceconfig setting cloudapp — device-local config (break-glass)
+- `set deviceconfig setting cloudapp cloudapp-srvr-addr` — Set deviceconfig setting cloudapp cloudapp srvr addr — device-local config (break-glass)
+- `set deviceconfig setting cloudapp cloudapp-srvr-addr address` — Set deviceconfig setting cloudapp cloudapp srvr addr address — device-local config (break-glass)
+- `set deviceconfig setting cloudapp disable` — Set deviceconfig setting cloudapp disable — device-local config (break-glass)
+- `set deviceconfig setting custom-logo` — Set deviceconfig setting custom logo — device-local config (break-glass)
+- `set deviceconfig setting iot` — Set deviceconfig setting iot — device-local config (break-glass)
+- `set deviceconfig setting iot edge` — Set deviceconfig setting iot edge — device-local config (break-glass)
+- `set deviceconfig setting iot edge address` — Set deviceconfig setting iot edge address — device-local config (break-glass)
+- `set deviceconfig setting management admin-lockout` — Set deviceconfig setting management admin lockout — device-local config (break-glass)
+- `set deviceconfig setting management admin-session` — Set deviceconfig setting management admin session — device-local config (break-glass)
+- `set deviceconfig setting management admin-session max-session-count` — Set deviceconfig setting management admin session max session count — device-local config (break-glass)
+- `set deviceconfig setting management admin-session max-session-time` — Set deviceconfig setting management admin session max session time — device-local config (break-glass)
+- `set deviceconfig setting management api` — Set deviceconfig setting management api — device-local config (break-glass)
+- `set deviceconfig setting management api key` — Set deviceconfig setting management api key — device-local config (break-glass)
+- `set deviceconfig setting management api key certificate` — Set deviceconfig setting management api key certificate — device-local config (break-glass)
+- `set deviceconfig setting management api key lifetime` — Set deviceconfig setting management api key lifetime — device-local config (break-glass)
+- `set deviceconfig setting management appusage-lifetime` — Set deviceconfig setting management appusage lifetime — device-local config (break-glass)
+- `set deviceconfig setting management audit-tracking` — Set deviceconfig setting management audit tracking — device-local config (break-glass)
+- `set deviceconfig setting management audit-tracking op-commands` — Set deviceconfig setting management audit tracking op commands — device-local config (break-glass)
+- `set deviceconfig setting management audit-tracking send-syslog` — Set deviceconfig setting management audit tracking send syslog — device-local config (break-glass)
+- `set deviceconfig setting management audit-tracking ui-actions` — Set deviceconfig setting management audit tracking ui actions — device-local config (break-glass)
+- `set deviceconfig setting management browse-activity-report-setting` — Set deviceconfig setting management browse activity report setting — device-local config (break-glass)
+- `set deviceconfig setting management browse-activity-report-setting average-browse-time` — Set deviceconfig setting management browse activity report setting average browse time — device-local config (break-glass)
+- `set deviceconfig setting management browse-activity-report-setting page-load-threshold` — Set deviceconfig setting management browse activity report setting page load threshold — device-local config (break-glass)
+- `set deviceconfig setting management common-criteria self-test-schedule` — Set deviceconfig setting management common criteria self test schedule — device-local config (break-glass)
+- `set deviceconfig setting management common-criteria self-test-schedule crypto start-time` — Set deviceconfig setting management common criteria self test schedule crypto start time — device-local config (break-glass)
+- `set deviceconfig setting management common-criteria self-test-schedule software-integrity start-time` — Set deviceconfig setting management common criteria self test schedule software integrity start time — device-local config (break-glass)
+- `set deviceconfig setting management disable-predefined-correlation-objs` — Set deviceconfig setting management disable predefined correlation objs — device-local config (break-glass)
+- `set deviceconfig setting management disable-predefined-reports` — Set deviceconfig setting management disable predefined reports — device-local config (break-glass)
+- `set deviceconfig setting management hostname-type-in-syslog` — Set deviceconfig setting management hostname type in syslog — device-local config (break-glass)
+- `set deviceconfig setting management idle-timeout` — Set deviceconfig setting management idle timeout — device-local config (break-glass)
+- `set deviceconfig setting management max-audit-versions` — Set deviceconfig setting management max audit versions — device-local config (break-glass)
+- `set deviceconfig setting management max-rows-in-csv-export` — Set deviceconfig setting management max rows in csv export — device-local config (break-glass)
+- `set deviceconfig setting management max-rows-in-pdf-report` — Set deviceconfig setting management max rows in pdf report — device-local config (break-glass)
+- `set deviceconfig setting management panorama-ssl-send-retries` — Set deviceconfig setting management panorama ssl send retries — device-local config (break-glass)
+- `set deviceconfig setting management panorama-tcp-receive-timeout` — Set deviceconfig setting management panorama tcp receive timeout — device-local config (break-glass)
+- `set deviceconfig setting management panorama-tcp-send-timeout` — Set deviceconfig setting management panorama tcp send timeout — device-local config (break-glass)
+- `set deviceconfig setting management quota-settings` — Set deviceconfig setting management quota settings — device-local config (break-glass)
+- `set deviceconfig setting management report-expiration-period` — Set deviceconfig setting management report expiration period — device-local config (break-glass)
+- `set deviceconfig setting management report-run-time` — Set deviceconfig setting management report run time — device-local config (break-glass)
+- `set deviceconfig setting management rule-audit-comment-regex` — Set deviceconfig setting management rule audit comment regex — device-local config (break-glass)
+- `set deviceconfig setting management secure-conn-client` — Set deviceconfig setting management secure conn client — device-local config (break-glass)
+- `set deviceconfig setting management secure-conn-client certificate-type local certificate` — Set deviceconfig setting management secure conn client certificate type local certificate — device-local config (break-glass)
+- `set deviceconfig setting management secure-conn-client certificate-type local certificate-profile` — Set deviceconfig setting management secure conn client certificate type local certificate profile — device-local config (break-glass)
+- `set deviceconfig setting management secure-conn-client certificate-type scep certificate-profile` — Set deviceconfig setting management secure conn client certificate type scep certificate profile — device-local config (break-glass)
+- `set deviceconfig setting management secure-conn-client certificate-type scep scep-profile` — Set deviceconfig setting management secure conn client certificate type scep scep profile — device-local config (break-glass)
+- `set deviceconfig setting management secure-conn-server` — Set deviceconfig setting management secure conn server — device-local config (break-glass)
+- `set deviceconfig setting management secure-conn-server certificate-profile` — Set deviceconfig setting management secure conn server certificate profile — device-local config (break-glass)
+- `set deviceconfig setting management secure-conn-server enable-secure-user-id-communication` — Set deviceconfig setting management secure conn server enable secure user id communication — device-local config (break-glass)
+- `set deviceconfig setting management secure-conn-server ssl-tls-service-profile` — Set deviceconfig setting management secure conn server ssl tls service profile — device-local config (break-glass)
+- `set deviceconfig setting session offload` — Set deviceconfig setting session offload — device-local config (break-glass)
+- `set deviceconfig setting session packet-buffer-protection-use-buffer` — Set deviceconfig setting session packet buffer protection use buffer — device-local config (break-glass)
+- `set deviceconfig setting session persistent-dipp-alert-enable` — Set deviceconfig setting session persistent dipp alert enable — device-local config (break-glass)
+- `set deviceconfig setting session-tracking` — Set deviceconfig setting session tracking — device-local config (break-glass)
+- `set deviceconfig setting session-tracking disable` — Set deviceconfig setting session tracking disable — device-local config (break-glass)
+- `set deviceconfig setting session-tracking user-re-authentication` — Set deviceconfig setting session tracking user re authentication — device-local config (break-glass)
+- `set deviceconfig setting session-tracking user-re-authentication disable` — Set deviceconfig setting session tracking user re authentication disable — device-local config (break-glass)
+- `set deviceconfig setting ssl-decrypt use-mp-sess-cache` — Set deviceconfig setting ssl decrypt use mp sess cache — device-local config (break-glass)
+- `set deviceconfig system` — Set deviceconfig system — device-local config (break-glass)
+- `set deviceconfig system auto-renew-mkey-lifetime` — Set deviceconfig system auto renew mkey lifetime — device-local config (break-glass)
+- `set deviceconfig system device-telemetry` — Set deviceconfig system device telemetry — device-local config (break-glass)
+- `set deviceconfig system device-telemetry device-health-performance` — Set deviceconfig system device telemetry device health performance — device-local config (break-glass)
+- `set deviceconfig system device-telemetry product-usage` — Set deviceconfig system device telemetry product usage — device-local config (break-glass)
+- `set deviceconfig system device-telemetry region` — Set deviceconfig system device telemetry region — device-local config (break-glass)
+- `set deviceconfig system device-telemetry threat-prevention` — Set deviceconfig system device telemetry threat prevention — device-local config (break-glass)
+- `set deviceconfig system dns-security-server` — Set deviceconfig system dns security server — device-local config (break-glass)
+- `set deviceconfig system dns-setting servers` — Set deviceconfig system dns setting servers — device-local config (break-glass)
+- `set deviceconfig system dns-setting servers primary` — Set deviceconfig system dns setting servers primary — device-local config (break-glass)
+- `set deviceconfig system dns-setting servers secondary` — Set deviceconfig system dns setting servers secondary — device-local config (break-glass)
+- `set deviceconfig system geo-location` — Set deviceconfig system geo location — device-local config (break-glass)
+- `set deviceconfig system geo-location latitude` — Set deviceconfig system geo location latitude — device-local config (break-glass)
+- `set deviceconfig system geo-location longitude` — Set deviceconfig system geo location longitude — device-local config (break-glass)
+- `set deviceconfig system hsm-settings` — Set deviceconfig system hsm settings — device-local config (break-glass)
+- `set deviceconfig system hsm-settings provider` — Set deviceconfig system hsm settings provider — device-local config (break-glass)
+- `set deviceconfig system hsm-settings provider ciphertrust-manager hsm-server` — Set deviceconfig system hsm settings provider ciphertrust manager hsm server — device-local config (break-glass)
+- `set deviceconfig system hsm-settings provider ncipher-nshield-connect hsm-server` — Set deviceconfig system hsm settings provider ncipher nshield connect hsm server — device-local config (break-glass)
+- `set deviceconfig system hsm-settings provider ncipher-nshield-connect rfs-address` — Set deviceconfig system hsm settings provider ncipher nshield connect rfs address — device-local config (break-glass)
+- `set deviceconfig system hsm-settings provider safenet-network ha` — Set deviceconfig system hsm settings provider safenet network ha — device-local config (break-glass)
+- `set deviceconfig system hsm-settings provider safenet-network ha auto-recovery-retry` — Set deviceconfig system hsm settings provider safenet network ha auto recovery retry — device-local config (break-glass)
+- `set deviceconfig system hsm-settings provider safenet-network ha ha-group-name` — Set deviceconfig system hsm settings provider safenet network ha ha group name — device-local config (break-glass)
+- `set deviceconfig system hsm-settings provider safenet-network hsm-server` — Set deviceconfig system hsm settings provider safenet network hsm server — device-local config (break-glass)
+- `set deviceconfig system inline-cloud-proxy` — Set deviceconfig system inline cloud proxy — device-local config (break-glass)
+- `set deviceconfig system locale` — Set deviceconfig system locale — device-local config (break-glass)
+- `set deviceconfig system log-link` — Set deviceconfig system log link — device-local config (break-glass)
+- `set deviceconfig system motd-and-banner` — Set deviceconfig system motd and banner — device-local config (break-glass)
+- `set deviceconfig system motd-and-banner message` — Set deviceconfig system motd and banner message — device-local config (break-glass)
+- `set deviceconfig system motd-and-banner severity` — Set deviceconfig system motd and banner severity — device-local config (break-glass)
+- `set deviceconfig system mtu` — Set deviceconfig system mtu — device-local config (break-glass)
+- `set deviceconfig system ntp-servers` — Set deviceconfig system ntp servers — device-local config (break-glass)
+- `set deviceconfig system ntp-servers primary-ntp-server authentication-type` — Set deviceconfig system ntp servers primary ntp server authentication type — device-local config (break-glass)
+- `set deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key algorithm` — Set deviceconfig system ntp servers primary ntp server authentication type symmetric key algorithm — device-local config (break-glass)
+- `set deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key algorithm md5 authentication-key` — Set deviceconfig system ntp servers primary ntp server authentication type symmetric key algorithm md5 authentication key — device-local config (break-glass)
+- `set deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key algorithm sha1 authentication-key` — Set deviceconfig system ntp servers primary ntp server authentication type symmetric key algorithm sha1 authentication key — device-local config (break-glass)
+- `set deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key key-id` — Set deviceconfig system ntp servers primary ntp server authentication type symmetric key key id — device-local config (break-glass)
+- `set deviceconfig system ntp-servers primary-ntp-server ntp-server-address` — Set deviceconfig system ntp servers primary ntp server ntp server address — device-local config (break-glass)
+- `set deviceconfig system ntp-servers secondary-ntp-server authentication-type` — Set deviceconfig system ntp servers secondary ntp server authentication type — device-local config (break-glass)
+- `set deviceconfig system ntp-servers secondary-ntp-server authentication-type symmetric-key algorithm` — Set deviceconfig system ntp servers secondary ntp server authentication type symmetric key algorithm — device-local config (break-glass)
+- `set deviceconfig system ntp-servers secondary-ntp-server authentication-type symmetric-key algorithm md5 authentication-key` — Set deviceconfig system ntp servers secondary ntp server authentication type symmetric key algorithm md5 authentication key — device-local config (break-glass)
+- `set deviceconfig system ntp-servers secondary-ntp-server authentication-type symmetric-key algorithm sha1 authentication-key` — Set deviceconfig system ntp servers secondary ntp server authentication type symmetric key algorithm sha1 authentication key — device-local config (break-glass)
+- `set deviceconfig system ntp-servers secondary-ntp-server authentication-type symmetric-key key-id` — Set deviceconfig system ntp servers secondary ntp server authentication type symmetric key key id — device-local config (break-glass)
+- `set deviceconfig system ntp-servers secondary-ntp-server ntp-server-address` — Set deviceconfig system ntp servers secondary ntp server ntp server address — device-local config (break-glass)
+- `set deviceconfig system panorama local-panorama panorama-server` — Set deviceconfig system panorama local panorama panorama server — device-local config (break-glass)
+- `set deviceconfig system permitted-ip` — Set deviceconfig system permitted ip — device-local config (break-glass)
+- `set deviceconfig system secure-proxy-port` — Set deviceconfig system secure proxy port — device-local config (break-glass)
+- `set deviceconfig system service` — Set deviceconfig system service — device-local config (break-glass)
+- `set deviceconfig system snmp-setting` — Set deviceconfig system snmp setting — device-local config (break-glass)
+- `set deviceconfig system snmp-setting access-setting version` — Set deviceconfig system snmp setting access setting version — device-local config (break-glass)
+- `set deviceconfig system snmp-setting access-setting version v2c snmp-community-string` — Set deviceconfig system snmp setting access setting version v2c snmp community string — device-local config (break-glass)
+- `set deviceconfig system snmp-setting access-setting version v3 users` — Set deviceconfig system snmp setting access setting version v3 users — device-local config (break-glass)
+- `set deviceconfig system snmp-setting access-setting version v3 views` — Set deviceconfig system snmp setting access setting version v3 views — device-local config (break-glass)
+- `set deviceconfig system snmp-setting snmp-system contact` — Set deviceconfig system snmp setting snmp system contact — device-local config (break-glass)
+- `set deviceconfig system snmp-setting snmp-system location` — Set deviceconfig system snmp setting snmp system location — device-local config (break-glass)
+- `set deviceconfig system snmp-setting snmp-system send-event-specific-traps` — Set deviceconfig system snmp setting snmp system send event specific traps — device-local config (break-glass)
+- `set deviceconfig system ssh` — Set deviceconfig system ssh — device-local config (break-glass)
+- `set deviceconfig system ssh ha ha-profile` — Set deviceconfig system ssh ha ha profile — device-local config (break-glass)
+- `set deviceconfig system ssh mgmt server-profile` — Set deviceconfig system ssh mgmt server profile — device-local config (break-glass)
+- `set deviceconfig system ssh profiles ha-profiles` — Set deviceconfig system ssh profiles ha profiles — device-local config (break-glass)
+- `set deviceconfig system ssh profiles mgmt-profiles` — Set deviceconfig system ssh profiles mgmt profiles — device-local config (break-glass)
+- `set deviceconfig system ssh profiles mgmt-profiles server-profiles` — Set deviceconfig system ssh profiles mgmt profiles server profiles — device-local config (break-glass)
+- `set deviceconfig system ssh regenerate-hostkeys ha` — Set deviceconfig system ssh regenerate hostkeys ha — device-local config (break-glass)
+- `set deviceconfig system ssh regenerate-hostkeys ha key-type` — Set deviceconfig system ssh regenerate hostkeys ha key type — device-local config (break-glass)
+- `set deviceconfig system ssh regenerate-hostkeys ha key-type ecdsa key-length` — Set deviceconfig system ssh regenerate hostkeys ha key type ecdsa key length — device-local config (break-glass)
+- `set deviceconfig system ssh regenerate-hostkeys ha key-type rsa key-length` — Set deviceconfig system ssh regenerate hostkeys ha key type rsa key length — device-local config (break-glass)
+- `set deviceconfig system ssh regenerate-hostkeys mgmt` — Set deviceconfig system ssh regenerate hostkeys mgmt — device-local config (break-glass)
+- `set deviceconfig system ssh regenerate-hostkeys mgmt key-type` — Set deviceconfig system ssh regenerate hostkeys mgmt key type — device-local config (break-glass)
+- `set deviceconfig system ssh regenerate-hostkeys mgmt key-type ecdsa key-length` — Set deviceconfig system ssh regenerate hostkeys mgmt key type ecdsa key length — device-local config (break-glass)
+- `set deviceconfig system ssh regenerate-hostkeys mgmt key-type rsa key-length` — Set deviceconfig system ssh regenerate hostkeys mgmt key type rsa key length — device-local config (break-glass)
+- `set deviceconfig system timezone` — Set deviceconfig system timezone — device-local config (break-glass)
+- `set deviceconfig system type` — Set deviceconfig system type — device-local config (break-glass)
+- `set deviceconfig system type dhcp-client` — Set deviceconfig system type dhcp client — device-local config (break-glass)
+- `set deviceconfig system type static` — Set deviceconfig system type static — device-local config (break-glass)
+- `set deviceconfig system update-schedule` — Set deviceconfig system update schedule — device-local config (break-glass)
+- `set deviceconfig system update-schedule anti-virus` — Set deviceconfig system update schedule anti virus — device-local config (break-glass)
+- `set deviceconfig system update-schedule anti-virus recurring` — Set deviceconfig system update schedule anti virus recurring — device-local config (break-glass)
+- `set deviceconfig system update-schedule anti-virus recurring daily` — Set deviceconfig system update schedule anti virus recurring daily — device-local config (break-glass)
+- `set deviceconfig system update-schedule anti-virus recurring daily action` — Set deviceconfig system update schedule anti virus recurring daily action — device-local config (break-glass)
+- `set deviceconfig system update-schedule anti-virus recurring daily at` — Set deviceconfig system update schedule anti virus recurring daily at — device-local config (break-glass)
+- `set deviceconfig system update-schedule anti-virus recurring hourly` — Set deviceconfig system update schedule anti virus recurring hourly — device-local config (break-glass)
+- `set deviceconfig system update-schedule anti-virus recurring hourly action` — Set deviceconfig system update schedule anti virus recurring hourly action — device-local config (break-glass)
+- `set deviceconfig system update-schedule anti-virus recurring hourly at` — Set deviceconfig system update schedule anti virus recurring hourly at — device-local config (break-glass)
+- `set deviceconfig system update-schedule anti-virus recurring none` — Set deviceconfig system update schedule anti virus recurring none — device-local config (break-glass)
+- `set deviceconfig system update-schedule anti-virus recurring sync-to-peer` — Set deviceconfig system update schedule anti virus recurring sync to peer — device-local config (break-glass)
+- `set deviceconfig system update-schedule anti-virus recurring threshold` — Set deviceconfig system update schedule anti virus recurring threshold — device-local config (break-glass)
+- `set deviceconfig system update-schedule anti-virus recurring weekly` — Set deviceconfig system update schedule anti virus recurring weekly — device-local config (break-glass)
+- `set deviceconfig system update-schedule anti-virus recurring weekly action` — Set deviceconfig system update schedule anti virus recurring weekly action — device-local config (break-glass)
+- `set deviceconfig system update-schedule anti-virus recurring weekly at` — Set deviceconfig system update schedule anti virus recurring weekly at — device-local config (break-glass)
+- `set deviceconfig system update-schedule anti-virus recurring weekly day-of-week` — Set deviceconfig system update schedule anti virus recurring weekly day of week — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats` — Set deviceconfig system update schedule threats — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring` — Set deviceconfig system update schedule threats recurring — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring daily` — Set deviceconfig system update schedule threats recurring daily — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring daily action` — Set deviceconfig system update schedule threats recurring daily action — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring daily at` — Set deviceconfig system update schedule threats recurring daily at — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring daily disable-new-content` — Set deviceconfig system update schedule threats recurring daily disable new content — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring every-30-mins` — Set deviceconfig system update schedule threats recurring every 30 mins — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring every-30-mins action` — Set deviceconfig system update schedule threats recurring every 30 mins action — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring every-30-mins at` — Set deviceconfig system update schedule threats recurring every 30 mins at — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring every-30-mins disable-new-content` — Set deviceconfig system update schedule threats recurring every 30 mins disable new content — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring hourly` — Set deviceconfig system update schedule threats recurring hourly — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring hourly action` — Set deviceconfig system update schedule threats recurring hourly action — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring hourly at` — Set deviceconfig system update schedule threats recurring hourly at — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring hourly disable-new-content` — Set deviceconfig system update schedule threats recurring hourly disable new content — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring new-app-threshold` — Set deviceconfig system update schedule threats recurring new app threshold — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring none` — Set deviceconfig system update schedule threats recurring none — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring sync-to-peer` — Set deviceconfig system update schedule threats recurring sync to peer — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring threshold` — Set deviceconfig system update schedule threats recurring threshold — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring weekly` — Set deviceconfig system update schedule threats recurring weekly — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring weekly action` — Set deviceconfig system update schedule threats recurring weekly action — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring weekly at` — Set deviceconfig system update schedule threats recurring weekly at — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring weekly day-of-week` — Set deviceconfig system update schedule threats recurring weekly day of week — device-local config (break-glass)
+- `set deviceconfig system update-schedule threats recurring weekly disable-new-content` — Set deviceconfig system update schedule threats recurring weekly disable new content — device-local config (break-glass)
+- `set deviceconfig system update-schedule wf-private` — Set deviceconfig system update schedule wf private — device-local config (break-glass)
+- `set deviceconfig system update-schedule wf-private recurring` — Set deviceconfig system update schedule wf private recurring — device-local config (break-glass)
+- `set deviceconfig system update-schedule wf-private recurring every-15-mins` — Set deviceconfig system update schedule wf private recurring every 15 mins — device-local config (break-glass)
+- `set deviceconfig system update-schedule wf-private recurring every-15-mins action` — Set deviceconfig system update schedule wf private recurring every 15 mins action — device-local config (break-glass)
+- `set deviceconfig system update-schedule wf-private recurring every-15-mins at` — Set deviceconfig system update schedule wf private recurring every 15 mins at — device-local config (break-glass)
+- `set deviceconfig system update-schedule wf-private recurring every-30-mins` — Set deviceconfig system update schedule wf private recurring every 30 mins — device-local config (break-glass)
+- `set deviceconfig system update-schedule wf-private recurring every-30-mins action` — Set deviceconfig system update schedule wf private recurring every 30 mins action — device-local config (break-glass)
+- `set deviceconfig system update-schedule wf-private recurring every-30-mins at` — Set deviceconfig system update schedule wf private recurring every 30 mins at — device-local config (break-glass)
+- `set deviceconfig system update-schedule wf-private recurring every-5-mins` — Set deviceconfig system update schedule wf private recurring every 5 mins — device-local config (break-glass)
+- `set deviceconfig system update-schedule wf-private recurring every-5-mins action` — Set deviceconfig system update schedule wf private recurring every 5 mins action — device-local config (break-glass)
+- `set deviceconfig system update-schedule wf-private recurring every-5-mins at` — Set deviceconfig system update schedule wf private recurring every 5 mins at — device-local config (break-glass)
+- `set deviceconfig system update-schedule wf-private recurring every-hour` — Set deviceconfig system update schedule wf private recurring every hour — device-local config (break-glass)
+- `set deviceconfig system update-schedule wf-private recurring every-hour action` — Set deviceconfig system update schedule wf private recurring every hour action — device-local config (break-glass)
+- `set deviceconfig system update-schedule wf-private recurring every-hour at` — Set deviceconfig system update schedule wf private recurring every hour at — device-local config (break-glass)
+- `set deviceconfig system update-schedule wf-private recurring none` — Set deviceconfig system update schedule wf private recurring none — device-local config (break-glass)
+- `set deviceconfig system update-schedule wf-private recurring sync-to-peer` — Set deviceconfig system update schedule wf private recurring sync to peer — device-local config (break-glass)
+- `set deviceconfig system update-schedule wildfire` — Set deviceconfig system update schedule wildfire — device-local config (break-glass)
+- `set deviceconfig system update-schedule wildfire recurring` — Set deviceconfig system update schedule wildfire recurring — device-local config (break-glass)
+- `set deviceconfig system update-schedule wildfire recurring every-15-mins action` — Set deviceconfig system update schedule wildfire recurring every 15 mins action — device-local config (break-glass)
+- `set deviceconfig system update-schedule wildfire recurring every-15-mins at` — Set deviceconfig system update schedule wildfire recurring every 15 mins at — device-local config (break-glass)
+- `set deviceconfig system update-schedule wildfire recurring every-15-mins sync-to-peer` — Set deviceconfig system update schedule wildfire recurring every 15 mins sync to peer — device-local config (break-glass)
+- `set deviceconfig system update-schedule wildfire recurring every-30-mins action` — Set deviceconfig system update schedule wildfire recurring every 30 mins action — device-local config (break-glass)
+- `set deviceconfig system update-schedule wildfire recurring every-30-mins at` — Set deviceconfig system update schedule wildfire recurring every 30 mins at — device-local config (break-glass)
+- `set deviceconfig system update-schedule wildfire recurring every-30-mins sync-to-peer` — Set deviceconfig system update schedule wildfire recurring every 30 mins sync to peer — device-local config (break-glass)
+- `set deviceconfig system update-schedule wildfire recurring every-hour action` — Set deviceconfig system update schedule wildfire recurring every hour action — device-local config (break-glass)
+- `set deviceconfig system update-schedule wildfire recurring every-hour at` — Set deviceconfig system update schedule wildfire recurring every hour at — device-local config (break-glass)
+- `set deviceconfig system update-schedule wildfire recurring every-hour sync-to-peer` — Set deviceconfig system update schedule wildfire recurring every hour sync to peer — device-local config (break-glass)
+- `set deviceconfig system update-schedule wildfire recurring every-min action` — Set deviceconfig system update schedule wildfire recurring every min action — device-local config (break-glass)
+- `set deviceconfig system update-schedule wildfire recurring every-min sync-to-peer` — Set deviceconfig system update schedule wildfire recurring every min sync to peer — device-local config (break-glass)
 - `set dhcp-interfaces` — Create a DHCP interface
 - `set dns-proxies` — Create a DNS proxy
 - `set ethernet-interfaces` — Create an ethernet interface
 - `set external-dynamic-list` — Create EDL — set external-dynamic-list <name> type ip|domain|url url <fetch-url>
+- `set fwd-uni-dhcp-packet-on-dhcp-client-intf` — Set fwd uni dhcp packet on dhcp client intf — live device data
 - `set general-settings` — Create general settings
+- `set global-protect arg-maxlen` — Set global protect arg maxlen — live device data
+- `set global-protect global-protect-portal portal` — Set global protect global protect portal portal — live device data
+- `set global-protect redirect location` — Set global protect redirect location — live device data
+- `set global-protect redirect off` — Set global protect redirect off — live device data
+- `set global-protect redirect on` — Set global protect redirect on — live device data
+- `set global-protect redirect show` — Set global protect redirect show — live device data
+- `set global-protect satellite-serialnumberip-auth` — Set global protect satellite serialnumberip auth — live device data
 - `set gp-match-list` — Create a globalprotect match list entry
 - `set ha-configurations` — Create high availability configuration
 - `set hipmatch-match-list` — Create a hipmatch match list entry
@@ -354,8 +2572,23 @@ Use `help <command>` to open detailed docs for a command.
 - `set link-tags` — Create a link tag
 - `set lldp-profiles` — Create an LLDP profile
 - `set logical-routers` — Create a logical router
+- `set logrcvr offline-logpurger interval` — Set logrcvr offline logpurger interval — live device data
+- `set logrcvr offline-logpurger percentage-threshold` — Set logrcvr offline logpurger percentage threshold — live device data
 - `set loopback-interfaces` — Create a loopback interface
 - `set management-interface` — Create management interface settings
+- `set management-server logging` — Set management server logging — live device data
+- `set max-num-images count` — Set max num images count — live device data
+- `set mgmtbond` — Set mgmtbond — live device data
+- `set mgt-config` — Set mgt config — device-local config (break-glass)
+- `set mgt-config password-complexity` — Set mgt config password complexity — device-local config (break-glass)
+- `set mgt-config password-complexity block-username-inclusion` — Set mgt config password complexity block username inclusion — device-local config (break-glass)
+- `set mgt-config password-complexity enabled` — Set mgt config password complexity enabled — device-local config (break-glass)
+- `set mgt-config password-complexity minimum-length` — Set mgt config password complexity minimum length — device-local config (break-glass)
+- `set mgt-config password-complexity password-change` — Set mgt config password complexity password change — device-local config (break-glass)
+- `set mgt-config password-complexity password-change-on-first-login` — Set mgt config password complexity password change on first login — device-local config (break-glass)
+- `set mgt-config password-complexity password-change-period-block` — Set mgt config password complexity password change period block — device-local config (break-glass)
+- `set mgt-config password-complexity password-history-count` — Set mgt config password complexity password history count — device-local config (break-glass)
+- `set mgt-config password-profile` — Set mgt config password profile — device-local config (break-glass)
 - `set motd-banner-settings` — Create login banner settings
 - `set nat-rules` — Create a NAT rule
 - `set ngts activitylogsearch` — Retrieve count and activity log entries
@@ -412,18 +2645,23 @@ Use `help <command>` to open detailed docs for a command.
 - `set ngts tlsprotect cert-requests approval` — Create an approval rule for certificate
 - `set npb-profiles` — Create a new Network Packet Broker Profile
 - `set npb-rules` — Create a new Network Packet Broker Rule
+- `set nw-id-api data` — Set nw id api data — live device data
 - `set oauth2 access-token` — Create an access token
 - `set oauth2 userinfo` — Retrieve oAuth oAuth 2.0 claims
 - `set ospf-auth-profiles` — Create an OSPF authentication profile
+- `set password` — Set password — live device data
 - `set pbf-rules` — Create a PBF rule
 - `set posture batch-delete` — Batch Delete Posture Checks
 - `set posture batch-upsert` — Batch Upsert Posture Checks
 - `set posture clone` — Clone Posture Check
 - `set posture reports config-file-upload` — Initiate a Configuration Upload
 - `set posture root` — Create Posture Check
+- `set preserve-prenat-feature adjust-mtu` — Set preserve prenat feature adjust mtu — live device data
+- `set preserve-prenat-feature verify-checksum` — Set preserve prenat feature verify checksum — live device data
 - `set qos-policy-rules` — Create a QoS policy rule
 - `set qos-policy-rules move` — Move a QoS policy rule
 - `set qos-profiles` — Create a QoS profile
+- `set quarantine data` — Set quarantine data — live device data
 - `set route-access-lists` — Create a route access list
 - `set route-community-lists` — Create a route community list
 - `set route-path-acls` — Create a route path access list
@@ -458,25 +2696,132 @@ Use `help <command>` to open detailed docs for a command.
 - `set service-group` — Create service group — set service-group <name> members <svc1> [svc2 ...]
 - `set service-route` — Create service route settings
 - `set service-settings` — Create service settings
+- `set session` — Set session — live device data
+- `set session accelerated-aging-scaling-factor` — Set session accelerated aging scaling factor — live device data
+- `set session accelerated-aging-threshold` — Set session accelerated aging threshold — live device data
+- `set session default` — Set session default — live device data
+- `set session ingress_backlogs_duration` — Set session ingress_backlogs_duration — live device data
+- `set session ingress_backlogs_threshold` — Set session ingress_backlogs_threshold — live device data
+- `set session lag-flow-key-type` — Set session lag flow key type — live device data
+- `set session pvst-native-vlan-id` — Set session pvst native vlan id — live device data
+- `set session resource-limit-behavior` — Set session resource limit behavior — live device data
+- `set session scan-scaling-factor` — Set session scan scaling factor — live device data
+- `set session scan-threshold` — Set session scan threshold — live device data
+- `set session tcp-cong-ctrl` — Set session tcp cong ctrl — live device data
+- `set session tcp-reject-small-initial-window-threshold` — Set session tcp reject small initial window threshold — live device data
+- `set session tcp-rsts` — Set session tcp rsts — live device data
+- `set session timeout-scan` — Set session timeout scan — live device data
+- `set session timeout-tcp-delayed-ack` — Set session timeout tcp delayed ack — live device data
+- `set session timeout-tcp-half-closed` — Set session timeout tcp half closed — live device data
+- `set session timeout-tcp-time-wait` — Set session timeout tcp time wait — live device data
+- `set session timeout-tcp-unverified-rst` — Set session timeout tcp unverified rst — live device data
+- `set session timeout-tcphandshake` — Set session timeout tcphandshake — live device data
+- `set session timeout-tcpinit` — Set session timeout tcpinit — live device data
 - `set session-settings` — Create session settings
 - `set session-timeouts` — Create session timeouts settings
+- `set shared` — Set shared — device-local config (break-glass)
+- `set shared email-scheduler` — Set shared email scheduler — device-local config (break-glass)
+- `set shared log-settings` — Set shared log settings — device-local config (break-glass)
+- `set shared pdf-summary-report` — Set shared pdf summary report — device-local config (break-glass)
+- `set shared report-group` — Set shared report group — device-local config (break-glass)
+- `set shared response-page remote-browser-isolation` — Set shared response page remote browser isolation — device-local config (break-glass)
+- `set shared response-page url-reply` — Set shared response page url reply — device-local config (break-glass)
+- `set snmpd refresh-timer-period` — Set snmpd refresh timer period — live device data
+- `set ssh service-restart` — Set ssh service restart — live device data
+- `set ssh-authentication public-key` — Set ssh authentication public key — live device data
+- `set ssl add-secure-renegotiation-extension` — Set ssl add secure renegotiation extension — live device data
+- `set ssl-conn-on-cert fail-all-conns` — Set ssl conn on cert fail all conns — live device data
+- `set ssl-conn-on-cert fail-syslog-conns` — Set ssl conn on cert fail syslog conns — live device data
+- `set sslmgr-check-cert-jobs max-limit` — Set sslmgr check cert jobs max limit — live device data
 - `set subscription instances` — Create an instance
+- `set syslog fqdn-refresh` — Set syslog fqdn refresh — live device data
+- `set syslog ssl-conn-validation all-conns` — Set syslog ssl conn validation all conns — live device data
+- `set syslog ssl-conn-validation explicit crl` — Set syslog ssl conn validation explicit crl — live device data
+- `set syslog ssl-conn-validation explicit eku` — Set syslog ssl conn validation explicit eku — live device data
+- `set syslog ssl-conn-validation explicit ocsp` — Set syslog ssl conn validation explicit ocsp — live device data
+- `set system setting` — Set system setting — live device data
+- `set system setting additional-threat-log` — Set system setting additional threat log — live device data
+- `set system setting alg-natref` — Set system setting alg natref — live device data
+- `set system setting alg-persistent-nat` — Set system setting alg persistent nat — live device data
+- `set system setting arp-cache-timeout` — Set system setting arp cache timeout — live device data
+- `set system setting ctd` — Set system setting ctd — live device data
+- `set system setting ctd ctd-agent-assigned-cores` — Set system setting ctd ctd agent assigned cores — live device data
+- `set system setting ctd feature-forward cloud-appid-prefiltering` — Set system setting ctd feature forward cloud appid prefiltering — live device data
+- `set system setting ctd feature-forward mica` — Set system setting ctd feature forward mica — live device data
+- `set system setting ctd lscan-mode` — Set system setting ctd lscan mode — live device data
+- `set system setting ctd lscan-mode-default` — Set system setting ctd lscan mode default — live device data
+- `set system setting ctd max-sess-hash-limit` — Set system setting ctd max sess hash limit — live device data
+- `set system setting ctd nonblocking-pattern-match-interval` — Set system setting ctd nonblocking pattern match interval — live device data
+- `set system setting ctd pkt-proc-boundary` — Set system setting ctd pkt proc boundary — live device data
+- `set system setting ctd pkt-proc-loop-high` — Set system setting ctd pkt proc loop high — live device data
+- `set system setting ctd pkt-proc-loop-low` — Set system setting ctd pkt proc loop low — live device data
+- `set system setting ctd regex-stats-on` — Set system setting ctd regex stats on — live device data
+- `set system setting ctd wif-shared-buf-threshold` — Set system setting ctd wif shared buf threshold — live device data
+- `set system setting ctd-mode` — Set system setting ctd mode — live device data
+- `set system setting ctd-mode-default` — Set system setting ctd mode default — live device data
+- `set system setting delay-interface-process interface` — Set system setting delay interface process interface — live device data
+- `set system setting dfa-mode` — Set system setting dfa mode — live device data
+- `set system setting dfa-mode-default` — Set system setting dfa mode default — live device data
+- `set system setting hardware-acl-blocking-duration` — Set system setting hardware acl blocking duration — live device data
+- `set system setting hardware-acl-blocking-enable` — Set system setting hardware acl blocking enable — live device data
+- `set system setting icmp6-error` — Set system setting icmp6 error — live device data
+- `set system setting ip6-defrag-timeout` — Set system setting ip6 defrag timeout — live device data
+- `set system setting jumbo-frame` — Set system setting jumbo frame — live device data
+- `set system setting layer4-checksum` — Set system setting layer4 checksum — live device data
+- `set system setting logging default` — Set system setting logging default — live device data
+- `set system setting logging default-policy-logging` — Set system setting logging default policy logging — live device data
+- `set system setting logging log-compression` — Set system setting logging log compression — live device data
+- `set system setting logging log-suppression` — Set system setting logging log suppression — live device data
+- `set system setting logging max-log-rate` — Set system setting logging max log rate — live device data
+- `set system setting logging max-packet-rate` — Set system setting logging max packet rate — live device data
+- `set system setting mp-vr-vif-install-only-host-route` — Set system setting mp vr vif install only host route — live device data
+- `set system setting multi-vsys` — Set system setting multi vsys — live device data
+- `set system setting packet ip-frag-limit` — Set system setting packet ip frag limit — live device data
+- `set system setting packet-path-test enable` — Set system setting packet path test enable — live device data
+- `set system setting packet-path-test show` — Set system setting packet path test show — live device data
+- `set system setting paloalto-networks-service-proxy` — Set system setting paloalto networks service proxy — live device data
+- `set system setting persistent-dipp-alert` — Set system setting persistent dipp alert — live device data
+- `set system setting pow` — Set system setting pow — live device data
+- `set system setting pppoe-dont-send-eol interface` — Set system setting pppoe dont send eol interface — live device data
+- `set system setting shared-policy` — Set system setting shared policy — live device data
+- `set system setting software-acl-blocking-duration` — Set system setting software acl blocking duration — live device data
+- `set system setting ssl-decrypt` — Set system setting ssl decrypt — live device data
+- `set system setting ssl-decrypt answer-timeout` — Set system setting ssl decrypt answer timeout — live device data
+- `set system setting ssl-decrypt tunnel-taildrop-threshold` — Set system setting ssl decrypt tunnel taildrop threshold — live device data
+- `set system setting target-vsys` — Set system setting target vsys — live device data
+- `set system setting template` — Set system setting template — live device data
+- `set system setting util assert-crash-once` — Set system setting util assert crash once — live device data
+- `set system setting wildfire disk-quota` — Set system setting wildfire disk quota — live device data
+- `set system setting wildfire disk-quota global` — Set system setting wildfire disk quota global — live device data
+- `set system setting wildfire interval report-update-interval` — Set system setting wildfire interval report update interval — live device data
+- `set system setting wildfire interval server-list-update-interval` — Set system setting wildfire interval server list update interval — live device data
+- `set system setting zip enable` — Set system setting zip enable — live device data
+- `set system setting zip hw-reset` — Set system setting zip hw reset — live device data
 - `set system-match-list` — Create a system match list entry
 - `set tag` — Create tag — set tag <name> [color red|green|blue|...] [comments <text>]
 - `set tcp-settings` — Create TCP settings
 - `set tenant-service-groups` — Create a tenant service group
 - `set tenant-service-groups list-ancestors` — List tenant service group ancestors
 - `set tenant-service-groups list-children` — List tenant service group children
+- `set transceiver-monitor-rate slot` — Set transceiver monitor rate slot — live device data
 - `set tunnel-interfaces` — Create a tunnel interface
 - `set update-schedule` — Create update schedule settings
 - `set url-category` — Create a custom URL category — set url-category <name> type url-list list <url1>
+- `set user-id data` — Set user id data — live device data
 - `set userid-match-list` — Create a userid match list entry
 - `set vlan-interfaces` — Create a VLAN interface
 - `set vpn-settings` — Create VPN settings
+- `set xmlapi-group add group` — Set xmlapi group add group — live device data
+- `set xmlapi-group delete group` — Set xmlapi group delete group — live device data
+- `set xmlapi-group refresh group` — Set xmlapi group refresh group — live device data
 - `set zone-profiles` — Create a zone protection profile
 - `set zones` — Create a security zone
+- `set ztp panorama-timeout` — Set ztp panorama timeout — live device data
 - `show address` — Show address objects in the active folder
 - `show address-group` — Show address groups in the active folder
+- `show adem probes` — Show adem probes — live device data
+- `show adem routeinfo destination` — Show adem routeinfo destination — live device data
+- `show admins` — Show admins — live device data
 - `show adnsr bad-domains` — List misconfigured domains
 - `show adnsr bad-domains id` — Get a misconfigured domain
 - `show adnsr ca-certs` — List EDL CA certificates
@@ -497,13 +2842,79 @@ Use `help <command>` to open detailed docs for a command.
 - `show adnsr profiles categories` — Get profile categories
 - `show adnsr profiles id` — Get a profile
 - `show adnsr resolver-info` — Get resolver information
+- `show advanced-routing bfd active-profile name` — Show advanced routing bfd active profile name — live device data
+- `show advanced-routing bfd details logical-router` — Show advanced routing bfd details logical router — live device data
+- `show advanced-routing bfd drop-counters session-id` — Show advanced routing bfd drop counters session id — live device data
+- `show advanced-routing bfd summary logical-router` — Show advanced routing bfd summary logical router — live device data
+- `show advanced-routing bgp filters access-list logical-router` — Show advanced routing bgp filters access list logical router — live device data
+- `show advanced-routing bgp filters prefix-list logical-router` — Show advanced routing bgp filters prefix list logical router — live device data
+- `show advanced-routing bgp filters route-map logical-router` — Show advanced routing bgp filters route map logical router — live device data
+- `show advanced-routing bgp loc-rib-detail peer` — Show advanced routing bgp loc rib detail peer — live device data
+- `show advanced-routing bgp peer` — Show advanced routing bgp peer — live device data
+- `show advanced-routing bgp peer detail peer-name` — Show advanced routing bgp peer detail peer name — live device data
+- `show advanced-routing bgp peer status peer-name` — Show advanced routing bgp peer status peer name — live device data
+- `show advanced-routing bgp peer-groups logical-router` — Show advanced routing bgp peer groups logical router — live device data
+- `show advanced-routing bgp rib-out-detail peer` — Show advanced routing bgp rib out detail peer — live device data
+- `show advanced-routing bgp route afi` — Show advanced routing bgp route afi — live device data
+- `show advanced-routing bgp summary logical-router` — Show advanced routing bgp summary logical router — live device data
+- `show advanced-routing fib afi` — Show advanced routing fib afi — live device data via SCM
+- `show advanced-routing interface logical-router` — Show advanced routing interface logical router — live device data
+- `show advanced-routing logical-router lr-name` — Show advanced routing logical router lr name — live device data
+- `show advanced-routing multicast fib group` — Show advanced routing multicast fib group — live device data
+- `show advanced-routing multicast group-permission interface` — Show advanced routing multicast group permission interface — live device data
+- `show advanced-routing multicast igmp interface logical-router` — Show advanced routing multicast igmp interface logical router — live device data
+- `show advanced-routing multicast igmp membership interface` — Show advanced routing multicast igmp membership interface — live device data
+- `show advanced-routing multicast igmp statistics interface` — Show advanced routing multicast igmp statistics interface — live device data
+- `show advanced-routing multicast msdp peer detail peer-name` — Show advanced routing multicast msdp peer detail peer name — live device data
+- `show advanced-routing multicast msdp peer status peer-name` — Show advanced routing multicast msdp peer status peer name — live device data
+- `show advanced-routing multicast msdp sa logical-router` — Show advanced routing multicast msdp sa logical router — live device data
+- `show advanced-routing multicast msdp statistics logical-router` — Show advanced routing multicast msdp statistics logical router — live device data
+- `show advanced-routing multicast msdp summary logical-router` — Show advanced routing multicast msdp summary logical router — live device data
+- `show advanced-routing multicast pim elected-bsr logical-router` — Show advanced routing multicast pim elected bsr logical router — live device data
+- `show advanced-routing multicast pim group-mapping group` — Show advanced routing multicast pim group mapping group — live device data
+- `show advanced-routing multicast pim interface logical-router` — Show advanced routing multicast pim interface logical router — live device data
+- `show advanced-routing multicast pim neighbor logical-router` — Show advanced routing multicast pim neighbor logical router — live device data
+- `show advanced-routing multicast pim rpf static` — Show advanced routing multicast pim rpf static — live device data
+- `show advanced-routing multicast pim state logical-router` — Show advanced routing multicast pim state logical router — live device data
+- `show advanced-routing multicast pim statistics interface` — Show advanced routing multicast pim statistics interface — live device data
+- `show advanced-routing multicast route group` — Show advanced routing multicast route group — live device data
+- `show advanced-routing ospf` — Show advanced routing ospf — live device data
+- `show advanced-routing ospf dumplsdb adv-rtr` — Show advanced routing ospf dumplsdb adv rtr — live device data
+- `show advanced-routing ospf interface brief` — Show advanced routing ospf interface brief — live device data
+- `show advanced-routing ospf lsdb adv-rtr` — Show advanced routing ospf lsdb adv rtr — live device data
+- `show advanced-routing ospf neighbor brief` — Show advanced routing ospf neighbor brief — live device data
+- `show advanced-routing ospf virt-neighbor brief` — Show advanced routing ospf virt neighbor brief — live device data
+- `show advanced-routing ospfv3` — Show advanced routing ospfv3 — live device data
+- `show advanced-routing ospfv3 dumplsdb scope` — Show advanced routing ospfv3 dumplsdb scope — live device data
+- `show advanced-routing ospfv3 interface brief` — Show advanced routing ospfv3 interface brief — live device data
+- `show advanced-routing ospfv3 lsdb scope` — Show advanced routing ospfv3 lsdb scope — live device data
+- `show advanced-routing ospfv3 neighbor brief` — Show advanced routing ospfv3 neighbor brief — live device data
+- `show advanced-routing ospfv3 virt-neighbor brief` — Show advanced routing ospfv3 virt neighbor brief — live device data
+- `show advanced-routing resource logical-router` — Show advanced routing resource logical router — live device data
+- `show advanced-routing rip` — Show advanced routing rip — live device data
+- `show advanced-routing route destination` — Show advanced routing route destination — live device data via SCM
+- `show advanced-routing static-route-path-monitor logical-router` — Show advanced routing static route path monitor logical router — live device data
 - `show aggregate-interfaces` — List Aggregate Interfaces
 - `show aggregate-interfaces id` — Get an Aggregate Interface
 - `show anti-spyware-profile` — Show anti-spyware profiles in the active folder
+- `show api-key-expiration-ts` — Show api key expiration ts — live device data
 - `show app-override-rules` — Show application override rules in the active folder
+- `show application` — Show application — device-local config (break-glass)
 - `show application-filter` — Show application filters in the active folder
 - `show application-group` — Show application groups in the active folder
+- `show application-tag` — Show application tag — device-local config (break-glass)
+- `show applications vsys` — Show applications vsys — live device data
 - `show arp` — Show live ARP table from device — use --remote
+- `show auth` — Show auth — live device data
+- `show authentication allowlist` — Show authentication allowlist — live device data
+- `show authentication groupdb` — Show authentication groupdb — live device data
+- `show authentication groupnames` — Show authentication groupnames — live device data
+- `show authentication local-user-db vsys` — Show authentication local user db vsys — live device data
+- `show authentication locked-users vsys` — Show authentication locked users vsys — live device data
+- `show authentication service-principal vsys` — Show authentication service principal vsys — live device data
+- `show authentication service-principals vsys` — Show authentication service principals vsys — live device data
+- `show authentication statistics username` — Show authentication statistics username — live device data
+- `show authentication-object` — Show authentication object — device-local config (break-glass)
 - `show authentication-profile` — Show authentication profiles in the active folder
 - `show authentication-rules` — Show authentication rules in the active folder
 - `show authentication-settings` — List authentication settings
@@ -513,6 +2924,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show auto-vpn-monitor` — Get Auto VPN status
 - `show auto-vpn-settings` — Get Auto VPN settings
 - `show autoscale` — Get autoscale settings
+- `show bad-custom-signature` — Show bad custom signature — live device data
 - `show bgp-af-profiles id` — Get a BGP address family profile
 - `show bgp-auth-profiles` — List BGP authentication profiles
 - `show bgp-auth-profiles id` — Get a BGP authentication profile
@@ -525,11 +2937,60 @@ Use `help <command>` to open detailed docs for a command.
 - `show bgp-route-maps id` — Get a BGP route map
 - `show bgp-routemap-redist` — List BGP route map redistributions
 - `show bgp-routemap-redist id` — Get a BGP route map redistribution
+- `show bonjour interface` — Show bonjour interface — live device data
+- `show captive-portal` — Show captive portal — device-local config (break-glass)
+- `show captive-portal mode` — Show captive portal mode — device-local config (break-glass)
+- `show captive-portal mode redirect session-cookie` — Show captive portal mode redirect session cookie — device-local config (break-glass)
 - `show cdug cloud-dug-definition category` — Retrieve Dynamic Group Categories
 - `show cdug cloud-dug-definition group` — Retrieve Cloud Dynamic User Groups
 - `show cdug user-attr-values` — Retrieve User Attribute Values
 - `show certificate-profile` — Show certificate profiles in the active folder
+- `show chassis inventory` — Show chassis inventory — live device data
+- `show chassis-ready` — Show chassis ready — live device data
 - `show ciedss domains` — Fetch domains from the CIE Directory Sync Service
+- `show cli` — Show cli — live device data
+- `show clock more` — Show clock more — live device data
+- `show cloud-appid` — Show cloud appid — live device data
+- `show cloud-appid app-to-filtergroup-mapping batch-idx` — Show cloud appid app to filtergroup mapping batch idx — live device data
+- `show cloud-appid application` — Show cloud appid application — live device data
+- `show cloud-appid application-filter all` — Show cloud appid application filter all — live device data
+- `show cloud-appid application-filter option vsys` — Show cloud appid application filter option vsys — live device data
+- `show cloud-appid application-group all` — Show cloud appid application group all — live device data
+- `show cloud-appid application-group option vsys` — Show cloud appid application group option vsys — live device data
+- `show cloud-appid cloud-app-data app-metadata` — Show cloud appid cloud app data app metadata — live device data
+- `show cloud-appid cloud-app-data application all` — Show cloud appid cloud app data application all — live device data
+- `show cloud-appid cloud-app-data application app-id` — Show cloud appid cloud app data application app id — live device data
+- `show cloud-appid cloud-app-data application cloud-app-name` — Show cloud appid cloud app data application cloud app name — live device data
+- `show cloud-appid cloud-app-data application statistics` — Show cloud appid cloud app data application statistics — live device data
+- `show cloud-appid cloud-app-data container all` — Show cloud appid cloud app data container all — live device data
+- `show cloud-appid cloud-app-data container container-id` — Show cloud appid cloud app data container container id — live device data
+- `show cloud-appid cloud-app-data container container-name` — Show cloud appid cloud app data container container name — live device data
+- `show cloud-appid cloud-app-data container statistics` — Show cloud appid cloud app data container statistics — live device data
+- `show cloud-appid signature-dp` — Show cloud appid signature dp — live device data
+- `show cloud-appid signature-dp app-signature all` — Show cloud appid signature dp app signature all — live device data
+- `show cloud-appid signature-dp app-signature cloud-app-name` — Show cloud appid signature dp app signature cloud app name — live device data
+- `show cloud-appid signature-dp app-signature signature-id` — Show cloud appid signature dp app signature signature id — live device data
+- `show cloud-appid signature-dp app-signature statistics` — Show cloud appid signature dp app signature statistics — live device data
+- `show cloud-appid signature-dp appid` — Show cloud appid signature dp appid — live device data
+- `show cloud-appid signature-dp threat-signature all` — Show cloud appid signature dp threat signature all — live device data
+- `show cloud-appid signature-dp threat-signature cloud-app-name` — Show cloud appid signature dp threat signature cloud app name — live device data
+- `show cloud-appid signature-dp threat-signature statistics` — Show cloud appid signature dp threat signature statistics — live device data
+- `show cloud-appid signature-dp threat-signature threat-id` — Show cloud appid signature dp threat signature threat id — live device data
+- `show cloud-appid task all option` — Show cloud appid task all option — live device data
+- `show cloud-appid task statistics` — Show cloud appid task statistics — live device data
+- `show cloud-appid task task-index` — Show cloud appid task task index — live device data
+- `show cloud-appid transaction all option` — Show cloud appid transaction all option — live device data
+- `show cloud-appid transaction trans-index` — Show cloud appid transaction trans index — live device data
+- `show cloud-auth-service-alerts` — Show cloud auth service alerts — live device data
+- `show cloud-auth-service-metadata region_id` — Show cloud auth service metadata region_id — live device data
+- `show cloud-auth-service-profiles tenant_id` — Show cloud auth service profiles tenant_id — live device data
+- `show cloud-auth-service-regions force_refresh` — Show cloud auth service regions force_refresh — live device data
+- `show cloud-auth-service-tenants region_id` — Show cloud auth service tenants region_id — live device data
+- `show cloud-identity-engine` — Show cloud identity engine — device-local config (break-glass)
+- `show cloud-management-status` — Show cloud management status — live device data
+- `show cloud-userid` — Show cloud userid — live device data
+- `show cluster` — Show cluster — live device data
+- `show cluster-userid statistics` — Show cluster userid statistics — live device data
 - `show cngfw address-groups` — List address groups
 - `show cngfw address-groups id` — Get an address group
 - `show cngfw addresses` — List addresses
@@ -679,46 +3140,293 @@ Use `help <command>` to open detailed docs for a command.
 - `show cngfw vuln-signatures id` — Get a vulnerability protection signature
 - `show cngfw wildfire-profiles` — List Wildfire and anti-virus profiles
 - `show cngfw wildfire-profiles id` — Get a WildFire and anti-virus profile
+- `show commit-locks vsys` — Show commit locks vsys — live device data
+- `show config` — Show config — live device data
+- `show config audit base-version` — Show config audit base version — live device data
+- `show config audit base-version-no-deletes` — Show config audit base version no deletes — live device data
+- `show config audit info` — Show config audit info — live device data
+- `show config audit version` — Show config audit version — live device data
+- `show config commit-scope partial shared-object` — Show config commit scope partial shared object — live device data
+- `show config effective-running xpath` — Show config effective running xpath — live device data
+- `show config list admins partial shared-object` — Show config list admins partial shared object — live device data
+- `show config list audit-comments xpath` — Show config list audit comments xpath — live device data
+- `show config list change-summary partial admin` — Show config list change summary partial admin — live device data
+- `show config list changes partial shared-object` — Show config list changes partial shared object — live device data
+- `show config pushed-shared-policy vsys` — Show config pushed shared policy vsys — live device data
+- `show config running xpath` — Show config running xpath — live device data
+- `show config saved` — Show config saved — live device data
+- `show config-locks vsys` — Show config locks vsys — live device data
 - `show config-match-list` — List config match list entries
 - `show config-match-list id` — Get a config match list entry
 - `show content-cloud-settings` — List Content Cloud settings
 - `show content-cloud-settings id` — Get existing Content Cloud settings
 - `show content-id-settings` — List Content-ID settings
 - `show content-id-settings id` — Get existing Content-ID settings
+- `show counter global filter category` — Show counter global filter category — live device data
+- `show counter global name` — Show counter global name — live device data
+- `show counter interface` — Show counter interface — live device data
+- `show counter management-server` — Show counter management server — live device data
+- `show counter rate` — Show counter rate — live device data
+- `show counter total-throughput` — Show counter total throughput — live device data
+- `show ctd-agent` — Show ctd agent — live device data
+- `show ctd-agent debug` — Show ctd agent debug — live device data
+- `show ctd-agent status` — Show ctd agent status — live device data
 - `show decryption-profile` — Show decryption profiles in the active folder
 - `show decryption-rules` — Show decryption rules in the active folder
 - `show device` — Show detail for a device (or 'show device' when cd'd in)
 - `show device jobs id` — Retrieve job status and results, running on a device
 - `show device snippets` — Show snippets attached to a device
+- `show device-certificate` — Show device certificate — live device data
 - `show device-context-segment-association` — List device context segment associations
 - `show device-context-segment-association id` — Get a device context segment association
+- `show device-object` — Show device object — device-local config (break-glass)
 - `show device-redistribution-collector` — List device redistribution collector settings
 - `show device-redistribution-collector id` — Get existing device redistribution collector settings
+- `show device-telemetry` — Show device telemetry — live device data
+- `show device-telemetry stats` — Show device telemetry stats — live device data
+- `show deviceconfig` — Show deviceconfig — device-local config (break-glass)
+- `show deviceconfig high-availability` — Show deviceconfig high availability — device-local config (break-glass)
+- `show deviceconfig high-availability cluster` — Show deviceconfig high availability cluster — device-local config (break-glass)
+- `show deviceconfig high-availability cluster cluster-members` — Show deviceconfig high availability cluster cluster members — device-local config (break-glass)
+- `show deviceconfig high-availability election-option` — Show deviceconfig high availability election option — live device data
+- `show deviceconfig high-availability election-option timers` — Show deviceconfig high availability election option timers — live device data
+- `show deviceconfig high-availability group` — Show deviceconfig high availability group — device-local config (break-glass)
+- `show deviceconfig high-availability group election-option timers` — Show deviceconfig high availability group election option timers — device-local config (break-glass)
+- `show deviceconfig high-availability group mode active-active` — Show deviceconfig high availability group mode active active — device-local config (break-glass)
+- `show deviceconfig high-availability group mode active-active network-configuration` — Show deviceconfig high availability group mode active active network configuration — device-local config (break-glass)
+- `show deviceconfig high-availability group mode active-active network-configuration sync` — Show deviceconfig high availability group mode active active network configuration sync — device-local config (break-glass)
+- `show deviceconfig high-availability group mode active-active session-owner-selection` — Show deviceconfig high availability group mode active active session owner selection — device-local config (break-glass)
+- `show deviceconfig high-availability group mode active-active session-owner-selection first-packet session-setup` — Show deviceconfig high availability group mode active active session owner selection first packet session setup — device-local config (break-glass)
+- `show deviceconfig high-availability group mode active-active virtual-address` — Show deviceconfig high availability group mode active active virtual address — device-local config (break-glass)
+- `show deviceconfig high-availability group mode active-passive` — Show deviceconfig high availability group mode active passive — device-local config (break-glass)
+- `show deviceconfig high-availability group monitoring link-monitoring` — Show deviceconfig high availability group monitoring link monitoring — device-local config (break-glass)
+- `show deviceconfig high-availability group monitoring link-monitoring link-group` — Show deviceconfig high availability group monitoring link monitoring link group — device-local config (break-glass)
+- `show deviceconfig high-availability group monitoring path-monitoring` — Show deviceconfig high availability group monitoring path monitoring — device-local config (break-glass)
+- `show deviceconfig high-availability group monitoring path-monitoring path-group` — Show deviceconfig high availability group monitoring path monitoring path group — device-local config (break-glass)
+- `show deviceconfig high-availability group state-synchronization ha2-keep-alive` — Show deviceconfig high availability group state synchronization ha2 keep alive — device-local config (break-glass)
+- `show deviceconfig high-availability interface` — Show deviceconfig high availability interface — device-local config (break-glass)
+- `show deviceconfig high-availability interface ha1` — Show deviceconfig high availability interface ha1 — device-local config (break-glass)
+- `show deviceconfig high-availability interface ha1 encryption` — Show deviceconfig high availability interface ha1 encryption — device-local config (break-glass)
+- `show deviceconfig high-availability path-monitoring` — Show deviceconfig high availability path monitoring — live device data
+- `show deviceconfig high-availability path-monitoring path-group` — Show deviceconfig high availability path monitoring path group — live device data
+- `show deviceconfig high-availability peer` — Show deviceconfig high availability peer — live device data
+- `show deviceconfig high-availability peer encryption` — Show deviceconfig high availability peer encryption — live device data
+- `show deviceconfig setting` — Show deviceconfig setting — device-local config (break-glass)
+- `show deviceconfig setting application` — Show deviceconfig setting application — device-local config (break-glass)
+- `show deviceconfig setting application traceroute` — Show deviceconfig setting application traceroute — device-local config (break-glass)
+- `show deviceconfig setting cloud-host-compliance` — Show deviceconfig setting cloud host compliance — live device data
+- `show deviceconfig setting cloudapp` — Show deviceconfig setting cloudapp — device-local config (break-glass)
+- `show deviceconfig setting cloudapp cloudapp-srvr-addr` — Show deviceconfig setting cloudapp cloudapp srvr addr — device-local config (break-glass)
+- `show deviceconfig setting custom-logo` — Show deviceconfig setting custom logo — device-local config (break-glass)
+- `show deviceconfig setting dhcp-syslog-server` — Show deviceconfig setting dhcp syslog server — device-local config (break-glass)
+- `show deviceconfig setting iot` — Show deviceconfig setting iot — device-local config (break-glass)
+- `show deviceconfig setting iot edge` — Show deviceconfig setting iot edge — device-local config (break-glass)
+- `show deviceconfig setting logging` — Show deviceconfig setting logging — device-local config (break-glass)
+- `show deviceconfig setting logging enhanced-application-logging disable-application` — Show deviceconfig setting logging enhanced application logging disable application — device-local config (break-glass)
+- `show deviceconfig setting logging enhanced-application-logging disable-global` — Show deviceconfig setting logging enhanced application logging disable global — device-local config (break-glass)
+- `show deviceconfig setting management` — Show deviceconfig setting management — device-local config (break-glass)
+- `show deviceconfig setting management api` — Show deviceconfig setting management api — device-local config (break-glass)
+- `show deviceconfig setting management api key` — Show deviceconfig setting management api key — device-local config (break-glass)
+- `show deviceconfig setting management common-criteria` — Show deviceconfig setting management common criteria — device-local config (break-glass)
+- `show deviceconfig setting management common-criteria self-test-schedule` — Show deviceconfig setting management common criteria self test schedule — device-local config (break-glass)
+- `show deviceconfig setting management common-criteria-alarm-generation` — Show deviceconfig setting management common criteria alarm generation — device-local config (break-glass)
+- `show deviceconfig setting management log-forwarding-from-device` — Show deviceconfig setting management log forwarding from device — live device data
+- `show deviceconfig setting management quota-settings` — Show deviceconfig setting management quota settings — device-local config (break-glass)
+- `show deviceconfig setting management secure-conn-client` — Show deviceconfig setting management secure conn client — device-local config (break-glass)
+- `show deviceconfig setting management secure-conn-client certificate-type` — Show deviceconfig setting management secure conn client certificate type — device-local config (break-glass)
+- `show deviceconfig setting management secure-conn-server authorization-list` — Show deviceconfig setting management secure conn server authorization list — live device data
+- `show deviceconfig setting session-tracking` — Show deviceconfig setting session tracking — device-local config (break-glass)
+- `show deviceconfig setting session-tracking user-re-authentication` — Show deviceconfig setting session tracking user re authentication — device-local config (break-glass)
+- `show deviceconfig setting vpn` — Show deviceconfig setting vpn — device-local config (break-glass)
+- `show deviceconfig setting vpn ikev2` — Show deviceconfig setting vpn ikev2 — device-local config (break-glass)
+- `show deviceconfig setting wildfire` — Show deviceconfig setting wildfire — device-local config (break-glass)
+- `show deviceconfig setting wildfire cloud-inline-wf-session-info-select` — Show deviceconfig setting wildfire cloud inline wf session info select — device-local config (break-glass)
+- `show deviceconfig setting wildfire cloud-inline-wildfire` — Show deviceconfig setting wildfire cloud inline wildfire — device-local config (break-glass)
+- `show deviceconfig setting wildfire cloud-inline-wildfire file-size-limit` — Show deviceconfig setting wildfire cloud inline wildfire file size limit — device-local config (break-glass)
+- `show deviceconfig setting wildfire file-size-limit` — Show deviceconfig setting wildfire file size limit — device-local config (break-glass)
+- `show deviceconfig setting wildfire private-cloud-secure-conn-client` — Show deviceconfig setting wildfire private cloud secure conn client — live device data
+- `show deviceconfig setting wildfire private-cloud-secure-conn-client certificate-type` — Show deviceconfig setting wildfire private cloud secure conn client certificate type — live device data
+- `show deviceconfig setting wildfire session-info-select` — Show deviceconfig setting wildfire session info select — device-local config (break-glass)
+- `show deviceconfig system` — Show deviceconfig system — device-local config (break-glass)
+- `show deviceconfig system config-bundle-export-schedule` — Show deviceconfig system config bundle export schedule — live device data
+- `show deviceconfig system deployment-update-schedule` — Show deviceconfig system deployment update schedule — live device data
+- `show deviceconfig system dlsrvr` — Show deviceconfig system dlsrvr — live device data
+- `show deviceconfig system dns-setting` — Show deviceconfig system dns setting — device-local config (break-glass)
+- `show deviceconfig system dns-setting servers` — Show deviceconfig system dns setting servers — device-local config (break-glass)
+- `show deviceconfig system dns-setting servers encrypted-dns` — Show deviceconfig system dns setting servers encrypted dns — device-local config (break-glass)
+- `show deviceconfig system dns-setting servers encrypted-dns connection-type` — Show deviceconfig system dns setting servers encrypted dns connection type — device-local config (break-glass)
+- `show deviceconfig system hsm-settings` — Show deviceconfig system hsm settings — device-local config (break-glass)
+- `show deviceconfig system hsm-settings provider` — Show deviceconfig system hsm settings provider — device-local config (break-glass)
+- `show deviceconfig system hsm-settings provider aws-cloudhsm` — Show deviceconfig system hsm settings provider aws cloudhsm — live device data
+- `show deviceconfig system hsm-settings provider aws-cloudhsm health-check-settings` — Show deviceconfig system hsm settings provider aws cloudhsm health check settings — live device data
+- `show deviceconfig system hsm-settings provider aws-cloudhsm hsm-cluster` — Show deviceconfig system hsm settings provider aws cloudhsm hsm cluster — live device data
+- `show deviceconfig system hsm-settings provider ciphertrust-manager hsm-server` — Show deviceconfig system hsm settings provider ciphertrust manager hsm server — device-local config (break-glass)
+- `show deviceconfig system hsm-settings provider ncipher-nshield-connect hsm-server` — Show deviceconfig system hsm settings provider ncipher nshield connect hsm server — device-local config (break-glass)
+- `show deviceconfig system hsm-settings provider safenet-network ha` — Show deviceconfig system hsm settings provider safenet network ha — device-local config (break-glass)
+- `show deviceconfig system hsm-settings provider safenet-network hsm-server` — Show deviceconfig system hsm settings provider safenet network hsm server — device-local config (break-glass)
+- `show deviceconfig system ipv6-gw-type` — Show deviceconfig system ipv6 gw type — device-local config (break-glass)
+- `show deviceconfig system ipv6-type` — Show deviceconfig system ipv6 type — device-local config (break-glass)
+- `show deviceconfig system log-export-schedule` — Show deviceconfig system log export schedule — device-local config (break-glass)
+- `show deviceconfig system log-link` — Show deviceconfig system log link — device-local config (break-glass)
+- `show deviceconfig system maintenance-user` — Show deviceconfig system maintenance user — live device data
+- `show deviceconfig system management-tunnel` — Show deviceconfig system management tunnel — live device data
+- `show deviceconfig system management-tunnel crypto-profiles` — Show deviceconfig system management tunnel crypto profiles — live device data
+- `show deviceconfig system management-tunnel crypto-profiles ikev2-crypto-profiles` — Show deviceconfig system management tunnel crypto profiles ikev2 crypto profiles — live device data
+- `show deviceconfig system management-tunnel crypto-profiles ipsec-crypto-profiles` — Show deviceconfig system management tunnel crypto profiles ipsec crypto profiles — live device data
+- `show deviceconfig system management-tunnel ikev2-gateway` — Show deviceconfig system management tunnel ikev2 gateway — live device data
+- `show deviceconfig system management-tunnel tunnel` — Show deviceconfig system management tunnel tunnel — live device data
+- `show deviceconfig system ntp-servers` — Show deviceconfig system ntp servers — device-local config (break-glass)
+- `show deviceconfig system ntp-servers primary-ntp-server authentication-type` — Show deviceconfig system ntp servers primary ntp server authentication type — device-local config (break-glass)
+- `show deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key algorithm` — Show deviceconfig system ntp servers primary ntp server authentication type symmetric key algorithm — device-local config (break-glass)
+- `show deviceconfig system ntp-servers secondary-ntp-server authentication-type` — Show deviceconfig system ntp servers secondary ntp server authentication type — device-local config (break-glass)
+- `show deviceconfig system ntp-servers secondary-ntp-server authentication-type symmetric-key algorithm` — Show deviceconfig system ntp servers secondary ntp server authentication type symmetric key algorithm — device-local config (break-glass)
+- `show deviceconfig system panorama` — Show deviceconfig system panorama — device-local config (break-glass)
+- `show deviceconfig system permitted-ip` — Show deviceconfig system permitted ip — device-local config (break-glass)
+- `show deviceconfig system push-schedule` — Show deviceconfig system push schedule — live device data
+- `show deviceconfig system route` — Show deviceconfig system route — device-local config (break-glass)
+- `show deviceconfig system route destination` — Show deviceconfig system route destination — device-local config (break-glass)
+- `show deviceconfig system route service` — Show deviceconfig system route service — device-local config (break-glass)
+- `show deviceconfig system snmp-setting` — Show deviceconfig system snmp setting — device-local config (break-glass)
+- `show deviceconfig system snmp-setting access-setting version` — Show deviceconfig system snmp setting access setting version — device-local config (break-glass)
+- `show deviceconfig system snmp-setting access-setting version v3 users` — Show deviceconfig system snmp setting access setting version v3 users — device-local config (break-glass)
+- `show deviceconfig system snmp-setting access-setting version v3 views` — Show deviceconfig system snmp setting access setting version v3 views — device-local config (break-glass)
+- `show deviceconfig system ssh` — Show deviceconfig system ssh — device-local config (break-glass)
+- `show deviceconfig system ssh profiles ha-profiles` — Show deviceconfig system ssh profiles ha profiles — device-local config (break-glass)
+- `show deviceconfig system ssh profiles mgmt-profiles` — Show deviceconfig system ssh profiles mgmt profiles — device-local config (break-glass)
+- `show deviceconfig system ssh profiles mgmt-profiles server-profiles` — Show deviceconfig system ssh profiles mgmt profiles server profiles — device-local config (break-glass)
+- `show deviceconfig system ssh regenerate-hostkeys ha` — Show deviceconfig system ssh regenerate hostkeys ha — device-local config (break-glass)
+- `show deviceconfig system ssh regenerate-hostkeys ha key-type` — Show deviceconfig system ssh regenerate hostkeys ha key type — device-local config (break-glass)
+- `show deviceconfig system ssh regenerate-hostkeys mgmt` — Show deviceconfig system ssh regenerate hostkeys mgmt — device-local config (break-glass)
+- `show deviceconfig system ssh regenerate-hostkeys mgmt key-type` — Show deviceconfig system ssh regenerate hostkeys mgmt key type — device-local config (break-glass)
+- `show deviceconfig system type` — Show deviceconfig system type — device-local config (break-glass)
+- `show deviceconfig system update-schedule` — Show deviceconfig system update schedule — device-local config (break-glass)
+- `show deviceconfig system update-schedule anti-virus recurring` — Show deviceconfig system update schedule anti virus recurring — device-local config (break-glass)
+- `show deviceconfig system update-schedule app-profile recurring` — Show deviceconfig system update schedule app profile recurring — device-local config (break-glass)
+- `show deviceconfig system update-schedule global-protect-clientless-vpn recurring` — Show deviceconfig system update schedule global protect clientless vpn recurring — device-local config (break-glass)
+- `show deviceconfig system update-schedule global-protect-datafile recurring` — Show deviceconfig system update schedule global protect datafile recurring — device-local config (break-glass)
+- `show deviceconfig system update-schedule threats recurring` — Show deviceconfig system update schedule threats recurring — device-local config (break-glass)
+- `show deviceconfig system update-schedule wf-private recurring` — Show deviceconfig system update schedule wf private recurring — device-local config (break-glass)
+- `show deviceconfig system update-schedule wildfire recurring` — Show deviceconfig system update schedule wildfire recurring — device-local config (break-glass)
 - `show devices` — List all SCM-managed devices
+- `show dhcp client ipv6 pool-details` — Show dhcp client ipv6 pool details — live device data
+- `show dhcp client ipv6 state interface` — Show dhcp client ipv6 state interface — live device data
+- `show dhcp client ipv6-gateway-address` — Show dhcp client ipv6 gateway address — live device data
+- `show dhcp client mgmt-interface-state` — Show dhcp client mgmt interface state — live device data
+- `show dhcp client mgmt6-interface-state` — Show dhcp client mgmt6 interface state — live device data
+- `show dhcp client state` — Show dhcp client state — live device data
+- `show dhcp inherited state interface` — Show dhcp inherited state interface — live device data
+- `show dhcp server lease interface` — Show dhcp server lease interface — live device data
+- `show dhcp server settings` — Show dhcp server settings — live device data
 - `show dhcp-interfaces` — List DHCP interfaces
 - `show dhcp-interfaces id` — Get a DHCP interface
+- `show disable-inspect` — Show disable inspect — device-local config (break-glass)
+- `show display-name` — Show display name — device-local config (break-glass)
 - `show dns-proxies id` — Get a DNS proxy
 - `show dns-proxy` — Show DNS proxy configurations in the active folder
+- `show dns-proxy cache all` — Show dns proxy cache all — live device data
+- `show dns-proxy cache dump file` — Show dns proxy cache dump file — live device data
+- `show dns-proxy cache filter fqdn` — Show dns proxy cache filter fqdn — live device data
+- `show dns-proxy cache mgmt-obj` — Show dns proxy cache mgmt obj — live device data
+- `show dns-proxy cache name` — Show dns proxy cache name — live device data
+- `show dns-proxy ddns interface name` — Show dns proxy ddns interface name — live device data
+- `show dns-proxy dns-signature cache fqdn` — Show dns proxy dns signature cache fqdn — live device data
+- `show dns-proxy dns-signature content` — Show dns proxy dns signature content — live device data
+- `show dns-proxy dns-signature counters` — Show dns proxy dns signature counters — live device data
+- `show dns-proxy dns-signature info` — Show dns proxy dns signature info — live device data
+- `show dns-proxy encrypted-dns` — Show dns proxy encrypted dns — live device data
+- `show dns-proxy fqdn all` — Show dns proxy fqdn all — live device data
+- `show dns-proxy fqdn mgmt-obj` — Show dns proxy fqdn mgmt obj — live device data
+- `show dns-proxy fqdn name` — Show dns proxy fqdn name — live device data
+- `show dns-proxy settings all` — Show dns proxy settings all — live device data
+- `show dns-proxy settings mgmt-obj` — Show dns proxy settings mgmt obj — live device data
+- `show dns-proxy settings name` — Show dns proxy settings name — live device data
+- `show dns-proxy socket-count all` — Show dns proxy socket count all — live device data
+- `show dns-proxy static-entries all` — Show dns proxy static entries all — live device data
+- `show dns-proxy static-entries dump file` — Show dns proxy static entries dump file — live device data
+- `show dns-proxy static-entries filter fqdn` — Show dns proxy static entries filter fqdn — live device data
+- `show dns-proxy static-entries name` — Show dns proxy static entries name — live device data
+- `show dns-proxy statistics all` — Show dns proxy statistics all — live device data via SCM
+- `show dns-proxy statistics mgmt-obj` — Show dns proxy statistics mgmt obj — live device data via SCM
+- `show dns-proxy statistics name` — Show dns proxy statistics name — live device data via SCM
+- `show dos-block-table all start-at` — Show dos block table all start at — live device data
+- `show dos-block-table hardware start-at` — Show dos block table hardware start at — live device data
+- `show dos-block-table software start-at` — Show dos block table software start at — live device data
+- `show dos-block-table summary` — Show dos block table summary — live device data
+- `show dos-protection rule` — Show dos protection rule — live device data
+- `show dos-protection zone` — Show dos protection zone — live device data
 - `show dos-protection-profile` — Show DoS protection profiles in the active folder
 - `show dos-protection-rules` — Show DoS protection rules in the active folder
+- `show dynamic-user-group` — Show dynamic user group — device-local config (break-glass)
+- `show email-scheduler` — Show email scheduler — device-local config (break-glass)
 - `show ethernet-interfaces id` — Get an ethernet interface
 - `show external-dynamic-list` — Show external dynamic lists (EDLs) in the active folder
+- `show external-list` — Show external list — device-local config (break-glass)
 - `show general-settings` — List general settings
 - `show general-settings id` — Get existing general settings
+- `show global-protect` — Show global protect — live device data
+- `show global-protect global-protect-gateway` — Show global protect global protect gateway — device-local config (break-glass)
+- `show global-protect global-protect-portal` — Show global protect global protect portal — device-local config (break-glass)
+- `show global-protect-firewall summary firewall-client-version-last-activity-time` — Show global protect firewall summary firewall client version last activity time — live device data
+- `show global-protect-gateway current-satellite gateway` — Show global protect gateway current satellite gateway — live device data
+- `show global-protect-gateway current-user gateway` — Show global protect gateway current user gateway — live device data
+- `show global-protect-gateway flow name` — Show global protect gateway flow name — live device data
+- `show global-protect-gateway flow tunnel-id` — Show global protect gateway flow tunnel id — live device data
+- `show global-protect-gateway flow-site-to-site name` — Show global protect gateway flow site to site name — live device data
+- `show global-protect-gateway flow-site-to-site tunnel-id` — Show global protect gateway flow site to site tunnel id — live device data
+- `show global-protect-gateway gateway name` — Show global protect gateway gateway name — live device data
+- `show global-protect-gateway previous-satellite gateway` — Show global protect gateway previous satellite gateway — live device data
+- `show global-protect-gateway previous-user gateway` — Show global protect gateway previous user gateway — live device data
+- `show global-protect-gateway statistics gateway` — Show global protect gateway statistics gateway — live device data
+- `show global-protect-gateway summary all` — Show global protect gateway summary all — live device data
+- `show global-protect-gateway summary detail name` — Show global protect gateway summary detail name — live device data
+- `show global-protect-mdm state` — Show global protect mdm state — live device data
+- `show global-protect-mdm statistics` — Show global protect mdm statistics — live device data
+- `show global-protect-portal cookie-cache portal` — Show global protect portal cookie cache portal — live device data
+- `show global-protect-portal current-user portal` — Show global protect portal current user portal — live device data
+- `show global-protect-portal global-protect-portal portal` — Show global protect portal global protect portal portal — live device data
+- `show global-protect-portal satellite-cookie-expiration` — Show global protect portal satellite cookie expiration — live device data
+- `show global-protect-portal satellite-serialnumberip-auth status` — Show global protect portal satellite serialnumberip auth status — live device data
+- `show global-protect-portal statistics portal` — Show global protect portal statistics portal — live device data
+- `show global-protect-portal summary all` — Show global protect portal summary all — live device data
+- `show global-protect-portal summary detail name` — Show global protect portal summary detail name — live device data
+- `show global-protect-satellite current-gateway satellite` — Show global protect satellite current gateway satellite — live device data
+- `show global-protect-satellite interface` — Show global protect satellite interface — live device data
+- `show global-protect-satellite satellite name` — Show global protect satellite satellite name — live device data
+- `show gp-broker gpsvc counter` — Show gp broker gpsvc counter — live device data
+- `show gp-broker gpsvc task all option` — Show gp broker gpsvc task all option — live device data
+- `show gp-broker gpsvc task src-ip` — Show gp broker gpsvc task src ip — live device data
+- `show gp-broker gpsvc task task-index` — Show gp broker gpsvc task task index — live device data
+- `show gp-broker gpsvc task user` — Show gp broker gpsvc task user — live device data
+- `show gp-broker gpsvc version` — Show gp broker gpsvc version — live device data
+- `show gp-broker ipc-stat` — Show gp broker ipc stat — live device data
+- `show gp-broker panos-config` — Show gp broker panos config — live device data
 - `show gp-match-list` — List globalprotect match list entries
 - `show gp-match-list id` — Get a globalprotect match list entry
+- `show group-mapping` — Show group mapping — device-local config (break-glass)
 - `show ha-configurations` — Get high availability configuration
 - `show ha-configurations-gateways` — Autocomplete HA gateways
 - `show ha-configurations-ip-addresses` — Autocomplete HA IP addresses
 - `show ha-configurations-netmasks` — Autocomplete HA netmasks
 - `show ha-configurations-ports` — Autocomplete HA ports
 - `show ha-devices` — List high availability devices
+- `show high-availability` — Show high availability — live device data
 - `show high-availability all` — Show full HA configuration from the active folder
+- `show high-availability cluster` — Show high availability cluster — live device data
+- `show high-availability cluster session-synchronization all` — Show high availability cluster session synchronization all — live device data
+- `show high-availability cluster session-synchronization device device-id` — Show high availability cluster session synchronization device device id — live device data
+- `show high-availability cluster session-synchronization device device-name` — Show high availability cluster session synchronization device device name — live device data
+- `show high-availability cluster statistics all` — Show high availability cluster statistics all — live device data
+- `show high-availability cluster statistics device device-id` — Show high availability cluster statistics device device id — live device data
+- `show high-availability cluster statistics device device-name` — Show high availability cluster statistics device device name — live device data
+- `show high-availability control-link statistics` — Show high availability control link statistics — live device data
+- `show high-availability interface` — Show high availability interface — live device data
+- `show high-availability pre-negotiation summary` — Show high availability pre negotiation summary — live device data
 - `show high-availability state` — Show HA state summary from the active folder
 - `show hip-object` — Show GlobalProtect HIP objects in the active folder
 - `show hip-profile` — Show GlobalProtect HIP profiles in the active folder
 - `show hipmatch-match-list` — List hipmatch match list entries
 - `show hipmatch-match-list id` — Get a hipmatch match list entry
+- `show hsm` — Show hsm — live device data
 - `show iam access-policies` — List all access policies
 - `show iam access-policies id` — Get an access policy
 - `show iam custom-roles` — List custom roles
@@ -736,43 +3444,483 @@ Use `help <command>` to open detailed docs for a command.
 - `show ike-crypto-profiles id` — Get an IKE crypto profile
 - `show ike-gateway` — Show IKE gateway configurations (VPN) in the active folder
 - `show ike-gateways id` — Get an IKE gateway
+- `show import` — Show import — device-local config (break-glass)
 - `show incidents incidents details id` — Incidents Details
 - `show interface` — Show a specific interface in the active folder
 - `show interface all` — Show all interfaces in the active folder
+- `show iot device-inventory all match` — Show iot device inventory all match — live device data
+- `show iot device-inventory all match ip` — Show iot device inventory all match ip — live device data
+- `show iot device-inventory summmary` — Show iot device inventory summmary — live device data
+- `show iot dhcp-server status all` — Show iot dhcp server status all — live device data
+- `show iot dhcp-server status server` — Show iot dhcp server status server — live device data
+- `show iot dp-quarantine-cache all option` — Show iot dp quarantine cache all option — live device data
+- `show iot dp-quarantine-cache ip` — Show iot dp quarantine cache ip — live device data
+- `show iot eal` — Show iot eal — live device data
+- `show iot eal dpi-stats all` — Show iot eal dpi stats all — live device data
+- `show iot eal dpi-stats subtype` — Show iot eal dpi stats subtype — live device data
+- `show iot edit-device-inventory id` — Show iot edit device inventory id — live device data
+- `show iot edit-device-inventory jobs` — Show iot edit device inventory jobs — live device data
+- `show iot export-device-inventory all match` — Show iot export device inventory all match — live device data
+- `show iot export-device-inventory all match ip` — Show iot export device inventory all match ip — live device data
+- `show iot host-cache all option` — Show iot host cache all option — live device data
+- `show iot host-cache hostid` — Show iot host cache hostid — live device data
+- `show iot icd statistics` — Show iot icd statistics — live device data
+- `show iot icd version` — Show iot icd version — live device data
+- `show iot ip-device-mapping all option` — Show iot ip device mapping all option — live device data
+- `show iot ip-device-mapping ip` — Show iot ip device mapping ip — live device data
+- `show iot ip-device-mapping-mp all option` — Show iot ip device mapping mp all option — live device data
+- `show iot ip-device-mapping-mp ip` — Show iot ip device mapping mp ip — live device data
 - `show ipsec-crypto-profiles` — List IPsec crypto profiles
 - `show ipsec-crypto-profiles id` — Get an IPsec crypto profile
 - `show ipsec-tunnel` — Show IPsec tunnel configurations in the active folder
 - `show ipsec-tunnels id` — Get an IPsec tunnel
+- `show iptag-include-exclude-list` — Show iptag include exclude list — device-local config (break-glass)
+- `show iptag-include-exclude-list include-exclude-network` — Show iptag include exclude list include exclude network — device-local config (break-glass)
 - `show iptag-match-list` — List iptag match list entries
 - `show iptag-match-list id` — Get an iptag match list entry
+- `show ipuser-include-exclude-list` — Show ipuser include exclude list — device-local config (break-glass)
+- `show ipuser-include-exclude-list include-exclude-network` — Show ipuser include exclude list include exclude network — device-local config (break-glass)
 - `show jobs all` — Show all SCM jobs (TSG-wide)
 - `show jobs id` — Show a specific SCM job by ID
+- `show jobs pending` — Show jobs pending — live device data
+- `show jobs processed` — Show jobs processed — live device data
+- `show lacp aggregate-ethernet` — Show lacp aggregate ethernet — live device data
 - `show layer2-subinterfaces` — List layer 2 subinterfaces
 - `show layer2-subinterfaces id` — Get a layer 2 subinterface
 - `show layer3-subinterfaces` — List layer 3 subinterfaces
 - `show layer3-subinterfaces id` — Get a layer 3 subinterface
+- `show ldl` — Show ldl — live device data
+- `show license-token-files name` — Show license token files name — live device data
 - `show link-tags` — List link tags
 - `show link-tags id` — Get a link tag
+- `show lldp` — Show lldp — live device data
 - `show lldp-profiles` — List LLDP profiles
 - `show lldp-profiles id` — Get an LLDP profile
 - `show local-config download` — Download local configuration file
 - `show local-config versions` — List local configuration versions for a device
 - `show local-user` — Show local users in the active folder
 - `show local-user-group` — Show local user groups in the active folder
+- `show location ip` — Show location ip — live device data
+- `show log` — Show log — live device data
+- `show log alarm` — Show log alarm — live device data
+- `show log alarm csv-output equal` — Show log alarm csv output equal — live device data
+- `show log alarm direction equal` — Show log alarm direction equal — live device data
+- `show log alarm dport equal` — Show log alarm dport equal — live device data
+- `show log alarm opaque contains` — Show log alarm opaque contains — live device data
+- `show log alarm receive_time in` — Show log alarm receive_time in — live device data
+- `show log alarm sport equal` — Show log alarm sport equal — live device data
+- `show log appstat csv-output equal` — Show log appstat csv output equal — live device data
+- `show log appstat direction equal` — Show log appstat direction equal — live device data
+- `show log appstat end-time equal` — Show log appstat end time equal — live device data
+- `show log appstat name equal` — Show log appstat name equal — live device data
+- `show log appstat name not-equal` — Show log appstat name not equal — live device data
+- `show log appstat query equal` — Show log appstat query equal — live device data
+- `show log appstat receive_time in` — Show log appstat receive_time in — live device data
+- `show log appstat risk` — Show log appstat risk — live device data
+- `show log appstat start-time equal` — Show log appstat start time equal — live device data
+- `show log auth` — Show log auth — live device data
+- `show log auth clienttype equal` — Show log auth clienttype equal — live device data
+- `show log auth csv-output equal` — Show log auth csv output equal — live device data
+- `show log auth direction equal` — Show log auth direction equal — live device data
+- `show log auth ip in` — Show log auth ip in — live device data
+- `show log auth ip not-in` — Show log auth ip not in — live device data
+- `show log auth receive_time in` — Show log auth receive_time in — live device data
+- `show log config client equal` — Show log config client equal — live device data
+- `show log config client not-equal` — Show log config client not equal — live device data
+- `show log config cmd equal` — Show log config cmd equal — live device data
+- `show log config cmd not-equal` — Show log config cmd not equal — live device data
+- `show log config csv-output equal` — Show log config csv output equal — live device data
+- `show log config direction equal` — Show log config direction equal — live device data
+- `show log config end-time equal` — Show log config end time equal — live device data
+- `show log config query equal` — Show log config query equal — live device data
+- `show log config receive_time in` — Show log config receive_time in — live device data
+- `show log config result equal` — Show log config result equal — live device data
+- `show log config result not-equal` — Show log config result not equal — live device data
+- `show log config start-time equal` — Show log config start time equal — live device data
+- `show log corr` — Show log corr — live device data
+- `show log corr csv-output equal` — Show log corr csv output equal — live device data
+- `show log corr direction equal` — Show log corr direction equal — live device data
+- `show log corr receive_time in` — Show log corr receive_time in — live device data
+- `show log corr severity` — Show log corr severity — live device data
+- `show log corr src in` — Show log corr src in — live device data
+- `show log corr src not-in` — Show log corr src not in — live device data
+- `show log corr-categ` — Show log corr categ — live device data
+- `show log corr-categ csv-output equal` — Show log corr categ csv output equal — live device data
+- `show log corr-categ direction equal` — Show log corr categ direction equal — live device data
+- `show log corr-categ receive_time in` — Show log corr categ receive_time in — live device data
+- `show log corr-categ severity` — Show log corr categ severity — live device data
+- `show log corr-categ src in` — Show log corr categ src in — live device data
+- `show log corr-categ src not-in` — Show log corr categ src not in — live device data
+- `show log corr-detail match-oid equal` — Show log corr detail match oid equal — live device data
+- `show log corr-detail object-name equal` — Show log corr detail object name equal — live device data
+- `show log data` — Show log data — live device data
+- `show log data action equal` — Show log data action equal — live device data
+- `show log data action not-equal` — Show log data action not equal — live device data
+- `show log data csv-output equal` — Show log data csv output equal — live device data
+- `show log data direction equal` — Show log data direction equal — live device data
+- `show log data dport equal` — Show log data dport equal — live device data
+- `show log data dport not-equal` — Show log data dport not equal — live device data
+- `show log data dst in` — Show log data dst in — live device data
+- `show log data dst not-in` — Show log data dst not in — live device data
+- `show log data receive_time in` — Show log data receive_time in — live device data
+- `show log data sport equal` — Show log data sport equal — live device data
+- `show log data sport not-equal` — Show log data sport not equal — live device data
+- `show log data src in` — Show log data src in — live device data
+- `show log data src not-in` — Show log data src not in — live device data
+- `show log data suppress-threatid-mapping equal` — Show log data suppress threatid mapping equal — live device data
+- `show log decryption` — Show log decryption — live device data
+- `show log decryption action equal` — Show log decryption action equal — live device data
+- `show log decryption action not-equal` — Show log decryption action not equal — live device data
+- `show log decryption csv-output equal` — Show log decryption csv output equal — live device data
+- `show log decryption direction equal` — Show log decryption direction equal — live device data
+- `show log decryption dport equal` — Show log decryption dport equal — live device data
+- `show log decryption dport not-equal` — Show log decryption dport not equal — live device data
+- `show log decryption dst in` — Show log decryption dst in — live device data
+- `show log decryption dst not-in` — Show log decryption dst not in — live device data
+- `show log decryption ec_curve equal` — Show log decryption ec_curve equal — live device data
+- `show log decryption proxy_type equal` — Show log decryption proxy_type equal — live device data
+- `show log decryption receive_time in` — Show log decryption receive_time in — live device data
+- `show log decryption show-tracker equal` — Show log decryption show tracker equal — live device data
+- `show log decryption sport equal` — Show log decryption sport equal — live device data
+- `show log decryption sport not-equal` — Show log decryption sport not equal — live device data
+- `show log decryption src in` — Show log decryption src in — live device data
+- `show log decryption src not-in` — Show log decryption src not in — live device data
+- `show log decryption tls_auth equal` — Show log decryption tls_auth equal — live device data
+- `show log decryption tls_enc equal` — Show log decryption tls_enc equal — live device data
+- `show log decryption tls_keyxchg equal` — Show log decryption tls_keyxchg equal — live device data
+- `show log decryption tls_version equal` — Show log decryption tls_version equal — live device data
+- `show log globalprotect` — Show log globalprotect — live device data
+- `show log globalprotect csv-output equal` — Show log globalprotect csv output equal — live device data
+- `show log globalprotect direction equal` — Show log globalprotect direction equal — live device data
+- `show log globalprotect machinename contains` — Show log globalprotect machinename contains — live device data
+- `show log globalprotect machinename equal` — Show log globalprotect machinename equal — live device data
+- `show log globalprotect machinename not-equal` — Show log globalprotect machinename not equal — live device data
+- `show log globalprotect private_ip equal` — Show log globalprotect private_ip equal — live device data
+- `show log globalprotect private_ip in` — Show log globalprotect private_ip in — live device data
+- `show log globalprotect private_ip not-equal` — Show log globalprotect private_ip not equal — live device data
+- `show log globalprotect public_ip equal` — Show log globalprotect public_ip equal — live device data
+- `show log globalprotect public_ip in` — Show log globalprotect public_ip in — live device data
+- `show log globalprotect public_ip not-equal` — Show log globalprotect public_ip not equal — live device data
+- `show log globalprotect receive_time equal` — Show log globalprotect receive_time equal — live device data
+- `show log globalprotect receive_time in` — Show log globalprotect receive_time in — live device data
+- `show log globalprotect receive_time not-equal` — Show log globalprotect receive_time not equal — live device data
+- `show log hipmatch` — Show log hipmatch — live device data
+- `show log hipmatch csv-output equal` — Show log hipmatch csv output equal — live device data
+- `show log hipmatch direction equal` — Show log hipmatch direction equal — live device data
+- `show log hipmatch machinename equal` — Show log hipmatch machinename equal — live device data
+- `show log hipmatch machinename not-equal` — Show log hipmatch machinename not equal — live device data
+- `show log hipmatch matchname equal` — Show log hipmatch matchname equal — live device data
+- `show log hipmatch matchname not-equal` — Show log hipmatch matchname not equal — live device data
+- `show log hipmatch matchtype equal` — Show log hipmatch matchtype equal — live device data
+- `show log hipmatch matchtype not-equal` — Show log hipmatch matchtype not equal — live device data
+- `show log hipmatch os equal` — Show log hipmatch os equal — live device data
+- `show log hipmatch os not-equal` — Show log hipmatch os not equal — live device data
+- `show log hipmatch receive_time in` — Show log hipmatch receive_time in — live device data
+- `show log hipmatch src in` — Show log hipmatch src in — live device data
+- `show log hipmatch src not-in` — Show log hipmatch src not in — live device data
+- `show log iptag` — Show log iptag — live device data
+- `show log iptag csv-output equal` — Show log iptag csv output equal — live device data
+- `show log iptag datasource_subtype equal` — Show log iptag datasource_subtype equal — live device data
+- `show log iptag datasource_subtype not-equal` — Show log iptag datasource_subtype not equal — live device data
+- `show log iptag datasource_type equal` — Show log iptag datasource_type equal — live device data
+- `show log iptag datasource_type not-equal` — Show log iptag datasource_type not equal — live device data
+- `show log iptag datasourcename equal` — Show log iptag datasourcename equal — live device data
+- `show log iptag datasourcename not-equal` — Show log iptag datasourcename not equal — live device data
+- `show log iptag direction equal` — Show log iptag direction equal — live device data
+- `show log iptag event_id equal` — Show log iptag event_id equal — live device data
+- `show log iptag event_id not-equal` — Show log iptag event_id not equal — live device data
+- `show log iptag ip in` — Show log iptag ip in — live device data
+- `show log iptag ip not-in` — Show log iptag ip not in — live device data
+- `show log iptag ip_subnet_range equal` — Show log iptag ip_subnet_range equal — live device data
+- `show log iptag ip_subnet_range not-equal` — Show log iptag ip_subnet_range not equal — live device data
+- `show log iptag receive_time in` — Show log iptag receive_time in — live device data
+- `show log iptag tag_name equal` — Show log iptag tag_name equal — live device data
+- `show log iptag tag_name not-equal` — Show log iptag tag_name not equal — live device data
+- `show log mdm receive_time in` — Show log mdm receive_time in — live device data
 - `show log system` — Show live system log — use --remote for live device data
+- `show log system csv-output equal` — Show log system csv output equal — live device data
+- `show log system direction equal` — Show log system direction equal — live device data
+- `show log system end-time equal` — Show log system end time equal — live device data
+- `show log system opaque contains` — Show log system opaque contains — live device data
+- `show log system query equal` — Show log system query equal — live device data
+- `show log system receive_time in` — Show log system receive_time in — live device data
+- `show log system severity` — Show log system severity — live device data
+- `show log system start-time equal` — Show log system start time equal — live device data
+- `show log threat` — Show log threat — live device data
+- `show log threat action equal` — Show log threat action equal — live device data
+- `show log threat action not-equal` — Show log threat action not equal — live device data
+- `show log threat csv-output equal` — Show log threat csv output equal — live device data
+- `show log threat direction equal` — Show log threat direction equal — live device data
+- `show log threat dport equal` — Show log threat dport equal — live device data
+- `show log threat dport not-equal` — Show log threat dport not equal — live device data
+- `show log threat dst in` — Show log threat dst in — live device data
+- `show log threat dst not-in` — Show log threat dst not in — live device data
+- `show log threat pcap-dump equal` — Show log threat pcap dump equal — live device data
+- `show log threat receive_time in` — Show log threat receive_time in — live device data
+- `show log threat sport equal` — Show log threat sport equal — live device data
+- `show log threat sport not-equal` — Show log threat sport not equal — live device data
+- `show log threat src in` — Show log threat src in — live device data
+- `show log threat src not-in` — Show log threat src not in — live device data
+- `show log threat suppress-threatid-mapping equal` — Show log threat suppress threatid mapping equal — live device data
+- `show log trace csv-output equal` — Show log trace csv output equal — live device data
+- `show log trace direction equal` — Show log trace direction equal — live device data
+- `show log trace end-time equal` — Show log trace end time equal — live device data
+- `show log trace query equal` — Show log trace query equal — live device data
+- `show log trace receive_time in` — Show log trace receive_time in — live device data
+- `show log trace sessionid equal` — Show log trace sessionid equal — live device data
+- `show log trace sessionid not-equal` — Show log trace sessionid not equal — live device data
+- `show log trace start-time equal` — Show log trace start time equal — live device data
 - `show log traffic` — Show live traffic log — use --remote for live device data
+- `show log traffic action equal` — Show log traffic action equal — live device data
+- `show log traffic action not-equal` — Show log traffic action not equal — live device data
+- `show log traffic csv-output equal` — Show log traffic csv output equal — live device data
+- `show log traffic direction equal` — Show log traffic direction equal — live device data
+- `show log traffic dport equal` — Show log traffic dport equal — live device data
+- `show log traffic dport not-equal` — Show log traffic dport not equal — live device data
+- `show log traffic dst in` — Show log traffic dst in — live device data
+- `show log traffic dst not-in` — Show log traffic dst not in — live device data
+- `show log traffic http2_connection equal` — Show log traffic http2_connection equal — live device data
+- `show log traffic http2_connection not-equal` — Show log traffic http2_connection not equal — live device data
+- `show log traffic receive_time in` — Show log traffic receive_time in — live device data
+- `show log traffic session-end-reason equal` — Show log traffic session end reason equal — live device data
+- `show log traffic session-end-reason not-equal` — Show log traffic session end reason not equal — live device data
+- `show log traffic show-tracker equal` — Show log traffic show tracker equal — live device data
+- `show log traffic sport equal` — Show log traffic sport equal — live device data
+- `show log traffic sport not-equal` — Show log traffic sport not equal — live device data
+- `show log traffic src in` — Show log traffic src in — live device data
+- `show log traffic src not-in` — Show log traffic src not in — live device data
+- `show log tunnel` — Show log tunnel — live device data
+- `show log tunnel action equal` — Show log tunnel action equal — live device data
+- `show log tunnel action not-equal` — Show log tunnel action not equal — live device data
+- `show log tunnel csv-output equal` — Show log tunnel csv output equal — live device data
+- `show log tunnel direction equal` — Show log tunnel direction equal — live device data
+- `show log tunnel dport equal` — Show log tunnel dport equal — live device data
+- `show log tunnel dport not-equal` — Show log tunnel dport not equal — live device data
+- `show log tunnel dst in` — Show log tunnel dst in — live device data
+- `show log tunnel dst not-in` — Show log tunnel dst not in — live device data
+- `show log tunnel receive_time in` — Show log tunnel receive_time in — live device data
+- `show log tunnel severity` — Show log tunnel severity — live device data
+- `show log tunnel sport equal` — Show log tunnel sport equal — live device data
+- `show log tunnel sport not-equal` — Show log tunnel sport not equal — live device data
+- `show log tunnel src in` — Show log tunnel src in — live device data
+- `show log tunnel src not-in` — Show log tunnel src not in — live device data
+- `show log url` — Show log url — live device data
+- `show log url action equal` — Show log url action equal — live device data
+- `show log url action not-equal` — Show log url action not equal — live device data
+- `show log url csv-output equal` — Show log url csv output equal — live device data
+- `show log url direction equal` — Show log url direction equal — live device data
+- `show log url dport equal` — Show log url dport equal — live device data
+- `show log url dport not-equal` — Show log url dport not equal — live device data
+- `show log url dst in` — Show log url dst in — live device data
+- `show log url dst not-in` — Show log url dst not in — live device data
+- `show log url receive_time in` — Show log url receive_time in — live device data
+- `show log url sport equal` — Show log url sport equal — live device data
+- `show log url sport not-equal` — Show log url sport not equal — live device data
+- `show log url src in` — Show log url src in — live device data
+- `show log url src not-in` — Show log url src not in — live device data
+- `show log url suppress-threatid-mapping equal` — Show log url suppress threatid mapping equal — live device data
+- `show log userid` — Show log userid — live device data
+- `show log userid beginport equal` — Show log userid beginport equal — live device data
+- `show log userid beginport not-equal` — Show log userid beginport not equal — live device data
+- `show log userid csv-output equal` — Show log userid csv output equal — live device data
+- `show log userid datasource equal` — Show log userid datasource equal — live device data
+- `show log userid datasourcetype equal` — Show log userid datasourcetype equal — live device data
+- `show log userid direction equal` — Show log userid direction equal — live device data
+- `show log userid endport equal` — Show log userid endport equal — live device data
+- `show log userid endport not-equal` — Show log userid endport not equal — live device data
+- `show log userid ip in` — Show log userid ip in — live device data
+- `show log userid ip not-in` — Show log userid ip not in — live device data
+- `show log userid receive_time in` — Show log userid receive_time in — live device data
+- `show log wildfire` — Show log wildfire — live device data
+- `show log wildfire category equal` — Show log wildfire category equal — live device data
+- `show log wildfire category not-equal` — Show log wildfire category not equal — live device data
+- `show log wildfire csv-output equal` — Show log wildfire csv output equal — live device data
+- `show log wildfire direction equal` — Show log wildfire direction equal — live device data
+- `show log wildfire dport equal` — Show log wildfire dport equal — live device data
+- `show log wildfire dport not-equal` — Show log wildfire dport not equal — live device data
+- `show log wildfire dst in` — Show log wildfire dst in — live device data
+- `show log wildfire dst not-in` — Show log wildfire dst not in — live device data
+- `show log wildfire receive_time in` — Show log wildfire receive_time in — live device data
+- `show log wildfire sport equal` — Show log wildfire sport equal — live device data
+- `show log wildfire sport not-equal` — Show log wildfire sport not equal — live device data
+- `show log wildfire src in` — Show log wildfire src in — live device data
+- `show log wildfire src not-in` — Show log wildfire src not in — live device data
+- `show log-collector-group` — Show log collector group — live device data
 - `show log-forwarding-profile` — Show log forwarding profiles in the active folder
+- `show logging-status verbose` — Show logging status verbose — live device data
 - `show logical-routers` — List logical routers
 - `show logical-routers id` — Get a logical router
+- `show logrcvr ip-cache vsys` — Show logrcvr ip cache vsys — live device data
+- `show logrcvr offline-logpurger` — Show logrcvr offline logpurger — live device data
 - `show loopback-interfaces` — List loopback interfaces
 - `show loopback-interfaces id` — Get a loopback interface
+- `show mac` — Show mac — live device data
+- `show macsec association interface` — Show macsec association interface — live device data
+- `show macsec stats interface` — Show macsec stats interface — live device data
+- `show management-clients` — Show management clients — live device data
 - `show management-interface` — List management interface settings
 - `show management-interface id` — Get existing management interface settings
+- `show management-server candidate config-size` — Show management server candidate config size — live device data
+- `show management-server last-committed config-size` — Show management server last committed config size — live device data
+- `show max-num-images` — Show max num images — live device data
 - `show mfa-server` — Show MFA server profiles in the active folder
+- `show mgt-config` — Show mgt config — device-local config (break-glass)
+- `show mgt-config access-domain` — Show mgt config access domain — device-local config (break-glass)
+- `show mgt-config devices` — Show mgt config devices — live device data
+- `show mgt-config password-complexity` — Show mgt config password complexity — device-local config (break-glass)
+- `show mgt-config password-complexity password-change` — Show mgt config password complexity password change — device-local config (break-glass)
+- `show mgt-config password-profile` — Show mgt config password profile — device-local config (break-glass)
+- `show mgt-config users` — Show mgt config users — device-local config (break-glass)
+- `show mlav` — Show mlav — live device data
 - `show motd-banner-settings` — List login banner settings
 - `show motd-banner-settings id` — Get existing login banner settings
 - `show nat-rules` — Show NAT rules in the active folder
 - `show nat-rules id` — Get a NAT rule
+- `show neighbor` — Show neighbor — live device data
+- `show net-inspection details` — Show net inspection details — live device data
+- `show net-inspection evaluator index` — Show net inspection evaluator index — live device data
+- `show net-inspection evaluator zone` — Show net inspection evaluator zone — live device data
+- `show net-inspection exempt` — Show net inspection exempt — live device data
+- `show net-inspection filter index` — Show net inspection filter index — live device data
+- `show net-inspection filter rule-name` — Show net inspection filter rule name — live device data
+- `show net-inspection filter zone` — Show net inspection filter zone — live device data
+- `show net-inspection status` — Show net inspection status — live device data
+- `show netstat route` — Show netstat route — live device data
+- `show network` — Show network — device-local config (break-glass)
+- `show network dhcp` — Show network dhcp — device-local config (break-glass)
+- `show network dhcp interface` — Show network dhcp interface — device-local config (break-glass)
+- `show network dns-proxy` — Show network dns proxy — device-local config (break-glass)
+- `show network ike` — Show network ike — device-local config (break-glass)
+- `show network ike crypto-profiles` — Show network ike crypto profiles — device-local config (break-glass)
+- `show network ike crypto-profiles global-protect-app-crypto-profiles` — Show network ike crypto profiles global protect app crypto profiles — device-local config (break-glass)
+- `show network ike crypto-profiles ike-crypto-profiles` — Show network ike crypto profiles ike crypto profiles — device-local config (break-glass)
+- `show network ike crypto-profiles ipsec-crypto-profiles` — Show network ike crypto profiles ipsec crypto profiles — device-local config (break-glass)
+- `show network ike gateway` — Show network ike gateway — device-local config (break-glass)
+- `show network interface` — Show network interface — device-local config (break-glass)
+- `show network interface aggregate-ethernet` — Show network interface aggregate ethernet — device-local config (break-glass)
+- `show network interface ethernet` — Show network interface ethernet — device-local config (break-glass)
+- `show network interface loopback` — Show network interface loopback — device-local config (break-glass)
+- `show network interface loopback adjust-tcp-mss` — Show network interface loopback adjust tcp mss — device-local config (break-glass)
+- `show network interface loopback ip` — Show network interface loopback ip — device-local config (break-glass)
+- `show network interface loopback ipv6` — Show network interface loopback ipv6 — device-local config (break-glass)
+- `show network interface loopback ipv6 address` — Show network interface loopback ipv6 address — device-local config (break-glass)
+- `show network interface loopback units` — Show network interface loopback units — device-local config (break-glass)
+- `show network interface sdwan` — Show network interface sdwan — device-local config (break-glass)
+- `show network interface sdwan units` — Show network interface sdwan units — device-local config (break-glass)
+- `show network interface tunnel` — Show network interface tunnel — device-local config (break-glass)
+- `show network interface tunnel ip` — Show network interface tunnel ip — device-local config (break-glass)
+- `show network interface tunnel ipv6` — Show network interface tunnel ipv6 — device-local config (break-glass)
+- `show network interface tunnel ipv6 address` — Show network interface tunnel ipv6 address — device-local config (break-glass)
+- `show network interface tunnel units` — Show network interface tunnel units — device-local config (break-glass)
+- `show network interface vlan` — Show network interface vlan — device-local config (break-glass)
+- `show network interface vlan adjust-tcp-mss` — Show network interface vlan adjust tcp mss — device-local config (break-glass)
+- `show network interface vlan arp` — Show network interface vlan arp — device-local config (break-glass)
+- `show network interface vlan ddns-config` — Show network interface vlan ddns config — device-local config (break-glass)
+- `show network interface vlan ddns-config ddns-vendor-config` — Show network interface vlan ddns config ddns vendor config — device-local config (break-glass)
+- `show network interface vlan dhcp-client` — Show network interface vlan dhcp client — device-local config (break-glass)
+- `show network interface vlan dhcp-client send-hostname` — Show network interface vlan dhcp client send hostname — device-local config (break-glass)
+- `show network interface vlan ip` — Show network interface vlan ip — device-local config (break-glass)
+- `show network interface vlan ipv6` — Show network interface vlan ipv6 — device-local config (break-glass)
+- `show network interface vlan ipv6 address` — Show network interface vlan ipv6 address — device-local config (break-glass)
+- `show network interface vlan ipv6 dhcp-client` — Show network interface vlan ipv6 dhcp client — device-local config (break-glass)
+- `show network interface vlan ipv6 dhcp-client neighbor-discovery dns-server` — Show network interface vlan ipv6 dhcp client neighbor discovery dns server — device-local config (break-glass)
+- `show network interface vlan ipv6 dhcp-client neighbor-discovery dns-server source` — Show network interface vlan ipv6 dhcp client neighbor discovery dns server source — device-local config (break-glass)
+- `show network interface vlan ipv6 dhcp-client neighbor-discovery dns-server source manual server` — Show network interface vlan ipv6 dhcp client neighbor discovery dns server source manual server — device-local config (break-glass)
+- `show network interface vlan ipv6 dhcp-client neighbor-discovery dns-suffix` — Show network interface vlan ipv6 dhcp client neighbor discovery dns suffix — device-local config (break-glass)
+- `show network interface vlan ipv6 dhcp-client neighbor-discovery dns-suffix source` — Show network interface vlan ipv6 dhcp client neighbor discovery dns suffix source — device-local config (break-glass)
+- `show network interface vlan ipv6 dhcp-client neighbor-discovery dns-suffix source manual suffix` — Show network interface vlan ipv6 dhcp client neighbor discovery dns suffix source manual suffix — device-local config (break-glass)
+- `show network interface vlan ipv6 dhcp-client neighbor-discovery neighbor` — Show network interface vlan ipv6 dhcp client neighbor discovery neighbor — device-local config (break-glass)
+- `show network interface vlan ipv6 dhcp-client prefix-delegation enable` — Show network interface vlan ipv6 dhcp client prefix delegation enable — device-local config (break-glass)
+- `show network interface vlan ipv6 dhcp-client v6-options enable` — Show network interface vlan ipv6 dhcp client v6 options enable — device-local config (break-glass)
+- `show network interface vlan ipv6 inherited` — Show network interface vlan ipv6 inherited — device-local config (break-glass)
+- `show network interface vlan ipv6 inherited assign-addr` — Show network interface vlan ipv6 inherited assign addr — device-local config (break-glass)
+- `show network interface vlan ipv6 inherited neighbor-discovery` — Show network interface vlan ipv6 inherited neighbor discovery — device-local config (break-glass)
+- `show network interface vlan ipv6 inherited neighbor-discovery dns-server` — Show network interface vlan ipv6 inherited neighbor discovery dns server — device-local config (break-glass)
+- `show network interface vlan ipv6 inherited neighbor-discovery dns-server source` — Show network interface vlan ipv6 inherited neighbor discovery dns server source — device-local config (break-glass)
+- `show network interface vlan ipv6 inherited neighbor-discovery dns-server source manual server` — Show network interface vlan ipv6 inherited neighbor discovery dns server source manual server — device-local config (break-glass)
+- `show network interface vlan ipv6 inherited neighbor-discovery dns-suffix` — Show network interface vlan ipv6 inherited neighbor discovery dns suffix — device-local config (break-glass)
+- `show network interface vlan ipv6 inherited neighbor-discovery dns-suffix source` — Show network interface vlan ipv6 inherited neighbor discovery dns suffix source — device-local config (break-glass)
+- `show network interface vlan ipv6 inherited neighbor-discovery dns-suffix source manual suffix` — Show network interface vlan ipv6 inherited neighbor discovery dns suffix source manual suffix — device-local config (break-glass)
+- `show network interface vlan ipv6 inherited neighbor-discovery neighbor` — Show network interface vlan ipv6 inherited neighbor discovery neighbor — device-local config (break-glass)
+- `show network interface vlan ipv6 inherited neighbor-discovery router-advertisement` — Show network interface vlan ipv6 inherited neighbor discovery router advertisement — device-local config (break-glass)
+- `show network interface vlan ipv6 neighbor-discovery` — Show network interface vlan ipv6 neighbor discovery — device-local config (break-glass)
+- `show network interface vlan ipv6 neighbor-discovery neighbor` — Show network interface vlan ipv6 neighbor discovery neighbor — device-local config (break-glass)
+- `show network interface vlan ipv6 neighbor-discovery router-advertisement` — Show network interface vlan ipv6 neighbor discovery router advertisement — device-local config (break-glass)
+- `show network interface vlan ipv6 neighbor-discovery router-advertisement dns-support` — Show network interface vlan ipv6 neighbor discovery router advertisement dns support — device-local config (break-glass)
+- `show network interface vlan ipv6 neighbor-discovery router-advertisement dns-support server` — Show network interface vlan ipv6 neighbor discovery router advertisement dns support server — device-local config (break-glass)
+- `show network interface vlan ipv6 neighbor-discovery router-advertisement dns-support suffix` — Show network interface vlan ipv6 neighbor discovery router advertisement dns support suffix — device-local config (break-glass)
+- `show network interface vlan ipv6 pppoe` — Show network interface vlan ipv6 pppoe — device-local config (break-glass)
+- `show network interface vlan ipv6 pppoe dhcpv6 prefix-delegation` — Show network interface vlan ipv6 pppoe dhcpv6 prefix delegation — device-local config (break-glass)
+- `show network interface vlan ipv6 pppoe dhcpv6 prefix-delegation enable` — Show network interface vlan ipv6 pppoe dhcpv6 prefix delegation enable — device-local config (break-glass)
+- `show network interface vlan ipv6 pppoe dhcpv6 v6-options` — Show network interface vlan ipv6 pppoe dhcpv6 v6 options — device-local config (break-glass)
+- `show network interface vlan ipv6 pppoe dhcpv6 v6-options enable` — Show network interface vlan ipv6 pppoe dhcpv6 v6 options enable — device-local config (break-glass)
+- `show network interface vlan ipv6 pppoe neighbor-discovery dns-server` — Show network interface vlan ipv6 pppoe neighbor discovery dns server — device-local config (break-glass)
+- `show network interface vlan ipv6 pppoe neighbor-discovery dns-server source` — Show network interface vlan ipv6 pppoe neighbor discovery dns server source — device-local config (break-glass)
+- `show network interface vlan ipv6 pppoe neighbor-discovery dns-server source manual server` — Show network interface vlan ipv6 pppoe neighbor discovery dns server source manual server — device-local config (break-glass)
+- `show network interface vlan ipv6 pppoe neighbor-discovery dns-suffix` — Show network interface vlan ipv6 pppoe neighbor discovery dns suffix — device-local config (break-glass)
+- `show network interface vlan ipv6 pppoe neighbor-discovery dns-suffix source` — Show network interface vlan ipv6 pppoe neighbor discovery dns suffix source — device-local config (break-glass)
+- `show network interface vlan ipv6 pppoe neighbor-discovery dns-suffix source manual suffix` — Show network interface vlan ipv6 pppoe neighbor discovery dns suffix source manual suffix — device-local config (break-glass)
+- `show network interface vlan ipv6 pppoe neighbor-discovery neighbor` — Show network interface vlan ipv6 pppoe neighbor discovery neighbor — device-local config (break-glass)
+- `show network interface vlan ndp-proxy` — Show network interface vlan ndp proxy — device-local config (break-glass)
+- `show network interface vlan ndp-proxy address` — Show network interface vlan ndp proxy address — device-local config (break-glass)
+- `show network interface vlan units` — Show network interface vlan units — device-local config (break-glass)
+- `show network lldp` — Show network lldp — device-local config (break-glass)
+- `show network logical-router` — Show network logical router — device-local config (break-glass)
+- `show network macsec` — Show network macsec — device-local config (break-glass)
+- `show network macsec crypto-profiles` — Show network macsec crypto profiles — device-local config (break-glass)
+- `show network macsec interfaces` — Show network macsec interfaces — device-local config (break-glass)
+- `show network macsec pre-shared-key-profiles` — Show network macsec pre shared key profiles — device-local config (break-glass)
+- `show network profiles` — Show network profiles — device-local config (break-glass)
+- `show network profiles bfd-profile` — Show network profiles bfd profile — device-local config (break-glass)
+- `show network profiles interface-management-profile` — Show network profiles interface management profile — device-local config (break-glass)
+- `show network profiles lldp-profile` — Show network profiles lldp profile — device-local config (break-glass)
+- `show network profiles monitor-profile` — Show network profiles monitor profile — device-local config (break-glass)
+- `show network profiles zone-protection-profile` — Show network profiles zone protection profile — device-local config (break-glass)
+- `show network qos` — Show network qos — device-local config (break-glass)
+- `show network qos interface` — Show network qos interface — device-local config (break-glass)
+- `show network qos profile` — Show network qos profile — device-local config (break-glass)
+- `show network routing-profile` — Show network routing profile — device-local config (break-glass)
+- `show network routing-profile bfd` — Show network routing profile bfd — device-local config (break-glass)
+- `show network routing-profile bgp` — Show network routing profile bgp — device-local config (break-glass)
+- `show network routing-profile bgp address-family-profile` — Show network routing profile bgp address family profile — device-local config (break-glass)
+- `show network routing-profile bgp auth-profile` — Show network routing profile bgp auth profile — device-local config (break-glass)
+- `show network routing-profile bgp dampening-profile` — Show network routing profile bgp dampening profile — device-local config (break-glass)
+- `show network routing-profile bgp filtering-profile` — Show network routing profile bgp filtering profile — device-local config (break-glass)
+- `show network routing-profile bgp redistribution-profile` — Show network routing profile bgp redistribution profile — device-local config (break-glass)
+- `show network routing-profile bgp timer-profile` — Show network routing profile bgp timer profile — device-local config (break-glass)
+- `show network routing-profile filters` — Show network routing profile filters — device-local config (break-glass)
+- `show network routing-profile filters access-list` — Show network routing profile filters access list — device-local config (break-glass)
+- `show network routing-profile filters as-path-access-list` — Show network routing profile filters as path access list — device-local config (break-glass)
+- `show network routing-profile filters community-list` — Show network routing profile filters community list — device-local config (break-glass)
+- `show network routing-profile filters prefix-list` — Show network routing profile filters prefix list — device-local config (break-glass)
+- `show network routing-profile filters route-maps` — Show network routing profile filters route maps — device-local config (break-glass)
+- `show network routing-profile filters route-maps bgp bgp-entry` — Show network routing profile filters route maps bgp bgp entry — device-local config (break-glass)
+- `show network routing-profile filters route-maps redistribution redist-entry` — Show network routing profile filters route maps redistribution redist entry — device-local config (break-glass)
+- `show network routing-profile multicast` — Show network routing profile multicast — device-local config (break-glass)
+- `show network routing-profile ospf` — Show network routing profile ospf — device-local config (break-glass)
+- `show network routing-profile ospf auth-profile` — Show network routing profile ospf auth profile — device-local config (break-glass)
+- `show network routing-profile ospf if-timer-profile` — Show network routing profile ospf if timer profile — device-local config (break-glass)
+- `show network routing-profile ospf redistribution-profile` — Show network routing profile ospf redistribution profile — device-local config (break-glass)
+- `show network routing-profile ospf spf-timer-profile` — Show network routing profile ospf spf timer profile — device-local config (break-glass)
+- `show network routing-profile ospfv3` — Show network routing profile ospfv3 — device-local config (break-glass)
+- `show network routing-profile ospfv3 auth-profile` — Show network routing profile ospfv3 auth profile — device-local config (break-glass)
+- `show network routing-profile ospfv3 if-timer-profile` — Show network routing profile ospfv3 if timer profile — device-local config (break-glass)
+- `show network routing-profile ospfv3 redistribution-profile` — Show network routing profile ospfv3 redistribution profile — device-local config (break-glass)
+- `show network routing-profile ospfv3 spf-timer-profile` — Show network routing profile ospfv3 spf timer profile — device-local config (break-glass)
+- `show network routing-profile rip` — Show network routing profile rip — device-local config (break-glass)
+- `show network routing-profile rip auth-profile` — Show network routing profile rip auth profile — device-local config (break-glass)
+- `show network routing-profile rip global-timer-profile` — Show network routing profile rip global timer profile — device-local config (break-glass)
+- `show network routing-profile rip redistribution-profile` — Show network routing profile rip redistribution profile — device-local config (break-glass)
+- `show network tunnel` — Show network tunnel — device-local config (break-glass)
+- `show network tunnel global-protect-gateway` — Show network tunnel global protect gateway — device-local config (break-glass)
+- `show network tunnel global-protect-site-to-site` — Show network tunnel global protect site to site — device-local config (break-glass)
+- `show network tunnel gre` — Show network tunnel gre — device-local config (break-glass)
+- `show network tunnel ipsec` — Show network tunnel ipsec — device-local config (break-glass)
+- `show network underlay-net` — Show network underlay net — device-local config (break-glass)
+- `show network underlay-net ip-mapping` — Show network underlay net ip mapping — device-local config (break-glass)
+- `show network virtual-router` — Show network virtual router — device-local config (break-glass)
+- `show network virtual-wire` — Show network virtual wire — device-local config (break-glass)
+- `show network vlan` — Show network vlan — device-local config (break-glass)
 - `show ngts activitytypes` — Retrieve types of activities used for
 - `show ngts autorenewal status` — Get the current certificate auto-renewal monitorin
 - `show ngts autorenewal tenant-config` — Retrieve the monitoring configuration
@@ -832,22 +3980,99 @@ Use `help <command>` to open detailed docs for a command.
 - `show npb-profiles id` — Get Network Packet Broker Profile by ID
 - `show npb-rules` — List all Network Packet Broker Rules
 - `show npb-rules id` — Get Network Packet Broker Rule by ID
+- `show ntp` — Show ntp — live device data
 - `show oauth2 userinfo` — Retrieve oAuth 2.0 claims
+- `show object dynamic-address-group all` — Show object dynamic address group all — live device data
+- `show object dynamic-address-group name` — Show object dynamic address group name — live device data
+- `show object registered-ip limit` — Show object registered ip limit — live device data
+- `show object registered-user all start-point` — Show object registered user all start point — live device data
+- `show object registered-user user` — Show object registered user user — live device data
+- `show object static ip` — Show object static ip — live device data
+- `show obsolete-disabled-ssl-exclusions` — Show obsolete disabled ssl exclusions — live device data
+- `show operational-mode` — Show operational mode — live device data
 - `show ospf-auth-profiles` — List OSPF authentication profiles
 - `show ospf-auth-profiles id` — Get an OSPF authentication profile
+- `show oss-license` — Show oss license — live device data
+- `show panorama-certificates` — Show panorama certificates — live device data
+- `show panorama-status` — Show panorama status — live device data
+- `show parent-info all` — Show parent info all — live device data
+- `show parent-info filter saddr` — Show parent info filter saddr — live device data
+- `show parent-info info` — Show parent info info — live device data
+- `show pbf return-mac all` — Show pbf return mac all — live device data
+- `show pbf return-mac name` — Show pbf return mac name — live device data
+- `show pbf rule all detail` — Show pbf rule all detail — live device data
+- `show pbf rule name` — Show pbf rule name — live device data
 - `show pbf-rules` — Show policy-based forwarding rules in the active folder
 - `show pbf-rules id` — Get a PBF rule
+- `show pdf-summary-report` — Show pdf summary report — device-local config (break-glass)
+- `show policy-recommendation iot max-count` — Show policy recommendation iot max count — live device data
+- `show policy-recommendation saas max-count` — Show policy recommendation saas max count — live device data
 - `show posture id` — Get Posture Check
 - `show posture reports bpa-result id` — Get BPA Processing Status
 - `show posture root` — List Posture Checks
+- `show pppoe inherited state interface` — Show pppoe inherited state interface — live device data
+- `show pppoe interface` — Show pppoe interface — live device data
+- `show pppoe ipv6 interface` — Show pppoe ipv6 interface — live device data
+- `show pppoe ipv6 pool-details` — Show pppoe ipv6 pool details — live device data
+- `show pppoe ipv6 prefix interface` — Show pppoe ipv6 prefix interface — live device data
+- `show predefined xpath` — Show predefined xpath — live device data
+- `show predefined-iot xpath` — Show predefined iot xpath — live device data
 - `show profile-group` — Show security profile groups in the active folder
+- `show profiles` — Show profiles — device-local config (break-glass)
+- `show profiles data-filtering` — Show profiles data filtering — device-local config (break-glass)
+- `show profiles data-objects` — Show profiles data objects — device-local config (break-glass)
+- `show profiles decryption` — Show profiles decryption — device-local config (break-glass)
+- `show profiles dos-protection` — Show profiles dos protection — device-local config (break-glass)
+- `show profiles file-blocking` — Show profiles file blocking — device-local config (break-glass)
+- `show profiles hip-objects` — Show profiles hip objects — device-local config (break-glass)
+- `show profiles packet-broker` — Show profiles packet broker — device-local config (break-glass)
+- `show profiles sdwan-error-correction` — Show profiles sdwan error correction — device-local config (break-glass)
+- `show profiles sdwan-path-quality` — Show profiles sdwan path quality — device-local config (break-glass)
+- `show profiles sdwan-saas-quality` — Show profiles sdwan saas quality — device-local config (break-glass)
+- `show profiles sdwan-traffic-distribution` — Show profiles sdwan traffic distribution — device-local config (break-glass)
+- `show profiles spyware` — Show profiles spyware — device-local config (break-glass)
+- `show profiles url-filtering` — Show profiles url filtering — device-local config (break-glass)
+- `show profiles virus` — Show profiles virus — device-local config (break-glass)
+- `show profiles vulnerability` — Show profiles vulnerability — device-local config (break-glass)
+- `show profiles wildfire-analysis` — Show profiles wildfire analysis — device-local config (break-glass)
+- `show qos interface` — Show qos interface — live device data
 - `show qos-policy-rules` — List QoS policy rules
 - `show qos-policy-rules id` — Get a QoS policy rule
 - `show qos-profile` — Show QoS profiles in the active folder
 - `show qos-profiles id` — Get a QoS profile
+- `show query corr-detail id` — Show query corr detail id — live device data
+- `show query effective-queries query` — Show query effective queries query — live device data
+- `show query jobs` — Show query jobs — live device data
+- `show query result id` — Show query result id — live device data
+- `show query stats` — Show query stats — live device data
 - `show radius-server` — Show RADIUS server profiles in the active folder
+- `show redistribution agent state` — Show redistribution agent state — live device data
+- `show redistribution agent statistics` — Show redistribution agent statistics — live device data
+- `show redistribution service client` — Show redistribution service client — live device data
+- `show redistribution service status` — Show redistribution service status — live device data
+- `show redistribution-agent` — Show redistribution agent — device-local config (break-glass)
+- `show redistribution-collector` — Show redistribution collector — device-local config (break-glass)
+- `show redistribution-collector setting` — Show redistribution collector setting — device-local config (break-glass)
 - `show region` — Show regions (TSG-wide, no folder filter)
+- `show report cache cache_id` — Show report cache cache_id — live device data
+- `show report cache info` — Show report cache info — live device data
+- `show report custom` — Show report custom — live device data
+- `show report custom database equal` — Show report custom database equal — live device data
+- `show report custom receive_time in` — Show report custom receive_time in — live device data
+- `show report directory-listing` — Show report directory listing — live device data
+- `show report exec_mgr batch_id` — Show report exec_mgr batch_id — live device data
+- `show report exec_mgr info` — Show report exec_mgr info — live device data
+- `show report id` — Show report id — live device data
+- `show report jobs` — Show report jobs — live device data
+- `show report predefined end-time equal` — Show report predefined end time equal — live device data
+- `show report predefined name equal` — Show report predefined name equal — live device data
+- `show report predefined start-time equal` — Show report predefined start time equal — live device data
+- `show report-group` — Show report group — device-local config (break-glass)
+- `show reports` — Show reports — device-local config (break-glass)
+- `show resource limit` — Show resource limit — live device data
 - `show rn-license-info` — Get Remote Networks License Info
+- `show route` — Show route — device-local config (break-glass)
+- `show route service` — Show route service — device-local config (break-glass)
 - `show route-access-lists` — List route access lists
 - `show route-access-lists id` — Get a route access list
 - `show route-community-lists` — List route community lists
@@ -856,9 +4081,101 @@ Use `help <command>` to open detailed docs for a command.
 - `show route-path-acls id` — Get a route path access list
 - `show route-prefix-lists` — List route prefix lists
 - `show route-prefix-lists id` — Get a route prefix list
+- `show routing bfd active-profile name` — Show routing bfd active profile name — live device data
+- `show routing bfd details virtual-router` — Show routing bfd details virtual router — live device data
+- `show routing bfd drop-counters session-id` — Show routing bfd drop counters session id — live device data
+- `show routing bfd summary virtual-router` — Show routing bfd summary virtual router — live device data
 - `show routing bgp` — Show live BGP routing state from device — use --remote
+- `show routing fib virtual-router` — Show routing fib virtual router — live device data via SCM
+- `show routing interface` — Show routing interface — live device data
+- `show routing multicast fib group` — Show routing multicast fib group — live device data
+- `show routing multicast group-permission interface` — Show routing multicast group permission interface — live device data
+- `show routing multicast igmp interface virtual-router` — Show routing multicast igmp interface virtual router — live device data
+- `show routing multicast igmp membership interface` — Show routing multicast igmp membership interface — live device data
+- `show routing multicast igmp statistics interface` — Show routing multicast igmp statistics interface — live device data
+- `show routing multicast pim elected-bsr` — Show routing multicast pim elected bsr — live device data
+- `show routing multicast pim group-mapping group` — Show routing multicast pim group mapping group — live device data
+- `show routing multicast pim interface virtual-router` — Show routing multicast pim interface virtual router — live device data
+- `show routing multicast pim neighbor virtual-router` — Show routing multicast pim neighbor virtual router — live device data
+- `show routing multicast pim state virtual-router` — Show routing multicast pim state virtual router — live device data
+- `show routing multicast pim statistics interface` — Show routing multicast pim statistics interface — live device data
+- `show routing multicast route group` — Show routing multicast route group — live device data
+- `show routing path-monitor virtual-router` — Show routing path monitor virtual router — live device data
+- `show routing protocol bgp` — Show routing protocol bgp — live device data
+- `show routing protocol bgp peer peer-name` — Show routing protocol bgp peer peer name — live device data
+- `show routing protocol bgp peer-group group-name` — Show routing protocol bgp peer group group name — live device data
+- `show routing protocol bgp policy virtual-router` — Show routing protocol bgp policy virtual router — live device data
+- `show routing protocol bgp summary virtual-router` — Show routing protocol bgp summary virtual router — live device data
+- `show routing protocol ospf` — Show routing protocol ospf — live device data
+- `show routing protocol ospfv3` — Show routing protocol ospfv3 — live device data
+- `show routing protocol ospfv3 dumplsdb scope` — Show routing protocol ospfv3 dumplsdb scope — live device data
+- `show routing protocol ospfv3 interface brief` — Show routing protocol ospfv3 interface brief — live device data
+- `show routing protocol ospfv3 lsdb scope` — Show routing protocol ospfv3 lsdb scope — live device data
+- `show routing protocol ospfv3 neighbor brief` — Show routing protocol ospfv3 neighbor brief — live device data
+- `show routing protocol ospfv3 virt-neighbor brief` — Show routing protocol ospfv3 virt neighbor brief — live device data
+- `show routing protocol redist` — Show routing protocol redist — live device data
+- `show routing protocol rip` — Show routing protocol rip — live device data
+- `show routing resource` — Show routing resource — live device data
 - `show routing route` — Show static routes in the active folder
+- `show routing route destination` — Show routing route destination — live device data
 - `show routing summary` — Show virtual routers / routing profiles in the active folder
+- `show routing summary virtual-router` — Show routing summary virtual router — live device data
+- `show rule-hit-count vsys` — Show rule hit count vsys — live device data
+- `show rule-hit-count vsys all rule-base` — Show rule hit count vsys all rule base — live device data
+- `show rule-hit-count vsys list entry` — Show rule hit count vsys list entry — live device data
+- `show rule-hit-count vsys list rule-base` — Show rule hit count vsys list rule base — live device data
+- `show rulebase` — Show rulebase — device-local config (break-glass)
+- `show rulebase application-override rules` — Show rulebase application override rules — device-local config (break-glass)
+- `show rulebase authentication rules` — Show rulebase authentication rules — device-local config (break-glass)
+- `show rulebase decryption rules` — Show rulebase decryption rules — device-local config (break-glass)
+- `show rulebase default-security-rules rules` — Show rulebase default security rules rules — device-local config (break-glass)
+- `show rulebase dos rules` — Show rulebase dos rules — device-local config (break-glass)
+- `show rulebase nat rules` — Show rulebase nat rules — device-local config (break-glass)
+- `show rulebase network-packet-broker rules` — Show rulebase network packet broker rules — device-local config (break-glass)
+- `show rulebase pbf rules` — Show rulebase pbf rules — device-local config (break-glass)
+- `show rulebase qos rules` — Show rulebase qos rules — device-local config (break-glass)
+- `show rulebase sdwan rules` — Show rulebase sdwan rules — device-local config (break-glass)
+- `show rulebase security rules` — Show rulebase security rules — device-local config (break-glass)
+- `show rulebase tunnel-inspect rules` — Show rulebase tunnel inspect rules — device-local config (break-glass)
+- `show running` — Show running — live device data
+- `show running appinfo2ip saddr` — Show running appinfo2ip saddr — live device data
+- `show running application cache all` — Show running application cache all — live device data
+- `show running application disabled` — Show running application disabled — live device data
+- `show running application setting` — Show running application setting — live device data
+- `show running application statistics` — Show running application statistics — live device data
+- `show running application-signature statistics` — Show running application signature statistics — live device data
+- `show running dns-cache statistics` — Show running dns cache statistics — live device data
+- `show running global-ippool summary-only` — Show running global ippool summary only — live device data
+- `show running ipv6 address` — Show running ipv6 address — live device data
+- `show running ml-block-cache top` — Show running ml block cache top — live device data
+- `show running ml-block-cache url` — Show running ml block cache url — live device data
+- `show running mlav-model status` — Show running mlav model status — live device data
+- `show running nat-policy vsys` — Show running nat policy vsys — live device data
+- `show running nat-rule-ippool rule` — Show running nat rule ippool rule — live device data
+- `show running ndp-proxy interface` — Show running ndp proxy interface — live device data
+- `show running network-packet-broker` — Show running network packet broker — live device data
+- `show running persistent-dipp-client ip-utilization pool` — Show running persistent dipp client ip utilization pool — live device data
+- `show running persistent-dipp-client pool` — Show running persistent dipp client pool — live device data
+- `show running persistent-dipp-client-translation ip` — Show running persistent dipp client translation ip — live device data
+- `show running persistent-dipp-pool ip-utilization` — Show running persistent dipp pool ip utilization — live device data
+- `show running resource-monitor day last` — Show running resource monitor day last — live device data
+- `show running resource-monitor hour last` — Show running resource monitor hour last — live device data
+- `show running resource-monitor ingress-backlogs` — Show running resource monitor ingress backlogs — live device data
+- `show running resource-monitor minute last` — Show running resource monitor minute last — live device data
+- `show running resource-monitor second last` — Show running resource monitor second last — live device data
+- `show running resource-monitor week last` — Show running resource monitor week last — live device data
+- `show running rule-use highlight vsys` — Show running rule use highlight vsys — live device data
+- `show running rule-use hit-count vsys` — Show running rule use hit count vsys — live device data
+- `show running security-policy rule-index` — Show running security policy rule index — live device data
+- `show running tcp state` — Show running tcp state — live device data
+- `show running tunnel flow` — Show running tunnel flow — live device data
+- `show running tunnel flow all filter type` — Show running tunnel flow all filter type — live device data
+- `show running tunnel flow context` — Show running tunnel flow context — live device data
+- `show running tunnel flow name` — Show running tunnel flow name — live device data
+- `show running tunnel flow tunnel-id` — Show running tunnel flow tunnel id — live device data
+- `show running url` — Show running url — live device data
+- `show running url-cache` — Show running url cache — live device data
+- `show running url-info` — Show running url info — live device data
 - `show sase agent-profiles` — List GlobalProtect agent profiles
 - `show sase agent-versions` — List GlobalProtect agent versions
 - `show sase authentication-settings` — List GlobalProtect authentication settings
@@ -894,8 +4211,37 @@ Use `help <command>` to open detailed docs for a command.
 - `show sase traffic-steering-rules id` — Get a traffic steering rule
 - `show sase tunnel-profiles` — List GlobalProtect tunnel settings
 - `show schedule` — Show schedules in the active folder
+- `show sdwan connection` — Show sdwan connection — live device data
+- `show sdwan details` — Show sdwan details — live device data
+- `show sdwan details basic` — Show sdwan details basic — live device data
+- `show sdwan details rule id` — Show sdwan details rule id — live device data
+- `show sdwan details rule idx` — Show sdwan details rule idx — live device data
+- `show sdwan details session id` — Show sdwan details session id — live device data
+- `show sdwan event` — Show sdwan event — live device data
+- `show sdwan path-monitor details` — Show sdwan path monitor details — live device data
+- `show sdwan path-monitor dia-anypath packet-buffer` — Show sdwan path monitor dia anypath packet buffer — live device data
+- `show sdwan path-monitor parameter active` — Show sdwan path monitor parameter active — live device data
+- `show sdwan path-monitor parameter adaptive` — Show sdwan path monitor parameter adaptive — live device data
+- `show sdwan path-monitor parameter all-dp` — Show sdwan path monitor parameter all dp — live device data
+- `show sdwan path-monitor parameter conn-idx` — Show sdwan path monitor parameter conn idx — live device data
+- `show sdwan path-monitor parameter path-name` — Show sdwan path monitor parameter path name — live device data
+- `show sdwan path-monitor parameter vif` — Show sdwan path monitor parameter vif — live device data
+- `show sdwan path-monitor policy-map` — Show sdwan path monitor policy map — live device data
+- `show sdwan path-monitor stats active` — Show sdwan path monitor stats active — live device data
+- `show sdwan path-monitor stats adaptive` — Show sdwan path monitor stats adaptive — live device data
+- `show sdwan path-monitor stats all-dp` — Show sdwan path monitor stats all dp — live device data
+- `show sdwan path-monitor stats conn-idx` — Show sdwan path monitor stats conn idx — live device data
+- `show sdwan path-monitor stats dia-vif` — Show sdwan path monitor stats dia vif — live device data
+- `show sdwan path-monitor stats path-name` — Show sdwan path monitor stats path name — live device data
+- `show sdwan path-monitor stats vif` — Show sdwan path monitor stats vif — live device data
+- `show sdwan pool details` — Show sdwan pool details — live device data
+- `show sdwan rule vif` — Show sdwan rule vif — live device data
+- `show sdwan session distribution policy-name` — Show sdwan session distribution policy name — live device data
+- `show sdwan session log session-id` — Show sdwan session log session id — live device data
+- `show sdwan session path-select session-id` — Show sdwan session path select session id — live device data
 - `show sdwan-error-profiles` — List SD-WAN error correction profiles
 - `show sdwan-error-profiles id` — Get an SD-WAN error correction profile
+- `show sdwan-interface-profile` — Show sdwan interface profile — device-local config (break-glass)
 - `show sdwan-path-profiles` — List SD-WAN path quality profiles
 - `show sdwan-path-profiles id` — Get an SD-WAN path quality profile
 - `show sdwan-rules` — Show SD-WAN rules in the active folder
@@ -913,19 +4259,167 @@ Use `help <command>` to open detailed docs for a command.
 - `show service-route id` — Get existing service route settings
 - `show service-settings` — List service settings
 - `show service-settings id` — Get existing service settings
+- `show session` — Show session — live device data
 - `show session all` — Show live session table from device — use --remote
+- `show session all start-at` — Show session all start at — live device data
+- `show session cache all filter from` — Show session cache all filter from — live device data
+- `show session cache external md5` — Show session cache external md5 — live device data
+- `show session cache md5` — Show session cache md5 — live device data
+- `show session id` — Show session id — live device data
+- `show session packet-buffer-protection` — Show session packet buffer protection — live device data
 - `show session-settings` — List session settings
 - `show session-settings id` — Get existing session settings
 - `show session-timeouts` — List session timeouts settings
 - `show session-timeouts id` — Get existing session settings
+- `show setting` — Show setting — device-local config (break-glass)
+- `show shared` — Show shared — device-local config (break-glass)
+- `show shared address-group` — Show shared address group — live device data
+- `show shared admin-role` — Show shared admin role — device-local config (break-glass)
+- `show shared alg-override` — Show shared alg override — device-local config (break-glass)
+- `show shared alg-override application` — Show shared alg override application — device-local config (break-glass)
+- `show shared application` — Show shared application — live device data
+- `show shared application-filter` — Show shared application filter — live device data
+- `show shared authentication-profile` — Show shared authentication profile — device-local config (break-glass)
+- `show shared botnet` — Show shared botnet — device-local config (break-glass)
+- `show shared botnet configuration http` — Show shared botnet configuration http — device-local config (break-glass)
+- `show shared botnet configuration other-applications` — Show shared botnet configuration other applications — device-local config (break-glass)
+- `show shared botnet configuration unknown-applications` — Show shared botnet configuration unknown applications — device-local config (break-glass)
+- `show shared botnet configuration unknown-applications unknown-tcp session-length` — Show shared botnet configuration unknown applications unknown tcp session length — device-local config (break-glass)
+- `show shared botnet configuration unknown-applications unknown-udp session-length` — Show shared botnet configuration unknown applications unknown udp session length — device-local config (break-glass)
+- `show shared certificate-profile` — Show shared certificate profile — device-local config (break-glass)
+- `show shared email-scheduler` — Show shared email scheduler — device-local config (break-glass)
+- `show shared external-list` — Show shared external list — live device data
+- `show shared local-user-database` — Show shared local user database — device-local config (break-glass)
+- `show shared local-user-database user` — Show shared local user database user — device-local config (break-glass)
+- `show shared local-user-database user-group` — Show shared local user database user group — device-local config (break-glass)
+- `show shared log-settings` — Show shared log settings — device-local config (break-glass)
+- `show shared log-settings config` — Show shared log settings config — device-local config (break-glass)
+- `show shared log-settings config match-list` — Show shared log settings config match list — device-local config (break-glass)
+- `show shared log-settings email` — Show shared log settings email — device-local config (break-glass)
+- `show shared log-settings http` — Show shared log settings http — device-local config (break-glass)
+- `show shared log-settings profiles` — Show shared log settings profiles — device-local config (break-glass)
+- `show shared log-settings snmptrap` — Show shared log settings snmptrap — device-local config (break-glass)
+- `show shared log-settings syslog` — Show shared log settings syslog — device-local config (break-glass)
+- `show shared log-settings system` — Show shared log settings system — device-local config (break-glass)
+- `show shared log-settings system match-list` — Show shared log settings system match list — device-local config (break-glass)
+- `show shared override` — Show shared override — device-local config (break-glass)
+- `show shared override application` — Show shared override application — device-local config (break-glass)
+- `show shared pdf-summary-report` — Show shared pdf summary report — device-local config (break-glass)
+- `show shared post-rulebase` — Show shared post rulebase — live device data
+- `show shared post-rulebase application-override rules` — Show shared post rulebase application override rules — live device data
+- `show shared post-rulebase authentication rules` — Show shared post rulebase authentication rules — live device data
+- `show shared post-rulebase decryption rules` — Show shared post rulebase decryption rules — live device data
+- `show shared post-rulebase default-security-rules rules` — Show shared post rulebase default security rules rules — live device data
+- `show shared post-rulebase dos rules` — Show shared post rulebase dos rules — live device data
+- `show shared post-rulebase nat rules` — Show shared post rulebase nat rules — live device data
+- `show shared post-rulebase network-packet-broker rules` — Show shared post rulebase network packet broker rules — live device data
+- `show shared post-rulebase pbf rules` — Show shared post rulebase pbf rules — live device data
+- `show shared post-rulebase qos rules` — Show shared post rulebase qos rules — live device data
+- `show shared post-rulebase sdwan rules` — Show shared post rulebase sdwan rules — live device data
+- `show shared post-rulebase security rules` — Show shared post rulebase security rules — live device data
+- `show shared post-rulebase tunnel-inspect rules` — Show shared post rulebase tunnel inspect rules — live device data
+- `show shared pre-rulebase` — Show shared pre rulebase — live device data
+- `show shared pre-rulebase application-override rules` — Show shared pre rulebase application override rules — live device data
+- `show shared pre-rulebase authentication rules` — Show shared pre rulebase authentication rules — live device data
+- `show shared pre-rulebase decryption rules` — Show shared pre rulebase decryption rules — live device data
+- `show shared pre-rulebase dos rules` — Show shared pre rulebase dos rules — live device data
+- `show shared pre-rulebase nat rules` — Show shared pre rulebase nat rules — live device data
+- `show shared pre-rulebase network-packet-broker rules` — Show shared pre rulebase network packet broker rules — live device data
+- `show shared pre-rulebase pbf rules` — Show shared pre rulebase pbf rules — live device data
+- `show shared pre-rulebase qos rules` — Show shared pre rulebase qos rules — live device data
+- `show shared pre-rulebase sdwan rules` — Show shared pre rulebase sdwan rules — live device data
+- `show shared pre-rulebase security rules` — Show shared pre rulebase security rules — live device data
+- `show shared pre-rulebase tunnel-inspect rules` — Show shared pre rulebase tunnel inspect rules — live device data
+- `show shared profiles` — Show shared profiles — live device data
+- `show shared profiles ai-security` — Show shared profiles ai security — live device data
+- `show shared profiles data-filtering` — Show shared profiles data filtering — live device data
+- `show shared profiles data-objects` — Show shared profiles data objects — live device data
+- `show shared profiles decryption` — Show shared profiles decryption — live device data
+- `show shared profiles dos-protection` — Show shared profiles dos protection — live device data
+- `show shared profiles file-blocking` — Show shared profiles file blocking — live device data
+- `show shared profiles gtp` — Show shared profiles gtp — live device data
+- `show shared profiles hip-objects` — Show shared profiles hip objects — live device data
+- `show shared profiles host-compliance-objects` — Show shared profiles host compliance objects — live device data
+- `show shared profiles sctp` — Show shared profiles sctp — live device data
+- `show shared profiles sdwan-error-correction` — Show shared profiles sdwan error correction — live device data
+- `show shared profiles sdwan-path-quality` — Show shared profiles sdwan path quality — live device data
+- `show shared profiles sdwan-saas-quality` — Show shared profiles sdwan saas quality — live device data
+- `show shared profiles sdwan-traffic-distribution` — Show shared profiles sdwan traffic distribution — live device data
+- `show shared profiles spyware` — Show shared profiles spyware — live device data
+- `show shared profiles url-filtering` — Show shared profiles url filtering — live device data
+- `show shared profiles virus` — Show shared profiles virus — live device data
+- `show shared profiles vulnerability` — Show shared profiles vulnerability — live device data
+- `show shared profiles wildfire-analysis` — Show shared profiles wildfire analysis — live device data
+- `show shared region` — Show shared region — live device data
+- `show shared report-group` — Show shared report group — device-local config (break-glass)
+- `show shared reports` — Show shared reports — device-local config (break-glass)
+- `show shared response-page` — Show shared response page — device-local config (break-glass)
+- `show shared scep` — Show shared scep — device-local config (break-glass)
+- `show shared schedule` — Show shared schedule — live device data
+- `show shared server-profile` — Show shared server profile — device-local config (break-glass)
+- `show shared server-profile kerberos` — Show shared server profile kerberos — device-local config (break-glass)
+- `show shared server-profile ldap` — Show shared server profile ldap — device-local config (break-glass)
+- `show shared server-profile mfa-server-profile` — Show shared server profile mfa server profile — device-local config (break-glass)
+- `show shared server-profile netflow` — Show shared server profile netflow — device-local config (break-glass)
+- `show shared server-profile radius` — Show shared server profile radius — device-local config (break-glass)
+- `show shared server-profile saml-idp` — Show shared server profile saml idp — device-local config (break-glass)
+- `show shared server-profile scp` — Show shared server profile scp — device-local config (break-glass)
+- `show shared server-profile tacplus` — Show shared server profile tacplus — device-local config (break-glass)
+- `show shared service` — Show shared service — live device data
+- `show shared ssl-decrypt` — Show shared ssl decrypt — device-local config (break-glass)
+- `show shared ssl-decrypt forward-trust-certificate` — Show shared ssl decrypt forward trust certificate — device-local config (break-glass)
+- `show shared ssl-decrypt forward-untrust-certificate` — Show shared ssl decrypt forward untrust certificate — device-local config (break-glass)
+- `show shared ssl-decrypt ssl-exclude-cert` — Show shared ssl decrypt ssl exclude cert — device-local config (break-glass)
+- `show shared ssl-tls-service-profile` — Show shared ssl tls service profile — device-local config (break-glass)
+- `show shared threats` — Show shared threats — live device data
+- `show shared threats spyware` — Show shared threats spyware — live device data
+- `show shared threats vulnerability` — Show shared threats vulnerability — live device data
+- `show shared user-id-hub` — Show shared user id hub — device-local config (break-glass)
 - `show snippet` — Show full detail for a snippet
 - `show snippets` — List snippets for the current context  [dim](device → device snippets | folder → folder snippets | Shared → all)[/dim]
 - `show snippets global` — List ALL snippets regardless of device or folder context
+- `show snmpd refresh-timer-period` — Show snmpd refresh timer period — live device data
+- `show sp-metadata captive-portal authprofile` — Show sp metadata captive portal authprofile — live device data
+- `show sp-metadata global-protect authprofile` — Show sp metadata global protect authprofile — live device data
+- `show sp-metadata management authprofile` — Show sp metadata management authprofile — live device data
+- `show ssh-fingerprints hash-type` — Show ssh fingerprints hash type — live device data
+- `show ssl-conn-on-cert` — Show ssl conn on cert — live device data
+- `show sslmgr-max-check-cert-jobs` — Show sslmgr max check cert jobs — live device data
+- `show sslmgr-store certificate-info issuer` — Show sslmgr store certificate info issuer — live device data
+- `show sslmgr-store certificate-info portal name` — Show sslmgr store certificate info portal name — live device data
+- `show sslmgr-store config-ca-certificate subjectname-hash` — Show sslmgr store config ca certificate subjectname hash — live device data
+- `show sslmgr-store config-certificate-info db-serialno` — Show sslmgr store config certificate info db serialno — live device data
+- `show sslmgr-store satellite-info portal name` — Show sslmgr store satellite info portal name — live device data
+- `show sslmgr-store serialno-certificate-info db-serialno` — Show sslmgr store serialno certificate info db serialno — live device data
+- `show statistics` — Show statistics — live device data
+- `show streaming-telemetry region-list` — Show streaming telemetry region list — live device data
 - `show subscription instances` — List instances
 - `show subscription licenses` — List license details
+- `show syslog-ssl-conn-validation` — Show syslog ssl conn validation — live device data
+- `show system` — Show system — live device data
+- `show system crypto entropy-status` — Show system crypto entropy status — live device data
 - `show system disk-space` — Show live disk usage — use --remote for live device data
+- `show system disk-space files` — Show system disk space files — live device data
+- `show system environmentals fans slot` — Show system environmentals fans slot — live device data
+- `show system environmentals power slot` — Show system environmentals power slot — live device data
+- `show system environmentals slot` — Show system environmentals slot — live device data
+- `show system environmentals thermal slot` — Show system environmentals thermal slot — live device data
 - `show system info` — Show device info from SCM (model, serial, SW version, IP, status…)
 - `show system resources` — Show live CPU / memory — use --remote for live device data
+- `show system resources follow` — Show system resources follow — live device data
+- `show system setting` — Show system setting — live device data
+- `show system setting ctd` — Show system setting ctd — live device data
+- `show system setting ctd threat id` — Show system setting ctd threat id — live device data
+- `show system setting logging log-compression` — Show system setting logging log compression — live device data
+- `show system setting ssl-decrypt` — Show system setting ssl decrypt — live device data
+- `show system setting ssl-decrypt exclude-cache xml yes` — Show system setting ssl decrypt exclude cache xml yes — live device data
+- `show system setting ssl-decrypt gp-cookie-cache user` — Show system setting ssl decrypt gp cookie cache user — live device data
+- `show system setting ssl-decrypt memory detail` — Show system setting ssl decrypt memory detail — live device data
+- `show system setting url-cache` — Show system setting url cache — live device data
+- `show system state browser` — Show system state browser — live device data
+- `show system state filter` — Show system state filter — live device data
+- `show system state filter-pretty` — Show system state filter pretty — live device data
+- `show system statistics` — Show system statistics — live device data
 - `show system-match-list` — List system match list entries
 - `show system-match-list id` — Get a system match list entry
 - `show tag` — Show tags in the active folder
@@ -933,31 +4427,220 @@ Use `help <command>` to open detailed docs for a command.
 - `show tcp-settings id` — Get existing TCP settings
 - `show tenant-service-groups` — List all tenant service groups
 - `show tenant-service-groups id` — Get a tenant service group
+- `show threat id` — Show threat id — live device data
+- `show threats` — Show threats — device-local config (break-glass)
+- `show threats spyware` — Show threats spyware — device-local config (break-glass)
+- `show threats vulnerability` — Show threats vulnerability — device-local config (break-glass)
 - `show tls-service-profile` — Show TLS service profiles in the active folder
+- `show transceiver` — Show transceiver — live device data
+- `show transceiver-detail` — Show transceiver detail — live device data
+- `show transceiver-eeprom` — Show transceiver eeprom — live device data
+- `show transceiver-monitor-rate` — Show transceiver monitor rate — live device data
+- `show ts-agent` — Show ts agent — device-local config (break-glass)
+- `show tunnel-acceleration` — Show tunnel acceleration — live device data
 - `show tunnel-interfaces` — List tunnel interfaces
 - `show tunnel-interfaces id` — Get a tunnel interface
 - `show update-schedule` — List update schedule settings
 - `show update-schedule id` — Get existing update schedule settings
+- `show upgrade-history` — Show upgrade history — live device data
+- `show url-admin-override` — Show url admin override — device-local config (break-glass)
+- `show url-admin-override mode` — Show url admin override mode — device-local config (break-glass)
 - `show url-categories` — Show custom URL categories in the active folder
+- `show url-cloud status` — Show url cloud status — live device data
+- `show user cloud-identity-engine client statistics` — Show user cloud identity engine client statistics — live device data
+- `show user cloud-identity-engine statistics all` — Show user cloud identity engine statistics all — live device data
+- `show user cloud-identity-engine statistics name` — Show user cloud identity engine statistics name — live device data
+- `show user cloud-identity-engine status all` — Show user cloud identity engine status all — live device data
+- `show user cloud-identity-engine status name` — Show user cloud identity engine status name — live device data
+- `show user cookie-surrogate-cache-dp all` — Show user cookie surrogate cache dp all — live device data
+- `show user cookie-surrogate-cache-dp username` — Show user cookie surrogate cache dp username — live device data
+- `show user credential-filter` — Show user credential filter — live device data
+- `show user email-lookup email` — Show user email lookup email — live device data
+- `show user group name` — Show user group name — live device data
+- `show user group-mapping naming-context server` — Show user group mapping naming context server — live device data
+- `show user group-mapping state` — Show user group mapping state — live device data
+- `show user group-mapping statistics` — Show user group mapping statistics — live device data
+- `show user group-mapping-service query` — Show user group mapping service query — live device data
+- `show user group-mapping-service status` — Show user group mapping service status — live device data
+- `show user group-policy-dp` — Show user group policy dp — live device data
+- `show user group-policy-dp gid` — Show user group policy dp gid — live device data
+- `show user group-selection sp_vsys_id` — Show user group selection sp_vsys_id — live device data
+- `show user hip-report user` — Show user hip report user — live device data
+- `show user ip-port-user-mapping all` — Show user ip port user mapping all — live device data
+- `show user ip-port-user-mapping ip` — Show user ip port user mapping ip — live device data
+- `show user ip-port-user-mapping source-user` — Show user ip port user mapping source user — live device data
+- `show user ip-port-user-mapping-mp all` — Show user ip port user mapping mp all — live device data
+- `show user ip-port-user-mapping-mp ip` — Show user ip port user mapping mp ip — live device data
+- `show user ip-port-user-mapping-mp source-user` — Show user ip port user mapping mp source user — live device data
 - `show user ip-user-mapping` — Show live user-to-IP mapping from device — use --remote
+- `show user ip-user-mapping all option` — Show user ip user mapping all option — live device data
+- `show user ip-user-mapping ip` — Show user ip user mapping ip — live device data
+- `show user ip-user-mapping-mp limit` — Show user ip user mapping mp limit — live device data
+- `show user ldap-device-serialno all` — Show user ldap device serialno all — live device data
+- `show user ldap-device-serialno serialno` — Show user ldap device serialno serialno — live device data
+- `show user local-user-db vsys` — Show user local user db vsys — live device data
+- `show user server-monitor auto-discover domain` — Show user server monitor auto discover domain — live device data
+- `show user server-monitor state` — Show user server monitor state — live device data
+- `show user server-monitor statistics` — Show user server monitor statistics — live device data
+- `show user ts-agent state` — Show user ts agent state — live device data
+- `show user ts-agent statistics` — Show user ts agent statistics — live device data
+- `show user uid2primeuid-dp all` — Show user uid2primeuid dp all — live device data
+- `show user uid2primeuid-dp uid` — Show user uid2primeuid dp uid — live device data
+- `show user user-attributes user` — Show user user attributes user — live device data
+- `show user user-cache-dp all` — Show user user cache dp all — live device data
+- `show user user-cache-dp uid` — Show user user cache dp uid — live device data
+- `show user user-id-agent config all` — Show user user id agent config all — live device data
+- `show user user-id-agent config name` — Show user user id agent config name — live device data
+- `show user user-id-agent state` — Show user user id agent state — live device data
+- `show user user-id-agent statistics` — Show user user id agent statistics — live device data
+- `show user user-id-service client` — Show user user id service client — live device data
+- `show user user-id-service ipuser-update-list option` — Show user user id service ipuser update list option — live device data
+- `show user user-id-service status` — Show user user id service status — live device data
+- `show user user-ids all option` — Show user user ids all option — live device data
+- `show user user-ids match-user` — Show user user ids match user — live device data
+- `show user user-policy-dp all` — Show user user policy dp all — live device data
+- `show user user-policy-dp uid` — Show user user policy dp uid — live device data
+- `show user xml-api multiusersystem` — Show user xml api multiusersystem — live device data
+- `show user-context-segment` — Show user context segment — device-local config (break-glass)
+- `show user-context-segment assignments` — Show user context segment assignments — device-local config (break-glass)
+- `show user-id-collector` — Show user id collector — device-local config (break-glass)
+- `show user-id-collector include-exclude-network` — Show user id collector include exclude network — device-local config (break-glass)
+- `show user-id-collector include-exclude-network-sequence` — Show user id collector include exclude network sequence — device-local config (break-glass)
+- `show user-id-collector server-monitor` — Show user id collector server monitor — device-local config (break-glass)
+- `show user-id-collector setting` — Show user id collector setting — device-local config (break-glass)
+- `show user-id-collector syslog-parse-profile` — Show user id collector syslog parse profile — device-local config (break-glass)
+- `show user-id-ssl-auth` — Show user id ssl auth — device-local config (break-glass)
 - `show userid-match-list` — List userid match list entries
 - `show userid-match-list id` — Get a userid match list entry
+- `show virtual-wire` — Show virtual wire — live device data
+- `show vlan` — Show vlan — live device data
 - `show vlan-interfaces` — List VLAN interfaces
 - `show vlan-interfaces id` — Get a VLAN interface
+- `show vm-info-source` — Show vm info source — device-local config (break-glass)
+- `show vm-monitor source all` — Show vm monitor source all — live device data
+- `show vm-monitor source state` — Show vm monitor source state — live device data
+- `show vm-monitor source statistics` — Show vm monitor source statistics — live device data
+- `show vpn flow name` — Show vpn flow name — live device data
+- `show vpn flow tunnel-id` — Show vpn flow tunnel id — live device data
+- `show vpn gateway match` — Show vpn gateway match — live device data
+- `show vpn gateway name` — Show vpn gateway name — live device data
+- `show vpn ike-hashurl` — Show vpn ike hashurl — live device data
 - `show vpn ike-sa` — Show live IKE security associations from device — use --remote
+- `show vpn ike-sa detail gateway` — Show vpn ike sa detail gateway — live device data
+- `show vpn ike-sa gateway` — Show vpn ike sa gateway — live device data
+- `show vpn ike-sa match` — Show vpn ike sa match — live device data
+- `show vpn ipsec-sa match` — Show vpn ipsec sa match — live device data
+- `show vpn ipsec-sa summary` — Show vpn ipsec sa summary — live device data
+- `show vpn ipsec-sa tunnel` — Show vpn ipsec sa tunnel — live device data
 - `show vpn tunnel` — Show live VPN tunnel state from device — use --remote
+- `show vpn tunnel match` — Show vpn tunnel match — live device data
+- `show vpn tunnel name` — Show vpn tunnel name — live device data
 - `show vpn-settings` — List VPN settings
 - `show vpn-settings id` — Get existing VPN settings
 - `show vulnerability-profile` — Show vulnerability protection profiles in the active folder
+- `show wildfire` — Show wildfire — live device data
+- `show wildfire-appliance-cluster` — Show wildfire appliance cluster — live device data
 - `show wildfire-profile` — Show WildFire anti-virus profiles in the active folder
+- `show wildfire-realtime-cache total` — Show wildfire realtime cache total — live device data
+- `show wildfire-realtime-cache virus-pattern-type` — Show wildfire realtime cache virus pattern type — live device data
+- `show wildfire-realtime-cloud-status` — Show wildfire realtime cloud status — live device data
+- `show wildfire-realtime-stats` — Show wildfire realtime stats — live device data
+- `show x-authenticated-user` — Show x authenticated user — device-local config (break-glass)
 - `show zone` — Show security zones in the active folder
 - `show zone-profiles` — List zone protection profiles
 - `show zone-profiles id` — Get a zone protection profile
+- `show zone-protection zone` — Show zone protection zone — live device data
 - `show zones id` — Get a security zone
+- `ssh inet` — Ssh inet — live device data
+- `tail follow` — Tail follow — live device data
+- `target set` — Target set — live device data
+- `target show` — Target show — live device data
+- `test advanced-routing bgp logical-router` — Test advanced routing bgp logical router — live device data
+- `test advanced-routing fib-lookup ip` — Test advanced routing fib lookup ip — live device data
+- `test advanced-routing mfib-lookup group` — Test advanced routing mfib lookup group — live device data
+- `test advanced-routing multicast msdp logical-router` — Test advanced routing multicast msdp logical router — live device data
+- `test arp gratuitous interface` — Test arp gratuitous interface — live device data
+- `test authentication authentication-profile` — Test authentication authentication profile — live device data
+- `test authentication-policy-match from` — Test authentication policy match from — live device data
+- `test botnet domain` — Test botnet domain — live device data
+- `test cookie-surrogate username` — Test cookie surrogate username — live device data
+- `test custom-signature-perf pattern` — Test custom signature perf pattern — live device data
+- `test custom-signature-type pattern` — Test custom signature type pattern — live device data
+- `test custom-url url` — Test custom url url — live device data
+- `test data-filtering ccn` — Test data filtering ccn — live device data
+- `test data-filtering pattern` — Test data filtering pattern — live device data
+- `test data-filtering ssn` — Test data filtering ssn — live device data
+- `test decryption-policy-match from` — Test decryption policy match from — live device data
+- `test dns-proxy ddns update interface name` — Test dns proxy ddns update interface name — live device data
+- `test dns-proxy dns-signature fqdn` — Test dns proxy dns signature fqdn — live device data
+- `test dns-proxy fqdn refresh all` — Test dns proxy fqdn refresh all — live device data
+- `test dns-proxy fqdn refresh entry fqdn` — Test dns proxy fqdn refresh entry fqdn — live device data
+- `test dns-proxy query name` — Test dns proxy query name — live device data
+- `test dos-policy-match from` — Test dos policy match from — live device data
+- `test generate-saml-url captive-portal vsys` — Test generate saml url captive portal vsys — live device data
+- `test generate-saml-url global-protect vsys` — Test generate saml url global protect vsys — live device data
+- `test generate-saml-url management interface` — Test generate saml url management interface — live device data
+- `test global-protect-mdm hipreport request mobile-id` — Test global protect mdm hipreport request mobile id — live device data
+- `test global-protect-satellite gateway-connect satellite` — Test global protect satellite gateway connect satellite — live device data
+- `test global-protect-satellite gateway-disconnect satellite` — Test global protect satellite gateway disconnect satellite — live device data
+- `test global-protect-satellite gateway-reconnect satellite` — Test global protect satellite gateway reconnect satellite — live device data
+- `test http-profile vsys` — Test http profile vsys — live device data
+- `test http-profile-server-auth-token vsys` — Test http profile server auth token vsys — live device data
+- `test http-server vsys` — Test http server vsys — live device data
+- `test macsec association interface` — Test macsec association interface — live device data
+- `test mfa-vendors mfa-server-profile` — Test mfa vendors mfa server profile — live device data
 - `test nat-policy-match` — Test NAT policy match (use --remote)
+- `test nat-policy-match from` — Test nat policy match from — live device data
+- `test nd router-advertisement interface` — Test nd router advertisement interface — live device data
+- `test nptv6 cks-neutral dest-network` — Test nptv6 cks neutral dest network — live device data
+- `test pbf-policy-match from` — Test pbf policy match from — live device data
+- `test pppoe interface` — Test pppoe interface — live device data
+- `test pppoe ipv6 interface` — Test pppoe ipv6 interface — live device data
+- `test qos-policy-match from` — Test qos policy match from — live device data
+- `test routing bgp virtual-router` — Test routing bgp virtual router — live device data
+- `test routing fib-lookup ip` — Test routing fib lookup ip — live device data
+- `test routing mfib-lookup group` — Test routing mfib lookup group — live device data
+- `test routing ospf logical-router` — Test routing ospf logical router — live device data
+- `test routing ospfv3 logical-router` — Test routing ospfv3 logical router — live device data
+- `test scp-server-connection confirm hostname` — Test scp server connection confirm hostname — live device data
+- `test scp-server-connection initiate hostname` — Test scp server connection initiate hostname — live device data
 - `test security-policy-match` — Test which security rule a packet matches (alias of packet-tracer)
+- `test security-policy-match from` — Test security policy match from — live device data
+- `test smtp-server vsys` — Test smtp server vsys — live device data
+- `test ssl-exclude-list predefined hostname` — Test ssl exclude list predefined hostname — live device data
+- `test ssl-exclude-list shared hostname` — Test ssl exclude list shared hostname — live device data
+- `test ssl-exclude-list vsys hostname` — Test ssl exclude list vsys hostname — live device data
+- `test stats-service` — Test stats service — live device data
+- `test tag-filter` — Test tag filter — live device data
+- `test threat-vault connection` — Test threat vault connection — live device data
+- `test uid` — Test uid — live device data
 - `test url` — Test URL categorization (use --remote)
+- `test url-info-cloud` — Test url info cloud — live device data
+- `test url-info-host` — Test url info host — live device data
+- `test url-wpc` — Test url wpc — live device data
+- `test user-id custom-group group-mapping` — Test user id custom group group mapping — live device data
+- `test user-id user-id-syslog-parse field-identifier event-string` — Test user id user id syslog parse field identifier event string — live device data
+- `test user-id user-id-syslog-parse regex-identifier event-regex` — Test user id user id syslog parse regex identifier event regex — live device data
+- `test uuid enable` — Test uuid enable — live device data
+- `test vpn ike-sa gateway` — Test vpn ike sa gateway — live device data
+- `test vpn ipsec-sa tunnel` — Test vpn ipsec sa tunnel — live device data
+- `test wildfire registration channel` — Test wildfire registration channel — live device data
+- `test x-authenticated-user ip` — Test x authenticated user ip — live device data
+- `tftp export` — Tftp export — live device data
+- `tftp export core-file data-plane from` — Tftp export core file data plane from — live device data
+- `tftp export core-file large-corefile from` — Tftp export core file large corefile from — live device data
+- `tftp export core-file management-plane from` — Tftp export core file management plane from — live device data
+- `tftp export debug bootmem_file from` — Tftp export debug bootmem_file from — live device data
+- `tftp export log-file data-plane to` — Tftp export log file data plane to — live device data
+- `tftp export log-file management-plane to` — Tftp export log file management plane to — live device data
+- `tftp export stats-dump to` — Tftp export stats dump to — live device data
+- `tftp export threat-pcap pcap-id` — Tftp export threat pcap pcap id — live device data
+- `tftp import` — Tftp import — live device data
+- `tftp import certificate from` — Tftp import certificate from — live device data
+- `tftp import keypair from` — Tftp import keypair from — live device data
+- `tftp import private-key from` — Tftp import private key from — live device data
 - `traceroute host` — Traceroute from a managed device (use --remote)
+- `traceroute ipv4` — Traceroute ipv4 — live device data
 - `update address` — Update address — update address <name> ip-netmask|fqdn|ip-range|ip-wildcard|description|tag <value>
 - `update address-group` — Update address group — update address-group <name> static <m1>... | dynamic filter '<expr>'
 - `update adnsr bad-domains` — Update a misconfigured domain
@@ -1153,3 +4836,5 @@ Use `help <command>` to open detailed docs for a command.
 - `update vpn-settings` — Update VPN settings
 - `update zone-profiles` — Update a zone protection profile
 - `update zones` — Update a security zone
+- `validate full` — Validate full — device-local config (break-glass)
+- `validate partial device-and-network` — Validate partial device and network — device-local config (break-glass)

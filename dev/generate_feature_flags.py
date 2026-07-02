@@ -217,6 +217,30 @@ def _explicit_flag_meta() -> dict[str, tuple[str, str]]:
     return {flag: counts.most_common(1)[0][0] for flag, counts in per_flag.items()}
 
 
+def _carry_state(flag: str, existing: dict[str, object]) -> object:
+    """Preserve state across the per-action -> per-resource read/write rename.
+
+    A new ``<resource>_read`` flag inherits ON/dev if any old ``show_<resource>``
+    flag had it; ``<resource>_write`` inherits from the old create/update/delete
+    flags. Exact-name matches (curated, panos, unrenamed) pass straight through.
+    """
+    if flag in existing:
+        return existing[flag]
+    old_names: list[str] = []
+    if flag.endswith("_read"):
+        base = flag[: -len("_read")]
+        old_names = [f"show_{base}", f"show_{base}_id"]
+    elif flag.endswith("_write"):
+        base = flag[: -len("_write")]
+        old_names = [f"create_{base}", f"update_{base}", f"delete_{base}", f"delete_{base}_id"]
+    values = [existing[name] for name in old_names if name in existing]
+    if any(value is True for value in values):
+        return True
+    if any(str(value).lower() == "dev" for value in values):
+        return "dev"
+    return False
+
+
 def _flag_file(flag: str, catalog_flag_specs: dict[str, str],
                explicit_meta: dict[str, tuple[str, str]]) -> str:
     """Return the glossary file stem that owns *flag*."""
@@ -321,12 +345,12 @@ def build_feature_files() -> dict[str, dict[str, object]]:
                 f"{category_label}: {_resource_flag_name(resource)}"
             )
             for _action, flag in action_flags:
-                target[flag] = existing_states.get(flag, False)
+                target[flag] = _carry_state(flag, existing_states)
                 emitted.add(flag)
 
     for flag in sorted(explicit - emitted):
         target = _file_map(_flag_file(flag, catalog_flag_specs, explicit_meta))
-        target[flag] = existing_states.get(flag, False)
+        target[flag] = _carry_state(flag, existing_states)
 
     return files
 
