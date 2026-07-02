@@ -25,13 +25,7 @@ from app.config import (
     load_config,
     save_config,
 )
-from app.docs import (
-    COMMAND_DOCS_ROOT,
-    COMMANDS,
-    DOCS_ROOT,
-    open_docs_in_browser,
-    slugify,
-)
+from app.docs import DOCS_ROOT, open_docs_in_browser
 from app.shell import ArcShell
 
 app = typer.Typer(
@@ -60,13 +54,9 @@ def main(
     if ctx.invoked_subcommand is not None:
         return
 
-    # --- Auto-sync docs on every launch (silent, local-only — no network) ---
-    # Keeps command stubs and the docs bundle up to date without a manual
-    # `arc cliup` run during development.  Change `silent=True` to `False`
-    # here to see verbose output, or remove the call once the project matures.
-    _do_cliup(silent=True, skip_vendor=True)
-
-
+    # No file generation at launch: command help is synthesized from the
+    # registry (app/docs.py), and the browser bundle is rebuilt explicitly
+    # with `arc cliup`. A shell start must never write to the repo.
     cfg = load_config()
     if debug:
         cfg.debug = True
@@ -730,55 +720,8 @@ def config_generate(
 
 
 # ---------------------------------------------------------------------------
-# cliup — sync docs with registered commands
+# cliup — offline browser docs bundle
 # ---------------------------------------------------------------------------
-
-_COMMAND_STUB_TEMPLATE = """\
----
-command: "{key}"
-description: "{description}"
-category: {category}
-scope: {scope}
----
-
-# {key}
-
-**Category:** {category}
-**API mode:** {api_note}
-**SSH mode:** {ssh_note}
-
-## Description
-
-{description}
-
-## Usage
-
-```
-{key}{usage_args}
-```
-
-## Examples
-
-Run via SCM API:
-```
-arc > {key}
-```
-
-Run directly on device via SSH:
-```
-arc:fw-01 > {key} --remote
-
-# Or enter SSH passthrough mode:
-arc > remote fw-01
-arc:fw-01[ssh] > {key}
-```
-
-## See Also
-
-- `help remote` — SSH passthrough mode
-- `help connect` — SSH to the current device
-- `help commands` — Full command reference
-"""
 
 # Vendor JS/CSS files downloaded once to docs/vendor/ by cliup.
 # All paths are CDN URLs; local filenames are the last path component.
@@ -851,81 +794,15 @@ def _build_docs_bundle() -> int:
     return len(pages)
 
 
-def _build_stub(key: str, cmd) -> str:
-    """Build a Markdown stub for a new command doc."""
-    from app.commands.registry import CommandDef  # noqa: F401 — type reference only
-
-    if cmd.api_handler is not None:
-        fn_name = getattr(cmd.api_handler, "__name__", "")
-        api_note = (
-            "Translation pending — use `--remote` for live device output."
-            if fn_name.startswith("_pending")
-            else "✓ Live SCM data"
-        )
-    else:
-        api_note = "Not available"
-
-    if cmd.ssh_command is not None:
-        ssh_cmd = cmd.ssh_command if isinstance(cmd.ssh_command, str) else "(dynamic)"
-        ssh_note = f"`{ssh_cmd}`"
-    else:
-        ssh_note = "Not applicable (config read from SCM)"
-
-    has_args = any(c in key for c in ("<", "["))
-    usage_args = "" if has_args else " [--remote]"
-
-    return _COMMAND_STUB_TEMPLATE.format(
-        key=key,
-        category=cmd.category,
-        scope=cmd.scope,
-        description=cmd.description,
-        api_note=api_note,
-        ssh_note=ssh_note,
-        usage_args=usage_args,
-    )
-
-
-def _regenerate_index() -> None:
-    """Rewrite docs/commands/index.md from the live COMMANDS registry."""
-    lines = [
-        "# Command Reference\n",
-        "\n",
-        "Use `help <command>` to open detailed docs for a command.\n",
-        "\n",
-    ]
-    for key in sorted(COMMANDS):
-        desc = COMMANDS[key].description
-        lines.append(f"- `{key}` — {desc}\n")
-    index_path = COMMAND_DOCS_ROOT / "index.md"
-    index_path.write_text("".join(lines), encoding="utf-8")
-
-
 def _do_cliup(silent: bool = False, skip_vendor: bool = False) -> dict:
-    """Core cliup logic — create missing command stubs, regenerate index, rebuild bundle.
+    """Core cliup logic — rebuild the offline browser docs bundle.
 
-    Args:
-        silent:      Suppress all console output (used for auto-run at shell startup).
-        skip_vendor: Skip CDN vendor downloads (safe for startup; no internet required).
+    Doc FILES are owned by dev/generate_command_docs.py (which prunes stubs —
+    commands without a file get registry-synthesized help). cliup only bundles
+    what exists for the browser portal; it never creates command docs.
 
-    Returns a stats dict with keys: created, existing, downloaded, bundled.
+    Returns a stats dict with keys: downloaded, bundled.
     """
-    COMMAND_DOCS_ROOT.mkdir(parents=True, exist_ok=True)
-
-    created: list[str] = []
-    existing: list[str] = []
-
-    for key, cmd in COMMANDS.items():
-        slug = slugify(key)
-        doc_file = COMMAND_DOCS_ROOT / f"{slug}.md"
-        if doc_file.exists():
-            existing.append(key)
-        else:
-            stub = _build_stub(key, cmd)
-            doc_file.write_text(stub, encoding="utf-8")
-            created.append(key)
-
-    _regenerate_index()
-
     downloaded: list[str] = []
     if not skip_vendor:
         if not silent:
@@ -936,48 +813,30 @@ def _do_cliup(silent: bool = False, skip_vendor: bool = False) -> dict:
         console.print("[dim]Building docs bundle…[/dim]")
     bundled = _build_docs_bundle()
 
-    return {
-        "created":    created,
-        "existing":   existing,
-        "downloaded": downloaded,
-        "bundled":    bundled,
-    }
+    return {"downloaded": downloaded, "bundled": bundled}
 
 
 @app.command("cliup")
 def cliup() -> None:
-    """Sync docs with the registry and rebuild the offline docs bundle.
+    """Rebuild the offline browser docs bundle.
 
     Steps performed:
-    1. Create Markdown stubs in docs/commands/ for any new registered commands.
-    2. Regenerate docs/commands/index.md from the live registry.
-    3. Download vendor JS/CSS to docs/vendor/ (once; skipped if already present).
-    4. Rebuild docs/docs-bundle.js — embeds all Markdown so the browser portal
+    1. Download vendor JS/CSS to docs/vendor/ (once; skipped if already present).
+    2. Rebuild docs/docs-bundle.js — embeds all Markdown so the browser portal
        works via file:// with no server required.
 
-    Existing doc files are never overwritten.
+    Command doc files and index.md are owned by dev/generate_command_docs.py.
     """
     stats = _do_cliup(silent=False, skip_vendor=False)
-    created   = stats["created"]
-    existing  = stats["existing"]
     downloaded = stats["downloaded"]
-    bundled   = stats["bundled"]
+    bundled = stats["bundled"]
 
-    total = len(COMMANDS)
     console.print(
-        f"\n[bold cyan]cliup[/bold cyan] — {total} registered commands\n"
-        f"  [green]created:[/green]  {len(created)}\n"
-        f"  [dim]existing:[/dim] {len(existing)}\n"
-        f"  [cyan]index:[/cyan]    docs/commands/index.md regenerated\n"
+        f"\n[bold cyan]cliup[/bold cyan]\n"
         f"  [cyan]vendor:[/cyan]   {len(downloaded)} file(s) downloaded"
         + (" (all present)" if not downloaded else "") + "\n"
         f"  [cyan]bundle:[/cyan]   docs/docs-bundle.js ({bundled} pages)\n"
     )
-    for key in created:
-        console.print(f"  [green]+[/green] docs/commands/{slugify(key)}.md")
-    if not created:
-        console.print("  [dim]All command docs are up to date.[/dim]")
-    console.print()
 
 
 # ---------------------------------------------------------------------------

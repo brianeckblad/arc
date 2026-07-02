@@ -1072,7 +1072,7 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 
 | Command | Scope | Feature flag | SCM API |
 |---|---|---|---|
-| `commit` | folder | `commit` | POST /config/setup/v1/config-versions/candidate:push |
+| `commit` | folder | — | POST /config/setup/v1/config-versions/candidate:push |
 | `ping host` | device | `ping` | (live device state — SSH via --remote) |
 | `request system reboot` | device | `request_system_reboot` | (live device state — SSH via --remote) |
 | `request system shutdown` | device | `request_system_reboot` | (live device state — SSH via --remote) |

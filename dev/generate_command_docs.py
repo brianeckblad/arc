@@ -284,9 +284,16 @@ def _doc_path(key: str) -> Path:
 
 
 def _is_trivial_body(key: str, body: str) -> bool:
-    """True when a doc body carries no hand-written content (heading only)."""
+    """True when a doc body carries no hand-written content.
+
+    Catches heading-only bodies AND the legacy auto-stub template that the old
+    `arc cliup` used to write on every shell launch (removed — cliup is
+    bundle-only now). Hand-written docs never contain both template markers.
+    """
     stripped = [line.strip() for line in body.strip().splitlines() if line.strip()]
-    return not stripped or (len(stripped) <= 2 and stripped[0].startswith("#"))
+    if not stripped or (len(stripped) <= 2 and stripped[0].startswith("#")):
+        return True
+    return "**API mode:**" in body and "## See Also" in body
 
 
 def ensure_front_matter() -> list[str]:

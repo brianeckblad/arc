@@ -17,7 +17,7 @@
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
   adns-resolver/v1/ca-certs                   LRCD     ✓ delete adnsr ca-certs / set adnsr ca-certs upload / show adnsr ca-certs / +2 more —
-  adns-resolver/v1/connection-sources         LRCUD    ✓ delete adnsr conn-sources / delete adnsr conn-sources subnets / set adnsr conn-sources / +6 more —
+  adns-resolver/v1/connection-sources         LRCUD    ✓ delete adnsr conn-sources / delete adnsr conn-sources subnets / set adnsr conn-sources / +7 more —
   adns-resolver/v1/connection-sources/subnets LR       ✓ show adnsr conn-sources subnets          —
   adns-resolver/v1/custom-fqdns               LRCUD    ✓ delete adnsr custom-fqdns / set adnsr custom-fqdns / show adnsr custom-fqdns / +2 more —
   adns-resolver/v1/edls                       LRCUD    ✓ delete adnsr edls / set adnsr edls / show adnsr edls / +2 more —
@@ -96,12 +96,12 @@ Resource                                      Methods  ARC Command              
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
   address-groups                              LRCUD    ✓ delete address-group / delete cngfw address-groups / set address-group / +6 more show objects address-group
   addresses                                   LRCUD    ✓ delete address / delete cngfw addresses / set address / +6 more show objects address
-  advanced-device-objects                     LRCUD    ✓ delete cngfw adv-device-objs / delete cngfw objects adv-device-objs / set cngfw adv-device-objs / +4 more —
+  advanced-device-objects                     LRCUD    ✓ delete cngfw adv-device-objs / delete cngfw adv-device-objs id / set cngfw adv-device-objs / +4 more —
   application-filters                         LRCUD    ✓ delete cngfw application-filters / set cngfw application-filters / show application-filter / +3 more —
   application-groups                          LRCUD    ✓ delete cngfw application-groups / set cngfw application-groups / show application-group / +3 more —
   applications                                LRCUD    ✓ delete cngfw applications / set cngfw applications / show cngfw applications / +2 more —
   auto-tag-actions                            LCUD     ✓ delete cngfw auto-tag-actions / set cngfw auto-tag-actions / show cngfw auto-tag-actions / +1 more —
-  device-context-segments                     LRCUD    ✓ delete cngfw device-contexts / delete cngfw objects device-contexts / set cngfw device-contexts / +3 more —
+  device-context-segments                     LRCUD    ✓ delete cngfw device-contexts / delete cngfw device-contexts id / set cngfw device-contexts / +3 more —
   dynamic-user-groups                         LRCUD    ✓ delete cngfw dynamic-user-groups / set cngfw dynamic-user-groups / show cngfw dynamic-user-groups / +2 more —
   external-dynamic-lists                      LRCUD    ✓ delete cngfw external-dynamic-lists / delete external-dynamic-list / set cngfw external-dynamic-lists / +6 more —
   hip-objects                                 LRCUD    ✓ delete cngfw hip-objects / set cngfw hip-objects / show cngfw hip-objects / +3 more —
@@ -149,7 +149,7 @@ Resource                                      Methods  ARC Command              
   security-rules                              LRCUD    ✓ delete cngfw security-rules / delete security-rule / set cngfw security-rules / +5 more show security policy
   ssl-decryption-settings                     LCUD     ✓ delete cngfw ssl-decryption-settings / set cngfw ssl-decryption-settings / show cngfw ssl-decryption-settings / +1 more —
   url-access-profiles                         LRCUD    ✓ delete cngfw url-access-profiles / set cngfw url-access-profiles / show cngfw url-access-profiles / +2 more —
-  url-admin-override                          LCD      ✓ delete cngfw url-admin-override / delete url-admin-override / set cngfw url-admin-override / +2 more —
+  url-admin-override                          LCD      ✓ delete cngfw url-admin-override / set cngfw url-admin-override / show cngfw url-admin-override —
   url-categories                              LRCUD    ✓ delete cngfw url-categories / delete url-category / set cngfw url-categories / +5 more show security url-filtering
   url-filtering-categories                    L        ✓ show cngfw url-filtering-categories      —
   vulnerability-protection-profiles           LRCUD    ✓ delete cngfw vuln-profiles / set cngfw vuln-profiles / show cngfw vuln-profiles / +3 more —
@@ -252,10 +252,10 @@ Resource                                      Methods  ARC Command              
   autoscale                                   LCUD     ✓ delete autoscale / set autoscale / show autoscale / +1 more —
   content-cloud-settings                      LRCUD    ✓ delete content-cloud-settings / set content-cloud-settings / show content-cloud-settings / +2 more —
   content-id-settings                         LRCUD    ✓ delete content-id-settings / set content-id-settings / show content-id-settings / +2 more —
-  device-context-segment-association          LRCUD    ✓ delete device-context-segment-association / delete ngfw device device settings device-context-segment-association / set device-context-segment-association / +3 more —
+  device-context-segment-association          LRCUD    ✓ delete device-context-segment-association / delete device-context-segment-association id / set device-context-segment-association / +3 more —
   device-redistribution-collector             LRCUD    ✓ delete device-redistribution-collector / set device-redistribution-collector / show device-redistribution-collector / +2 more —
   general-settings                            LRCUD    ✓ delete general-settings / set general-settings / show general-settings / +2 more —
-  ha-configurations                           LCUD     ✓ delete ha-configurations / set ha-configurations / show ha-configurations / +2 more —
+  ha-configurations                           LCUD     ✓ delete ha-configurations / set ha-configurations / show ha-configurations / +1 more —
   ha-configurations-gateways                  L        ✓ show ha-configurations-gateways          —
   ha-configurations-ip-addresses              L        ✓ show ha-configurations-ip-addresses      show objects address
   ha-configurations-netmasks                  L        ✓ show ha-configurations-netmasks          —
@@ -290,10 +290,10 @@ Resource                                      Methods  ARC Command              
   autoscale                                   LCUD     ✓ delete autoscale / set autoscale / show autoscale / +1 more —
   content-cloud-settings                      LRCUD    ✓ delete content-cloud-settings / set content-cloud-settings / show content-cloud-settings / +2 more —
   content-id-settings                         LRCUD    ✓ delete content-id-settings / set content-id-settings / show content-id-settings / +2 more —
-  device-context-segment-association          LRCUD    ✓ delete device-context-segment-association / delete ngfw device device settings device-context-segment-association / set device-context-segment-association / +3 more —
+  device-context-segment-association          LRCUD    ✓ delete device-context-segment-association / delete device-context-segment-association id / set device-context-segment-association / +3 more —
   device-redistribution-collector             LRCUD    ✓ delete device-redistribution-collector / set device-redistribution-collector / show device-redistribution-collector / +2 more —
   general-settings                            LRCUD    ✓ delete general-settings / set general-settings / show general-settings / +2 more —
-  ha-configurations                           LCUD     ✓ delete ha-configurations / set ha-configurations / show ha-configurations / +2 more —
+  ha-configurations                           LCUD     ✓ delete ha-configurations / set ha-configurations / show ha-configurations / +1 more —
   ha-configurations-gateways                  L        ✓ show ha-configurations-gateways          —
   ha-configurations-ip-addresses              L        ✓ show ha-configurations-ip-addresses      show objects address
   ha-configurations-netmasks                  L        ✓ show ha-configurations-netmasks          —
@@ -398,12 +398,12 @@ Resource                                      Methods  ARC Command              
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
   address-groups                              LRCUD    ✓ delete address-group / delete cngfw address-groups / set address-group / +6 more show objects address-group
   addresses                                   LRCUD    ✓ delete address / delete cngfw addresses / set address / +6 more show objects address
-  advanced-device-objects                     LRCUD    ✓ delete cngfw adv-device-objs / delete cngfw objects adv-device-objs / set cngfw adv-device-objs / +4 more —
+  advanced-device-objects                     LRCUD    ✓ delete cngfw adv-device-objs / delete cngfw adv-device-objs id / set cngfw adv-device-objs / +4 more —
   application-filters                         LRCUD    ✓ delete cngfw application-filters / set cngfw application-filters / show application-filter / +3 more —
   application-groups                          LRCUD    ✓ delete cngfw application-groups / set cngfw application-groups / show application-group / +3 more —
   applications                                LRCUD    ✓ delete cngfw applications / set cngfw applications / show cngfw applications / +2 more —
   auto-tag-actions                            LCUD     ✓ delete cngfw auto-tag-actions / set cngfw auto-tag-actions / show cngfw auto-tag-actions / +1 more —
-  device-context-segments                     LRCUD    ✓ delete cngfw device-contexts / delete cngfw objects device-contexts / set cngfw device-contexts / +3 more —
+  device-context-segments                     LRCUD    ✓ delete cngfw device-contexts / delete cngfw device-contexts id / set cngfw device-contexts / +3 more —
   dynamic-user-groups                         LRCUD    ✓ delete cngfw dynamic-user-groups / set cngfw dynamic-user-groups / show cngfw dynamic-user-groups / +2 more —
   external-dynamic-lists                      LRCUD    ✓ delete cngfw external-dynamic-lists / delete external-dynamic-list / set cngfw external-dynamic-lists / +6 more —
   hip-objects                                 LRCUD    ✓ delete cngfw hip-objects / set cngfw hip-objects / show cngfw hip-objects / +3 more —
@@ -457,7 +457,7 @@ Resource                                      Methods  ARC Command              
   security-rules                              LRCUD    ✓ delete cngfw security-rules / delete security-rule / set cngfw security-rules / +5 more show security policy
   ssl-decryption-settings                     LCUD     ✓ delete cngfw ssl-decryption-settings / set cngfw ssl-decryption-settings / show cngfw ssl-decryption-settings / +1 more —
   url-access-profiles                         LRCUD    ✓ delete cngfw url-access-profiles / set cngfw url-access-profiles / show cngfw url-access-profiles / +2 more —
-  url-admin-override                          LCD      ✓ delete cngfw url-admin-override / delete url-admin-override / set cngfw url-admin-override / +2 more —
+  url-admin-override                          LCD      ✓ delete cngfw url-admin-override / set cngfw url-admin-override / show cngfw url-admin-override —
   url-categories                              LRCUD    ✓ delete cngfw url-categories / delete url-category / set cngfw url-categories / +5 more show security url-filtering
   url-filtering-categories                    L        ✓ show cngfw url-filtering-categories      —
   vulnerability-protection-profiles           LRCUD    ✓ delete cngfw vuln-profiles / set cngfw vuln-profiles / show cngfw vuln-profiles / +3 more —
@@ -769,12 +769,12 @@ Resource                                      Methods  ARC Command              
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
   address-groups                              LRCUD    ✓ delete address-group / delete cngfw address-groups / set address-group / +6 more show objects address-group
   addresses                                   LRCUD    ✓ delete address / delete cngfw addresses / set address / +6 more show objects address
-  advanced-device-objects                     LRCUD    ✓ delete cngfw adv-device-objs / delete cngfw objects adv-device-objs / set cngfw adv-device-objs / +4 more —
+  advanced-device-objects                     LRCUD    ✓ delete cngfw adv-device-objs / delete cngfw adv-device-objs id / set cngfw adv-device-objs / +4 more —
   application-filters                         LRCUD    ✓ delete cngfw application-filters / set cngfw application-filters / show application-filter / +3 more —
   application-groups                          LRCUD    ✓ delete cngfw application-groups / set cngfw application-groups / show application-group / +3 more —
   applications                                LRCUD    ✓ delete cngfw applications / set cngfw applications / show cngfw applications / +2 more —
   auto-tag-actions                            LCUD     ✓ delete cngfw auto-tag-actions / set cngfw auto-tag-actions / show cngfw auto-tag-actions / +1 more —
-  device-context-segments                     LRCUD    ✓ delete cngfw device-contexts / delete cngfw objects device-contexts / set cngfw device-contexts / +3 more —
+  device-context-segments                     LRCUD    ✓ delete cngfw device-contexts / delete cngfw device-contexts id / set cngfw device-contexts / +3 more —
   dynamic-user-groups                         LRCUD    ✓ delete cngfw dynamic-user-groups / set cngfw dynamic-user-groups / show cngfw dynamic-user-groups / +2 more —
   external-dynamic-lists                      LRCUD    ✓ delete cngfw external-dynamic-lists / delete external-dynamic-list / set cngfw external-dynamic-lists / +6 more —
   hip-objects                                 LRCUD    ✓ delete cngfw hip-objects / set cngfw hip-objects / show cngfw hip-objects / +3 more —
@@ -822,7 +822,7 @@ Resource                                      Methods  ARC Command              
   security-rules                              LRCUD    ✓ delete cngfw security-rules / delete security-rule / set cngfw security-rules / +5 more show security policy
   ssl-decryption-settings                     LCUD     ✓ delete cngfw ssl-decryption-settings / set cngfw ssl-decryption-settings / show cngfw ssl-decryption-settings / +1 more —
   url-access-profiles                         LRCUD    ✓ delete cngfw url-access-profiles / set cngfw url-access-profiles / show cngfw url-access-profiles / +2 more —
-  url-admin-override                          LCD      ✓ delete cngfw url-admin-override / delete url-admin-override / set cngfw url-admin-override / +2 more —
+  url-admin-override                          LCD      ✓ delete cngfw url-admin-override / set cngfw url-admin-override / show cngfw url-admin-override —
   url-categories                              LRCUD    ✓ delete cngfw url-categories / delete url-category / set cngfw url-categories / +5 more show security url-filtering
   url-filtering-categories                    L        ✓ show cngfw url-filtering-categories      —
   vulnerability-protection-profiles           LRCUD    ✓ delete cngfw vuln-profiles / set cngfw vuln-profiles / show cngfw vuln-profiles / +3 more —

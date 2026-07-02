@@ -160,29 +160,6 @@ _update_external_dynamic_list()          991-1047       Update an existing EDL (
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
-## `app/cli.py`  (1018 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-main()                                   55-75          Launch the ARC interactive shell.
-open_docs()                              79-84          Open ARC documentation in the default browser (fully offline, no serve
-auth_configure()                         96-237         Interactively configure ARC credentials.
-auth_show()                              241-306        Display current configuration (credentials masked).
-auth_clear()                             310-330        Remove ARC secrets from the OS keychain.
-_short_err()                             333-335        Return the first line of an error string — avoids huge httpx traceback
-auth_migrate()                           339-412        Migrate old keychain entries to the new arc.* naming scheme.
-auth_delete_profile()                    416-441        Delete a named credential profile from config.json and the OS keychain
-auth_test()                              445-652        Test connectivity using stored credentials.
-config_generate()                        694-729        Generate a starter config.json with annotated placeholders and mode 06
-_ensure_vendor_files()                   794-814        Download vendor JS/CSS to docs/vendor/ if not already present.
-_build_docs_bundle()                     817-851        Embed all docs/*.md files into docs/docs-bundle.js.
-_build_stub()                            854-885        Build a Markdown stub for a new command doc.
-_regenerate_index()                      888-900        Rewrite docs/commands/index.md from the live COMMANDS registry.
-_do_cliup()                              903-944        Core cliup logic — create missing command stubs, regenerate index, reb
-cliup()                                  948-980        Sync docs with the registry and rebuild the offline docs bundle.
-scm_get()                                992-1004       Perform a raw GET request against the SCM API.
-run()                                    1011-1012      
-
 ## `app/utils/formatter.py`  (947 lines)
 
 Symbol                                   Lines          Purpose
@@ -222,6 +199,27 @@ format_device_detail()                   889-915        Render full detail for a
 format_raw()                             918-919        
 format_dict()                            922-923        
 _flatten()                               930-945        Recursively flatten a nested dict into dot-separated key/value pairs.
+
+## `app/cli.py`  (877 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+main()                                   49-65          Launch the ARC interactive shell.
+open_docs()                              69-74          Open ARC documentation in the default browser (fully offline, no serve
+auth_configure()                         86-227         Interactively configure ARC credentials.
+auth_show()                              231-296        Display current configuration (credentials masked).
+auth_clear()                             300-320        Remove ARC secrets from the OS keychain.
+_short_err()                             323-325        Return the first line of an error string — avoids huge httpx traceback
+auth_migrate()                           329-402        Migrate old keychain entries to the new arc.* naming scheme.
+auth_delete_profile()                    406-431        Delete a named credential profile from config.json and the OS keychain
+auth_test()                              435-642        Test connectivity using stored credentials.
+config_generate()                        684-719        Generate a starter config.json with annotated placeholders and mode 06
+_ensure_vendor_files()                   737-757        Download vendor JS/CSS to docs/vendor/ if not already present.
+_build_docs_bundle()                     760-794        Embed all docs/*.md files into docs/docs-bundle.js.
+_do_cliup()                              797-816        Core cliup logic — rebuild the offline browser docs bundle.
+cliup()                                  820-839        Rebuild the offline browser docs bundle.
+scm_get()                                851-863        Perform a raw GET request against the SCM API.
+run()                                    870-871        
 
 ## `app/shell/configure.py`  (764 lines)
 

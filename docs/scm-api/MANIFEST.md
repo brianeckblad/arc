@@ -1,6 +1,6 @@
 # SCM API Manifest
 
-Pulled on 2026-06-30 from `PaloAltoNetworks/pan.dev` (master).
+Pulled on 2026-07-02 from `PaloAltoNetworks/pan.dev` (master).
 
 | Category | Base URL (`servers[0].url`) | Spec |
 |----------|------------------------------|------|
