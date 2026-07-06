@@ -42,10 +42,11 @@ def parse_output_filters(spec: str) -> tuple[list[tuple[str, str]] | None, str]:
     """Parse a pipe filter chain into ``[(op, pattern), …]``.
 
     Supported (PAN-OS / Cisco vocabulary): ``match``/``include`` <pattern>,
-    ``except``/``exclude`` <pattern>, ``count``, ``json`` (render the
-    command's data as JSON instead of tables — for scripts), and
-    ``save <file>`` (write the filtered output to a file — must be the last
-    op in the chain).  Returns ``(None, error)`` on a malformed spec.
+    ``except``/``exclude`` <pattern>, ``count``,
+    ``json`` (dump command's raw data as JSON — bypasses table rendering),
+    ``bare`` (strip all formatting; output plain text one content-line at a time),
+    and ``save <file>`` (write filtered output to file — must be last).
+    Returns ``(None, error)`` on a malformed spec.
     """
     filters: list[tuple[str, str]] = []
     for segment in spec.split("|"):
@@ -61,6 +62,8 @@ def parse_output_filters(spec: str) -> tuple[list[tuple[str, str]] | None, str]:
             filters.append(("count", ""))
         elif op == "json":
             filters.append(("json", ""))
+        elif op == "bare":
+            filters.append(("bare", ""))
         elif op == "save":
             if len(parts) < 2 or not parts[1].strip():
                 return None, "'save' needs a filename — usage: <command> | save <file>"
@@ -68,7 +71,7 @@ def parse_output_filters(spec: str) -> tuple[list[tuple[str, str]] | None, str]:
         else:
             return None, (
                 f"unknown filter '{op}' — supported: "
-                "match <pat> | except <pat> | count | json | save <file>"
+                "match <pat> | except <pat> | count | json | bare | save <file>"
             )
     for index, (op, _) in enumerate(filters):
         if op == "save" and index != len(filters) - 1:
@@ -77,6 +80,19 @@ def parse_output_filters(spec: str) -> tuple[list[tuple[str, str]] | None, str]:
                 "<command> | match <pattern> | save <file>"
             )
     return filters, ""
+
+
+# Unicode box-drawing block U+2500–U+257F plus common Rich table characters.
+_BOX_RE = _re.compile(r"[─━│┃┄┅┆┇┈┉┊┋┌┍┎┏┐┑┒┓└┕┖┗┘┙┚┛├┝┞┟┠┡┢┣┤┥┦┧┨┩┪┫┬┭┮┯┰┱┲┳┴┵┶┷┸┹┺┻┼┽┾┿╀╁╂╃╄╅╆╇╈╉╊╋╌╍╎╏═║╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬╭╮╯╰╱╲╳╴╵╶╷╸╹╺╻╼╽╾╿]")
+
+
+def _bare_line(line: str) -> str | None:
+    """Strip ANSI + box-drawing from *line*; return None if nothing remains."""
+    stripped = _BOX_RE.sub("", _ANSI_RE.sub("", line)).strip()
+    # Drop lines that are empty or contain only whitespace/punctuation after stripping
+    if not stripped or all(c in " \t│┃" for c in stripped):
+        return None
+    return stripped
 
 
 def _line_matches(line: str, pattern: str) -> bool:
@@ -145,10 +161,12 @@ class DispatchMixin:
             console.print(f"[yellow]'{first}' is interactive — output filters don't apply.[/yellow]")
             return False
 
-        # `| json` renders the command's DATA as JSON instead of tables;
-        # any remaining match/except/count filters then apply to those lines.
+        # `| json` for API commands: set _render_as_json so _render() dumps raw data.
+        # For builtin commands that write directly to console (arc show, pwd, etc.),
+        # | json falls back to post-processing the captured text (see below).
         json_mode = any(op == "json" for op, _ in filters)
-        filters = [f for f in filters if f[0] != "json"]
+        bare_mode = any(op == "bare" for op, _ in filters)
+        remaining_filters = [f for f in filters if f[0] not in ("json", "bare")]
 
         self._piping = True
         self._render_as_json = json_mode
@@ -160,11 +178,37 @@ class DispatchMixin:
             self._render_as_json = False
 
         lines = capture.get().splitlines()
-        # Strip ANSI escape codes that may be present from Rich rendering
+        # Strip ANSI escape codes
         lines = [_ANSI_RE.sub("", l) for l in lines]
+
+        # `| bare` — strip all table/box-drawing characters, output content only
+        if bare_mode:
+            bare_lines = []
+            for l in lines:
+                result = _bare_line(l)
+                if result:
+                    bare_lines.append(result)
+            lines = bare_lines
+
+        # `| json` fallback for non-API output — convert lines to JSON array of strings
+        # (API commands already emitted JSON via _render_as_json; their output
+        # is valid JSON at this point and passes through unchanged)
+        if json_mode:
+            import json as _json
+            captured_text = "\n".join(lines)
+            # If the output already looks like JSON (API command), pass it through
+            stripped = captured_text.strip()
+            if stripped.startswith(("{", "[")):
+                lines = stripped.splitlines()
+            else:
+                # Builtin command or table output — convert to JSON array of lines
+                content_lines = [l for l in lines if l.strip()]
+                lines = _json.dumps(content_lines, indent=2, ensure_ascii=False).splitlines()
+
+        # Apply remaining filters (match/except/count/save) to the processed lines
         counted = False
         save_target: str | None = None
-        for op, pattern in filters:
+        for op, pattern in remaining_filters:
             if op == "match":
                 lines = [l for l in lines if _line_matches(l, pattern)]
             elif op == "except":
@@ -174,7 +218,8 @@ class DispatchMixin:
                 lines = [f"Count: {total} line(s)"]
                 counted = True
             elif op == "save":
-                save_target = pattern  # parser guarantees save is the last op
+                save_target = pattern
+
         if save_target is not None:
             self._save_pipe_output(lines, save_target)
             return should_exit
