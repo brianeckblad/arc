@@ -63,17 +63,17 @@ requires-dist = [
     { name = "cryptography" },
     { name = "httpx" },
     { name = "keyring" },
-    { name = "paramiko", specifier = ">=3.4.0" },
+    { name = "paramiko" },
     { name = "platformdirs" },
-    { name = "prompt-toolkit", specifier = ">=3.0.0" },
-    { name = "pydantic", specifier = ">=2.0.0" },
+    { name = "prompt-toolkit" },
+    { name = "pydantic" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-httpx", marker = "extra == 'dev'" },
     { name = "pyyaml", marker = "extra == 'dev'" },
     { name = "respx", marker = "extra == 'dev'" },
-    { name = "rich", specifier = ">=13.0.0" },
+    { name = "rich" },
     { name = "ruff", marker = "extra == 'dev'" },
-    { name = "typer", specifier = ">=0.12.0" },
+    { name = "typer" },
 ]
 provides-extras = ["dev"]
 
