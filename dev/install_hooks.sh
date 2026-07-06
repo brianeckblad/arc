@@ -8,10 +8,25 @@ HOOKS_DIR="$REPO_ROOT/.git/hooks"
 cat > "$HOOKS_DIR/pre-commit" << 'HOOK'
 #!/usr/bin/env bash
 # ARC pre-commit hook
-# Bumps version to 0.1.<commit-count>, regenerates CODE_MAP.md, runs smoke tests.
+# Bumps version, warns on settings/ changes, regenerates CODE_MAP, runs smoke tests.
 set -e
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
+
+# ── Warn on settings/ changes ────────────────────────────────────────────────
+SETTINGS_CHANGED=$(git diff --cached --name-only | grep '^settings/' || true)
+if [ -n "$SETTINGS_CHANGED" ]; then
+    echo ""
+    echo "pre-commit: ⚠  settings/ files are staged:"
+    echo "$SETTINGS_CHANGED" | sed 's/^/    /'
+    echo ""
+    echo "    If these were changed by you (feature enable, theme, aliases, banner):"
+    echo "    → type Ctrl-C now, then decide: commit them or roll back with:"
+    echo "      git checkout HEAD -- settings/"
+    echo ""
+    echo "    Continuing in 5 seconds... (Ctrl-C to abort)"
+    sleep 5
+fi
 
 # ── Bump version: 0.1.<commit-count+1> ──────────────────────────────────────
 COMMIT_COUNT=$(git rev-list --count HEAD 2>/dev/null || echo 0)

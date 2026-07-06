@@ -393,6 +393,29 @@ Version is `0.1.<commit-count>` from `app/__init__.py` — never hand-edit
   flow, domain names (`listing_status` not `data`), 1–3-sentence docstrings on
   non-trivial functions.
 
+### Settings file change policy
+
+**`settings/` files are user-editable configuration** — operators manage them
+directly without an LLM. Before staging any `settings/` change in a commit,
+**ask the user** whether to:
+
+1. **Commit** the change (it was intentional and should be persisted)
+2. **Roll back** to the last commit (`git checkout HEAD -- settings/`)
+
+Rule: if the change was made by the LLM as part of the task, include it.
+If the change was made by the operator manually (feature enable, theme tweak,
+alias added, banner edited) and the `gitp` trigger fires, surface it explicitly
+rather than silently including it.
+
+The pre-commit hook also detects `settings/` changes and prints a warning so
+the operator notices before the commit lands.
+
+**Files to watch** (tracked by the pre-commit hook):
+- `settings/banner.txt`, `settings/goodbye.txt`, `settings/theme.json`
+- `settings/builtin-commands.json`, `settings/command-aliases.json`
+- `settings/command-structure.json`, `settings/app-variables.json`
+- `settings/cli-structure.yaml`, `settings/features/*.json`
+
 ---
 
 ## Debug — error text → files
