@@ -19,13 +19,13 @@ Symbol                                   Lines          Purpose
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
-## `app/shell/configure.py`  (1866 lines)
+## `app/shell/configure.py`  (1865 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _prefs_file_label()                      10-16          Repo-relative path of the preferences file, for display.
 capture_write_ops()                      19-49          Run a write handler against a recording client and capture its mutatio
-class ConfigureMixin                     52-1794        
+class ConfigureMixin                     52-1793        
   ._cmd_configure()                      53-73          Enter configure mode (Cisco-style).
   ._stage_write()                        75-102         Validate a configure-mode write and stage it locally (no SCM change).
   ._cmd_show_pending()                   104-125        List the locally staged configure-mode changes (`show config`).
@@ -41,28 +41,28 @@ class ConfigureMixin                     52-1794
   ._cmd_terminal()                       432-537        Per-user terminal preferences — persisted to config/<user>/preferences
   ._cmd_cli()                            539-593        Read/write CLI theme settings (configure mode only).
   ._cmd_feature()                        595-842        Show or change feature-flag states at runtime.
-  ._cs_tier()                            849-888        Return the tier label for a command key.
-  ._format_spec()                        891-915        Format a command arg spec in PAN-OS style.
-  ._cs_list()                            917-1012       List enabled/disabled commands with PAN-OS-style field display and pag
-  ._cs_update()                          1015-1047      Stream dev/commandupdate.py — same script the LLM 'commandupdate' trig
-  ._cs_clear()                           1050-1059      Wipe the CLI-generated command structure file.
-  ._cmd_dev()                            1065-1103      Enter the dev shell (modal, like configure mode).
-  ._dev_shell_enter()                    1105-1135      Enter the dev shell — enable dev mode and show the dev menu.
-  ._dev_shell_exit()                     1137-1145      Leave the dev shell.
-  ._dispatch_dev_shell()                 1147-1217      Route dev-shell commands.
-  ._dev_inline_help()                    1219-1304      Show contextual help for a dev shell command or sub-command.
-  ._dev_shell_help()                     1306-1335      Print full dev shell command reference.
-  ._cs_tier_legend()                     1337-1374      Print the tier legend for command-structure list.
-  ._dev_status()                         1382-1477      Unified health dashboard for the dev shell.
-  ._dev_docs()                           1483-1494      Handle dev-shell 'docs' sub-commands.
-  ._dev_docs_update()                    1496-1536      Stream docsupdate.py to pull latest pan.dev specs and regenerate catal
-  ._dev_docs_status()                    1538-1586      Show doc/spec freshness with last pull date from MANIFEST.md.
-  ._dev_catalog()                        1592-1601      Handle dev-shell 'catalog' sub-commands.
-  ._dev_catalog_rebuild()                1603-1656      Run all generator scripts to rebuild code artifacts.
-  ._print_dev_status()                   1660-1674      Print current dev mode state (used by 'dev on/off' outside the shell).
-  ._cmd_setup()                          1677-1794      Interactive credential setup wizard.
-_setup_bearer_instructions()             1801-1829      Print bearer-token setup commands for the detected OS.
-_setup_oauth_instructions()              1832-1864      Print OAuth client credential setup commands for the detected OS.
+  ._cs_tier()                            849-875        Return the tier label based on override flag in command-structure.json
+  ._format_spec()                        878-902        Format a command arg spec in PAN-OS style.
+  ._cs_list()                            904-999        List enabled/disabled commands with PAN-OS-style field display and pag
+  ._cs_update()                          1002-1034      Stream dev/commandupdate.py — same script the LLM 'commandupdate' trig
+  ._cs_clear()                           1037-1058      Remove all override:false (cli-generated) entries from command-structu
+  ._cmd_dev()                            1064-1102      Enter the dev shell (modal, like configure mode).
+  ._dev_shell_enter()                    1104-1134      Enter the dev shell — enable dev mode and show the dev menu.
+  ._dev_shell_exit()                     1136-1144      Leave the dev shell.
+  ._dispatch_dev_shell()                 1146-1216      Route dev-shell commands.
+  ._dev_inline_help()                    1218-1303      Show contextual help for a dev shell command or sub-command.
+  ._dev_shell_help()                     1305-1334      Print full dev shell command reference.
+  ._cs_tier_legend()                     1336-1373      Print the tier legend for command-structure list.
+  ._dev_status()                         1381-1476      Unified health dashboard for the dev shell.
+  ._dev_docs()                           1482-1493      Handle dev-shell 'docs' sub-commands.
+  ._dev_docs_update()                    1495-1535      Stream docsupdate.py to pull latest pan.dev specs and regenerate catal
+  ._dev_docs_status()                    1537-1585      Show doc/spec freshness with last pull date from MANIFEST.md.
+  ._dev_catalog()                        1591-1600      Handle dev-shell 'catalog' sub-commands.
+  ._dev_catalog_rebuild()                1602-1655      Run all generator scripts to rebuild code artifacts.
+  ._print_dev_status()                   1659-1673      Print current dev mode state (used by 'dev on/off' outside the shell).
+  ._cmd_setup()                          1676-1793      Interactive credential setup wizard.
+_setup_bearer_instructions()             1800-1828      Print bearer-token setup commands for the detected OS.
+_setup_oauth_instructions()              1831-1863      Print OAuth client credential setup commands for the detected OS.
 
 ## `app/api/client.py`  (1241 lines)
 
@@ -300,25 +300,24 @@ class DispatchMixin                      91-765
   ._show_command_not_found()             325-396        Show a helpful message when a command is not recognized.
   ._dispatch()                           398-765        Process one input line.  Returns True when the user wants to exit ARC.
 
-## `app/settings/command_structure.py`  (722 lines)
+## `app/settings/command_structure.py`  (715 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _field_meta()                            200-207        Return the raw metadata dict for *field* of *object* (library → generi
 _resolve_field()                         210-233        Build one arg dict for *field* of *object*, from the field library.
 _resolve_arg()                           236-242        Resolve one arg item — either a field name string or an inline arg dic
-_load_json()                             245-287        Parse ``settings/command-structure.json`` into command arg specs.
-_load_generated_json()                   290-311        Load ``settings/command-structure-generated.json`` written by the CLI.
-_generated_entries()                     314-331        Arg specs for generated `set` commands, from the spec-derived catalog.
-load_command_structure()                 334-361        Return ``{command_key: entry}`` — priority: hand JSON > generated JSON
-_parse_usage_spec()                      364-486        Derive a basic arg spec from a CommandDef ``usage`` string.
-arg_spec()                               489-514        Return the ordered ``args`` list for *command_key*, or ``None`` if abs
-invalidate_cache()                       517-520        Force a re-read on next access (used by tools/tests that rewrite the f
-class _NextState                         540-550        What the *next* token can be — used to drive Tab completion.
-_walk()                                  553-639        Consume *tokens* against *spec*, returning (assignments, positionals, 
-parse()                                  642-656        Parse *remainder* tokens into an args dict using the command structure
-help_options()                           659-688        Return Cisco-style ``?`` help rows for the next token after *typed*.
-completion_options()                     691-719        Return ``{text, display, meta}`` options for the next token after *typ
+_load_json()                             245-308        Parse ``settings/command-structure.json`` into command arg specs.
+_generated_entries()                     311-326        Arg specs for generated `set` commands, from the spec-derived catalog.
+load_command_structure()                 329-354        Return ``{command_key: entry}`` — single file + field_catalog fallback
+_parse_usage_spec()                      357-479        Derive a basic arg spec from a CommandDef ``usage`` string.
+arg_spec()                               482-507        Return the ordered ``args`` list for *command_key*, or ``None`` if abs
+invalidate_cache()                       510-513        Force a re-read on next access (used by tools/tests that rewrite the f
+class _NextState                         533-543        What the *next* token can be — used to drive Tab completion.
+_walk()                                  546-632        Consume *tokens* against *spec*, returning (assignments, positionals, 
+parse()                                  635-649        Parse *remainder* tokens into an args dict using the command structure
+help_options()                           652-681        Return Cisco-style ``?`` help rows for the next token after *typed*.
+completion_options()                     684-712        Return ``{text, display, meta}`` options for the next token after *typ
 
 ## `app/shell/navigation.py`  (706 lines)
 

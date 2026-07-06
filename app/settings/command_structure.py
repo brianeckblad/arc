@@ -33,7 +33,7 @@ import json
 import logging
 from dataclasses import dataclass, field
 
-from app.paths import COMMAND_STRUCTURE_JSON, COMMAND_STRUCTURE_GENERATED_JSON
+from app.paths import COMMAND_STRUCTURE_JSON
 
 logger = logging.getLogger(__name__)
 
@@ -245,79 +245,74 @@ def _resolve_arg(obj: str, item) -> dict:
 def _load_json() -> dict[str, dict]:
     """Parse ``settings/command-structure.json`` into command arg specs.
 
-    Key formats accepted:
-    - Full command key  ``"set address-group": [...]``  → used as-is
-    - Bare object name  ``"address": [...]``  → prefixed with ``set ``
+    Supported entry formats:
 
-    Value formats accepted:
-    - List of strings  → resolved via _FIELD_LIBRARY (human-editable)
-    - List of dicts    → used inline (written by command-structure update)
+    Legacy (backward compat) — bare list, treated as override:true:
+      ``"address": ["name", "type", ...]``          bare object → prefixed set
+      ``"set address-group": ["name", "type", ...]`` full command key
 
-    Keys starting with ``_`` are comments and skipped.
-    Auto-derives ``update <obj>`` and ``delete <obj>`` from each ``set <obj>``.
+    Current format:
+      ``"set address": {"override": true,  "fields": ["name", "type", ...]}``
+      ``"set tag":     {"override": false, "args":   [{...}, ...]}``
+
+    ``override: true``  — hand-curated; commandupdate will not overwrite.
+    ``override: false`` — auto-generated; commandupdate may refresh.
+    Both are stored with the override flag so callers can distinguish tiers.
+
+    Auto-derives ``update <obj>`` and ``delete <obj>`` from override:true
+    ``set <obj>`` entries that aren't explicitly listed.
     """
     structure: dict[str, dict] = {}
     raw = json.loads(COMMAND_STRUCTURE_JSON.read_text(encoding="utf-8"))
     if not isinstance(raw, dict):
         return {}
 
-    for key, fields in raw.items():
-        if key.startswith("_") or not isinstance(fields, list) or not fields:
+    for key, value in raw.items():
+        if key.startswith("_"):
             continue
-        if " " in key:
-            cmd_key = key
-            obj = key.split()[-1]
-        else:
-            cmd_key = f"set {key}"
-            obj = key
-        structure[cmd_key] = {"args": [_resolve_arg(obj, f) for f in fields]}
 
-    set_entries = {k: v for k, v in structure.items() if k.startswith("set ")}
+        # Normalise key to full command string
+        cmd_key = key if " " in key else f"set {key}"
+        obj = cmd_key.split()[-1]
+
+        if isinstance(value, list) and value:
+            # Legacy bare list → override:true hand-curated
+            structure[cmd_key] = {
+                "args": [_resolve_arg(obj, f) for f in value],
+                "override": True,
+            }
+        elif isinstance(value, dict):
+            fields = value.get("fields") or value.get("args") or []
+            if not fields:
+                continue
+            override = bool(value.get("override", False))
+            structure[cmd_key] = {
+                "args": [_resolve_arg(obj, f) for f in fields],
+                "override": override,
+            }
+
+    # Auto-derive update/delete from override:true set entries only
+    set_entries = {k: v for k, v in structure.items()
+                   if k.startswith("set ") and v.get("override")}
     for set_key, entry in set_entries.items():
         obj = set_key[4:]
         update_key = f"update {obj}"
         delete_key = f"delete {obj}"
         if update_key not in structure:
-            structure[update_key] = entry
+            structure[update_key] = {**entry}
         if delete_key not in structure:
             name_only = [a for a in entry["args"] if a["name"] == "name"]
             if name_only:
-                structure[delete_key] = {"args": name_only}
+                structure[delete_key] = {"args": name_only, "override": True}
 
     return structure
-
-
-def _load_generated_json() -> dict[str, dict]:
-    """Load ``settings/command-structure-generated.json`` written by the CLI.
-
-    Stores inline arg dicts written by ``command-structure update``.
-    Missing file is silently ignored.
-    """
-    if not COMMAND_STRUCTURE_GENERATED_JSON.exists():
-        return {}
-    try:
-        raw = json.loads(COMMAND_STRUCTURE_GENERATED_JSON.read_text(encoding="utf-8"))
-        if not isinstance(raw, dict):
-            return {}
-        result: dict[str, dict] = {}
-        for key, fields in raw.items():
-            if key.startswith("_") or not isinstance(fields, list) or not fields:
-                continue
-            obj = key.split()[-1] if " " in key else key
-            result[key] = {"args": [_resolve_arg(obj, f) for f in fields]}
-        return result
-    except (OSError, json.JSONDecodeError, ValueError) as exc:
-        logger.warning("command-structure-generated parse error: %s", exc)
-        return {}
 
 
 def _generated_entries() -> dict[str, dict]:
     """Arg specs for generated `set` commands, from the spec-derived catalog.
 
     ``app/settings/field_catalog.py`` is AUTO-GENERATED from the OpenAPI specs
-    (``python dev/generate_field_library.py``, run by docsupdate). It gives
-    every flat-bodied generated write command the same structured completion,
-    `?` help, and greedy parsing that hand-listed commands get.
+    (``python dev/generate_field_library.py``, run by docsupdate).
     """
     try:
         from app.settings.field_catalog import FIELD_CATALOG
@@ -327,20 +322,19 @@ def _generated_entries() -> dict[str, dict]:
     for key, entry in FIELD_CATALOG.items():
         args = entry.get("args") if isinstance(entry, dict) else None
         if isinstance(args, list) and args:
-            entries[key] = {"args": args}
+            entries[key] = {"args": args, "override": False}
     return entries
 
 
 def load_command_structure() -> dict[str, dict]:
-    """Return ``{command_key: entry}`` — priority: hand JSON > generated JSON > field_catalog.
+    """Return ``{command_key: entry}`` — single file + field_catalog fallback.
 
     Priority (highest wins):
-      1. ``settings/command-structure.json``           — hand-curated
-      2. ``settings/command-structure-generated.json`` — written by ``command-structure update``
-      3. ``app/settings/field_catalog.py``             — auto-generated from OpenAPI specs
+      1. ``settings/command-structure.json`` override:true  — hand-curated
+      2. ``settings/command-structure.json`` override:false — cli-generated
+      3. ``app/settings/field_catalog.py``                  — OpenAPI auto-generated
 
-    Any read/parse failure degrades gracefully; worst case ``{}`` causes
-    ``arg_spec()`` to fall back to the usage-string parser.
+    Any read/parse failure degrades gracefully to the usage-string fallback.
     """
     global _cache
     if _cache is not None:
@@ -348,9 +342,8 @@ def load_command_structure() -> dict[str, dict]:
 
     # Layer 3: OpenAPI auto-generated (lowest priority)
     structure: dict[str, dict] = _generated_entries()
-    # Layer 2: CLI-generated (command-structure update)
-    structure.update(_load_generated_json())
-    # Layer 1: Hand-curated (highest priority)
+    # Layer 1+2: single command-structure.json (override:true beats override:false,
+    # but both beat field_catalog since json.update() runs last)
     try:
         if COMMAND_STRUCTURE_JSON.exists():
             structure.update(_load_json())

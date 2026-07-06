@@ -847,27 +847,15 @@ class ConfigureMixin:
     # ------------------------------------------------------------------
 
     def _cs_tier(self, cmd_key: str) -> str:
-        """Return the tier label for a command key."""
+        """Return the tier label based on override flag in command-structure.json."""
         from app.settings import command_structure as cs
-        from app.paths import COMMAND_STRUCTURE_GENERATED_JSON
-        import json as _json
+        from app.commands.registry import COMMANDS
 
-        # Check hand-curated JSON (tier 1)
-        try:
-            raw = _json.loads(__import__('app.paths', fromlist=['COMMAND_STRUCTURE_JSON']).COMMAND_STRUCTURE_JSON.read_text())
-            if cmd_key in raw or (not " " in cmd_key and f"set {cmd_key}" in raw):
-                return "1"
-        except Exception:
-            pass
-
-        # Check generated JSON (tier 1g)
-        if COMMAND_STRUCTURE_GENERATED_JSON.exists():
-            try:
-                gen = _json.loads(COMMAND_STRUCTURE_GENERATED_JSON.read_text())
-                if cmd_key in gen:
-                    return "1g"
-            except Exception:
-                pass
+        # Check the unified structure (override:true = tier 1, override:false = tier 1g)
+        struct = cs.load_command_structure()
+        entry = struct.get(cmd_key)
+        if entry:
+            return "1" if entry.get("override", False) else "1g"
 
         # Check field_catalog (tier 2)
         try:
@@ -878,7 +866,6 @@ class ConfigureMixin:
             pass
 
         # Check usage-string fallback (tier 3)
-        from app.commands.registry import COMMANDS
         cmd_def = COMMANDS.get(cmd_key)
         if cmd_def and cmd_def.usage:
             spec = cs._parse_usage_spec(cmd_key, cmd_def.usage)
@@ -1048,15 +1035,27 @@ class ConfigureMixin:
 
 
     def _cs_clear(self) -> None:
-        """Wipe the CLI-generated command structure file."""
-        from app.paths import COMMAND_STRUCTURE_GENERATED_JSON
+        """Remove all override:false (cli-generated) entries from command-structure.json."""
+        import json as _json
+        from app.paths import COMMAND_STRUCTURE_JSON, COMMAND_STRUCTURE_GENERATED_JSON
         from app.settings import command_structure as cs
+
+        if COMMAND_STRUCTURE_JSON.exists():
+            raw = _json.loads(COMMAND_STRUCTURE_JSON.read_text(encoding="utf-8"))
+            before = sum(1 for k, v in raw.items()
+                        if not k.startswith("_") and isinstance(v, dict) and not v.get("override", True))
+            cleaned = {k: v for k, v in raw.items()
+                      if k.startswith("_") or not isinstance(v, dict) or v.get("override", True)}
+            COMMAND_STRUCTURE_JSON.write_text(
+                _json.dumps(cleaned, indent=2, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
+            cs.invalidate_cache()
+            console.print(f"[cyan]Removed {before} cli-generated (override:false) entries.[/cyan]")
+        # Also remove legacy generated file if it exists
         if COMMAND_STRUCTURE_GENERATED_JSON.exists():
             COMMAND_STRUCTURE_GENERATED_JSON.unlink()
-            cs.invalidate_cache()
-            console.print("[cyan]command-structure-generated.json cleared.[/cyan]")
-        else:
-            console.print("[dim]Nothing to clear — generated file does not exist.[/dim]")
+            console.print("[dim]Removed legacy command-structure-generated.json[/dim]")
 
     # =========================================================================
     # Dev shell — modal sub-shell entered by typing `dev` at any prompt.
