@@ -8,12 +8,12 @@ dependencies = [
     "cryptography",
     "httpx",
     "keyring",
-    "paramiko>=3.4.0",
+    "paramiko",
     "platformdirs",
-    "prompt-toolkit>=3.0.0",
-    "pydantic>=2.0.0",
-    "rich>=13.0.0",
-    "typer>=0.12.0",
+    "prompt-toolkit",
+    "pydantic",
+    "rich",
+    "typer",
 ]
 
 [project.optional-dependencies]
