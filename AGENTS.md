@@ -26,7 +26,7 @@ the smallest file that owns each concern.
 | `commanddef` (field reference) | `docs/COMMANDDEF_REFERENCE.md` | — | — |
 | `shell` (REPL, dispatch, help UX) | `dev/CODE_MAP.md` → one range in `app/shell/<file>.py` | that one mixin file | `--file app/shell/<file>.py` |
 | `catalog` (builtin names, SHELL help rows) | `app/shell_catalog.py` | same | `--file app/shell_catalog.py` |
-| `feature` / `flag <name>` (turn commands on/dev/off) | `settings/features/` (per-domain glossary: scm-<spec>.json, panos-ops/config.json; curated flags live beside their spec siblings) | the one owning file (+ one `CommandDef.feature_flag`) | `--only 1,2,3` |
+| `feature` / `flag <name>` (turn commands on/dev/off) | `settings/features/` (per-domain glossary: scm-<spec>.json, panos-ops/config.json; **`local.json` = user overrides, never regenerated**) | the one owning file (+ one `CommandDef.feature_flag`). Use `local.json` for persistent user overrides that survive `docsupdate` / `catalog rebuild` | `--only 1,2,3` |
 | `theme` (colours) | `settings/theme.json`, `app/settings/theme.py` | same | `--only 10` |
 | `terminal` / prefs (pager, width, spinner) | `app/settings/user_prefs.py`, `_cmd_terminal` in `app/shell/configure.py` | same | `--only 4` |
 | `settings` (banner, goodbye, labels — no code) | `settings/` | `settings/banner.txt` etc. | `--only 7,8,9,10` |
@@ -63,7 +63,8 @@ arc/
 ├── AGENTS.md                      ← this hub
 ├── settings/                      ← USER-EDITABLE, no code: features/ (per-domain
 │                                    flag glossary: scm-<spec>.json, panos-ops.json,
-│                                    panos-config.json), banner.txt,
+│                                    panos-config.json; **local.json = user overrides,
+│                                    never touched by generators**), banner.txt,
 │                                    goodbye.txt, theme.json, cli-structure.yaml,
 │                                    command-structure.json, commands.json,
 │                                    panos-sources.json (PAN-OS docs URL registry)
