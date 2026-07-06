@@ -417,6 +417,13 @@ class DispatchMixin:
             if handled is not None:
                 return handled
 
+        # Builtin alias expansion — check settings/builtin_commands.json _builtin_aliases
+        # BEFORE prefix expansion so "conf t" → "configure" resolves cleanly.
+        line_lower = line.strip().lower()
+        builtin_aliases = getattr(self, "_builtin_aliases", {})
+        if line_lower in builtin_aliases:
+            line = builtin_aliases[line_lower]
+
         # `watch [N] <command>` — re-run every N seconds until Ctrl-C.
         # Parsed before pipe filters so the whole pipeline is re-run each tick.
         # `watch ?` and `watch help` are intercepted and show usage instead.

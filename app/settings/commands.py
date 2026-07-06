@@ -81,6 +81,27 @@ def is_command_visible(command_key: str, visibility: dict[str, str],
     return False          # STATE_BLOCKED
 
 
+def load_builtin_aliases() -> dict[str, str]:
+    """Load the ``_builtin_aliases`` map from settings/builtin_commands.json.
+
+    Returns a dict of ``{input_line: canonical_line}``.  Applied in dispatch
+    before prefix expansion so ``conf t`` → ``configure`` without hardcoding.
+    Keys are matched case-insensitively after stripping; values are dispatched
+    verbatim (so ``"conf t": "configure"`` runs configure with no args).
+    Missing file → empty dict (no aliases).
+    """
+    if not COMMANDS_FILE.exists():
+        return {}
+    try:
+        data = json.loads(COMMANDS_FILE.read_text(encoding="utf-8"))
+        aliases = data.get("_builtin_aliases", {})
+        if not isinstance(aliases, dict):
+            return {}
+        return {str(k).strip().lower(): str(v).strip() for k, v in aliases.items()}
+    except (json.JSONDecodeError, IOError):
+        return {}
+
+
 def is_command_executable(command_key: str, visibility: dict[str, str]) -> bool:
     """Return True when *command_key* is allowed to run.
 

@@ -53,6 +53,9 @@ class ArcShell(
         # settings/builtin_commands.json.  Values: true (visible), false (blocked),
         # "hidden" (works but not shown in ? — revealed in dev mode).
         self._command_visibility: dict[str, str] = load_command_visibility()
+        # Builtin aliases — shorthand lines → canonical dispatch lines.
+        # Loaded from _builtin_aliases in settings/builtin_commands.json.
+        self._builtin_aliases: dict[str, str] = load_builtin_aliases()
 
         # Development mode reveals "dev" (under-construction) commands.  Off by
         # default; toggled by the hidden `dev` command, or pre-enabled in CI/CD

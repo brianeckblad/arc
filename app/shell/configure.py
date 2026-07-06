@@ -54,10 +54,11 @@ class ConfigureMixin:
         """Enter configure mode (Cisco-style).
 
         In configure mode, 'set' creates objects and 'exit' leaves configure mode.
+        Shortcuts like 'conf' and 'conf t' are defined in settings/builtin_commands.json.
         """
-        if args and args[0].lower() not in ("t", "terminal"):
+        if args:
             console.print(
-                "[yellow]Usage:[/yellow] configure | conf | conf t\n"
+                "[yellow]Usage:[/yellow] configure\n"
                 "  Then use [bold]set[/bold] to create objects, [bold]cli[/bold] for theme operations."
             )
             return

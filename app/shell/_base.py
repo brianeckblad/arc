@@ -88,7 +88,7 @@ from app.docs import (
 )
 from app.settings.user_prefs import UserPrefs, load_prefs, save_prefs
 from app.settings.features import dev_mode_from_env, feature_state, is_enabled, is_feature_visible, load_features
-from app.settings.commands import load_command_visibility, is_command_visible, is_command_executable
+from app.settings.commands import load_command_visibility, is_command_visible, is_command_executable, load_builtin_aliases
 from app.shell_catalog import SHELL_BUILTINS, shell_help_rows
 from app.ssh.manager import SSHManager
 from app.settings.theme import ArcTheme, THEME_KEYS, load_theme, reset_theme, save_theme
