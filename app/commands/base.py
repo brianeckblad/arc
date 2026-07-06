@@ -144,6 +144,11 @@ def show_handler(scm_method: str, *, folder_scoped: bool = True) -> Callable:
     by name — so ``show address web-server`` shows just that address.
     Tab completion offers live names from the API.
 
+    **Folder inheritance**: SCM returns objects from the active folder AND
+    inherited from parent folders. Each object carries a ``folder`` field
+    showing where it is defined. The active folder is injected into the result
+    as ``_active_folder`` so formatters can annotate inherited objects.
+
     e.g.  api_handler=show_handler("get_addresses")
           api_handler=show_handler("get_regions", folder_scoped=False)
     """
@@ -154,8 +159,14 @@ def show_handler(scm_method: str, *, folder_scoped: bool = True) -> Callable:
             results = method(folder=ctx.folder)
         else:
             results = method()
+        # Inject active folder so formatters can mark inherited objects
+        active_folder = ctx.folder if folder_scoped else None
+        if isinstance(results, list) and active_folder:
+            for obj in results:
+                if isinstance(obj, dict):
+                    obj["_active_folder"] = active_folder
         # Optional name filter: `show address web-server` → show just that one
-        name_filter = (args.get("name") or args.get("_positional", [None])[0] if args else None)
+        name_filter = (args.get("name") or (args.get("_positional") or [None])[0] if args else None)
         if name_filter and isinstance(results, list):
             matched = [r for r in results if isinstance(r, dict)
                        and r.get("name", "").lower() == name_filter.lower()]

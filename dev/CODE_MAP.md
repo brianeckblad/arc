@@ -233,45 +233,45 @@ _update_external_dynamic_list()          996-1052       Update an existing EDL (
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
-## `app/utils/formatter.py`  (947 lines)
+## `app/utils/formatter.py`  (974 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_kv_table()                              22-28          
-_list_table()                            31-40          
-_simple_table()                          43-62          Build a fixed-column ROUNDED table from a list of dicts.
-_style_action()                          65-75          Colour a rule action: green for allow, red for deny.
-format_system_info()                     82-93          
-format_devices()                         96-168         Render the SCM device list, scoped to ``folder``.
-format_folder_tree()                     171-261        Render the SCM folder hierarchy as a tree, with devices shown in their
-_folder_flat_list()                      264-302        Return a depth-ordered flat list of (depth, name, path) tuples.
-format_interfaces()                      305-334        Render a list of interfaces from SCM or SSH.
-format_routes()                          337-345        
-format_security_policy()                 348-364        
-format_jobs()                            367-385        
-format_logs()                            388-402        
-format_address_objects()                 405-415        
-format_address_groups()                  418-432        
-format_services()                        435-459        
-format_tags()                            462-467        
-format_edl_list()                        470-502        Render external dynamic lists.
-format_zones()                           505-516        
-format_ha()                              519-544        Render HA configuration as a flat key/value table.
-format_snippets()                        547-569        Render a list of SCM snippets.
-format_snippets_scoped()                 572-614        Render a context-scoped snippet list with a scope header and hint foot
-format_snippet_detail()                  617-664        Render metadata + variables for a single snippet.
-format_snippet_detail_full()             667-741        Render full snippet detail: metadata + variables + all configured obje
-_append_variables()                      748-765        Append a variables table to renderables if any variables exist.
-_snippet_addresses_table()               768-787        
-_snippet_address_groups_table()          790-810        
-_snippet_services_table()                813-838        
-_snippet_security_rules_table()          841-862        
-_snippet_tags_table()                    865-873        
-_generic_objects_table()                 876-886        Fallback renderer for object types without a dedicated renderer.
-format_device_detail()                   889-915        Render full detail for a single device (key-value pairs).
-format_raw()                             918-919        
-format_dict()                            922-923        
-_flatten()                               930-945        Recursively flatten a nested dict into dot-separated key/value pairs.
+_inheritance_note()                      22-41          Return a dim 'inherited from X' note when obj lives in a parent folder
+_list_table()                            44-53          
+_simple_table()                          56-75          Build a fixed-column ROUNDED table from a list of dicts.
+_style_action()                          78-88          Colour a rule action: green for allow, red for deny.
+format_system_info()                     95-106         
+format_devices()                         109-181        Render the SCM device list, scoped to ``folder``.
+format_folder_tree()                     184-274        Render the SCM folder hierarchy as a tree, with devices shown in their
+_folder_flat_list()                      277-315        Return a depth-ordered flat list of (depth, name, path) tuples.
+format_interfaces()                      318-347        Render a list of interfaces from SCM or SSH.
+format_routes()                          350-358        
+format_security_policy()                 361-377        
+format_jobs()                            380-398        
+format_logs()                            401-415        
+format_address_objects()                 418-431        
+format_address_groups()                  434-451        
+format_services()                        454-478        
+format_tags()                            481-491        
+format_edl_list()                        494-529        Render external dynamic lists.
+format_zones()                           532-543        
+format_ha()                              546-571        Render HA configuration as a flat key/value table.
+format_snippets()                        574-596        Render a list of SCM snippets.
+format_snippets_scoped()                 599-641        Render a context-scoped snippet list with a scope header and hint foot
+format_snippet_detail()                  644-691        Render metadata + variables for a single snippet.
+format_snippet_detail_full()             694-768        Render full snippet detail: metadata + variables + all configured obje
+_append_variables()                      775-792        Append a variables table to renderables if any variables exist.
+_snippet_addresses_table()               795-814        
+_snippet_address_groups_table()          817-837        
+_snippet_services_table()                840-865        
+_snippet_security_rules_table()          868-889        
+_snippet_tags_table()                    892-900        
+_generic_objects_table()                 903-913        Fallback renderer for object types without a dedicated renderer.
+format_device_detail()                   916-942        Render full detail for a single device (key-value pairs).
+format_raw()                             945-946        
+format_dict()                            949-950        
+_flatten()                               957-972        Recursively flatten a nested dict into dot-separated key/value pairs.
 
 ## `app/cli.py`  (877 lines)
 
@@ -331,24 +331,24 @@ class NavigationMixin                    11-705
   ._cmd_tsg()                            476-576        Switch the active Tenant Services Group (TSG) context.
   ._cmd_account()                        578-705        List or switch named credential profiles.
 
-## `app/shell/completer.py`  (687 lines)
+## `app/shell/completer.py`  (702 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _parse_usage()                           26-62          Parse a usage string into (required_slots, optional_keywords).
 _usage_options()                         65-99          Return (token, display_meta) completions for the slot after *typed* ar
 _tokenize_partial()                      102-135        Split *text* for completion, honouring quotes, tracking the in-progres
-class ArcCompleter                       138-686        Context-aware tab completer.
+class ArcCompleter                       138-701        Context-aware tab completer.
   .__init__()                            147-148        
   ._command_visible()                    150-159        Return True when a registered command is visible in this shell mode.
   .get_completions()                     161-434        
   ._complete_dev_shell()                 436-510        Yield completions for dev shell commands.
   ._match_complete_command()             512-527        Return the longest complete command key the user has fully entered.
   ._complete_arguments()                 529-581        Yield completions for the argument region of a complete command.
-  ._object_names()                       606-630        Existing object names in the active folder, cached for a minute.
-  ._dynamic_name_options()               632-658        Live object names for name-completion slots.
-  ._arg_options()                        660-677        Resolve next-slot argument options: structure file first, usage fallba
-  ._all_commands()                       680-686        
+  ._object_names()                       606-645        Existing object names in the active folder, cached for a minute.
+  ._dynamic_name_options()               647-673        Live object names for name-completion slots.
+  ._arg_options()                        675-692        Resolve next-slot argument options: structure file first, usage fallba
+  ._all_commands()                       695-701        
 
 ## `app/settings/command_structure.py`  (608 lines)
 

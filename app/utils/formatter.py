@@ -19,7 +19,20 @@ console = Console()
 # Generic helpers
 # ---------------------------------------------------------------------------
 
-def _kv_table(data: dict, title: str = "") -> Table:
+def _inheritance_note(obj: dict) -> str:
+    """Return a dim 'inherited from X' note when obj lives in a parent folder.
+
+    Returns empty string when the object is owned at the active folder level.
+    The ``_active_folder`` key is injected by show_handler() at runtime.
+    """
+    active = obj.get("_active_folder", "")
+    obj_folder = obj.get("folder", "")
+    if active and obj_folder and obj_folder.lower() != active.lower():
+        return f"[dim]↑ {obj_folder}[/dim]"
+    return ""
+
+
+
     t = Table(box=box.ROUNDED, show_header=False, title=title, min_width=50)
     t.add_column("Key", style="bold cyan", no_wrap=True)
     t.add_column("Value", style="white")
@@ -406,12 +419,15 @@ def format_address_objects(addresses: list[dict]) -> Table:
     def _cell(a: dict, key: str) -> str:
         if key == "value":
             return a.get("ip-netmask") or a.get("ip_netmask") or a.get("ip-range") or a.get("fqdn") or ""
+        if key == "_source":
+            return _inheritance_note(a)
         return a.get(key, "")
 
     return _simple_table(addresses, "Address Objects", [
         ("name",        "Name",        {"style": "bold"}),
         ("value",       "IP / FQDN",   {}),
         ("description", "Description", {}),
+        ("_source",     "Source",      {}),
     ], value_fn=_cell)
 
 
@@ -422,6 +438,8 @@ def format_address_groups(groups: list[dict]) -> Table:
             return ", ".join(members) if isinstance(members, list) else str(members)
         if key == "dynamic":
             return g.get("dynamic") or g.get("filter") or ""
+        if key == "_source":
+            return _inheritance_note(g)
         return g.get(key, "")
 
     return _simple_table(groups, "Address Groups", [
@@ -429,6 +447,7 @@ def format_address_groups(groups: list[dict]) -> Table:
         ("members",     "Members",        {}),
         ("dynamic",     "Dynamic Filter", {}),
         ("description", "Description",    {}),
+        ("_source",     "Source",         {}),
     ], value_fn=_cell)
 
 
@@ -460,11 +479,16 @@ def format_services(services: list[dict]) -> Table:
 
 
 def format_tags(tags: list[dict]) -> Table:
+    def _cell(t: dict, key: str) -> str:
+        if key == "_source":
+            return _inheritance_note(t)
+        return t.get(key, "")
     return _simple_table(tags, "Tags", [
         ("name",     "Name",     {"style": "bold"}),
         ("color",    "Color",    {}),
         ("comments", "Comments", {}),
-    ])
+        ("_source",  "Source",   {}),
+    ], value_fn=_cell)
 
 
 def format_edl_list(edls: list[dict]) -> Table:
@@ -491,6 +515,8 @@ def format_edl_list(edls: list[dict]) -> Table:
             return {"type": edl_type, "source": source, "repeat": repeat}[key]
         if key == "description":
             return e.get("description", "") or ""
+        if key == "_source":
+            return _inheritance_note(e)
         return e.get(key, "")
 
     return _simple_table(edls, "External Dynamic Lists", [
@@ -499,6 +525,7 @@ def format_edl_list(edls: list[dict]) -> Table:
         ("source",      "URL / Source", {"overflow": "fold"}),
         ("repeat",      "Repeat",       {"no_wrap": True}),
         ("description", "Description",  {"overflow": "fold"}),
+        ("_source",     "Source",       {}),
     ], value_fn=_cell)
 
 

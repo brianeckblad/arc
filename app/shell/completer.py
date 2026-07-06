@@ -603,8 +603,14 @@ class ArcCompleter(Completer):
     }
     _NAME_TTL_S = 60
 
-    def _object_names(self, resource: str) -> list[str]:
-        """Existing object names in the active folder, cached for a minute."""
+    def _object_names(self, resource: str, local_only: bool = False) -> list[str]:
+        """Existing object names in the active folder, cached for a minute.
+
+        local_only=True: only return objects owned at the current folder level
+                         (obj["folder"] == active folder). Use for delete/update/set
+                         so operators can't accidentally target inherited objects.
+        local_only=False: return all names including inherited. Use for show.
+        """
         scm = getattr(self._shell, "_scm", None)
         if scm is None:
             return []
@@ -616,46 +622,55 @@ class ArcCompleter(Completer):
         hit = cache.get(cache_key)
         now = time.monotonic()
         if hit and now - hit[1] < self._NAME_TTL_S:
-            return hit[0]
-        getter = getattr(scm, self._NAME_SOURCES[resource], None)
-        if getter is None:
-            return []
-        try:
-            objects = getter(folder=folder)
-        except Exception:  # noqa: BLE001 — completion must never raise
-            cache[cache_key] = ([], now)  # negative-cache so Tab doesn't hammer a dead API
-            return []
-        names = [str(o.get("name")) for o in objects if isinstance(o, dict) and o.get("name")]
-        cache[cache_key] = (names[:200], now)
-        return cache[cache_key][0]
+            objects = hit[0]
+        else:
+            getter = getattr(scm, self._NAME_SOURCES[resource], None)
+            if getter is None:
+                return []
+            try:
+                objects = getter(folder=folder)
+            except Exception:  # noqa: BLE001
+                cache[cache_key] = ([], now)
+                return []
+            cache[cache_key] = (objects[:200], now)
+            objects = cache[cache_key][0]
+
+        if local_only:
+            # Only names where obj["folder"] matches the active folder
+            return [
+                str(o.get("name")) for o in objects
+                if isinstance(o, dict) and o.get("name")
+                and (o.get("folder") or "").lower() == folder.lower()
+            ]
+        return [str(o.get("name")) for o in objects if isinstance(o, dict) and o.get("name")]
 
     def _dynamic_name_options(self, key: str, typed: list[str]) -> list[dict]:
         """Live object names for name-completion slots.
 
-        Works for:
-          show <resource>            → lists all names (partial match on first typed token)
-          delete <resource>          → lists names to delete
-          update <resource>          → lists names to update
-          show <resource> <partial>  → filters names by partial prefix
+        show <resource>   → all names including inherited (read-only ok)
+        delete/update/set → only locally-owned names (cannot edit inherited objects)
         """
         parts = key.split()
         verb = parts[0] if parts else ""
-        if verb not in ("show", "delete", "update") or len(parts) != 2:
+        if verb not in ("show", "delete", "update", "set") or len(parts) != 2:
             return []
         resource = parts[1]
         if resource not in self._NAME_SOURCES:
             return []
-        # For show/delete/update: offer names only when we're at the first argument slot
-        # (typed is empty = cursor right after command, or typed has one partial token)
         if len(typed) > 1:
             return []
         partial = typed[0].lower() if typed else ""
         folder = self._shell._state.folder
-        return [
-            {"text": name, "display": name, "meta": f"in {folder}"}
-            for name in self._object_names(resource)
+        # For write verbs: only show locally-owned objects (not inherited)
+        local_only = verb in ("delete", "update", "set")
+        names = self._object_names(resource, local_only=local_only)
+        results = [
+            {"text": name, "display": name,
+             "meta": f"in {folder}" if local_only else f"(type to filter)"}
+            for name in names
             if not partial or name.lower().startswith(partial)
         ]
+        return results
 
     def _arg_options(self, key: str, typed: list[str]) -> list[dict]:
         """Resolve next-slot argument options: structure file first, usage fallback.
