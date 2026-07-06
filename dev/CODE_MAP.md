@@ -14,13 +14,13 @@
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
-## `app/shell/configure.py`  (2054 lines)
+## `app/shell/configure.py`  (2052 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _prefs_file_label()                      10-16          Repo-relative path of the preferences file, for display.
 capture_write_ops()                      19-49          Run a write handler against a recording client and capture its mutatio
-class ConfigureMixin                     52-1794        
+class ConfigureMixin                     52-1981        
   ._cmd_configure()                      53-74          Enter configure mode (Cisco-style).
   ._stage_write()                        76-103         Validate a configure-mode write and stage it locally (no SCM change).
   ._cmd_show_pending()                   105-126        List the locally staged configure-mode changes (`show config`).
@@ -56,8 +56,10 @@ class ConfigureMixin                     52-1794
   ._dev_catalog_rebuild()                1603-1656      Run all generator scripts to rebuild code artifacts.
   ._print_dev_status()                   1660-1674      Print current dev mode state (used by 'dev on/off' outside the shell).
   ._cmd_setup()                          1677-1794      Interactive credential setup wizard.
-_setup_bearer_instructions()             1801-1829      Print bearer-token setup commands for the detected OS.
-_setup_oauth_instructions()              1832-2053      Print OAuth client credential setup commands for the detected OS.
+  ._cmd_arc()                            1800-1830      ARC application information and management.
+  ._arc_show()                           1832-1981      Show comprehensive ARC application information.
+_setup_bearer_instructions()             1988-2016      Print bearer-token setup commands for the detected OS.
+_setup_oauth_instructions()              2019-2051      Print OAuth client credential setup commands for the detected OS.
 
 ## `app/settings/field_catalog.py`  (1924 lines)
 

@@ -1793,77 +1793,6 @@ class ConfigureMixin:
         )
         console.print()
 
-
-# ---------------------------------------------------------------------------
-# Private helpers — per-platform SCM setup instructions.
-# ---------------------------------------------------------------------------
-
-def _setup_bearer_instructions(console, os_name: str) -> None:  # type: ignore[type-arg]
-    """Print bearer-token setup commands for the detected OS."""
-    if os_name == "Darwin":
-        console.print(
-            "  arc auth configure\n"
-            "  # When prompted:\n"
-            "  #   SCM auth method: 1 (bearer token)\n"
-            "  #   Token: <paste>   ← stored in macOS Keychain, NOT on disk\n\n"
-            "  # Or store manually via the security CLI:\n"
-            "  security add-generic-password -U -s arc -a arc.bearer.token -w YOUR_TOKEN"
-        )
-    elif os_name == "Windows":
-        console.print(
-            "  arc auth configure\n"
-            "  # When prompted:\n"
-            "  #   SCM auth method: 1 (bearer token)\n"
-            "  #   Token: <paste>   ← stored in Windows Credential Manager\n\n"
-            "  # Or set for this PowerShell session only:\n"
-            "  $env:SCM_BEARER_TOKEN = 'YOUR_TOKEN'"
-        )
-    else:
-        console.print(
-            "  arc auth configure\n"
-            "  # When prompted:\n"
-            "  #   SCM auth method: 1 (bearer token)\n"
-            "  #   Token: <paste>   ← stored via libsecret or config file (0600)\n\n"
-            "  # Or set for this terminal session only:\n"
-            "  export SCM_BEARER_TOKEN=your-bearer-token"
-        )
-
-
-def _setup_oauth_instructions(console, os_name: str) -> None:  # type: ignore[type-arg]
-    """Print OAuth client credential setup commands for the detected OS."""
-    if os_name == "Darwin":
-        console.print(
-            "  arc auth configure\n"
-            "  # When prompted:\n"
-            "  #   SCM auth method: 2 (OAuth)\n"
-            "  #   Client ID:     <paste>  ← safe to store in config file\n"
-            "  #   Client secret: <paste>  ← stored in macOS Keychain\n"
-            "  #   TSG ID:        <paste>  ← safe to store in config file"
-        )
-    elif os_name == "Windows":
-        console.print(
-            "  arc auth configure\n"
-            "  # When prompted:\n"
-            "  #   SCM auth method: 2 (OAuth)\n"
-            "  #   Client ID:     <paste>  ← safe to store in config file\n"
-            "  #   Client secret: <paste>  ← stored in Windows Credential Manager\n"
-            "  #   TSG ID:        <paste>  ← safe to store in config file"
-        )
-    else:
-        console.print(
-            "  arc auth configure\n"
-            "  # When prompted:\n"
-            "  #   SCM auth method: 2 (OAuth)\n"
-            "  #   Client ID:     <paste>  ← safe to store in config file\n"
-            "  #   Client secret: <paste>  ← stored via libsecret / config file 0600\n"
-            "  #   TSG ID:        <paste>  ← safe to store in config file\n\n"
-            "  # Or export for this session:\n"
-            "  export SCM_CLIENT_ID=...\n"
-            "  export SCM_CLIENT_SECRET=...\n"
-            "  export SCM_TSG_ID=..."
-        )
-
-
     # =========================================================================
     # arc — application information and management
     # =========================================================================
@@ -1904,7 +1833,6 @@ def _setup_oauth_instructions(console, os_name: str) -> None:  # type: ignore[ty
         """Show comprehensive ARC application information."""
         import re as _re
         import sys as _sys
-        import time as _time
         import platform as _platform
         import subprocess as _sp
         import datetime as _dt
@@ -2051,3 +1979,73 @@ def _setup_oauth_instructions(console, os_name: str) -> None:  # type: ignore[ty
         _row("Configure", "[yellow]active[/yellow]" if self._state.configure_mode else "[dim]off[/dim]")
 
         console.print()
+
+
+# ---------------------------------------------------------------------------
+# Private helpers — per-platform SCM setup instructions.
+# ---------------------------------------------------------------------------
+
+def _setup_bearer_instructions(console, os_name: str) -> None:  # type: ignore[type-arg]
+    """Print bearer-token setup commands for the detected OS."""
+    if os_name == "Darwin":
+        console.print(
+            "  arc auth configure\n"
+            "  # When prompted:\n"
+            "  #   SCM auth method: 1 (bearer token)\n"
+            "  #   Token: <paste>   ← stored in macOS Keychain, NOT on disk\n\n"
+            "  # Or store manually via the security CLI:\n"
+            "  security add-generic-password -U -s arc -a arc.bearer.token -w YOUR_TOKEN"
+        )
+    elif os_name == "Windows":
+        console.print(
+            "  arc auth configure\n"
+            "  # When prompted:\n"
+            "  #   SCM auth method: 1 (bearer token)\n"
+            "  #   Token: <paste>   ← stored in Windows Credential Manager\n\n"
+            "  # Or set for this PowerShell session only:\n"
+            "  $env:SCM_BEARER_TOKEN = 'YOUR_TOKEN'"
+        )
+    else:
+        console.print(
+            "  arc auth configure\n"
+            "  # When prompted:\n"
+            "  #   SCM auth method: 1 (bearer token)\n"
+            "  #   Token: <paste>   ← stored via libsecret or config file (0600)\n\n"
+            "  # Or set for this terminal session only:\n"
+            "  export SCM_BEARER_TOKEN=your-bearer-token"
+        )
+
+
+def _setup_oauth_instructions(console, os_name: str) -> None:  # type: ignore[type-arg]
+    """Print OAuth client credential setup commands for the detected OS."""
+    if os_name == "Darwin":
+        console.print(
+            "  arc auth configure\n"
+            "  # When prompted:\n"
+            "  #   SCM auth method: 2 (OAuth)\n"
+            "  #   Client ID:     <paste>  ← safe to store in config file\n"
+            "  #   Client secret: <paste>  ← stored in macOS Keychain\n"
+            "  #   TSG ID:        <paste>  ← safe to store in config file"
+        )
+    elif os_name == "Windows":
+        console.print(
+            "  arc auth configure\n"
+            "  # When prompted:\n"
+            "  #   SCM auth method: 2 (OAuth)\n"
+            "  #   Client ID:     <paste>  ← safe to store in config file\n"
+            "  #   Client secret: <paste>  ← stored in Windows Credential Manager\n"
+            "  #   TSG ID:        <paste>  ← safe to store in config file"
+        )
+    else:
+        console.print(
+            "  arc auth configure\n"
+            "  # When prompted:\n"
+            "  #   SCM auth method: 2 (OAuth)\n"
+            "  #   Client ID:     <paste>  ← safe to store in config file\n"
+            "  #   Client secret: <paste>  ← stored via libsecret / config file 0600\n"
+            "  #   TSG ID:        <paste>  ← safe to store in config file\n\n"
+            "  # Or export for this session:\n"
+            "  export SCM_CLIENT_ID=...\n"
+            "  export SCM_CLIENT_SECRET=...\n"
+            "  export SCM_TSG_ID=..."
+        )
