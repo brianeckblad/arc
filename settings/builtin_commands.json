@@ -1,0 +1,22 @@
+{
+  "_README": "Builtin command visibility — independent of feature flags. Values: true (visible + executable), false (hidden + blocked), hidden (works but not shown in ? or tab completion). dev mode reveals hidden commands. Use settings/features/ for functional areas; use this file for individual command visibility.",
+  "_comment_shell_builtins": "=== Shell Built-in Commands ===",
+  "account": true,
+  "cd": true,
+  "clear": true,
+  "configure": true,
+  "connect": true,
+  "docs": true,
+  "exit": true,
+  "folder": true,
+  "help": true,
+  "pwd": true,
+  "quit": "hidden",
+  "setup": true,
+  "tsg": true,
+  "?": true,
+  "_comment_examples": "=== How to use ===",
+  "_example_hidden": "quit is hidden: still works for muscle memory but not shown in ?",
+  "_example_false": "To block a command entirely: set it to false",
+  "_example_true": "To show a previously hidden command: set it to true"
+}

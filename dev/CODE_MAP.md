@@ -284,21 +284,21 @@ cliup()                                  820-839        Rebuild the offline brow
 scm_get()                                851-863        Perform a raw GET request against the SCM API.
 run()                                    870-871        
 
-## `app/shell/dispatch.py`  (766 lines)
+## `app/shell/dispatch.py`  (773 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 split_pipe_line()                        23-38          Split *line* at the first unquoted ``|``.
 parse_output_filters()                   41-79          Parse a pipe filter chain into ``[(op, pattern), …]``.
 _line_matches()                          82-88          Regex match (case-insensitive) with plain-substring fallback.
-class DispatchMixin                      91-765         
+class DispatchMixin                      91-772         
   ._cmd_watch()                          92-132         Re-run *rest* every N seconds until Ctrl-C (`watch [N] <command>`).
   ._dispatch_piped()                     134-184        Run *head*, filter its captured output through the pipe *spec*.
   ._save_pipe_output()                   186-203        Write piped output *lines* to *target* as plain UTF-8 text.
   ._cmd_history()                        205-250        Print the last N commands from the prompt history (`history [n]`).
   ._cmd_alias()                          252-323        User-defined aliases (`alias` / `alias <name> <expansion…>` /
   ._show_command_not_found()             325-396        Show a helpful message when a command is not recognized.
-  ._dispatch()                           398-765        Process one input line.  Returns True when the user wants to exit ARC.
+  ._dispatch()                           398-772        Process one input line.  Returns True when the user wants to exit ARC.
 
 ## `app/settings/command_structure.py`  (715 lines)
 
@@ -358,11 +358,11 @@ class ArcCompleter                       138-662        Context-aware tab comple
   ._arg_options()                        636-653        Resolve next-slot argument options: structure file first, usage fallba
   ._all_commands()                       656-662        
 
-## `app/shell/help.py`  (591 lines)
+## `app/shell/help.py`  (592 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class HelpMixin                          8-589          
+class HelpMixin                          8-590          
   ._match_structured()                   9-25           Find the longest command key (with a structure spec) inside *prefix_to
   ._print_context_help()                 27-44          Print Cisco-style context-sensitive help for a structured command.
   ._render_context_help()                46-64          Render the next-option rows: ``  token   description`` (token column a
@@ -371,18 +371,18 @@ class HelpMixin                          8-589
   ._cmd_help_full()                      198-244        Print the full command reference regardless of context.
   ._cmd_show_write_help()                246-269        Show available set/delete/update commands in configure mode.
   ._print_shell_builtins()               271-284        Print the shell built-in commands section (shared by inline and full h
-  ._is_command_visible()                 286-296        Single source of truth: does this command exist for this operator?
-  ._cmd_find()                           298-361        PAN-OS style command search: ``find command keyword <text>``.
-  ._visible_command_keys()               363-374        Cached list of visible registry keys — the per-keystroke hot path.
-  ._invalidate_visible_keys()            376-377        
-  ._is_command_available()               379-395        _is_command_visible plus the current-context gates.
-  ._is_config_command()                  398-402        Return True when a command should appear in configure-mode `?` help.
-  ._root_verb_options()                  404-439        Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
-  ._collapsed_prefix_help_options()      441-496        Return collapsed next-token help options for a command prefix.
-  ._collapsed_tier_help_options()        498-533        Return collapsed bare-tier help options for one scope.
-  ._context_annotation()                 535-556        Return a short inline context note for commands whose output depends o
-  ._print_context_hint_for()             558-562        Print a one-line context note below an exact-match docs result.
-  ._print_inline_usage()                 564-589        Print the description + usage syntax for a complete command in `?` hel
+  ._is_command_visible()                 286-296        Single source of truth: does this command appear in ``?`` for this ope
+  ._cmd_find()                           299-362        PAN-OS style command search: ``find command keyword <text>``.
+  ._visible_command_keys()               364-375        Cached list of visible registry keys — the per-keystroke hot path.
+  ._invalidate_visible_keys()            377-378        
+  ._is_command_available()               380-396        _is_command_visible plus the current-context gates.
+  ._is_config_command()                  399-403        Return True when a command should appear in configure-mode `?` help.
+  ._root_verb_options()                  405-440        Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
+  ._collapsed_prefix_help_options()      442-497        Return collapsed next-token help options for a command prefix.
+  ._collapsed_tier_help_options()        499-534        Return collapsed bare-tier help options for one scope.
+  ._context_annotation()                 536-557        Return a short inline context note for commands whose output depends o
+  ._print_context_hint_for()             559-563        Print a one-line context note below an exact-match docs result.
+  ._print_inline_usage()                 565-590        Print the description + usage syntax for a complete command in `?` hel
 
 ## `app/config.py`  (580 lines)
 

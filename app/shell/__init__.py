@@ -50,8 +50,9 @@ class ArcShell(
         self._features: dict[str, str] = load_features()
         
         # Command visibility — independent of feature flags.  Loaded from
-        # settings/commands.json.  Set false to hide specific commands.
-        self._command_visibility: dict[str, bool] = load_command_visibility()
+        # settings/builtin_commands.json.  Values: true (visible), false (blocked),
+        # "hidden" (works but not shown in ? — revealed in dev mode).
+        self._command_visibility: dict[str, str] = load_command_visibility()
 
         # Development mode reveals "dev" (under-construction) commands.  Off by
         # default; toggled by the hidden `dev` command, or pre-enabled in CI/CD

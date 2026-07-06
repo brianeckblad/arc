@@ -752,8 +752,15 @@ class DispatchMixin:
 
         # ---- Registry commands ----
         key, cmd_def, args = match_command(tokens)
-        if key is None or not self._is_command_visible(key, cmd_def):
-            # Unknown command - provide helpful suggestions
+        if key is None:
+            self._show_command_not_found(tokens)
+            return False
+        # Check executability: hidden commands run fine; blocked (false) commands don't.
+        if not is_command_executable(key, self._command_visibility):
+            self._show_command_not_found(tokens)
+            return False
+        # Feature-flagged commands that are fully off are not executable either.
+        if not is_enabled(self._features, cmd_def.feature_flag, self._dev_mode):
             self._show_command_not_found(tokens)
             return False
 

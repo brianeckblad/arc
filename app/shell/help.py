@@ -284,16 +284,17 @@ class HelpMixin:
             console.print(f"    {cmd_cell} {desc}")
 
     def _is_command_visible(self, key: str, cmd_def: CommandDef) -> bool:
-        """Single source of truth: does this command exist for this operator?
+        """Single source of truth: does this command appear in ``?`` for this operator?
 
-        Context-independent gates only — settings/commands.json visibility
-        and the feature flag (settings/features/, honoring dev mode).
-        Dispatch, tab completion, and help must all use this same check so a
-        command can never tab-complete yet be missing from `?` (or vice versa).
+        Context-independent gates only — settings/builtin_commands.json visibility
+        (honoring dev mode for "hidden" state) and the feature flag
+        (settings/features/, honoring dev mode).
+        Dispatch, tab completion, and help must all use this same check.
         """
-        if not is_command_visible(key, self._command_visibility):
+        if not is_command_visible(key, self._command_visibility, self._dev_mode):
             return False
-        return is_enabled(self._features, cmd_def.feature_flag, self._dev_mode)
+        return is_feature_visible(self._features, cmd_def.feature_flag, self._dev_mode)
+
 
     def _cmd_find(self, args: list[str]) -> None:
         """PAN-OS style command search: ``find command keyword <text>``.

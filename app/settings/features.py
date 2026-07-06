@@ -55,31 +55,35 @@ from app.paths import FEATURES_DIR, FEATURES_FILE
 
 logger = logging.getLogger(__name__)
 
-# The three states a flag can hold.  These strings are used everywhere a flag's
+# The four states a flag can hold.  These strings are used everywhere a flag's
 # state is compared or displayed, so keep them stable.
-STATE_ON = "on"
-STATE_DEV = "dev"
-STATE_OFF = "off"
+STATE_ON     = "on"
+STATE_DEV    = "dev"
+STATE_HIDDEN = "hidden"
+STATE_OFF    = "off"
 
-# A loaded feature set maps flag-name → state ("on" | "dev" | "off").
+# A loaded feature set maps flag-name → state ("on" | "dev" | "hidden" | "off").
 FeatureMap = dict[str, str]
 
 _ENV_PREFIX = "ARC_FEATURE_"
 
 # Synonyms accepted in features.json values and ARC_FEATURE_* env vars.
-_ON_WORDS = {"on", "true", "1", "yes", "enabled"}
-_DEV_WORDS = {"dev", "development", "beta", "wip"}
+_ON_WORDS     = {"on", "true", "1", "yes", "enabled"}
+_DEV_WORDS    = {"dev", "development", "beta", "wip"}
+_HIDDEN_WORDS = {"hidden", "invisible", "stealth"}
 
 
 def _coerce_state(value: object) -> str:
-    """Normalize a raw features.json value into "on" | "dev" | "off".
+    """Normalize a raw features.json value into "on" | "dev" | "hidden" | "off".
 
-    Accepts booleans (``true``/``false``) and strings (``"dev"``, ``"on"`` …).
+    Accepts booleans (``true``/``false``) and strings (``"dev"``, ``"hidden"`` …).
     Anything unrecognized is treated as OFF — the safe default.
     """
     if isinstance(value, bool):
         return STATE_ON if value else STATE_OFF
     token = str(value).strip().lower()
+    if token in _HIDDEN_WORDS:
+        return STATE_HIDDEN
     if token in _DEV_WORDS:
         return STATE_DEV
     if token in _ON_WORDS:
@@ -179,18 +183,35 @@ def feature_state(flags: FeatureMap, flag_name: str) -> str:
 
 
 def is_enabled(flags: FeatureMap, flag_name: str, dev_mode: bool = False) -> bool:
-    """Return True when *flag_name* is usable in the current mode.
+    """Return True when *flag_name* is executable in the current mode.
 
-    * ON   flags are always usable.
-    * DEV  flags are usable only when *dev_mode* is True.
-    * OFF  flags are never usable.
+    * ON     — always executable.
+    * HIDDEN — always executable (works but not shown in ``?``).
+    * DEV    — executable only when *dev_mode* is True.
+    * OFF    — never executable.
 
     An empty *flag_name* always returns True (ungated command).
     """
     state = feature_state(flags, flag_name)
-    if state == STATE_ON:
+    if state in (STATE_ON, STATE_HIDDEN):
         return True
     if state == STATE_DEV:
+        return dev_mode
+    return False
+
+
+def is_feature_visible(flags: FeatureMap, flag_name: str, dev_mode: bool = False) -> bool:
+    """Return True when a command should appear in ``?`` / tab completion.
+
+    * ON     → always visible.
+    * HIDDEN → visible only in dev mode (hidden from normal users).
+    * DEV    → visible only in dev mode.
+    * OFF    → never visible.
+    """
+    state = feature_state(flags, flag_name)
+    if state == STATE_ON:
+        return True
+    if state in (STATE_DEV, STATE_HIDDEN):
         return dev_mode
     return False
 
