@@ -1,5 +1,5 @@
 {
-  "_README": "Builtin command visibility and aliases. Values: true (visible + executable), false (hidden + blocked), hidden (works but not shown in ? — dev mode reveals it). _builtin_aliases maps shorthand inputs to canonical commands — applied before prefix expansion, before dispatch.",
+  "_README": "Builtin command visibility — independent of feature flags. Values: true (visible + executable), false (hidden + blocked), hidden (works but not shown in ? — dev mode reveals it). Use settings/features/ for functional areas; use settings/command_aliases.json for command shortcuts.",
   "_comment_visibility": "=== Visibility ===",
   "account": true,
   "cd": true,
@@ -14,13 +14,5 @@
   "quit": "hidden",
   "setup": true,
   "tsg": true,
-  "?": true,
-  "_comment_aliases": "=== Builtin Aliases — map shorthand input to canonical command ===",
-  "_alias_note": "Each key is what the user types (exact match after tokenize); value is the canonical line to dispatch instead.",
-  "_builtin_aliases": {
-    "conf":        "configure",
-    "conf t":      "configure",
-    "conf term":   "configure",
-    "conf terminal": "configure"
-  }
+  "?": true
 }

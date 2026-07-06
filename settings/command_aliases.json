@@ -1,0 +1,16 @@
+{
+  "_README": "System command aliases — applied before prefix expansion in dispatch. These ship with ARC and are editable by operators. User-defined aliases live in config/<user>/preferences.json (managed via the 'alias' builtin). Keys are what the user types (case-insensitive, exact match); values are the canonical command line dispatched instead.",
+
+  "_comment_configure": "=== Configure mode shortcuts (Cisco-style) ===",
+  "conf":             "configure",
+  "conf t":           "configure",
+  "conf term":        "configure",
+  "conf terminal":    "configure",
+
+  "_comment_show": "=== Show shortcuts ===",
+  "sh":               "show",
+
+  "_comment_examples": "=== Add your own ===",
+  "_example_1": "\"sp\": \"show security policy\"  — type 'sp' to run 'show security policy'",
+  "_example_2": "\"sif\": \"show interface all\"    — type 'sif' to run 'show interface all'"
+}

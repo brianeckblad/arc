@@ -19,7 +19,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from app.paths import SETTINGS_DIR
+from app.paths import SETTINGS_DIR, COMMAND_ALIASES_JSON
 
 COMMANDS_FILE = SETTINGS_DIR / "builtin_commands.json"
 
@@ -82,22 +82,22 @@ def is_command_visible(command_key: str, visibility: dict[str, str],
 
 
 def load_builtin_aliases() -> dict[str, str]:
-    """Load the ``_builtin_aliases`` map from settings/builtin_commands.json.
+    """Load system command aliases from settings/command_aliases.json.
 
-    Returns a dict of ``{input_line: canonical_line}``.  Applied in dispatch
-    before prefix expansion so ``conf t`` → ``configure`` without hardcoding.
-    Keys are matched case-insensitively after stripping; values are dispatched
-    verbatim (so ``"conf t": "configure"`` runs configure with no args).
-    Missing file → empty dict (no aliases).
+    Returns ``{input_line: canonical_line}`` (keys lowercased, stripped).
+    Applied in dispatch before prefix expansion — ``conf t`` → ``configure``.
+    User-defined aliases live in config/<user>/preferences.json.
+    Missing file → empty dict.
     """
-    if not COMMANDS_FILE.exists():
+    if not COMMAND_ALIASES_JSON.exists():
         return {}
     try:
-        data = json.loads(COMMANDS_FILE.read_text(encoding="utf-8"))
-        aliases = data.get("_builtin_aliases", {})
-        if not isinstance(aliases, dict):
-            return {}
-        return {str(k).strip().lower(): str(v).strip() for k, v in aliases.items()}
+        data = json.loads(COMMAND_ALIASES_JSON.read_text(encoding="utf-8"))
+        return {
+            str(k).strip().lower(): str(v).strip()
+            for k, v in data.items()
+            if not k.startswith("_") and isinstance(v, str)
+        }
     except (json.JSONDecodeError, IOError):
         return {}
 

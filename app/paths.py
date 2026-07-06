@@ -52,6 +52,10 @@ COMMAND_STRUCTURE_JSON = SETTINGS_DIR / "command-structure.json"
 # the hand file wins on collisions. Never edit by hand — use the CLI command.
 COMMAND_STRUCTURE_GENERATED_JSON = SETTINGS_DIR / "command-structure-generated.json"
 
+# System command aliases — shorthand input → canonical dispatch line.
+# User-defined aliases live in config/<user>/preferences.json.
+COMMAND_ALIASES_JSON = SETTINGS_DIR / "command_aliases.json"
+
 # Per-user secrets directory (config.json is written here, never committed).
 CONFIG_DIR = REPO_ROOT / "config"
 
