@@ -94,7 +94,7 @@ Change only the non-underscore flag values (`true`, `"dev"`, or `false`) when
 editing the file manually. The in-shell `feature enable|disable|dev <flag>`
 commands write those same values for you.
 The generated labels are safe to leave alone and will be refreshed by
-`python dev/docsupdate.py`.
+`python app/scripts/docsupdate.py`.
 
 One-session override via environment variable (`on` | `dev` | `off`):
 
@@ -107,7 +107,7 @@ ARC_DEV_MODE=1 arc              # start in development mode (reveal dev commands
 
 ## Regenerating from pan.dev
 
-`python dev/docsupdate.py` refreshes the local OpenAPI specs, discovers new SCM
+`python app/scripts/docsupdate.py` refreshes the local OpenAPI specs, discovers new SCM
 spec files, regenerates the command catalog, and rewrites `settings/features/`
 in the feature-first format above. Existing flag states are preserved when the
 same flag still exists; newly discovered flags default to `false`.
@@ -116,10 +116,10 @@ Run `feature show` to see the currently loaded states grouped by ON / DEV / OFF.
 
 ## Adding a new feature (for developers)
 
-1. For generated OpenAPI commands, run `python dev/docsupdate.py`; the feature
+1. For generated OpenAPI commands, run `python app/scripts/docsupdate.py`; the feature
    flag is created automatically.
 2. For hand-written commands, set `feature_flag='your_flag'` on the `CommandDef`.
-3. Run `python dev/generate_feature_flags.py`; the new flag appears defaulted to
+3. Run `python app/scripts/generate_feature_flags.py`; the new flag appears defaulted to
    `false`.
 4. Edit `settings/features/` to set the flag to `"dev"` or `true` when ready.
 

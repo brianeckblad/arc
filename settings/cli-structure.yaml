@@ -2,7 +2,7 @@
 # and help text without touching Python code.
 #
 # After editing, restart ARC (or run `arc`) — changes take effect on next start.
-# Validate: python dev/smoke_test.py --only 1,2
+# Validate: python app/scripts/smoke_test.py --only 1,2
 #
 # Keys you can safely change:
 #   verb_groups     - what shows next to each verb in bare ? output

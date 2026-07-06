@@ -138,4 +138,3 @@ there).  This is intentional:
 - **No side-effects for contributors** who clone without setting up the hook — their commits still work normally, version just does not auto-bump.
 - **No CI surprises** — automated pipelines don't have unexpected version mutations.
 - **Simple to opt in** — one `git config` line, as documented above.
-

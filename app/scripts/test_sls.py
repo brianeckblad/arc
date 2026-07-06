@@ -7,7 +7,7 @@ exercises the full job lifecycle (complete / failed / timeout), the SQL
 query builder, error translation (401/403/404), and the operations.py
 argument parser / row mapper / detail stash.
 
-Run:  python dev/test_sls.py
+Run:  python app/scripts/test_sls.py
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
 from app.api import sls as sls_mod                      # noqa: E402

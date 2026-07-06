@@ -203,7 +203,7 @@ def _generated_entries() -> dict[str, dict]:
     """Arg specs for generated `set` commands, from the spec-derived catalog.
 
     ``app/settings/field_catalog.py`` is AUTO-GENERATED from the OpenAPI specs
-    (``python dev/generate_field_library.py``, run by docsupdate).
+    (``python app/scripts/generate_field_library.py``, run by docsupdate).
     """
     try:
         from app.settings.field_catalog import FIELD_CATALOG

@@ -1,5 +1,5 @@
 {
-  "_comment": "Registry of PAN-OS CLI docs pages for dev/panosupdate.py. Add new version pages here; docsupdate pulls them.",
+  "_comment": "Registry of PAN-OS CLI docs pages for app/scripts/panosupdate.py. Add new version pages here; docsupdate pulls them.",
   "pages": [
     {"key": "ops-11.2",          "url": "https://docs.paloaltonetworks.com/ngfw/pan-os-cli-quick-start/cli-command-hierarchy/pan-os-11-2-cli-ops-command-hierarchy",       "kind": "ops-hierarchy",    "version": "11.2"},
     {"key": "config-11.2",       "url": "https://docs.paloaltonetworks.com/ngfw/pan-os-cli-quick-start/cli-command-hierarchy/pan-os-11-2-configure-cli-command-hierarchy", "kind": "config-hierarchy", "version": "11.2"},

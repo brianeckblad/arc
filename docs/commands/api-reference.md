@@ -1,7 +1,7 @@
 # ARC Command → SCM API Reference
 
 Generated from each command's doc front-matter (`api:` field) and the live
-registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsupdate`).
+registry. Regenerate with `python app/scripts/generate_command_docs.py` (runs on `docsupdate`).
 
 ## Adnsr
 

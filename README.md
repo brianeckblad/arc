@@ -96,7 +96,7 @@ runtime — no doc stubs exist or should be created.
 
 ### Schema-driven field syntax for `set` commands
 
-`dev/generate_field_library.py` reads each POST request-body schema and gives
+`app/scripts/generate_field_library.py` reads each POST request-body schema and gives
 flat resources real CLI fields instead of raw JSON blobs — with Tab
 completion, `?` hints, greedy no-quote parsing (ARC works out where a
 multi-word value ends), and prompt-time validation: required fields, enum
@@ -114,8 +114,8 @@ Curated commands opt in via the hand-written `settings/command-structure.json`
 
 The whole PAN-OS CLI hierarchy (show / clear / request / test / debug …) is
 scraped from the official docs pages listed in `settings/panos-sources.json`
-by `dev/panosupdate.py` (diffable mirrors in `docs/panos-cli/`), then compiled
-by `dev/generate_panos_catalog.py` into `app/commands/panos_catalog.py`.
+by `app/scripts/panosupdate.py` (diffable mirrors in `docs/panos-cli/`), then compiled
+by `app/scripts/generate_panos_catalog.py` into `app/commands/panos_catalog.py`.
 Enable families with `feature enable panos_<family>`. Three execution paths:
 
 ```text
@@ -211,11 +211,11 @@ the unfiltered dump; `docs` opens the offline browser bundle.
 
 ### docsupdate — the self-maintaining pipeline
 
-`python dev/docsupdate.py` pulls every SCM OpenAPI spec + guide from pan.dev
+`python app/scripts/docsupdate.py` pulls every SCM OpenAPI spec + guide from pan.dev
 (self-healing when pan.dev renames files), writes `docs/scm-api/` +
 `CHANGES.md`, then chains all generators — resource catalog, field library,
 PAN-OS mirrors + catalog, feature flags, command docs, API index — and
-self-verifies with `dev/smoke_test.py --only 1,2,3`. If Palo Alto ships a new
+self-verifies with `app/scripts/smoke_test.py --only 1,2,3`. If Palo Alto ships a new
 API resource, ARC learns it (as a gated command + flag + docs) on the next run.
 
 ## The three-folder rule
@@ -238,7 +238,7 @@ Never hard-code an asset path — import from `app/paths.py`.
 | `app/settings/` | loaders for `settings/` files + the generated field catalog | [app/settings/README.md](app/settings/README.md) |
 | `app/api/` | SCM REST client + SLS log-query client | [app/api/README.md](app/api/README.md) |
 | `settings/` | operator-editable assets (flags, theme, banner, structure) | [settings/README.md](settings/README.md) |
-| `dev/` | generators, docsupdate, scaffolder, smoke suite | [dev/README.md](dev/README.md) |
+| `app/scripts/` | generators, docsupdate, scaffolder, smoke suite | [app/scripts/README.md](app/scripts/README.md) |
 | `docs/` | user-facing Markdown rendered by `help` + mirrored API specs | [docs/README.md](docs/README.md) |
 | `config/<user>/` | secrets + terminal preferences (gitignored) | — |
 
@@ -250,12 +250,12 @@ add-a-command recipe, the SCM gateway map, the validation matrix, and the
 error→file debug table. Validate any change with:
 
 ```bash
-python dev/smoke_test.py            # full suite (~140 checks, no network)
+python app/scripts/smoke_test.py            # full suite (~140 checks, no network)
 ```
 
 **The token-optimization story in five lines:** AGENTS.md is a hub with small
-spoke files (`docs/COMMAND_PATTERNS.md`, `dev/API_INDEX.md`, …) so no one reads
-a 2,500-line module to answer a question. `dev/CODE_MAP.md` maps every method
+spoke files (`docs/COMMAND_PATTERNS.md`, `app/scripts/API_INDEX.md`, …) so no one reads
+a 2,500-line module to answer a question. `app/scripts/CODE_MAP.md` maps every method
 in large files to exact line ranges — read the range, not the file. Keyword
 routing ("say `render`, touch `formatter.py`") sends each task straight to its
 owner. The result: humans and agents alike spend tokens on the change, not the search.

@@ -1001,7 +1001,7 @@ class ConfigureMixin:
 
 
     def _cs_update(self, targets: list[str]) -> None:
-        """Stream dev/commandupdate.py — same script the LLM 'commandupdate' trigger runs."""
+        """Stream app/scripts/commandupdate.py — same script the LLM 'commandupdate' trigger runs."""
         import sys as _sys
         import subprocess as _sp
         from app.paths import REPO_ROOT
@@ -1009,7 +1009,7 @@ class ConfigureMixin:
 
         script = REPO_ROOT / "dev" / "commandupdate.py"
         if not script.exists():
-            console.print("[red]dev/commandupdate.py not found.[/red]")
+            console.print("[red]app/scripts/commandupdate.py not found.[/red]")
             return
 
         extra: list[str] = list(targets)  # specific command, if given
@@ -1241,7 +1241,7 @@ class ConfigureMixin:
         elif cmd == "docs" and sub == "update":
             console.print(f"  [bold yellow]docs update[/bold yellow]  — pull latest pan.dev specs\n")
             console.print(
-                "  Runs [bold]dev/docsupdate.py[/bold] as a subprocess with live output.\n"
+                "  Runs [bold]app/scripts/docsupdate.py[/bold] as a subprocess with live output.\n"
                 "  After completion, run [bold]catalog rebuild[/bold] to regenerate code artifacts.\n\n"
                 "  Flags:\n"
                 "    [cyan]--scm[/cyan]    Pull SCM API specs only (skip PAN-OS)\n"
@@ -1264,8 +1264,8 @@ class ConfigureMixin:
                 "    [cyan]generate_feature_flags.py[/cyan]     → settings/features/\n"
                 "    [cyan]generate_field_library.py[/cyan]     → app/settings/field_catalog.py\n"
                 "    [cyan]generate_command_docs.py[/cyan]      → docs/commands/\n"
-                "    [cyan]generate_api_index.py[/cyan]         → dev/API_INDEX.md\n"
-                "    [cyan]generate_code_map.py[/cyan]          → dev/CODE_MAP.md\n\n"
+                "    [cyan]generate_api_index.py[/cyan]         → app/scripts/API_INDEX.md\n"
+                "    [cyan]generate_code_map.py[/cyan]          → app/scripts/CODE_MAP.md\n\n"
                 "  Caches are invalidated automatically — changes are live without restart.\n"
                 "  Run [bold]docs update[/bold] first if you want fresh specs.\n"
             )
@@ -1501,7 +1501,7 @@ class ConfigureMixin:
 
         script = REPO_ROOT / "dev" / "docsupdate.py"
         if not script.exists():
-            console.print("[red]dev/docsupdate.py not found.[/red]")
+            console.print("[red]app/scripts/docsupdate.py not found.[/red]")
             return
 
         extra: list[str] = []
@@ -1513,7 +1513,7 @@ class ConfigureMixin:
 
         console.print(
             f"\n[magenta]● docs update[/magenta]  "
-            f"[dim]running dev/docsupdate.py … (30–120 s)[/dim]\n"
+            f"[dim]running app/scripts/docsupdate.py … (30–120 s)[/dim]\n"
         )
         try:
             proc = _sp.Popen(
@@ -1608,12 +1608,12 @@ class ConfigureMixin:
         from app.settings import command_structure as cs
 
         scripts = [
-            ("dev/generate_resource_catalog.py",  "resource catalog    → app/commands/resource_catalog.py"),
-            ("dev/generate_feature_flags.py",      "feature flags       → settings/features/"),
-            ("dev/generate_field_library.py",      "field library       → app/settings/field_catalog.py"),
-            ("dev/generate_command_docs.py",       "command docs        → docs/commands/"),
-            ("dev/generate_api_index.py",          "API index           → dev/API_INDEX.md"),
-            ("dev/generate_code_map.py",           "code map            → dev/CODE_MAP.md"),
+            ("app/scripts/generate_resource_catalog.py",  "resource catalog    → app/commands/resource_catalog.py"),
+            ("app/scripts/generate_feature_flags.py",      "feature flags       → settings/features/"),
+            ("app/scripts/generate_field_library.py",      "field library       → app/settings/field_catalog.py"),
+            ("app/scripts/generate_command_docs.py",       "command docs        → docs/commands/"),
+            ("app/scripts/generate_api_index.py",          "API index           → app/scripts/API_INDEX.md"),
+            ("app/scripts/generate_code_map.py",           "code map            → app/scripts/CODE_MAP.md"),
         ]
 
         console.print("\n[magenta]● catalog rebuild[/magenta]\n")

@@ -5,9 +5,9 @@ th# SHELL.PY — the shell spine (prompt loop, dispatch, execution, rendering)
 # ============================================================================
 #
 # AGENT READ STRATEGY — do NOT read this whole file.
-#   `dev/CODE_MAP.md` has the exact, always-current line range of every method
+#   `app/scripts/CODE_MAP.md` has the exact, always-current line range of every method
 #   here. Read that map, then read_file(offset=START, limit=END-START+1) for the
-#   one method you need. Regenerate the map with: python dev/generate_code_map.py
+#   one method you need. Regenerate the map with: python app/scripts/generate_code_map.py
 #   (smoke_test.py section 10 fails if the map is stale.)
 #
 # SMALL "STRINGS" attached to this spine (edit these first when relevant):

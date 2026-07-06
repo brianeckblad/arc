@@ -1,6 +1,6 @@
 """Spec-generated SCM endpoint commands.
 
-``dev/generate_resource_catalog.py`` reads every pulled OpenAPI spec and writes
+``app/scripts/generate_resource_catalog.py`` reads every pulled OpenAPI spec and writes
 ``app/commands/resource_catalog.py``.  This module turns those entries into
 feature-gated ``CommandDef`` objects.  Defaults live in ``settings/features/``
 and are intentionally OFF until an operator enables the feature.

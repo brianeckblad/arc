@@ -5,10 +5,10 @@ This is the engine behind both the LLM trigger word ``commandupdate`` and
 the in-shell ``dev command-structure update`` command.  Run either way to get
 the same result.
 
-  python dev/commandupdate.py             # update all commands missing a spec
-  python dev/commandupdate.py --check     # dry-run: report what would be added
-  python dev/commandupdate.py "set tag"   # update one specific command
-  python dev/commandupdate.py --force     # also refresh existing override:false entries
+  python app/scripts/commandupdate.py             # update all commands missing a spec
+  python app/scripts/commandupdate.py --check     # dry-run: report what would be added
+  python app/scripts/commandupdate.py "set tag"   # update one specific command
+  python app/scripts/commandupdate.py --force     # also refresh existing override:false entries
 
 Output is written to ``settings/command-structure.json`` as override:false entries.
 Entries with ``override:true`` are never touched — they are hand-curated.
@@ -36,7 +36,7 @@ import json
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
 from app.paths import COMMAND_STRUCTURE_JSON

@@ -8,7 +8,7 @@ SPEC PROVENANCE
     spec for the SLS / CDL Query Service — checked 2026-07 via the GitHub
     tree API (the only CDL specs are openapi-specs/cdl/logforwarding/*).
     This client therefore implements the documented CDL Query Service v2
-    REST contract (https://pan.dev/cdl/ — "Query Service"):
+    REST contract (https://pan.app/scripts/cdl/ — "Query Service"):
 
         POST   /query/v2/jobs                 create a SQL query job
         GET    /query/v2/jobs/{jobId}         poll job state

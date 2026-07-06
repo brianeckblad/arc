@@ -547,7 +547,7 @@ def auth_test(
     console.print("\n[bold cyan]5. SCM API connectivity[/bold cyan]")
     console.print(
         "  [dim]Probing all three pan.dev API gateways…[/dim]\n"
-        "  [dim]Source: https://pan.dev/scm/api/[/dim]"
+        "  [dim]Source: https://pan.app/scripts/scm/api/[/dim]"
     )
     probe_results: list[tuple[str, bool, str]] = []
 
@@ -797,7 +797,7 @@ def _build_docs_bundle() -> int:
 def _do_cliup(silent: bool = False, skip_vendor: bool = False) -> dict:
     """Core cliup logic — rebuild the offline browser docs bundle.
 
-    Doc FILES are owned by dev/generate_command_docs.py (which prunes stubs —
+    Doc FILES are owned by app/scripts/generate_command_docs.py (which prunes stubs —
     commands without a file get registry-synthesized help). cliup only bundles
     what exists for the browser portal; it never creates command docs.
 
@@ -825,7 +825,7 @@ def cliup() -> None:
     2. Rebuild docs/docs-bundle.js — embeds all Markdown so the browser portal
        works via file:// with no server required.
 
-    Command doc files and index.md are owned by dev/generate_command_docs.py.
+    Command doc files and index.md are owned by app/scripts/generate_command_docs.py.
     """
     stats = _do_cliup(silent=False, skip_vendor=False)
     downloaded = stats["downloaded"]

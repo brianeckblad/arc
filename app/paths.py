@@ -33,11 +33,11 @@ STRUCTURE_FILE = SETTINGS_DIR / "cli-structure.yaml"
 #   settings/features/curated.json         hand-written command flags
 #   settings/features/local.json           flags with no generated home
 # FEATURES_FILE is the LEGACY single-file location — read for backward compat,
-# absorbed and removed by dev/generate_feature_flags.py.
+# absorbed and removed by app/scripts/generate_feature_flags.py.
 FEATURES_DIR  = SETTINGS_DIR / "features"
 FEATURES_FILE = SETTINGS_DIR / "features.json"
 
-# PAN-OS CLI docs pages pulled by dev/panosupdate.py — user-editable URL
+# PAN-OS CLI docs pages pulled by app/scripts/panosupdate.py — user-editable URL
 # registry: add new "commands added/deleted in X" pages here.
 PANOS_SOURCES_FILE = SETTINGS_DIR / "panos-sources.json"
 

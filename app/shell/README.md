@@ -1,7 +1,7 @@
 # `app/shell/` — The Interactive REPL (mixin package)
 
 `ArcShell` is composed from one-concern-per-file mixins. Edit one mixin, not
-the whole shell. Method line ranges live in `dev/CODE_MAP.md` — read the range
+the whole shell. Method line ranges live in `app/scripts/CODE_MAP.md` — read the range
 you need, never a whole file.
 
 ## What lives here
@@ -31,11 +31,11 @@ and `?` all call it.
 
 ## How to change things here
 
-- Find the method via `dev/CODE_MAP.md`, edit that one range, then validate:
-  `python dev/smoke_test.py --file app/shell/<file>.py`.
+- Find the method via `app/scripts/CODE_MAP.md`, edit that one range, then validate:
+  `python app/scripts/smoke_test.py --file app/shell/<file>.py`.
 - New builtin: add the name + help row in `app/shell_catalog.py`, the
   `_cmd_*` method in the owning mixin, the dispatch branch in `dispatch.py`.
-  Validate: `python dev/smoke_test.py --file app/shell_catalog.py` (section 8
+  Validate: `python app/scripts/smoke_test.py --file app/shell_catalog.py` (section 8
   enforces builtin ↔ catalog ↔ help sync).
 - Banner changes (`prompt.py::_print_startup_help`): update `_BANNER_LINES`
   in `_base.py`; smoke §7 checks alignment.

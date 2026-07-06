@@ -1,6 +1,6 @@
 """PAN-OS CLI catalog → feature-gated CommandDefs.
 
-``dev/generate_panos_catalog.py`` scrapes the PAN-OS CLI hierarchy docs into
+``app/scripts/generate_panos_catalog.py`` scrapes the PAN-OS CLI hierarchy docs into
 ``app/commands/panos_catalog.py``. This module turns those entries into
 commands:
 

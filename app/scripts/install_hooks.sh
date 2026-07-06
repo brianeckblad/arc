@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Install ARC git hooks.
-# Run once after cloning: bash dev/install_hooks.sh
+# Run once after cloning: bash app/scripts/install_hooks.sh
 set -e
-REPO_ROOT="$(git -C "$(dirname "$0")/.." rev-parse --show-toplevel)"
+REPO_ROOT="$(git -C "$(dirname "$0")/../.." rev-parse --show-toplevel)"
 HOOKS_DIR="$REPO_ROOT/.git/hooks"
 
 cat > "$HOOKS_DIR/pre-commit" << 'HOOK'
@@ -42,16 +42,15 @@ fi
 
 # ── Regenerate CODE_MAP if any .py file under app/ changed ─────────────────
 if git diff --cached --name-only | grep -q '^app/.*\.py$'; then
-    echo "pre-commit: Python files changed — regenerating dev/CODE_MAP.md"
-    uv run python dev/generate_code_map.py
-    git add dev/CODE_MAP.md
+    echo "pre-commit: Python files changed — regenerating app/scripts/CODE_MAP.md"
+    uv run python app/scripts/generate_code_map.py
+    git add app/scripts/CODE_MAP.md
 fi
 
 echo "pre-commit: running smoke sections 1,2,3 …"
-uv run python dev/smoke_test.py --only 1,2,3
+uv run python app/scripts/smoke_test.py --only 1,2,3
 echo "pre-commit: OK"
 HOOK
 
 chmod +x "$HOOKS_DIR/pre-commit"
 echo "✓ pre-commit hook installed at $HOOKS_DIR/pre-commit"
-

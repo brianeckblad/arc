@@ -18,7 +18,7 @@ shell needs; the Markdown body below it is the full ``help <command>`` page::
 This is the single source of truth: the inline ``?`` / ``<command> ?`` help reads
 ``description`` and ``usage`` from the front-matter, and ``help <command>``
 renders the body.  Regenerate everything (index, API reference, and any missing
-front-matter) with ``python dev/generate_command_docs.py`` — it also runs as part of
+front-matter) with ``python app/scripts/generate_command_docs.py`` — it also runs as part of
 ``docsupdate``.
 
 The loader is tolerant: a doc with no front-matter (or PyYAML missing) simply

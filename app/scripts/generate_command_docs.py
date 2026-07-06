@@ -32,10 +32,10 @@ What this script does (idempotent):
   * regenerates `docs/commands/api-reference.md` from the front-matter + registry.
 
 Run:
-    python dev/generate_command_docs.py              # prune + refresh + regenerate
-    python dev/generate_command_docs.py --check      # flag docs for unregistered commands (exit 1)
+    python app/scripts/generate_command_docs.py              # prune + refresh + regenerate
+    python app/scripts/generate_command_docs.py --check      # flag docs for unregistered commands (exit 1)
 
-This runs automatically as part of `docsupdate` (dev/docsupdate.py).
+This runs automatically as part of `docsupdate` (app/scripts/docsupdate.py).
 """
 
 from __future__ import annotations
@@ -43,7 +43,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
 from app.commands.registry import CATEGORIES, COMMANDS  # noqa: E402
@@ -375,7 +375,7 @@ def regenerate_api_reference() -> None:
         "# ARC Command → SCM API Reference",
         "",
         "Generated from each command's doc front-matter (`api:` field) and the live",
-        "registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsupdate`).",
+        "registry. Regenerate with `python app/scripts/generate_command_docs.py` (runs on `docsupdate`).",
         "",
     ]
     for category in sorted(CATEGORIES):
@@ -420,7 +420,7 @@ def main() -> int:
             print(f"  {line}")
         if problems:
             print(f"\n{len(problems)} command doc(s) reference unregistered commands — "
-                  "rename or delete them (see dev/generate_command_docs.py)")
+                  "rename or delete them (see app/scripts/generate_command_docs.py)")
             return 1
         print("All existing command docs reference registered commands")
         return 0
@@ -444,4 +444,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

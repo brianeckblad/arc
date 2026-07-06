@@ -29,7 +29,7 @@ from app.commands.setup import COMMANDS as _SETUP
 
 # Auto-generated `show <resource>` commands for 100% NGFW config coverage — one
 # per uncovered list endpoint in the pulled specs (see app/commands/generated.py
-# and dev/generate_resource_catalog.py).  Merged FIRST so any hand-written command
+# and app/scripts/generate_resource_catalog.py).  Merged FIRST so any hand-written command
 # with the same key always wins.
 from app.commands.generated import COMMANDS as _GENERATED
 

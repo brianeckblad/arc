@@ -24,14 +24,14 @@ account needs a Logging Service role — a config-only SCM role gets 403 here.
 
 ## How to change things here
 
-- **Never guess an endpoint.** Look it up in `dev/API_INDEX.md` (one line per
+- **Never guess an endpoint.** Look it up in `app/scripts/API_INDEX.md` (one line per
   endpoint) or the mirrored spec `docs/scm-api/specs/<category>.md`.
 - New client method: a one-line wrapper calling `self._request(...)` — then
   reference it from a `CommandDef` via `show_handler('get_x')` or a named
-  handler. Validate: full `python dev/smoke_test.py`.
-- After `python dev/docsupdate.py`: read `docs/scm-api/CHANGES.md`; fix any
+  handler. Validate: full `python app/scripts/smoke_test.py`.
+- After `python app/scripts/docsupdate.py`: read `docs/scm-api/CHANGES.md`; fix any
   removed/renamed endpoints here and in the affected commands.
-- SLS changes: run the offline unit tests — `python dev/test_sls.py`
+- SLS changes: run the offline unit tests — `python app/scripts/test_sls.py`
   (fake transport; exercises job lifecycle, SQL builder, error translation).
 
 ## Do not

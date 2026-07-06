@@ -12,18 +12,18 @@ Covers eleven concern areas:
   8. CLI banner   — every banner line lands descriptions at visual column 28
   9. Inline help  — builtin names in sync via settings/builtin-commands.json; no markup; width fit
  10. Theme system — ArcTheme fields, THEME_KEYS, load_theme(), file locations
- 11. Code map     — dev/CODE_MAP.md is current (no line-range drift in large files)
+ 11. Code map     — app/scripts/CODE_MAP.md is current (no line-range drift in large files)
 
 Run directly:
-    python dev/smoke_test.py
+    python app/scripts/smoke_test.py
 
 Run targeted sections (saves tokens + time when editing one area):
-    python dev/smoke_test.py --only 1,2,3     # syntax + imports + registry
-    python dev/smoke_test.py --only 3         # registry only (fastest after adding a command)
-    python dev/smoke_test.py --file app/commands/network.py   # auto-selects sections
+    python app/scripts/smoke_test.py --only 1,2,3     # syntax + imports + registry
+    python app/scripts/smoke_test.py --only 3         # registry only (fastest after adding a command)
+    python app/scripts/smoke_test.py --file app/commands/network.py   # auto-selects sections
 
 Run from pre-commit hook:
-    python dev/smoke_test.py --quiet   (exit 0 = OK, exit 1 = failure)
+    python app/scripts/smoke_test.py --quiet   (exit 0 = OK, exit 1 = failure)
 
 File → section mapping for --file:
     commands/*.py          → 1,2,3
@@ -53,8 +53,8 @@ from pathlib import Path
 from types import SimpleNamespace
 
 # Ensure the project root is on sys.path so `import app.*` works when the
-# script is invoked from any directory (e.g. `python dev/smoke_test.py`).
-ROOT = Path(__file__).resolve().parent.parent   # arc/
+# script is invoked from any directory (e.g. `python app/scripts/smoke_test.py`).
+ROOT = Path(__file__).resolve().parent.parent.parent   # arc/
 APP  = ROOT / "app"
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -124,7 +124,7 @@ def _parse_cli_args() -> tuple[set[int], bool]:
         # Always include 1 (syntax) and 2 (imports) for any Python file.
         # Section 11 (code-map drift) is added for files large enough to be mapped.
         base = {1, 2}
-        # Files mapped in dev/CODE_MAP.md trigger the drift check too.
+        # Files mapped in app/scripts/CODE_MAP.md trigger the drift check too.
         _mapped_large_files = {
             "navigation.py", "help.py", "cli.py", "formatter.py", "client.py",
             "config.py", "setup.py", "manager.py", "objects.py", "network.py",
@@ -285,9 +285,9 @@ def test_registry() -> None:
     #      with the pulled specs.  GET/POST/PUT/PATCH/DELETE operations are covered
     #      by explicit commands or feature-gated generated command metadata.
     #      Drift = a new pan.dev endpoint with no command metadata; run:
-    #      python dev/generate_resource_catalog.py
+    #      python app/scripts/generate_resource_catalog.py
     import importlib.util as _ilu
-    gen_path = ROOT / "dev" / "generate_resource_catalog.py"
+    gen_path = ROOT / "app" / "scripts" / "generate_resource_catalog.py"
     spec_mod = _ilu.spec_from_file_location("generate_resource_catalog", gen_path)
     try:
         module = _ilu.module_from_spec(spec_mod)
@@ -302,7 +302,7 @@ def test_registry() -> None:
             missing = sorted(fresh_cmds - have_cmds)
             fail(
                 f"{len(missing)} spec endpoint(s) not in resource_catalog.py",
-                "Run: python dev/generate_resource_catalog.py  (" + ", ".join(missing[:5]) + ")",
+                "Run: python app/scripts/generate_resource_catalog.py  (" + ", ".join(missing[:5]) + ")",
             )
     except ModuleNotFoundError:
         ok("resource catalog check skipped (PyYAML not installed)")
@@ -493,7 +493,7 @@ def test_arg_parser() -> None:
     prefs = _up.UserPrefs(terminal_length=24, terminal_width=120, spinner=False,
                           aliases={"slt": "show log traffic"})
     original_file = _up.PREFS_FILE
-    _up.PREFS_FILE = ROOT / "dev" / ".smoke_prefs_test.json"
+    _up.PREFS_FILE = ROOT / "app" / "scripts" / ".smoke_prefs_test.json"
     try:
         if _up.save_prefs(prefs) and _up.load_prefs() == prefs:
             ok("user_prefs: save/load round-trip preserves values (incl. aliases)")
@@ -656,7 +656,7 @@ def test_config() -> None:
     feature_files = sorted(features_dir.glob("*.json")) if features_dir.is_dir() else []
     if not feature_files:
         raw_features = None
-        fail("settings/features/ has no flag files — run: python dev/generate_feature_flags.py")
+        fail("settings/features/ has no flag files — run: python app/scripts/generate_feature_flags.py")
     for ff in feature_files:
         try:
             parsed = _json.loads(ff.read_text(encoding="utf-8"))
@@ -1041,9 +1041,9 @@ def test_theme() -> None:
     if len(feature_files) >= 5:
         ok(f"settings/features/ glossary present ({len(feature_files)} file(s))")
     else:
-        fail("settings/features/ glossary missing or near-empty — run: python dev/generate_feature_flags.py")
+        fail("settings/features/ glossary missing or near-empty — run: python app/scripts/generate_feature_flags.py")
     if (settings / "features.json").exists():
-        fail("legacy settings/features.json still present — run: python dev/generate_feature_flags.py")
+        fail("legacy settings/features.json still present — run: python app/scripts/generate_feature_flags.py")
     else:
         ok("no legacy settings/features.json (absorbed into the glossary)")
     if (APP / "banner.txt").exists() or (ROOT / "banner.txt").exists():
@@ -1082,7 +1082,7 @@ def test_theme() -> None:
     if orphan_docs:
         fail(
             f"{len(orphan_docs)} command doc(s) reference unregistered commands",
-            "; ".join(orphan_docs[:5]) + "  (rename/delete, or run: python dev/generate_command_docs.py --check)",
+            "; ".join(orphan_docs[:5]) + "  (rename/delete, or run: python app/scripts/generate_command_docs.py --check)",
         )
     else:
         ok(f"All {doc_count} existing command docs reference registered commands")
@@ -1099,7 +1099,7 @@ def test_theme() -> None:
 
 # ---------------------------------------------------------------------------
 # 10. Code map freshness
-#     dev/CODE_MAP.md is generated by dev/generate_code_map.py and gives agents the
+#     app/scripts/CODE_MAP.md is generated by app/scripts/generate_code_map.py and gives agents the
 #     exact line range of every method in large files. If it drifts, agents read
 #     the wrong lines. This check fails when the map is stale so it cannot rot.
 # ---------------------------------------------------------------------------
@@ -1107,24 +1107,24 @@ def test_theme() -> None:
 def test_code_map() -> None:
     section("11. Code map freshness")
 
-    gen = ROOT / "dev" / "generate_code_map.py"
-    code_map = ROOT / "dev" / "CODE_MAP.md"
+    gen = ROOT / "app" / "scripts" / "generate_code_map.py"
+    code_map = ROOT / "app" / "scripts" / "CODE_MAP.md"
 
     if not gen.exists():
-        fail("dev/generate_code_map.py is missing")
+        fail("app/scripts/generate_code_map.py is missing")
         return
-    ok("dev/generate_code_map.py exists")
+    ok("app/scripts/generate_code_map.py exists")
 
     if not code_map.exists():
-        fail("dev/CODE_MAP.md is missing — run: python dev/generate_code_map.py")
+        fail("app/scripts/CODE_MAP.md is missing — run: python app/scripts/generate_code_map.py")
         return
-    ok("dev/CODE_MAP.md exists")
+    ok("app/scripts/CODE_MAP.md exists")
 
     # Re-run the generator's --check mode in-process to detect drift.
     import importlib.util
     spec = importlib.util.spec_from_file_location("generate_code_map", gen)
     if spec is None or spec.loader is None:
-        fail("Could not load dev/generate_code_map.py for drift check")
+        fail("Could not load app/scripts/generate_code_map.py for drift check")
         return
     module = importlib.util.module_from_spec(spec)
     try:
@@ -1132,11 +1132,11 @@ def test_code_map() -> None:
         fresh = module._build_map()
         current = code_map.read_text(encoding="utf-8")
         if fresh == current:
-            ok("dev/CODE_MAP.md is current (no drift)")
+            ok("app/scripts/CODE_MAP.md is current (no drift)")
         else:
             fail(
-                "dev/CODE_MAP.md is STALE",
-                "Run: python dev/generate_code_map.py  (large file line ranges changed)",
+                "app/scripts/CODE_MAP.md is STALE",
+                "Run: python app/scripts/generate_code_map.py  (large file line ranges changed)",
             )
     except Exception as exc:
         fail("Code map drift check raised", str(exc))
@@ -1205,10 +1205,10 @@ def main() -> int:
     else:
         print(f"ALL OK  {_passes}/{total} checks passed  ({total_elapsed:.1f}s)")
         if skipped:
-            print(f"        ({len(skipped)} section(s) skipped — run without --only to verify all)")
+            skipped_labels = ", ".join(f"{n}={label}" for n, _, label in _SECTION_MAP if n in skipped)
+            print(f"        (Skipped: {skipped_labels} — run without --only to verify all)")
         return 0
 
 
 if __name__ == "__main__":
     sys.exit(main())
-

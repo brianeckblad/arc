@@ -2132,5 +2132,65 @@
         "hint": "Enter ip"
       }
     ]
+  },
+  "show address": {
+    "override": false,
+    "args": [
+      {
+        "name": "name",
+        "kind": "keyword",
+        "required": false,
+        "hint": "Enter name",
+        "value_hint": "name"
+      }
+    ]
+  },
+  "show address-group": {
+    "override": false,
+    "args": [
+      {
+        "name": "name",
+        "kind": "keyword",
+        "required": false,
+        "hint": "Enter name",
+        "value_hint": "name"
+      }
+    ]
+  },
+  "show external-dynamic-list": {
+    "override": false,
+    "args": [
+      {
+        "name": "name",
+        "kind": "keyword",
+        "required": false,
+        "hint": "Enter name",
+        "value_hint": "name"
+      }
+    ]
+  },
+  "show service": {
+    "override": false,
+    "args": [
+      {
+        "name": "name",
+        "kind": "keyword",
+        "required": false,
+        "hint": "Enter name",
+        "value_hint": "name"
+      }
+    ]
+  },
+  "show tag": {
+    "override": false,
+    "args": [
+      {
+        "name": "name",
+        "kind": "keyword",
+        "required": false,
+        "hint": "Enter name",
+        "value_hint": "name"
+      }
+    ]
   }
 }

@@ -2,9 +2,9 @@
 """ARC command scaffolder — generates boilerplate for a new registered command.
 
 Usage:
-    python dev/scaffold.py "show bgp routes" network
-    python dev/scaffold.py "show address" objects
-    python dev/scaffold.py "show zone" network --scope folder
+    python app/scripts/scaffold.py "show bgp routes" network
+    python app/scripts/scaffold.py "show address" objects
+    python app/scripts/scaffold.py "show zone" network --scope folder
 
 Arguments:
     command    Quoted command string as it will appear in COMMANDS dict
@@ -23,7 +23,7 @@ What gets created:
     2. docs/commands/<slug>.md            (stub doc file)
 
 Then run:
-    python dev/smoke_test.py --only 1,2,3
+    python app/scripts/smoke_test.py --only 1,2,3
 """
 
 from __future__ import annotations
@@ -34,7 +34,7 @@ import sys
 import textwrap
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 APP  = ROOT / "app"
 DOCS = ROOT / "docs" / "commands"
 
@@ -97,7 +97,7 @@ def _handler_code(command: str, module: str, scope: str, render: str) -> str:
     if scope != "device":
         scm_lines = (
             f"    scm = require_scm(ctx)\n"
-            f"    # TODO: verify endpoint in dev/API_INDEX.md first; deep-dive {spec_file} if needed.\n"
+            f"    # TODO: verify endpoint in app/scripts/API_INDEX.md first; deep-dive {spec_file} if needed.\n"
             f"    # {ep}\n"
             f"    return scm.get_{slug.replace('-', '_')}({folder_param})\n"
         )
@@ -110,7 +110,7 @@ def {fn}(ctx: ExecutionContext, args: dict) -> Any:
 
     # TODO: implement handler body.
     # Endpoint: {ep}
-    # Verify path and params in dev/API_INDEX.md before coding.
+    # Verify path and params in app/scripts/API_INDEX.md before coding.
     # Full spec: docs/scm-api/specs/{spec_file}
     """
 {device_guard}{scm_lines}
@@ -156,7 +156,7 @@ def _docs_stub(command: str, module: str, scope: str) -> str:
         ## Notes
 
         - Endpoint: `{ep}`
-        - Start with `dev/API_INDEX.md`; deep-dive `docs/scm-api/specs/{spec_file}`
+        - Start with `app/scripts/API_INDEX.md`; deep-dive `docs/scm-api/specs/{spec_file}`
           only if the compact index is not enough.
 
         ## See Also
@@ -247,10 +247,10 @@ def main() -> int:
     if render not in ("list", "raw"):
         print(f"  {next_step}. Add render={render!r} case to app/utils/formatter.py + ArcShell._render()")
         print(f"  {next_step+1}. Add formatter call to smoke_test.py section 6")
-        print(f"  {next_step+2}. python dev/smoke_test.py --only 1,2,3,6")
+        print(f"  {next_step+2}. python app/scripts/smoke_test.py --only 1,2,3,6")
     else:
-        print(f"  {next_step}. python dev/smoke_test.py --only 1,2,3")
-    print(f"\n  Compact index:      dev/API_INDEX.md")
+        print(f"  {next_step}. python app/scripts/smoke_test.py --only 1,2,3")
+    print(f"\n  Compact index:      app/scripts/API_INDEX.md")
     print(f"  Full API reference: docs/scm-api/specs/{_MODULE_SPEC_FILE[module]}")
 
     return 0
@@ -258,4 +258,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-

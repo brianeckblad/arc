@@ -5,7 +5,7 @@ into the ArcShell class and keeps the public surface stable:
     from app.shell import ArcShell, ShellState, console
     from app.shell import _SHELL_BUILTINS, _expand_unambiguous_prefix
 
-Method line ranges live in dev/CODE_MAP.md. Edit one mixin file, not the whole
+Method line ranges live in app/scripts/CODE_MAP.md. Edit one mixin file, not the whole
 shell. Shared imports/constants/helpers live in app/shell/_base.py.
 """
 from __future__ import annotations

@@ -3,7 +3,7 @@
 All endpoint paths and base URLs are sourced directly from the pan.dev
 OpenAPI specifications:
 
-  https://pan.dev/scm/api/
+  https://pan.app/scripts/scm/api/
 
 Gateway map (from the OpenAPI ``servers`` field in each spec):
 
@@ -111,7 +111,7 @@ class SCMClient:
     def _authenticate(self) -> None:
         """Obtain an OAuth token via the client-credentials flow.
 
-        pan.dev ref: https://pan.dev/scm/api/auth/post-auth-v-1-oauth-2-access-token/
+        pan.dev ref: https://pan.app/scripts/scm/api/auth/post-auth-v-1-oauth-2-access-token/
         """
         if not (self._cfg.client_id and self._cfg.client_secret and self._cfg.tsg_id):
             raise SCMError(
@@ -304,7 +304,7 @@ class SCMClient:
     def _get_network(self, path: str, params: Optional[dict] = None) -> Any:
         """GET from api.strata.paloaltonetworks.com/config/network/v1.
 
-        pan.dev: https://pan.dev/scm/api/config/cloudngfw/network/
+        pan.dev: https://pan.app/scripts/scm/api/config/cloudngfw/network/
         """
         return self._request("GET", self.NETWORK_URL, path, params=params)
 
@@ -408,7 +408,7 @@ class SCMClient:
 
     # ------------------------------------------------------------------
     # Tenancy / IAM  (api.sase.paloaltonetworks.com)
-    # pan.dev: https://pan.dev/scm/api/tenancy/
+    # pan.dev: https://pan.app/scripts/scm/api/tenancy/
     # ------------------------------------------------------------------
 
     def get_tenants(self) -> list[dict]:
@@ -451,7 +451,7 @@ class SCMClient:
 
     # ------------------------------------------------------------------
     # Setup  (api.strata.paloaltonetworks.com/config/setup/v1)
-    # pan.dev: https://pan.dev/scm/api/config/cloudngfw/setup/
+    # pan.dev: https://pan.app/scripts/scm/api/config/cloudngfw/setup/
     # ------------------------------------------------------------------
 
     def get_devices(self) -> list[dict]:
@@ -658,7 +658,7 @@ class SCMClient:
 
     # ------------------------------------------------------------------
     # Objects  (api.strata.paloaltonetworks.com/config/objects/v1)
-    # pan.dev: https://pan.dev/scm/api/config/cloudngfw/objects/
+    # pan.dev: https://pan.app/scripts/scm/api/config/cloudngfw/objects/
     # Spec: openapi-specs/scm/config/ngfw/objects/objects_v1.3_feb.yaml
     # ------------------------------------------------------------------
 
@@ -833,7 +833,7 @@ class SCMClient:
 
     # ------------------------------------------------------------------
     # Security  (api.strata.paloaltonetworks.com/config/security/v1)
-    # pan.dev: https://pan.dev/scm/api/config/cloudngfw/security/
+    # pan.dev: https://pan.app/scripts/scm/api/config/cloudngfw/security/
     # Spec: openapi-specs/scm/config/ngfw/security/security-services-R2-2026.yaml
     # ------------------------------------------------------------------
 
@@ -976,7 +976,7 @@ class SCMClient:
 
     # ------------------------------------------------------------------
     # Identity  (api.strata.paloaltonetworks.com/config/identity/v1)
-    # pan.dev: https://pan.dev/scm/api/config/cloudngfw/identity/
+    # pan.dev: https://pan.app/scripts/scm/api/config/cloudngfw/identity/
     # ------------------------------------------------------------------
 
     def _get_identity(self, path: str, params: Optional[dict] = None) -> Any:
@@ -1017,7 +1017,7 @@ class SCMClient:
 
     # ------------------------------------------------------------------
     # Network  (api.strata.paloaltonetworks.com/config/network/v1)
-    # pan.dev: https://pan.dev/scm/api/config/cloudngfw/network/
+    # pan.dev: https://pan.app/scripts/scm/api/config/cloudngfw/network/
     # Spec: openapi-specs/scm/config/ngfw/network/  (verify exact file at pan.dev)
     # ------------------------------------------------------------------
 
@@ -1133,7 +1133,7 @@ class SCMClient:
 
     # ------------------------------------------------------------------
     # Commit / push config  (api.strata.paloaltonetworks.com/config/setup/v1)
-    # pan.dev: https://pan.dev/scm/api/config/cloudngfw/setup/
+    # pan.dev: https://pan.app/scripts/scm/api/config/cloudngfw/setup/
     # ------------------------------------------------------------------
 
     def push_config(

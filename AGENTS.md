@@ -11,7 +11,7 @@ task needs. There is no other instruction file — `.github/copilot-instructions
 and `README.dev.md` were retired into this hub.
 
 **Read minimally.** Never read a 300+ line file whole: look up the method's
-line range in `dev/CODE_MAP.md` and read only that range. The tables below name
+line range in `app/scripts/CODE_MAP.md` and read only that range. The tables below name
 the smallest file that owns each concern.
 
 ---
@@ -20,38 +20,38 @@ the smallest file that owns each concern.
 
 | Keyword / task | Read | Edit | Validate |
 |---|---|---|---|
-| `network` / `security` / `objects` / `identity` / `setup` / `operations` commands | `docs/COMMAND_PATTERNS.md`, `dev/API_INDEX.md` (endpoint row) | `app/commands/<domain>.py` | `python dev/smoke_test.py --only 1,2,3` |
+| `network` / `security` / `objects` / `identity` / `setup` / `operations` commands | `docs/COMMAND_PATTERNS.md`, `app/scripts/API_INDEX.md` (endpoint row) | `app/commands/<domain>.py` | `python app/scripts/smoke_test.py --only 1,2,3` |
 | `packet-tracer` (policy simulation) | `app/commands/packet_tracer.py` | same | `--only 1,2,3` |
 | `render` (output/table changes) | `docs/RENDER_CATALOG.md` | `app/utils/formatter.py`, `_render()` in `app/shell/execution.py` | `--file app/utils/formatter.py` |
 | `commanddef` (field reference) | `docs/COMMANDDEF_REFERENCE.md` | — | — |
-| `shell` (REPL, dispatch, help UX) | `dev/CODE_MAP.md` → one range in `app/shell/<file>.py` | that one mixin file | `--file app/shell/<file>.py` |
+| `shell` (REPL, dispatch, help UX) | `app/scripts/CODE_MAP.md` → one range in `app/shell/<file>.py` | that one mixin file | `--file app/shell/<file>.py` |
 | `catalog` (builtin names, SHELL help rows) | `app/shell_catalog.py` | same | `--file app/shell_catalog.py` |
 | `feature` / `flag <name>` (turn commands on/dev/off) | `settings/features/` (per-domain glossary: scm-<spec>.json, panos-ops/config.json; **`local.json` = user overrides, never regenerated**) | the one owning file (+ one `CommandDef.feature_flag`). Use `local.json` for persistent user overrides that survive `docsupdate` / `catalog rebuild` | `--only 1,2,3` |
 | `theme` (colours) | `settings/theme.json`, `app/settings/theme.py` | same | `--only 10` |
 | `terminal` / prefs (pager, width, spinner) | `app/settings/user_prefs.py`, `_cmd_terminal` in `app/shell/configure.py` | same | `--only 4` |
 | `settings` (banner, goodbye, labels — no code) | `settings/` | `settings/banner.txt` etc. | `--only 7,8,9,10` |
-| `argspec` (greedy `set <object>` parsing, slot completion, contextual `?` help) | `settings/command-structure.json` (hand-curated, highest priority), `app/settings/field_catalog.py` (AUTO-GENERATED from OpenAPI specs), `app/settings/command_structure.py` (walker + usage-string fallback) | hand file, or `python dev/generate_field_library.py` | `--only 4` |
+| `argspec` (greedy `set <object>` parsing, slot completion, contextual `?` help) | `settings/command-structure.json` (hand-curated, highest priority), `app/settings/field_catalog.py` (AUTO-GENERATED from OpenAPI specs), `app/settings/command_structure.py` (walker + usage-string fallback) | hand file, or `python app/scripts/generate_field_library.py` | `--only 4` |
 | `auth` (credentials, profiles) | `app/config.py`, `app/cli.py` (auth group) | same | `--file app/config.py` |
-| `scm-api` / `endpoint <resource>` | `dev/API_INDEX.md`; deep dive: `docs/scm-api/specs/<cat>.md` | `app/api/client.py` | full suite |
-| `docsupdate` / docs agent | `dev/DOCS_AGENT.md` | run `python dev/docsupdate.py` (same as `dev docs update` in the app) | `--self-test` |
-| `commandupdate` | — | run `python dev/commandupdate.py` (same as `dev command-structure update` in the app) | `--only 1,2,4` |
-| `panos` (PAN-OS CLI tree: op cmds, break-glass config, live data) | `settings/panos-sources.json` (URLs), `dev/panos-curation.json` (overrides/recovery/scm_map), `app/commands/panos_generated.py` | curation file, or `python dev/panosupdate.py && python dev/generate_panos_catalog.py` | full suite |
+| `scm-api` / `endpoint <resource>` | `app/scripts/API_INDEX.md`; deep dive: `docs/scm-api/specs/<cat>.md` | `app/api/client.py` | full suite |
+| `docsupdate` / docs agent | `app/scripts/DOCS_AGENT.md` | run `python app/scripts/docsupdate.py` (same as `dev docs update` in the app) | `--self-test` |
+| `commandupdate` | — | run `python app/scripts/commandupdate.py` (same as `dev command-structure update` in the app) | `--only 1,2,4` |
+| `panos` (PAN-OS CLI tree: op cmds, break-glass config, live data) | `settings/panos-sources.json` (URLs), `app/scripts/panos-curation.json` (overrides/recovery/scm_map), `app/commands/panos_generated.py` | curation file, or `python app/scripts/panosupdate.py && python app/scripts/generate_panos_catalog.py` | full suite |
 | `watch` (re-run command loop) | `_cmd_watch` in `app/shell/dispatch.py` | same | `--only 1,2` |
-| `logs` (SLS fleet queries: show log traffic/threat/system/detail) | `app/api/sls.py` (client + SQL builder), log handlers in `app/commands/operations.py` | same | `python dev/test_sls.py` + `--only 1,2,3` |
+| `logs` (SLS fleet queries: show log traffic/threat/system/detail) | `app/api/sls.py` (client + SQL builder), log handlers in `app/commands/operations.py` | same | `python app/scripts/test_sls.py` + `--only 1,2,3` |
 | `config-view` (show config running/versions/format set, rollback) | `app/commands/config_view.py` (declarative `_FORMAT_SET_SPECS` table) | same | `--only 1,2,3` |
 | `pipes` (match/except/count/json/save filters) | `parse_output_filters` + `_dispatch_piped` in `app/shell/dispatch.py` | same | `--only 4` |
 | `alias` / `history` | `_cmd_alias`/`_cmd_history` in `app/shell/dispatch.py`, prefs in `app/settings/user_prefs.py` | same | `--only 4` |
-| `scaffold <cmd> <module>` | — | run `python dev/scaffold.py "<cmd>" <module>` | `--only 1,2,3` |
-| `map` / `method <name>` (find code) | `dev/CODE_MAP.md` | — | — |
+| `scaffold <cmd> <module>` | — | run `python app/scripts/scaffold.py "<cmd>" <module>` | `--only 1,2,3` |
+| `map` / `method <name>` (find code) | `app/scripts/CODE_MAP.md` | — | — |
 | `debug` | error table at the bottom of this file | files the error names | targeted smoke |
 
 **Spoke files** (each replaces reading a large module):
 `docs/COMMAND_PATTERNS.md` (minimal working command patterns) ·
 `docs/RENDER_CATALOG.md` (all render= keys) ·
 `docs/COMMANDDEF_REFERENCE.md` (CommandDef fields) ·
-`dev/API_INDEX.md` (one line per SCM endpoint) ·
-`dev/CODE_MAP.md` (method → line ranges, auto-regenerated) ·
-`dev/DOCS_AGENT.md` (pan.dev docs pull playbook).
+`app/scripts/API_INDEX.md` (one line per SCM endpoint) ·
+`app/scripts/CODE_MAP.md` (method → line ranges, auto-regenerated) ·
+`app/scripts/DOCS_AGENT.md` (pan.dev docs pull playbook).
 
 ---
 
@@ -71,8 +71,8 @@ arc/
 ├── config/<os_username>/          ← per-user files (gitignored): config.json (secrets,
 │                                    keychain-backed) + preferences.json (terminal
 │                                    length/width/spinner — the `terminal` builtin)
-├── dev/                           ← generators + smoke suite (see Validation below)
 ├── docs/                          ← user-facing Markdown rendered by `help <topic>`
+│   ├── scripts/                   ← generators + smoke suite (developer/agent tooling)
 │   ├── commands/                  ← hand-written command pages ONLY (+ generated
 │   │                                index.md, api-reference.md). Commands without a
 │   │                                file get help synthesized from the registry.
@@ -106,9 +106,9 @@ arc/
     └── utils/formatter.py         ← Rich renderers (_simple_table + specials)
 ```
 
-**Three-folder rule:** `app/` = code (developers/agents), `settings/` = user-editable
-assets (anyone, no code), `config/<user>/` = secrets (via `arc auth configure`).
-Never hard-code an asset path — import from `app/paths.py`.
+**Three-folder rule:** `app/` = code plus developer tooling (`app/scripts/`),
+`settings/` = user-editable assets (anyone, no code), `config/<user>/` = secrets
+(via `arc auth configure`). Never hard-code an asset path — import from `app/paths.py`.
 
 ---
 
@@ -139,13 +139,13 @@ commands with the same key shadow generated ones (merged last in registry.py).
 Generated commands have **no doc file** — `help <cmd>` synthesizes a page from
 the CommandDef (`app/docs.py synthesize_command_help`). Never create doc stubs.
 
-**PAN-OS CLI commands** (scraped hierarchy → `dev/panosupdate.py` →
-`docs/panos-cli/` mirrors → `dev/generate_panos_catalog.py` →
+**PAN-OS CLI commands** (scraped hierarchy → `app/scripts/panosupdate.py` →
+`docs/panos-cli/` mirrors → `app/scripts/generate_panos_catalog.py` →
 `app/commands/panos_catalog.py` → `panos_generated.py`): the full op tree
 (family flags `panos_<family>`, ALL default off) plus the config tree as
 break-glass recovery (`panos_config_*` off/invisible except
 `panos_config_recovery`). Op commands with an `scm` mapping
-(dev/panos-curation.json `scm_map`) run live-device data through SCM's async
+(app/scripts/panos-curation.json `scm_map`) run live-device data through SCM's async
 ops-jobs API (`SCMClient.ops_job_start/_status`, device tunnel, no SSH);
 unmapped ops print `--remote`/`connect` guidance; `--remote` passes the typed
 tokens through losslessly (`args["_remainder"]`). Device-local config runs via
@@ -154,7 +154,7 @@ prints a drift warning (`_execute_remote`, category "panos-config"). Merge
 order: OpenAPI-generated < PAN-OS < curated. Add new PAN-OS version pages to
 `settings/panos-sources.json`; docsupdate pulls + rebuilds everything.
 
-**Field syntax for generated `set` commands:** `dev/generate_field_library.py`
+**Field syntax for generated `set` commands:** `app/scripts/generate_field_library.py`
 reads each POST request-body schema and writes `app/settings/field_catalog.py`
 (AUTO-GENERATED) — flat resources get real CLI fields (`set cngfw tags web
 color Red`) with tab completion, `?` help, greedy no-quote parsing, and
@@ -170,7 +170,7 @@ commands are NOT wired through the catalog — they opt in via the hand-written
 |---|---|---|
 | **1 hand-curated** | `settings/command-structure.json` | Edit JSON field list; add entries to the `field_metadata` section in `settings/command-structure.json` for non-standard field metadata (no Python code change needed). `update <obj>` / `delete <obj>` auto-derived from `set <obj>`. |
 | **1g cli-generated** | `settings/command-structure-generated.json` | Run `commandupdate` / `dev command-structure update`. Parses `CommandDef.usage` strings. Overwrites on re-run. |
-| **2 openapi-spec** | `app/settings/field_catalog.py` | Run `python dev/generate_field_library.py` (auto-runs on `docsupdate`). |
+| **2 openapi-spec** | `app/settings/field_catalog.py` | Run `python app/scripts/generate_field_library.py` (auto-runs on `docsupdate`). |
 | **3 usage-parsed** | `CommandDef.usage` at runtime | Automatic fallback — no file written. Add `usage=` to the CommandDef to improve quality. |
 | **- none** | — | Run `commandupdate` or add `usage=` to CommandDef. |
 
@@ -206,7 +206,7 @@ When a new feature is enabled: tier 3 fires automatically; run `commandupdate` t
    the front-matter block (`command`, `description`, `usage`, `category`, `scope`).
 5. New `render=` key? Add the formatter (`_simple_table` fits most tables), a
    `_render()` dispatch case, and a smoke section-7 call.
-6. `python dev/smoke_test.py --only 1,2,3` (full suite before commit).
+6. `python app/scripts/smoke_test.py --only 1,2,3` (full suite before commit).
 
 Scope rules: SCM config (objects/policy/network) → `"folder"` (handler passes
 `folder=ctx.folder`); TSG-wide inventory/jobs/commit → `"global"`; live device
@@ -288,9 +288,9 @@ dev commands first, then falls through so normal ARC commands work from dev shel
 
 | Dev shell command | LLM trigger | Script |
 |---|---|---|
-| `docs update [--scm\|--panos]` | `docsupdate` | `python dev/docsupdate.py` |
-| `command-structure update [<cmd>]` | `commandupdate` | `python dev/commandupdate.py` |
-| `catalog rebuild` | — | `dev/generate_*.py` (6 scripts in order) |
+| `docs update [--scm\|--panos]` | `docsupdate` | `python app/scripts/docsupdate.py` |
+| `command-structure update [<cmd>]` | `commandupdate` | `python app/scripts/commandupdate.py` |
+| `catalog rebuild` | — | `app/scripts/generate_*.py` (6 scripts in order) |
 | `docs status` | — | reads `docs/scm-api/MANIFEST.md` + `CHANGES.md` |
 | `command-structure list [enabled\|disabled] [\| match <word>]` | — | — |
 | `status` | — | health dashboard (docs age, features, help-spec coverage, git) |
@@ -305,10 +305,10 @@ recreates it. No IDE, no Python knowledge beyond `arc` itself.
 
 ## SCM REST API
 
-**Never guess an endpoint.** Look it up in `dev/API_INDEX.md` (one line per
+**Never guess an endpoint.** Look it up in `app/scripts/API_INDEX.md` (one line per
 endpoint), or the mirrored spec `docs/scm-api/specs/<category>.md`. Source of
-truth: https://pan.dev/scm/api/ — mirrored locally by `python dev/docsupdate.py`
-(self-healing source registry `dev/scm-sources.json`; writes `CHANGES.md` +
+truth: https://pan.app/scripts/scm/api/ — mirrored locally by `python app/scripts/docsupdate.py`
+(self-healing source registry `app/scripts/scm-sources.json`; writes `CHANGES.md` +
 `MANIFEST.md`). `MANIFEST.md` records each spec's base URL; `SCMClient` URL
 constants must match it.
 
@@ -347,22 +347,22 @@ so new endpoints become gated commands + flags + docs automatically.
 
 ---
 
-## Validation — dev/smoke_test.py
+## Validation — app/scripts/smoke_test.py
 
 Run after every change to `app/`; full suite before commit (pre-commit hook runs
-sections 1–3 and auto-regenerates `dev/CODE_MAP.md`; install once with
-`bash dev/install_hooks.sh`).
+sections 1–3 and auto-regenerates `app/scripts/CODE_MAP.md`; install once with
+`bash app/scripts/install_hooks.sh`).
 
 ```bash
-python dev/smoke_test.py                    # full suite (~140 checks, no network)
-python dev/smoke_test.py --only 1,2,3       # syntax + imports + registry
-python dev/smoke_test.py --file <path>      # auto-selects relevant sections
+python app/scripts/smoke_test.py                    # full suite (~140 checks, no network)
+python app/scripts/smoke_test.py --only 1,2,3       # syntax + imports + registry
+python app/scripts/smoke_test.py --file <path>      # auto-selects relevant sections
 ```
 
 | Section | Covers | Run after changing |
 |---|---|---|
 | 1 / 2 | syntax, imports | any .py |
-| 3 | registry integrity + catalog drift | commands/*.py (drift fix: `python dev/generate_resource_catalog.py`) |
+| 3 | registry integrity + catalog drift | commands/*.py (drift fix: `python app/scripts/generate_resource_catalog.py`) |
 | 4 | arg parser / command-structure | registry parsing, command-structure.json |
 | 5 | config types | app/config.py |
 | 6 | formatter calls | new renderer → add a call here |
@@ -370,7 +370,7 @@ python dev/smoke_test.py --file <path>      # auto-selects relevant sections
 | 8 | builtins ↔ catalog ↔ help sync | shell_catalog.py |
 | 9 | structure completion + context help | completer / command_structure |
 | 10 | theme + descriptions + doc validity | theme, docs/commands front-matter |
-| 11 | CODE_MAP freshness | any 300+ line file (`python dev/generate_code_map.py`) |
+| 11 | CODE_MAP freshness | any 300+ line file (`python app/scripts/generate_code_map.py`) |
 
 Version is `0.1.<commit-count>` from `app/__init__.py` — never hand-edit
 (optional bumper hook: `docs/dev-versioning.md`).
@@ -390,9 +390,9 @@ use hyphens. Leading underscores in Python files (`_base.py`, `_auth.py`) are
 intentional Python convention for "internal/private module" — leave them.
 
 **The settings/ principle:** every operator-configurable value lives in `settings/`.
-If you find hardcoded data (choices, hints, labels, flag values) in `app/` or `dev/`
+If you find hardcoded data (choices, hints, labels, flag values) in `app/` or `app/scripts/`
 Python files, it is a candidate to move to the corresponding settings file. The
-self-sustaining goal: operators never need to touch `app/` or `dev/` Python code.
+self-sustaining goal: operators never need to touch `app/` or `app/scripts/` Python code.
 
 ---
 
@@ -402,8 +402,8 @@ self-sustaining goal: operators never need to touch `app/` or `dev/` Python code
   when the user asks. Simple conventional-commit messages without nested quotes
   (multi-line via `git commit -F <file>`).
 - User trigger words: `gitp` = stage all + commit + push · `docsupdate` = pull
-  pan.dev docs + follow `dev/DOCS_AGENT.md` · `commandupdate` = update
-  contextual ? help specs for all enabled commands (runs `python dev/commandupdate.py`) ·
+  pan.dev docs + follow `app/scripts/DOCS_AGENT.md` · `commandupdate` = update
+  contextual ? help specs for all enabled commands (runs `python app/scripts/commandupdate.py`) ·
   `ck`/`ctx`/`wipe` = write / summarize / clear the `SESSION.md` scratch notes
   (gitignored session memory).
 - Keep diffs small and focused; match existing naming and style; comments
@@ -442,7 +442,7 @@ the operator notices before the commit lands.
 | Error | Look in | Likely cause |
 |---|---|---|
 | `Unknown command` | `app/commands/<module>.py` COMMANDS dict | not registered / feature flag off |
-| `HTTPStatusError 4xx/5xx` | `app/api/client.py` + `dev/API_INDEX.md` | wrong path/param; expired token (401) |
+| `HTTPStatusError 4xx/5xx` | `app/api/client.py` + `app/scripts/API_INDEX.md` | wrong path/param; expired token (401) |
 | `AttributeError: no attribute 'get_X'` | `app/api/client.py` | client method missing |
 | `KeyError` in `_render()` | `app/shell/execution.py` dispatch table | render= key has no formatter case |
 | `require_scm` / `require_device` raises | `app/commands/base.py` + `scope=` | missing SCM config / no `cd <device>` |

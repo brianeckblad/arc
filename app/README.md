@@ -33,15 +33,15 @@ at `commit` (see `shell/configure.py`).
 
 ## How to change things here
 
-- Find code without reading whole files: `dev/CODE_MAP.md` maps methods in
+- Find code without reading whole files: `app/scripts/CODE_MAP.md` maps methods in
   300+ line files to exact line ranges.
 - New command → `app/commands/<domain>.py` (recipe in AGENTS.md; stub via
-  `python dev/scaffold.py "show x" <module>`). Validate: `python dev/smoke_test.py --only 1,2,3`.
+  `python app/scripts/scaffold.py "show x" <module>`). Validate: `python app/scripts/smoke_test.py --only 1,2,3`.
 - Output/table change → `utils/formatter.py` + `_render()` in
-  `shell/execution.py`. Validate: `python dev/smoke_test.py --file app/utils/formatter.py`.
+  `shell/execution.py`. Validate: `python app/scripts/smoke_test.py --file app/utils/formatter.py`.
 - Auth/profiles → `config.py` + the auth group in `cli.py`. Validate:
-  `python dev/smoke_test.py --file app/config.py`.
-- Any `.py` change: at minimum `python dev/smoke_test.py --only 1,2`;
+  `python app/scripts/smoke_test.py --file app/config.py`.
+- Any `.py` change: at minimum `python app/scripts/smoke_test.py --only 1,2`;
   full suite before commit.
 
 ## Do not

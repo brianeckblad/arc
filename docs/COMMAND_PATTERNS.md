@@ -31,7 +31,7 @@ logic (client-side filtering, multiple calls, post-processing).
 **Docs:** optional — `help show thing` is synthesized from the CommandDef.
 Add `docs/commands/show-thing.md` only when you have more to say.
 
-**Smoke:** `python dev/smoke_test.py --only 1,2,3`
+**Smoke:** `python app/scripts/smoke_test.py --only 1,2,3`
 
 ---
 
@@ -188,5 +188,5 @@ COMMANDS: dict[str, CommandDef] = {
 **See also:**
 - `docs/RENDER_CATALOG.md` — available render= keys
 - `app/commands/base.py` — CommandDef field reference
-- `dev/API_INDEX.md` — find endpoints for your resource
+- `app/scripts/API_INDEX.md` — find endpoints for your resource
 
