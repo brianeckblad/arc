@@ -210,23 +210,23 @@ class SCMClient                          51-1240        Strata Cloud Manager (SC
   .ops_job_status()                      1229-1237      Return a live-device operations job record.
   .close()                               1239-1240      
 
-## `app/commands/objects.py`  (1110 lines)
+## `app/commands/objects.py`  (1115 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_set_address()                           186-253        Create an address object in the active SCM folder.
-_delete_address()                        256-267        Delete an address object.  Usage: delete address <name>
-_set_address_group()                     270-334        Create a static or dynamic address group in the active folder.
-_set_service()                           337-407        Create a TCP or UDP service object in the active folder.
-_set_service_group()                     410-456        Create a service group (named collection of service objects).
-_set_tag()                               459-510        Create a tag in the active folder.
-_set_external_dynamic_list()             513-591        Create an External Dynamic List (EDL) in the active folder.
-_update_address()                        737-794        Update an existing address object (GET→merge→PUT).
-_update_address_group()                  797-852        Update an existing address group (GET→merge→PUT).
-_update_service()                        855-904        Update an existing service object (GET→merge→PUT).
-_update_service_group()                  907-947        Update a service group's member list.
-_update_tag()                            950-988        Update an existing tag (color, comments).
-_update_external_dynamic_list()          991-1047       Update an existing EDL (URL, description, or frequency).
+_set_address()                           191-258        Create an address object in the active SCM folder.
+_delete_address()                        261-272        Delete an address object.  Usage: delete address <name>
+_set_address_group()                     275-339        Create a static or dynamic address group in the active folder.
+_set_service()                           342-412        Create a TCP or UDP service object in the active folder.
+_set_service_group()                     415-461        Create a service group (named collection of service objects).
+_set_tag()                               464-515        Create a tag in the active folder.
+_set_external_dynamic_list()             518-596        Create an External Dynamic List (EDL) in the active folder.
+_update_address()                        742-799        Update an existing address object (GET→merge→PUT).
+_update_address_group()                  802-857        Update an existing address group (GET→merge→PUT).
+_update_service()                        860-909        Update an existing service object (GET→merge→PUT).
+_update_service_group()                  912-952        Update a service group's member list.
+_update_tag()                            955-993        Update an existing tag (color, comments).
+_update_external_dynamic_list()          996-1052       Update an existing EDL (URL, description, or frequency).
 
 ## `app/commands/resource_catalog.py`  (1068 lines)
 
@@ -331,24 +331,24 @@ class NavigationMixin                    11-705
   ._cmd_tsg()                            476-576        Switch the active Tenant Services Group (TSG) context.
   ._cmd_account()                        578-705        List or switch named credential profiles.
 
-## `app/shell/completer.py`  (663 lines)
+## `app/shell/completer.py`  (687 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _parse_usage()                           26-62          Parse a usage string into (required_slots, optional_keywords).
 _usage_options()                         65-99          Return (token, display_meta) completions for the slot after *typed* ar
 _tokenize_partial()                      102-135        Split *text* for completion, honouring quotes, tracking the in-progres
-class ArcCompleter                       138-662        Context-aware tab completer.
+class ArcCompleter                       138-686        Context-aware tab completer.
   .__init__()                            147-148        
   ._command_visible()                    150-159        Return True when a registered command is visible in this shell mode.
   .get_completions()                     161-434        
   ._complete_dev_shell()                 436-510        Yield completions for dev shell commands.
   ._match_complete_command()             512-527        Return the longest complete command key the user has fully entered.
   ._complete_arguments()                 529-581        Yield completions for the argument region of a complete command.
-  ._object_names()                       596-620        Existing object names in the active folder, cached for a minute.
-  ._dynamic_name_options()               622-634        Live object names for the name slot of `delete X` / `update X`.
-  ._arg_options()                        636-653        Resolve next-slot argument options: structure file first, usage fallba
-  ._all_commands()                       656-662        
+  ._object_names()                       606-630        Existing object names in the active folder, cached for a minute.
+  ._dynamic_name_options()               632-658        Live object names for name-completion slots.
+  ._arg_options()                        660-677        Resolve next-slot argument options: structure file first, usage fallba
+  ._all_commands()                       680-686        
 
 ## `app/settings/command_structure.py`  (608 lines)
 

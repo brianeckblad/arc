@@ -140,9 +140,9 @@ def translation_pending(command: str) -> str:
 def show_handler(scm_method: str, *, folder_scoped: bool = True) -> Callable:
     """Return a read handler that calls a single SCMClient list method.
 
-    The handler calls ``getattr(require_scm(ctx), scm_method)(folder=ctx.folder)``
-    — or with no arguments when *folder_scoped* is False (TSG-wide resources
-    such as regions or devices).
+    Accepts an optional ``args["name"]`` to filter the list to a single object
+    by name — so ``show address web-server`` shows just that address.
+    Tab completion offers live names from the API.
 
     e.g.  api_handler=show_handler("get_addresses")
           api_handler=show_handler("get_regions", folder_scoped=False)
@@ -151,8 +151,23 @@ def show_handler(scm_method: str, *, folder_scoped: bool = True) -> Callable:
         scm = require_scm(ctx)
         method = getattr(scm, scm_method)
         if folder_scoped:
-            return method(folder=ctx.folder)
-        return method()
+            results = method(folder=ctx.folder)
+        else:
+            results = method()
+        # Optional name filter: `show address web-server` → show just that one
+        name_filter = (args.get("name") or args.get("_positional", [None])[0] if args else None)
+        if name_filter and isinstance(results, list):
+            matched = [r for r in results if isinstance(r, dict)
+                       and r.get("name", "").lower() == name_filter.lower()]
+            if matched:
+                return matched
+            # Partial match fallback
+            partial = [r for r in results if isinstance(r, dict)
+                       and r.get("name", "").lower().startswith(name_filter.lower())]
+            if partial:
+                return partial
+            raise ValueError(f"No object named '{name_filter}' in folder '{ctx.folder}'.")
+        return results
     return handler
 
 

@@ -584,12 +584,22 @@ class ArcCompleter(Completer):
     # config (`delete address <TAB>` lists your addresses). Maps curated
     # delete/update resources to the SCMClient list getter that names them.
     _NAME_SOURCES = {
+        # objects
         "address":               "get_addresses",
         "address-group":         "get_address_groups",
         "service":               "get_services",
         "service-group":         "get_service_groups",
         "tag":                   "get_tags",
         "external-dynamic-list": "get_external_dynamic_lists",
+        # security
+        "url-categories":        "get_url_categories",
+        "security":              "get_security_policy",
+        # network
+        "interface":             "get_interfaces",
+        "zone":                  "get_zones",
+        "nat-rules":             "get_nat_rules",
+        "ike-gateway":           "get_ike_gateways",
+        "ipsec-tunnel":          "get_ipsec_tunnels",
     }
     _NAME_TTL_S = 60
 
@@ -620,17 +630,31 @@ class ArcCompleter(Completer):
         return cache[cache_key][0]
 
     def _dynamic_name_options(self, key: str, typed: list[str]) -> list[dict]:
-        """Live object names for the name slot of `delete X` / `update X`."""
+        """Live object names for name-completion slots.
+
+        Works for:
+          show <resource>            → lists all names (partial match on first typed token)
+          delete <resource>          → lists names to delete
+          update <resource>          → lists names to update
+          show <resource> <partial>  → filters names by partial prefix
+        """
         parts = key.split()
-        if len(parts) != 2 or parts[0] not in ("delete", "update") or typed:
+        verb = parts[0] if parts else ""
+        if verb not in ("show", "delete", "update") or len(parts) != 2:
             return []
         resource = parts[1]
         if resource not in self._NAME_SOURCES:
             return []
+        # For show/delete/update: offer names only when we're at the first argument slot
+        # (typed is empty = cursor right after command, or typed has one partial token)
+        if len(typed) > 1:
+            return []
+        partial = typed[0].lower() if typed else ""
         folder = self._shell._state.folder
         return [
             {"text": name, "display": name, "meta": f"in {folder}"}
             for name in self._object_names(resource)
+            if not partial or name.lower().startswith(partial)
         ]
 
     def _arg_options(self, key: str, typed: list[str]) -> list[dict]:
