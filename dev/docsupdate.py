@@ -17,7 +17,7 @@ Everything pan.dev documents at https://pan.dev/scm/docs/home/ is mirrored:
 
 Resilience (pan.dev renames files often):
 
-* The list of source paths lives in an editable registry, **dev/scm_sources.json**,
+* The list of source paths lives in an editable registry, **dev/scm-sources.json**,
   not hard-coded here.  Edit that file when you know a new path.
 * When a path 404s, the tool searches the live pan.dev GitHub tree for the most
   likely replacement (by domain + filename similarity), updates the registry
@@ -68,7 +68,7 @@ from typing import Any, Optional, cast
 
 DEV_DIR = Path(__file__).resolve().parent
 ROOT = DEV_DIR.parent
-SOURCES_FILE = DEV_DIR / "scm_sources.json"
+SOURCES_FILE = DEV_DIR / "scm-sources.json"
 
 HTTP_TIMEOUT = 30  # seconds — every network call is bounded
 HTTP_METHODS = ("get", "post", "put", "patch", "delete", "head", "options")
@@ -80,7 +80,7 @@ SPECS_DIR = OUTPUT_DIR / "specs"
 GUIDES_DIR = OUTPUT_DIR / "guides"
 CHANGES_FILE = OUTPUT_DIR / "CHANGES.md"
 
-# Built-in defaults used to seed dev/scm_sources.json on first run if it is
+# Built-in defaults used to seed dev/scm-sources.json on first run if it is
 # missing.  After that, the JSON file is the source of truth (and is auto-updated
 # when pan.dev relocates a file).
 DEFAULT_SOURCES: dict[str, Any] = {
@@ -202,11 +202,11 @@ DEFAULT_SOURCES: dict[str, Any] = {
 }
 
 
-# ── Source registry (dev/scm_sources.json) ───────────────────────────────────
+# ── Source registry (dev/scm-sources.json) ───────────────────────────────────
 
 
 def load_sources() -> dict[str, Any]:
-    """Return the source registry, seeding dev/scm_sources.json if it is missing.
+    """Return the source registry, seeding dev/scm-sources.json if it is missing.
 
     The JSON file is the editable, auto-updated source of truth.  Any keys it
     omits fall back to DEFAULT_SOURCES so an older/partial file still works.
@@ -245,7 +245,7 @@ def load_sources() -> dict[str, Any]:
 
 
 def save_sources(sources: dict[str, Any]) -> None:
-    """Persist the source registry back to dev/scm_sources.json."""
+    """Persist the source registry back to dev/scm-sources.json."""
     sources.setdefault(
         "_comment",
         "Editable registry of SCM doc sources for dev/docsupdate.py. "
@@ -439,7 +439,7 @@ def discover_path(
 
 
 def _record_relocation(sources: dict[str, Any], kind: str, key: str, old: str, new: str, when: str) -> None:
-    """Append a relocation record so history is auditable in scm_sources.json."""
+    """Append a relocation record so history is auditable in scm-sources.json."""
     sources.setdefault("relocations", []).append(
         {"kind": kind, "key": key, "from": old, "to": new, "date": when}
     )

@@ -40,168 +40,59 @@ logger = logging.getLogger(__name__)
 # Read once per session (edit the file + restart, or call invalidate_cache()).
 _cache: dict[str, dict] | None = None
 
+# Field metadata cache — loaded from settings/command-structure.json "field_metadata" section.
+# Call _get_field_libraries() to access; cleared when invalidate_cache() is called.
+_field_library_cache: dict[tuple[str, str], dict] | None = None
+_generic_fields_cache: dict[str, dict] | None = None
 
-# ---------------------------------------------------------------------------
-# Field library — the API-derived metadata for each field.
-#
-# The JSON only says *which* fields a command has and in *what order*.  This
-# library says what each field *is*: a free value, a fixed choice (with its
-# options), or an optional trailing keyword — plus the human hint shown on Tab.
-#
-# Seeded by hand from the SCM schema today (the address `oneOf` → ip-netmask /
-# ip-range / ip-wildcard / fqdn).  It can later be generated from the specs the
-# same way `app/commands/resource_catalog.py` is.
-# ---------------------------------------------------------------------------
 
-# Per-(object, field) definitions.  Keys are the object name (JSON key) and
-# the field name (array elements in the JSON).
-_FIELD_LIBRARY: dict[tuple[str, str], dict] = {
-    # ── address ──────────────────────────────────────────────────────────────
-    ("address", "name"): {
-        "kind": "value", "required": True,
-        "hint": "Enter a unique name for the address object",
-    },
-    ("address", "type"): {
-        "kind": "choice", "required": True,
-        "choices": ["ip-netmask", "ip-range", "ip-wildcard", "fqdn"],
-        "choice_hints": {
-            "ip-netmask":  "Single IP or CIDR (10.1.2.3/32)",
-            "ip-range":    "Inclusive range (10.0.0.1-10.0.0.9)",
-            "ip-wildcard": "Wildcard mask (10.0.0.0/0.0.0.255)",
-            "fqdn":        "Domain name (api.example.com)",
-        },
-        "hint": "Choose the address type",
-    },
-    ("address", "value"): {
-        "kind": "value", "required": True,
-        "hint": "Enter the value for the chosen type (e.g. 10.1.2.3/32)",
-    },
-    # ── address-group ────────────────────────────────────────────────────────
-    ("address-group", "name"): {
-        "kind": "value", "required": True,
-        "hint": "Enter a unique name for the address group",
-    },
-    ("address-group", "type"): {
-        "kind": "choice", "required": True,
-        "choices": ["static", "dynamic"],
-        "choice_hints": {
-            "static":  "Explicit list of address objects",
-            "dynamic": "Tag-based match expression",
-        },
-        "hint": "Group type",
-    },
-    ("address-group", "value"): {
-        "kind": "value", "required": True,
-        "hint": "static: space-separated address names  |  dynamic: tag match expression",
-    },
-    # ── tag ──────────────────────────────────────────────────────────────────
-    ("tag", "name"): {
-        "kind": "value", "required": True,
-        "hint": "Enter a unique name for the tag",
-    },
-    ("tag", "color"): {
-        "kind": "keyword", "required": False,
-        "choices": [
-            "Red", "Orange", "Yellow", "Green", "Cyan", "Blue", "Violet",
-            "Magenta", "Brown", "Olive", "Maroon", "Black", "White",
-            "Gold", "Light Green", "Lime", "Forest Green", "Turquoise Blue",
-            "Azure Blue", "Cerulean Blue", "Medium Blue", "Cobalt Blue",
-            "Lavender Blue", "Light Gray", "Medium Gray",
-        ],
-        "hint": "Tag colour (e.g. Red, Blue, Gold)",
-        "value_hint": "Enter a colour name (Red, Orange, Green, Blue, …)",
-    },
-    ("tag", "comments"): {
-        "kind": "keyword", "required": False,
-        "hint": "Optional comments",
-        "value_hint": "Enter optional comments",
-    },
-    # ── service ──────────────────────────────────────────────────────────────
-    ("service", "name"): {
-        "kind": "value", "required": True,
-        "hint": "Enter a unique name for the service",
-    },
-    ("service", "protocol"): {
-        "kind": "choice", "required": True,
-        "choices": ["tcp", "udp"],
-        "choice_hints": {
-            "tcp": "TCP service",
-            "udp": "UDP service",
-        },
-        "hint": "Choose the IP protocol",
-    },
-    ("service", "port"): {
-        "kind": "value", "required": True,
-        "hint": "Destination port or range (e.g. 80, 8080-8090, 80,443)",
-    },
-    ("service", "source-port"): {
-        "kind": "keyword", "required": False,
-        "hint": "Source port or range (e.g. 1024-65535)",
-        "value_hint": "Enter source port or range",
-    },
-    # ── service-group ────────────────────────────────────────────────────────
-    ("service-group", "name"): {
-        "kind": "value", "required": True,
-        "hint": "Enter a unique name for the service group",
-    },
-    ("service-group", "members"): {
-        "kind": "value", "required": True,
-        "hint": "Space-separated service object names (must already exist)",
-    },
-    # ── external-dynamic-list ────────────────────────────────────────────────
-    ("external-dynamic-list", "name"): {
-        "kind": "value", "required": True,
-        "hint": "Enter a unique name for the EDL",
-    },
-    ("external-dynamic-list", "type"): {
-        "kind": "choice", "required": True,
-        "choices": ["ip", "domain", "url"],
-        "choice_hints": {
-            "ip":     "List of IP addresses / CIDRs",
-            "domain": "List of domain names",
-            "url":    "List of URLs",
-        },
-        "hint": "EDL content type",
-    },
-    ("external-dynamic-list", "url"): {
-        "kind": "keyword", "required": True,
-        "hint": "URL to fetch the list from (must be reachable by the firewall)",
-        "value_hint": "https://example.com/list.txt",
-    },
-    # ── url-category ─────────────────────────────────────────────────────────
-    ("url-category", "name"): {
-        "kind": "value", "required": True,
-        "hint": "Enter a unique name for the URL category",
-    },
-    ("url-category", "list"): {
-        "kind": "keyword", "required": True,
-        "hint": "Space-separated URLs to include in this category",
-        "value_hint": "Enter one or more URLs",
-    },
-}
+def _get_field_libraries() -> tuple[dict[tuple[str, str], dict], dict[str, dict]]:
+    """Load field metadata from settings/command-structure.json field_metadata section.
 
-# Generic fallbacks by field name — apply to any object that has these fields.
-_GENERIC_FIELDS: dict[str, dict] = {
-    "name": {
-        "kind": "value", "required": True,
-        "hint": "Enter a unique name",
-    },
-    "description": {
-        "kind": "keyword", "required": False,
-        "hint": "Enter a description for this object",
-    },
-    "tag": {
-        "kind": "keyword", "required": False,
-        "hint": "Enter a tag name (the tag must already exist in this folder)",
-    },
-}
+    Returns (field_library, generic_fields):
+      field_library:  {(object, field): meta_dict}  — specific field overrides
+      generic_fields: {field: meta_dict}             — fallbacks by field name only
+
+    Keys in field_metadata:
+      "address.type"     → ("address", "type")
+      "_generic.name"    → generic fallback for any "name" field
+    """
+    global _field_library_cache, _generic_fields_cache
+    if _field_library_cache is not None and _generic_fields_cache is not None:
+        return _field_library_cache, _generic_fields_cache
+
+    field_lib: dict[tuple[str, str], dict] = {}
+    generic: dict[str, dict] = {}
+
+    try:
+        raw = json.loads(COMMAND_STRUCTURE_JSON.read_text(encoding="utf-8"))
+        metadata = raw.get("field_metadata", {})
+        for key, val in metadata.items():
+            if key.startswith("_comment") or not isinstance(val, dict):
+                continue
+            if key.startswith("_generic."):
+                field_name = key[len("_generic."):]
+                generic[field_name] = val
+            elif "." in key:
+                obj, field = key.split(".", 1)
+                field_lib[(obj, field)] = val
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        logger.warning("field_metadata load error from command-structure.json: %s", exc)
+
+    _field_library_cache = field_lib
+    _generic_fields_cache = generic
+    return field_lib, generic
 
 
 def _field_meta(obj: str, field: str) -> dict:
-    """Return the raw metadata dict for *field* of *object* (library → generic → default)."""
-    found = _FIELD_LIBRARY.get((obj, field))
+    """Return metadata for *field* of *object* — JSON library → generic → default.
+
+    Loads from settings/command-structure.json field_metadata section.
+    """
+    field_lib, generic = _get_field_libraries()
+    found = field_lib.get((obj, field))
     if found is None:
-        found = _GENERIC_FIELDS.get(field)
+        found = generic.get(field)
     if found is None:
         found = {"kind": "value", "required": True, "hint": f"Enter {field}"}
     return found
@@ -509,8 +400,10 @@ def arg_spec(command_key: str) -> list[dict] | None:
 
 def invalidate_cache() -> None:
     """Force a re-read on next access (used by tools/tests that rewrite the file)."""
-    global _cache
+    global _cache, _field_library_cache, _generic_fields_cache
     _cache = None
+    _field_library_cache = None
+    _generic_fields_cache = None
 
 
 # ---------------------------------------------------------------------------

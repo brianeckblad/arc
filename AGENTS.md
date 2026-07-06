@@ -35,7 +35,7 @@ the smallest file that owns each concern.
 | `scm-api` / `endpoint <resource>` | `dev/API_INDEX.md`; deep dive: `docs/scm-api/specs/<cat>.md` | `app/api/client.py` | full suite |
 | `docsupdate` / docs agent | `dev/DOCS_AGENT.md` | run `python dev/docsupdate.py` (same as `dev docs update` in the app) | `--self-test` |
 | `commandupdate` | — | run `python dev/commandupdate.py` (same as `dev command-structure update` in the app) | `--only 1,2,4` |
-| `panos` (PAN-OS CLI tree: op cmds, break-glass config, live data) | `settings/panos-sources.json` (URLs), `dev/panos_curation.json` (overrides/recovery/scm_map), `app/commands/panos_generated.py` | curation file, or `python dev/panosupdate.py && python dev/generate_panos_catalog.py` | full suite |
+| `panos` (PAN-OS CLI tree: op cmds, break-glass config, live data) | `settings/panos-sources.json` (URLs), `dev/panos-curation.json` (overrides/recovery/scm_map), `app/commands/panos_generated.py` | curation file, or `python dev/panosupdate.py && python dev/generate_panos_catalog.py` | full suite |
 | `watch` (re-run command loop) | `_cmd_watch` in `app/shell/dispatch.py` | same | `--only 1,2` |
 | `logs` (SLS fleet queries: show log traffic/threat/system/detail) | `app/api/sls.py` (client + SQL builder), log handlers in `app/commands/operations.py` | same | `python dev/test_sls.py` + `--only 1,2,3` |
 | `config-view` (show config running/versions/format set, rollback) | `app/commands/config_view.py` (declarative `_FORMAT_SET_SPECS` table) | same | `--only 1,2,3` |
@@ -145,7 +145,7 @@ the CommandDef (`app/docs.py synthesize_command_help`). Never create doc stubs.
 (family flags `panos_<family>`, ALL default off) plus the config tree as
 break-glass recovery (`panos_config_*` off/invisible except
 `panos_config_recovery`). Op commands with an `scm` mapping
-(dev/panos_curation.json `scm_map`) run live-device data through SCM's async
+(dev/panos-curation.json `scm_map`) run live-device data through SCM's async
 ops-jobs API (`SCMClient.ops_job_start/_status`, device tunnel, no SSH);
 unmapped ops print `--remote`/`connect` guidance; `--remote` passes the typed
 tokens through losslessly (`args["_remainder"]`). Device-local config runs via
@@ -168,7 +168,7 @@ commands are NOT wired through the catalog — they opt in via the hand-written
 
 | Tier | Source | How to update |
 |---|---|---|
-| **1 hand-curated** | `settings/command-structure.json` | Edit JSON field list; add `_FIELD_LIBRARY` entries for non-standard field metadata. `update <obj>` / `delete <obj>` auto-derived from `set <obj>`. |
+| **1 hand-curated** | `settings/command-structure.json` | Edit JSON field list; add entries to the `field_metadata` section in `settings/command-structure.json` for non-standard field metadata (no Python code change needed). `update <obj>` / `delete <obj>` auto-derived from `set <obj>`. |
 | **1g cli-generated** | `settings/command-structure-generated.json` | Run `commandupdate` / `dev command-structure update`. Parses `CommandDef.usage` strings. Overwrites on re-run. |
 | **2 openapi-spec** | `app/settings/field_catalog.py` | Run `python dev/generate_field_library.py` (auto-runs on `docsupdate`). |
 | **3 usage-parsed** | `CommandDef.usage` at runtime | Automatic fallback — no file written. Add `usage=` to the CommandDef to improve quality. |
@@ -308,7 +308,7 @@ recreates it. No IDE, no Python knowledge beyond `arc` itself.
 **Never guess an endpoint.** Look it up in `dev/API_INDEX.md` (one line per
 endpoint), or the mirrored spec `docs/scm-api/specs/<category>.md`. Source of
 truth: https://pan.dev/scm/api/ — mirrored locally by `python dev/docsupdate.py`
-(self-healing source registry `dev/scm_sources.json`; writes `CHANGES.md` +
+(self-healing source registry `dev/scm-sources.json`; writes `CHANGES.md` +
 `MANIFEST.md`). `MANIFEST.md` records each spec's base URL; `SCMClient` URL
 constants must match it.
 
@@ -374,6 +374,25 @@ python dev/smoke_test.py --file <path>      # auto-selects relevant sections
 
 Version is `0.1.<commit-count>` from `app/__init__.py` — never hand-edit
 (optional bumper hook: `docs/dev-versioning.md`).
+
+---
+
+## Naming Conventions
+
+**File naming rule — non-negotiable:**
+- **Python `.py` files** → underscores (e.g. `command_structure.py`). Python's `import`
+  system requires this — `import app.settings.command-structure` is a SyntaxError.
+- **All other files** (JSON, YAML, Markdown, shell scripts) → hyphens
+  (e.g. `command-structure.json`, `panos-curation.json`, `scm-sources.json`).
+
+Never name a new non-Python file with underscores. Never rename a Python module to
+use hyphens. Leading underscores in Python files (`_base.py`, `_auth.py`) are
+intentional Python convention for "internal/private module" — leave them.
+
+**The settings/ principle:** every operator-configurable value lives in `settings/`.
+If you find hardcoded data (choices, hints, labels, flag values) in `app/` or `dev/`
+Python files, it is a candidate to move to the corresponding settings file. The
+self-sustaining goal: operators never need to touch `app/` or `dev/` Python code.
 
 ---
 

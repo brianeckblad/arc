@@ -3,7 +3,7 @@
 
 Reads the committed mirrors under ``docs/panos-cli/`` (pulled by
 ``dev/panosupdate.py``) plus the hand-maintained knobs in
-``dev/panos_curation.json`` and emits ``PANOS_CATALOG`` — one entry per command
+``dev/panos-curation.json`` and emits ``PANOS_CATALOG`` — one entry per command
 *stem* with synthesized usage variants, platform/family tags and version
 add/remove metadata.  ``app/commands/panos_generated.py`` turns each entry into
 a feature-gated CommandDef.
@@ -60,7 +60,7 @@ sys.path.insert(0, str(REPO_ROOT))
 
 MIRROR_DIR = REPO_ROOT / "docs" / "panos-cli"
 SOURCES_FILE = REPO_ROOT / "settings" / "panos-sources.json"  # user-editable URL registry
-CURATION_FILE = DEV_DIR / "panos_curation.json"
+CURATION_FILE = DEV_DIR / "panos-curation.json"
 CATALOG_FILE = REPO_ROOT / "app" / "commands" / "panos_catalog.py"
 
 PARAM_RE = re.compile(r"^<[^<>]*>$")

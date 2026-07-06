@@ -311,25 +311,6 @@ class DispatchMixin                      107-834
   ._show_command_not_found()             374-445        Show a helpful message when a command is not recognized.
   ._dispatch()                           447-834        Process one input line.  Returns True when the user wants to exit ARC.
 
-## `app/settings/command_structure.py`  (715 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_field_meta()                            200-207        Return the raw metadata dict for *field* of *object* (library → generi
-_resolve_field()                         210-233        Build one arg dict for *field* of *object*, from the field library.
-_resolve_arg()                           236-242        Resolve one arg item — either a field name string or an inline arg dic
-_load_json()                             245-308        Parse ``settings/command-structure.json`` into command arg specs.
-_generated_entries()                     311-326        Arg specs for generated `set` commands, from the spec-derived catalog.
-load_command_structure()                 329-354        Return ``{command_key: entry}`` — single file + field_catalog fallback
-_parse_usage_spec()                      357-479        Derive a basic arg spec from a CommandDef ``usage`` string.
-arg_spec()                               482-507        Return the ordered ``args`` list for *command_key*, or ``None`` if abs
-invalidate_cache()                       510-513        Force a re-read on next access (used by tools/tests that rewrite the f
-class _NextState                         533-543        What the *next* token can be — used to drive Tab completion.
-_walk()                                  546-632        Consume *tokens* against *spec*, returning (assignments, positionals, 
-parse()                                  635-649        Parse *remainder* tokens into an args dict using the command structure
-help_options()                           652-681        Return Cisco-style ``?`` help rows for the next token after *typed*.
-completion_options()                     684-712        Return ``{text, display, meta}`` options for the next token after *typ
-
 ## `app/shell/navigation.py`  (706 lines)
 
 Symbol                                   Lines          Purpose
@@ -368,6 +349,26 @@ class ArcCompleter                       138-662        Context-aware tab comple
   ._dynamic_name_options()               622-634        Live object names for the name slot of `delete X` / `update X`.
   ._arg_options()                        636-653        Resolve next-slot argument options: structure file first, usage fallba
   ._all_commands()                       656-662        
+
+## `app/settings/command_structure.py`  (608 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+_get_field_libraries()                   49-84          Load field metadata from settings/command-structure.json field_metadat
+_field_meta()                            87-98          Return metadata for *field* of *object* — JSON library → generic → def
+_resolve_field()                         101-124        Build one arg dict for *field* of *object*, from the field library.
+_resolve_arg()                           127-133        Resolve one arg item — either a field name string or an inline arg dic
+_load_json()                             136-199        Parse ``settings/command-structure.json`` into command arg specs.
+_generated_entries()                     202-217        Arg specs for generated `set` commands, from the spec-derived catalog.
+load_command_structure()                 220-245        Return ``{command_key: entry}`` — single file + field_catalog fallback
+_parse_usage_spec()                      248-370        Derive a basic arg spec from a CommandDef ``usage`` string.
+arg_spec()                               373-398        Return the ordered ``args`` list for *command_key*, or ``None`` if abs
+invalidate_cache()                       401-406        Force a re-read on next access (used by tools/tests that rewrite the f
+class _NextState                         426-436        What the *next* token can be — used to drive Tab completion.
+_walk()                                  439-525        Consume *tokens* against *spec*, returning (assignments, positionals, 
+parse()                                  528-542        Parse *remainder* tokens into an args dict using the command structure
+help_options()                           545-574        Return Cisco-style ``?`` help rows for the next token after *typed*.
+completion_options()                     577-605        Return ``{text, display, meta}`` options for the next token after *typ
 
 ## `app/shell/help.py`  (592 lines)
 

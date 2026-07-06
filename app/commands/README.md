@@ -37,7 +37,7 @@ resolved against `settings/features/`.
   (`app/api/client.py`) — look the endpoint up in `dev/API_INDEX.md` first.
 - Catalog drift (smoke §3 failure): `python dev/generate_resource_catalog.py`.
 - PAN-OS behavior tweaks (scm mappings, recovery stems, overrides): edit
-  `dev/panos_curation.json`, then `python dev/generate_panos_catalog.py`.
+  `dev/panos-curation.json`, then `python dev/generate_panos_catalog.py`.
   Full suite afterwards.
 - Generated `set` field syntax: regenerate with
   `python dev/generate_field_library.py` (writes `app/settings/field_catalog.py`).

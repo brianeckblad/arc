@@ -39,11 +39,11 @@ pre-commit flow.
 
 | Script | What it does | Run by | Outputs |
 |---|---|---|---|
-| **`docsupdate.py`** | Pulls every SCM OpenAPI spec + conceptual guide from pan.dev's GitHub, **self-heals** renamed source paths (updates `scm_sources.json`, records `relocations`), writes the mirror + `CHANGES.md`/`MANIFEST.md`, then chains all generators + smoke verify. `--check`, `--list-remote`, `--self-test` (offline tests). | `docsupdate` trigger / manual | `docs/scm-api/**` + everything downstream |
+| **`docsupdate.py`** | Pulls every SCM OpenAPI spec + conceptual guide from pan.dev's GitHub, **self-heals** renamed source paths (updates `scm-sources.json`, records `relocations`), writes the mirror + `CHANGES.md`/`MANIFEST.md`, then chains all generators + smoke verify. `--check`, `--list-remote`, `--self-test` (offline tests). | `docsupdate` trigger / manual | `docs/scm-api/**` + everything downstream |
 | **`panosupdate.py`** | PAN-OS sibling of docsupdate: pulls the pages in `settings/panos-sources.json`, extracts CLI command lines (conservative — ambiguous lines are quarantined, never guessed), writes diffable mirrors + `docs/panos-cli/CHANGES.md`. | `docsupdate.py`; manual | `docs/panos-cli/*.txt` |
 | **`generate_resource_catalog.py`** | Every spec operation → generated command metadata (GET→show, POST→set, PUT/PATCH→update, DELETE→delete) with a deterministic feature flag. | `docsupdate.py`; manual; `--check` in smoke §3 | `app/commands/resource_catalog.py` |
 | **`generate_field_library.py`** | POST request-body schemas → real CLI field syntax for generated `set` commands (ordered args, variant groups, `pattern`/`maxLength` validation metadata). | `docsupdate.py`; manual | `app/settings/field_catalog.py` |
-| **`generate_panos_catalog.py`** | Compiles the `docs/panos-cli/` mirrors + `panos_curation.json` into the PAN-OS command catalog (deterministic 7-pass normalization; deletions become version tombstones). | `docsupdate.py`; manual | `app/commands/panos_catalog.py` |
+| **`generate_panos_catalog.py`** | Compiles the `docs/panos-cli/` mirrors + `panos-curation.json` into the PAN-OS command catalog (deterministic 7-pass normalization; deletions become version tombstones). | `docsupdate.py`; manual | `app/commands/panos_catalog.py` |
 | **`generate_feature_flags.py`** | Regenerates the `settings/features/` glossary (one file per domain: `scm-<spec>.json`, `panos-ops.json`, `panos-config.json`; `curated.json` only as a normally-empty fallback). Existing values preserved; new flags default `false`. Absorbs + removes a legacy single `features.json`. | `docsupdate.py`; manual | `settings/features/*.json` |
 | **`generate_command_docs.py`** | Refreshes front-matter on **existing** command docs, prunes boilerplate stubs, rebuilds the command index + API reference. Never creates per-command stub files — undocumented commands get help synthesized at runtime. | `docsupdate.py`; manual | `docs/commands/*.md`, `index.md`, `api-reference.md` |
 | **`generate_api_index.py`** | Condenses all pulled specs into one compact endpoint table so agents never read raw YAML. | `docsupdate.py`; manual | `dev/API_INDEX.md` |
@@ -57,8 +57,8 @@ pre-commit flow.
 
 | File | Kind | Source of truth? | Notes |
 |---|---|---|---|
-| `scm_sources.json` | data (editable) | **yes** | Registry of pan.dev spec/guide paths; docsupdate self-updates it on renames. Hand-edit only when discovery can't find a moved file. |
-| `panos_curation.json` | data (editable) | **yes** | PAN-OS catalog knobs: token overrides, recovery stems, `scm_map` (op command → SCM ops-job). Edit, then rerun `generate_panos_catalog.py`. |
+| `scm-sources.json` | data (editable) | **yes** | Registry of pan.dev spec/guide paths; docsupdate self-updates it on renames. Hand-edit only when discovery can't find a moved file. |
+| `panos-curation.json` | data (editable) | **yes** | PAN-OS catalog knobs: token overrides, recovery stems, `scm_map` (op command → SCM ops-job). Edit, then rerun `generate_panos_catalog.py`. |
 | `API_INDEX.md` / `CODE_MAP.md` | generated | no | Don't hand-edit; smoke enforces CODE_MAP freshness. |
 | `DOCS_AGENT.md` | doc | n/a | Playbook for the `docsupdate` docs-agent workflow. |
 

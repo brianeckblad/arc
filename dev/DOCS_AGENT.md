@@ -53,11 +53,11 @@ Curated explicit commands still win over generated commands when they share a ke
 use curated handlers for high-priority commands that need friendly arguments,
 custom rendering, or endpoint-specific request-body builders.
 
-- Source paths live in `dev/scm_sources.json` (editable registry).
+- Source paths live in `dev/scm-sources.json` (editable registry).
 - If a file 404s, the tool searches the live pan.dev tree and **auto-updates**
   the registry with the new path (recorded under `relocations`). You do not
   hand-edit paths unless discovery cannot find a match.
-- If discovery fails for an item, open `dev/scm_sources.json` and fix that one
+- If discovery fails for an item, open `dev/scm-sources.json` and fix that one
   path; re-run. Use `python dev/docsupdate.py --list-remote` to see live
   spec paths.
 - Every doc under `products/scm/docs/` is mirrored (curated names + any new
@@ -125,12 +125,12 @@ and the API→command map all update from those.
 
 ## Guardrails
 
-- Do not commit `dev/scm_sources.json` relocation churn without reading
+- Do not commit `dev/scm-sources.json` relocation churn without reading
   `CHANGES.md` first — a relocation means an upstream rename you should
   understand.
 - Never invent endpoint paths. The only sources of truth are the pulled specs
   under `docs/scm-api/specs/` and `dev/API_INDEX.md`.
-- Keep docs-mode edits scoped to: `dev/scm_sources.json`, `app/api/client.py`,
+- Keep docs-mode edits scoped to: `dev/scm-sources.json`, `app/api/client.py`,
   the affected `app/commands/<module>.py`, and the matching `docs/commands/*.md`.
 - Secrets never appear in docs or specs — do not paste tokens into examples.
 
@@ -145,7 +145,7 @@ and the API→command map all update from those.
 | Dry-run report | `python dev/docsupdate.py --check` |
 | List live spec paths | `python dev/docsupdate.py --list-remote` |
 | Validate engine offline | `python dev/docsupdate.py --self-test` |
-| Editable source paths | `dev/scm_sources.json` |
+| Editable source paths | `dev/scm-sources.json` |
 | Compact endpoint table | `dev/API_INDEX.md` |
 | Refresh command-doc front-matter + index/api-ref | `python dev/generate_command_docs.py` |
 | One domain's endpoints | `docs/scm-api/specs/<category>.md` |

@@ -14,6 +14,200 @@
     "Bare list values (legacy) are treated as override:true hand-curated.",
     "Keys starting with _ are comments and ignored by the parser."
   ],
+  "field_metadata": {
+    "_comment": [
+      "Field metadata for curated set commands. Keys are 'object.field' or '_generic.field'.",
+      "These define how each field renders in contextual ? help and tab completion.",
+      "kind: 'value' = user types freely, 'choice' = fixed options, 'keyword' = optional trailing keyword.",
+      "Edit these to improve hints, add choices, or change required status.",
+      "Python code in app/settings/command_structure.py reads these — no code change needed."
+    ],
+    "address.name": {
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a unique name for the address object"
+    },
+    "address.type": {
+      "kind": "choice",
+      "required": true,
+      "hint": "Choose the address type",
+      "choices": [
+        "ip-netmask",
+        "ip-range",
+        "ip-wildcard",
+        "fqdn"
+      ],
+      "choice_hints": {
+        "ip-netmask": "Single IP or CIDR (10.1.2.3/32)",
+        "ip-range": "Inclusive range (10.0.0.1-10.0.0.9)",
+        "ip-wildcard": "Wildcard mask (10.0.0.0/0.0.0.255)",
+        "fqdn": "Domain name (api.example.com)"
+      }
+    },
+    "address.value": {
+      "kind": "value",
+      "required": true,
+      "hint": "Enter the value for the chosen type (e.g. 10.1.2.3/32)"
+    },
+    "address-group.name": {
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a unique name for the address group"
+    },
+    "address-group.type": {
+      "kind": "choice",
+      "required": true,
+      "hint": "Group type",
+      "choices": [
+        "static",
+        "dynamic"
+      ],
+      "choice_hints": {
+        "static": "Explicit list of address objects",
+        "dynamic": "Tag-based match expression"
+      }
+    },
+    "address-group.value": {
+      "kind": "value",
+      "required": true,
+      "hint": "static: space-separated address names  |  dynamic: tag match expression"
+    },
+    "tag.name": {
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a unique name for the tag"
+    },
+    "tag.color": {
+      "kind": "keyword",
+      "required": false,
+      "hint": "Tag colour (e.g. Red, Blue, Gold)",
+      "value_hint": "Enter a colour name (Red, Orange, Green, Blue, …)",
+      "choices": [
+        "Red",
+        "Orange",
+        "Yellow",
+        "Green",
+        "Cyan",
+        "Blue",
+        "Violet",
+        "Magenta",
+        "Brown",
+        "Olive",
+        "Maroon",
+        "Black",
+        "White",
+        "Gold",
+        "Light Green",
+        "Lime",
+        "Forest Green",
+        "Turquoise Blue",
+        "Azure Blue",
+        "Cerulean Blue",
+        "Medium Blue",
+        "Cobalt Blue",
+        "Lavender Blue",
+        "Light Gray",
+        "Medium Gray"
+      ]
+    },
+    "tag.comments": {
+      "kind": "keyword",
+      "required": false,
+      "hint": "Optional comments",
+      "value_hint": "Enter optional comments"
+    },
+    "service.name": {
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a unique name for the service"
+    },
+    "service.protocol": {
+      "kind": "choice",
+      "required": true,
+      "hint": "Choose the IP protocol",
+      "choices": [
+        "tcp",
+        "udp"
+      ],
+      "choice_hints": {
+        "tcp": "TCP service",
+        "udp": "UDP service"
+      }
+    },
+    "service.port": {
+      "kind": "value",
+      "required": true,
+      "hint": "Destination port or range (e.g. 80, 8080-8090, 80,443)"
+    },
+    "service.source-port": {
+      "kind": "keyword",
+      "required": false,
+      "hint": "Source port or range (e.g. 1024-65535)",
+      "value_hint": "Enter source port or range"
+    },
+    "service-group.name": {
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a unique name for the service group"
+    },
+    "service-group.members": {
+      "kind": "value",
+      "required": true,
+      "hint": "Space-separated service object names (must already exist)"
+    },
+    "external-dynamic-list.name": {
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a unique name for the EDL"
+    },
+    "external-dynamic-list.type": {
+      "kind": "choice",
+      "required": true,
+      "hint": "EDL content type",
+      "choices": [
+        "ip",
+        "domain",
+        "url"
+      ],
+      "choice_hints": {
+        "ip": "List of IP addresses / CIDRs",
+        "domain": "List of domain names",
+        "url": "List of URLs"
+      }
+    },
+    "external-dynamic-list.url": {
+      "kind": "keyword",
+      "required": true,
+      "hint": "URL to fetch the list from (must be reachable by the firewall)",
+      "value_hint": "https://example.com/list.txt"
+    },
+    "url-category.name": {
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a unique name for the URL category"
+    },
+    "url-category.list": {
+      "kind": "keyword",
+      "required": true,
+      "hint": "Space-separated URLs to include in this category",
+      "value_hint": "Enter one or more URLs"
+    },
+    "_generic.name": {
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a unique name"
+    },
+    "_generic.description": {
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter a description for this object"
+    },
+    "_generic.tag": {
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter a tag name (the tag must already exist in this folder)"
+    }
+  },
   "set address": {
     "override": true,
     "fields": [
