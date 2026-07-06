@@ -356,6 +356,7 @@ COMMANDS: dict[str, CommandDef] = {
         ssh_command="request system software check",
         render="raw",
         feature_flag="request_system_software",
+        usage="request system software check",
     ),
     "show jobs all": CommandDef(
         description="Show all SCM jobs (TSG-wide)",
@@ -482,6 +483,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         ssh_command="request system reboot",
         render="raw",
         feature_flag="request_system_reboot",
+        usage="request system reboot",
     ),
     "request system shutdown": CommandDef(
         description="Shut down a managed device — use --remote  (CAUTION: device will go offline)",
@@ -491,6 +493,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         ssh_command="request system shutdown",
         render="raw",
         feature_flag="request_system_reboot",
+        usage="request system shutdown",
     ),
 }
 

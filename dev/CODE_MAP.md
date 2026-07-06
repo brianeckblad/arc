@@ -422,7 +422,7 @@ save_config()                            447-518        Persist config: secrets 
 delete_profile()                         521-547        Remove a named profile from config.json and its keychain entries.
 clear_keychain()                         550-579        Remove ARC secrets from the OS keychain.
 
-## `app/commands/operations.py`  (500 lines)
+## `app/commands/operations.py`  (503 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -445,8 +445,8 @@ _show_log_detail()                       280-297        Show the FULL SLS record
 _ssh_jobs_id()                           304-305        
 _ssh_ping()                              308-311        
 _ssh_commit()                            314-316        
-_request_system_reboot()                 449-461        Request a system reboot — use --remote.  Requires active device contex
-_request_system_shutdown()               464-473        Request a system shutdown — use --remote.  Requires active device cont
+_request_system_reboot()                 450-462        Request a system reboot — use --remote.  Requires active device contex
+_request_system_shutdown()               465-474        Request a system shutdown — use --remote.  Requires active device cont
 
 ## `app/commands/config_view.py`  (462 lines)
 

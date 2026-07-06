@@ -142,7 +142,17 @@ def main() -> int:
 
         spec = _parse_usage_spec(key, cmd_def.usage or "")
         if not spec:
-            failed.append((key, "no parseable usage string — add usage= to CommandDef"))
+            # No parseable spec — distinguish:
+            # 1. Has a usage string but it has no argument tokens → list/action command, no spec needed
+            # 2. No usage string at all on a command that clearly takes args → real gap
+            has_usage = bool(cmd_def.usage and cmd_def.usage.strip())
+            verb = key.split()[0].lower()
+            # write verbs with no usage= are a real gap
+            is_write_verb = verb in ("set", "update", "delete")
+            if is_write_verb and not has_usage:
+                failed.append((key, "no parseable usage string — add usage= to CommandDef"))
+            else:
+                skipped.append((key, "no arguments (list/action command — contextual help not applicable)"))
             continue
 
         existing[key] = {"override": False, "args": spec}
@@ -159,12 +169,19 @@ def main() -> int:
         print("\nNothing new to add.")
 
     if failed:
-        print(f"\nCould not generate specs for {len(failed)} command(s):")
+        print(f"\n⚠  {len(failed)} command(s) missing usage= (add to CommandDef to fix):")
         for k, reason in failed:
             print(f"  {k:<50} [{reason}]")
 
-    if skipped and args.command:
-        for k, reason in skipped:
+    # Only show the "no arguments" skipped list if there's something actionable
+    no_args_skipped = [(k, r) for k, r in skipped if "no arguments" in r]
+    other_skipped = [(k, r) for k, r in skipped if "no arguments" not in r]
+
+    if no_args_skipped:
+        print(f"\n  [dim]{len(no_args_skipped)} list commands skipped (no arguments — ? help not needed)[/dim]")
+
+    if other_skipped and args.command:
+        for k, reason in other_skipped:
             print(f"\nSkipped: {k}  [{reason}]")
 
     if not args.check and added:
