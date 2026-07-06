@@ -1941,8 +1941,8 @@ Use `help <command>` to open detailed docs for a command.
 - `less plugins-log` — Less plugins log — live device data
 - `less webserver-log` — Less webserver log — live device data
 - `load config key` — Load config key — device-local config (break-glass)
+- `load config version` — Rollback: load a config version as the candidate (preview without confirm)
 - `load device-state` — Load device state — device-local config (break-glass)
-- `packet-tracer` — Trace a packet through the folder's security rule base
 - `ping bypass-routing` — Ping bypass routing — live device data
 - `ping host` — Ping a host from a managed device (use --remote)
 - `request acknowledge logid` — Request acknowledge logid — live device data
@@ -3148,13 +3148,16 @@ Use `help <command>` to open detailed docs for a command.
 - `show config audit version` — Show config audit version — live device data
 - `show config commit-scope partial shared-object` — Show config commit scope partial shared object — live device data
 - `show config effective-running xpath` — Show config effective running xpath — live device data
+- `show config format set` — Dump folder config as replayable set commands
 - `show config list admins partial shared-object` — Show config list admins partial shared object — live device data
 - `show config list audit-comments xpath` — Show config list audit comments xpath — live device data
 - `show config list change-summary partial admin` — Show config list change summary partial admin — live device data
 - `show config list changes partial shared-object` — Show config list changes partial shared object — live device data
 - `show config pushed-shared-policy vsys` — Show config pushed shared policy vsys — live device data
+- `show config running` — Show the running config version, or one resource as set commands
 - `show config running xpath` — Show config running xpath — live device data
 - `show config saved` — Show config saved — live device data
+- `show config versions` — List SCM config versions (id, date, admin) or one version by id
 - `show config-locks vsys` — Show config locks vsys — live device data
 - `show config-match-list` — List config match list entries
 - `show config-match-list id` — Get a config match list entry
@@ -3589,6 +3592,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show log decryption tls_enc equal` — Show log decryption tls_enc equal — live device data
 - `show log decryption tls_keyxchg equal` — Show log decryption tls_keyxchg equal — live device data
 - `show log decryption tls_version equal` — Show log decryption tls_version equal — live device data
+- `show log detail` — Show the full SLS record for row <n> of the last log query (1 = top row)
 - `show log globalprotect` — Show log globalprotect — live device data
 - `show log globalprotect csv-output equal` — Show log globalprotect csv output equal — live device data
 - `show log globalprotect direction equal` — Show log globalprotect direction equal — live device data
@@ -3637,7 +3641,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show log iptag tag_name equal` — Show log iptag tag_name equal — live device data
 - `show log iptag tag_name not-equal` — Show log iptag tag_name not equal — live device data
 - `show log mdm receive_time in` — Show log mdm receive_time in — live device data
-- `show log system` — Show live system log — use --remote for live device data
+- `show log system` — Fleet-wide system log via SLS (lags minutes) — --remote for real-time on one device
 - `show log system csv-output equal` — Show log system csv output equal — live device data
 - `show log system direction equal` — Show log system direction equal — live device data
 - `show log system end-time equal` — Show log system end time equal — live device data
@@ -3646,7 +3650,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show log system receive_time in` — Show log system receive_time in — live device data
 - `show log system severity` — Show log system severity — live device data
 - `show log system start-time equal` — Show log system start time equal — live device data
-- `show log threat` — Show log threat — live device data
+- `show log threat` — Fleet-wide threat log via SLS (lags minutes) — --remote for real-time on one device
 - `show log threat action equal` — Show log threat action equal — live device data
 - `show log threat action not-equal` — Show log threat action not equal — live device data
 - `show log threat csv-output equal` — Show log threat csv output equal — live device data
@@ -3670,7 +3674,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show log trace sessionid equal` — Show log trace sessionid equal — live device data
 - `show log trace sessionid not-equal` — Show log trace sessionid not equal — live device data
 - `show log trace start-time equal` — Show log trace start time equal — live device data
-- `show log traffic` — Show live traffic log — use --remote for live device data
+- `show log traffic` — Fleet-wide traffic log via SLS (lags minutes) — --remote for real-time on one device
 - `show log traffic action equal` — Show log traffic action equal — live device data
 - `show log traffic action not-equal` — Show log traffic action not equal — live device data
 - `show log traffic csv-output equal` — Show log traffic csv output equal — live device data

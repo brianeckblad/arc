@@ -121,9 +121,9 @@ Resource                                      Methods  ARC Command              
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  config-versions                             LRC      ✓ set cngfw config-versions load / show cngfw config-versions / show cngfw config-versions id —
+  config-versions                             LRC      ✓ load config version / set cngfw config-versions load / show cngfw config-versions / +2 more —
   config-versions/candidate                   CD       ✓ commit / delete cngfw config-versions candidate / set cngfw config-versions candidate push —
-  config-versions/running                     L        ✓ show cngfw config-versions running       —
+  config-versions/running                     L        ✓ show cngfw config-versions running / show config running —
   jobs                                        LR       ✓ show cngfw jobs / show cngfw jobs id / show jobs all / +1 more show jobs processed
 
 ## Security Services
@@ -238,9 +238,9 @@ Resource                                      Methods  ARC Command              
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  config-versions                             LRC      ✓ set cngfw config-versions load / show cngfw config-versions / show cngfw config-versions id —
+  config-versions                             LRC      ✓ load config version / set cngfw config-versions load / show cngfw config-versions / +2 more —
   config-versions/candidate                   CD       ✓ commit / delete cngfw config-versions candidate / set cngfw config-versions candidate push —
-  config-versions/running                     L        ✓ show cngfw config-versions running       —
+  config-versions/running                     L        ✓ show cngfw config-versions running / show config running —
   jobs                                        LR       ✓ show cngfw jobs / show cngfw jobs id / show jobs all / +1 more show jobs processed
 
 ## Device Settings
@@ -794,9 +794,9 @@ Resource                                      Methods  ARC Command              
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  config-versions                             LRC      ✓ set cngfw config-versions load / show cngfw config-versions / show cngfw config-versions id —
+  config-versions                             LRC      ✓ load config version / set cngfw config-versions load / show cngfw config-versions / +2 more —
   config-versions/candidate                   CD       ✓ commit / delete cngfw config-versions candidate / set cngfw config-versions candidate push —
-  config-versions/running                     L        ✓ show cngfw config-versions running       —
+  config-versions/running                     L        ✓ show cngfw config-versions running / show config running —
   jobs                                        LR       ✓ show cngfw jobs / show cngfw jobs id / show jobs all / +1 more show jobs processed
 
 ## Security Services

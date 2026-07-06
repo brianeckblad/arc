@@ -9,7 +9,7 @@
   files. Files under app/ with >= 300 lines are mapped.
 -->
 
-## `app/commands/panos_catalog.py`  (4571 lines)
+## `app/commands/panos_catalog.py`  (4570 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────

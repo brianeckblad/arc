@@ -564,7 +564,6 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 
 | Command | Scope | Feature flag | SCM API |
 |---|---|---|---|
-| `packet-tracer` | folder | `packet_tracer` | (client-side simulation of the folder rule base) |
 | `test security-policy-match` | folder | `packet_tracer` | (client-side simulation of the folder rule base) |
 
 ## Iam
@@ -1073,6 +1072,7 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 | Command | Scope | Feature flag | SCM API |
 |---|---|---|---|
 | `commit` | folder | — | POST /config/setup/v1/config-versions/candidate:push |
+| `load config version` | global | `config_rollback` | — |
 | `ping host` | device | `ping` | (live device state — SSH via --remote) |
 | `request system reboot` | device | `request_system_reboot` | (live device state — SSH via --remote) |
 | `request system shutdown` | device | `request_system_reboot` | (live device state — SSH via --remote) |
@@ -1084,13 +1084,18 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 | `set jobs fib-table` | global | `jobs_fib_table_write` | POST https://api.strata.paloaltonetworks.com/operations/v1/jobs/fib-table |
 | `set jobs logging-service-forwarding-status` | global | `jobs_logging_service_forwarding_status_write` | POST https://api.strata.paloaltonetworks.com/operations/v1/jobs/logging-service-forwarding-status |
 | `set jobs route-table` | global | `jobs_route_table_write` | POST https://api.strata.paloaltonetworks.com/operations/v1/jobs/route-table |
+| `show config format set` | folder | `config_view` | — |
+| `show config running` | folder | `config_view` | (live device state — SSH via --remote) |
+| `show config versions` | global | `config_view` | — |
 | `show device jobs id` | global | `device_jobs_read` | GET https://api.strata.paloaltonetworks.com/operations/v1/device/jobs/{id} |
 | `show jobs all` | global | `show_jobs` | GET /config/setup/v1/jobs |
 | `show jobs id` | global | `show_jobs` | GET /config/setup/v1/jobs/{id} |
 | `show local-config download` | global | `local_config_download_read` | GET https://api.strata.paloaltonetworks.com/operations/v1/local-config/download |
 | `show local-config versions` | global | `local_config_versions_read` | GET https://api.strata.paloaltonetworks.com/operations/v1/local-config/versions |
-| `show log system` | device | `show_log_system` | (live device state — SSH via --remote) |
-| `show log traffic` | device | `show_log_traffic` | (live device state — SSH via --remote) |
+| `show log detail` | global | `sls_logs` | — |
+| `show log system` | global | `sls_logs` | (live device state — SSH via --remote) |
+| `show log threat` | global | `sls_logs` | (live device state — SSH via --remote) |
+| `show log traffic` | global | `sls_logs` | (live device state — SSH via --remote) |
 | `show system disk-space` | device | `show_system_disk_space` | (live device state — SSH via --remote) |
 | `show system info` | device | `show_system_info` | GET /config/setup/v1/devices/{id} |
 | `show system resources` | device | `show_system_resources` | (live device state — SSH via --remote) |
@@ -4238,7 +4243,6 @@ registry. Regenerate with `python dev/generate_command_docs.py` (runs on `docsup
 | `show log system receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
 | `show log system severity` | device | `panos_show_log` | (live device state — SSH via --remote) |
 | `show log system start-time equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log threat` | device | `panos_show_log` | (live device state — SSH via --remote) |
 | `show log threat action equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
 | `show log threat action not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
 | `show log threat csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
