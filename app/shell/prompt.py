@@ -125,7 +125,7 @@ class PromptMixin:
             line for line in raw.splitlines() if not line.startswith("##")
         )
         content = _resolve_vars(content)
-        console.print(content)
+        console.print(content, highlight=False)
 
         # Show active profile when multiple profiles exist — so operators
         # always know which credential set is in use before touching anything.
