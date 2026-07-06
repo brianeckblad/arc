@@ -1,0 +1,21 @@
+{
+  "_README": "Application variables — referenced in banner.txt, goodbye.txt, and other settings files using {{variable_name}} syntax. Static values are set here; dynamic values (marked _dynamic) are resolved at runtime and can be overridden here.",
+
+  "_comment_identity": "=== Application Identity ===",
+  "app_name":         "ARC",
+  "app_full_name":    "Assisted Remote Console",
+  "app_description":  "PAN-OS-style shell for Palo Alto Networks SCM + PAN-OS firewalls",
+  "app_company":      "Palo Alto Networks",
+  "app_url":          "https://github.com/brianeckblad/arc",
+
+  "_comment_dynamic": "=== Dynamic (resolved at runtime — override here to pin a value) ===",
+  "_dynamic_note":    "These are resolved live: app_version, docs_date, python_version, platform",
+  "_app_version":     "resolved from app/__init__.py __version__",
+  "_docs_date":       "resolved from docs/scm-api/MANIFEST.md last-pull date",
+  "_python_version":  "resolved from sys.version",
+  "_platform":        "resolved from platform.system()",
+
+  "_comment_display": "=== Display / Branding ===",
+  "app_tagline":      "Assisted Remote Console  —  Palo Alto Networks SCM + PAN-OS",
+  "app_support":      "help ? · arc show · github.com/brianeckblad/arc"
+}

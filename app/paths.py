@@ -56,6 +56,9 @@ COMMAND_STRUCTURE_GENERATED_JSON = SETTINGS_DIR / "command-structure-generated.j
 # User-defined aliases live in config/<user>/preferences.json.
 COMMAND_ALIASES_JSON = SETTINGS_DIR / "command-aliases.json"
 
+# Application variables — referenced in banner.txt etc. with {{variable_name}} syntax.
+APP_VARIABLES_JSON = SETTINGS_DIR / "app-variables.json"
+
 # Per-user secrets directory (config.json is written here, never committed).
 CONFIG_DIR = REPO_ROOT / "config"
 

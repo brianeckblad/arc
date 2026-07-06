@@ -112,8 +112,10 @@ class PromptMixin:
 
     def _print_banner(self) -> None:
         # banner.txt lives in settings/ (user-editable).  It uses Rich markup
-        # tags for colour — edit it to change the logo, subtitle, or add a legal
-        # notice.  Lines starting with ## are comments.
+        # tags for colour and {{variable_name}} placeholders for dynamic values
+        # (resolved from settings/app-variables.json + runtime).
+        # Lines starting with ## are comments and are stripped before rendering.
+        from app.settings.app_vars import resolve as _resolve_vars
         try:
             raw = _BANNER_FILE.read_text(encoding="utf-8")
         except OSError:
@@ -122,7 +124,7 @@ class PromptMixin:
         content = "\n".join(
             line for line in raw.splitlines() if not line.startswith("##")
         )
-
+        content = _resolve_vars(content)
         console.print(content)
 
         # Show active profile when multiple profiles exist — so operators

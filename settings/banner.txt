@@ -1,20 +1,22 @@
 ## ARC banner — edit this file to change the logo, colours, or add a legal notice.
 ##
-## Colour system: use standard Rich markup tags anywhere in this file.
-## The Python side prints this file verbatim — no code changes needed.
+## Variable substitution: use {{variable_name}} — resolved from settings/app-variables.json
+## and runtime values. Available variables:
+##   {{app_version}}      — current version (e.g. 0.1.20)
+##   {{app_name}}         — ARC
+##   {{app_full_name}}    — Assisted Remote Console
+##   {{app_tagline}}      — full subtitle line
+##   {{app_company}}      — Palo Alto Networks
+##   {{docs_date}}        — last docsupdate date
+##   {{python_version}}   — Python version
+##   {{platform}}         — OS name
 ##
-## Quick reference (lines starting with ## are comments and are ignored):
+## Colour system: use standard Rich markup tags anywhere in this file.
 ##   [bold cyan]text[/bold cyan]   — bright cyan  (logo, primary accent)
 ##   [cyan]text[/cyan]             — standard cyan (command names in hints)
 ##   [dim]text[/dim]               — dark grey     (subtitles, hints)
-##   [bold]text[/bold]             — white bold    (emphasis)
-##   [green]text[/green]           — green         (success / positive)
-##   [yellow]text[/yellow]         — yellow        (warnings)
-##   [red]text[/red]               — red           (errors)
 ##
-## Blank lines here control all spacing — add or remove as needed.
-## To add a blank line before the logo, insert an empty line before [bold cyan].
-## To add a legal notice, append another [dim]...[/dim] line after the subtitle.
+## Lines starting with ## are comments and are ignored at runtime.
 
 [bold cyan]      █████╗ ██████╗  ██████╗
      ██╔══██╗██╔══██╗██╔════╝
@@ -22,5 +24,6 @@
      ██╔══██║██╔═══╝ ██║
      ██║  ██║██║  ██╗╚██████╗
      ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝[/bold cyan]
-[dim]  Assisted Remote Console  —  Palo Alto Networks SCM + PAN-OS[/dim]
+[dim]  {{app_tagline}}[/dim]
+[dim]  v{{app_version}}[/dim]
 
