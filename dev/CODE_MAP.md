@@ -527,3 +527,16 @@ _show_device_snippets()                  87-138         Show snippets attached t
 _show_snippets()                         141-210        List snippets scoped to the current context.
 _show_snippets_global()                  213-225        List ALL snippets regardless of device or folder context.
 _show_snippet_detail()                   228-267        Show detail for a named snippet.
+
+## `app/shell/_base.py`  (307 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+device_display_name()                    122-137        Best human-readable name for a device inventory entry.
+device_ssh_host()                        140-144        Address ARC should SSH to for a device entry (IP wins over hostname).
+tsg_display()                            147-151        Return ``(tsg_id, display_name)`` for a tenant-service-group entry.
+active_tsg_label()                       154-156        The TSG identifier to show in user-facing messages.
+_expand_unambiguous_prefix()             159-191        Expand command-token prefixes when they resolve to exactly one phrase.
+tokenize()                               205-216        Split a command line into tokens, honouring single/double quotes.
+_make_key_bindings()                     219-272        Return key bindings for the ARC shell.
+class ShellState                         276-302

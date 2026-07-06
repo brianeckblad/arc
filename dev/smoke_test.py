@@ -10,7 +10,7 @@ Covers eleven concern areas:
   6. Config types — ArcConfig / SCMConfig + FeatureFlags default-construct correctly
   7. Formatter    — key renderer functions accept sample data without raising
   8. CLI banner   — every banner line lands descriptions at visual column 28
-  9. Inline help  — builtin names in sync via shell_catalog; no markup; width fit
+  9. Inline help  — builtin names in sync via settings/builtin-commands.json; no markup; width fit
  10. Theme system — ArcTheme fields, THEME_KEYS, load_theme(), file locations
  11. Code map     — dev/CODE_MAP.md is current (no line-range drift in large files)
 
@@ -140,7 +140,7 @@ def _parse_cli_args() -> tuple[set[int], bool]:
             return base | {8} | map_check, quiet
         if "shell" in parts and name in ("_base.py", "help.py"):
             return base | {9} | map_check, quiet
-        if name == "shell_catalog.py":
+        if name in ("shell_catalog.py", "commands.py") and name == "commands.py":
             return base | {8, 9} | map_check, quiet
         if name in ("theme.py", "theme.json"):
             return base | {10}, quiet
@@ -195,7 +195,7 @@ def test_imports() -> None:
         "app.commands.registry",
         "app.api.client",
         "app.shell",
-        "app.shell_catalog",
+        "app.settings.commands",
         "app.ssh.manager",
         "app.utils.formatter",
         "app.settings.theme",
@@ -835,7 +835,7 @@ def test_banner_alignment() -> None:
 #      b) fit within _HELP_CMD_WIDTH chars so descriptions align on the same column
 #
 #    The builtins list in _print_shell_builtins() is checked by extracting it
-#    from app/shell_catalog.py so builtin metadata stays in a tiny agent-friendly file.
+#    from settings/builtin-commands.json.
 # ---------------------------------------------------------------------------
 
 _MARKUP_RE = re.compile(r'\[[a-zA-Z/_][^\]]*\]')
@@ -856,7 +856,8 @@ def test_inline_help_alignment() -> None:
     # 8a — Registered command keys: no markup, fit in field
     from app.commands.registry import COMMANDS
     from app.shell import _SHELL_BUILTINS, _expand_unambiguous_prefix
-    from app.shell_catalog import SHELL_BUILTINS, shell_help_names, shell_help_rows
+    from app.settings.commands import load_shell_builtins, shell_help_names, shell_help_rows
+    SHELL_BUILTINS = load_shell_builtins()
     markup_keys = [k for k in COMMANDS if _MARKUP_RE.search(k)]
     if markup_keys:
         fail(f"Registered commands contain [markup] in key (breaks alignment): {markup_keys}")
@@ -907,11 +908,11 @@ def test_inline_help_alignment() -> None:
         else:
             fail(f"shorthand expansion mismatch for {raw!r}", f"expected {expected!r}, got {got!r}")
 
-    # 9c — Verify shell.py is wired to shell_catalog source of truth.
+    # 9c — Verify shell.py is wired to settings/builtin-commands.json source of truth.
     if tuple(_SHELL_BUILTINS) == tuple(SHELL_BUILTINS):
-        ok(f"_SHELL_BUILTINS wired to shell_catalog ({len(SHELL_BUILTINS)} entries)")
+        ok(f"_SHELL_BUILTINS wired to settings/builtin-commands.json ({len(SHELL_BUILTINS)} entries)")
     else:
-        fail("_SHELL_BUILTINS differs from shell_catalog.SHELL_BUILTINS")
+        fail("_SHELL_BUILTINS differs from settings/builtin-commands.json")
 
     # 9d — Configure-mode split is intentional: configure shows only mutation helpers.
     normal_rows = shell_help_rows(configure_mode=False)

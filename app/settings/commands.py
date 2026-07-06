@@ -142,3 +142,19 @@ def load_builtin_aliases() -> dict[str, str]:
         }
     except (json.JSONDecodeError, IOError):
         return {}
+
+
+def shell_help_rows(configure_mode: bool) -> tuple[ShellBuiltinHelp, ...]:
+    """Return SHELL help rows visible in the current shell mode."""
+    rows = load_shell_help_rows()
+    if configure_mode:
+        return tuple(row for row in rows if row.configure_only)
+    return tuple(
+        row for row in rows
+        if not row.configure_only and not row.hide_in_configure
+    )
+
+
+def shell_help_names() -> list[str]:
+    """Return all builtin help display names in order (used by smoke tests)."""
+    return [row.name for row in load_shell_help_rows()]

@@ -11,7 +11,7 @@ th# SHELL.PY — the shell spine (prompt loop, dispatch, execution, rendering)
 #   (smoke_test.py section 10 fails if the map is stale.)
 #
 # SMALL "STRINGS" attached to this spine (edit these first when relevant):
-#   app/shell_catalog.py       — builtin command names + SHELL `?` help rows
+#   settings/builtin-commands.json  — builtin command names, display, help rows (no code change needed)
 #   app/settings/features.py   — feature flags that gate commands
 #   app/settings/theme.py      — colour roles for `?` help and prompt
 #   app/commands/*.py          — registered command handlers + CommandDefs
@@ -89,7 +89,14 @@ from app.docs import (
 from app.settings.user_prefs import UserPrefs, load_prefs, save_prefs
 from app.settings.features import dev_mode_from_env, feature_state, is_enabled, is_feature_visible, load_features
 from app.settings.commands import load_command_visibility, is_command_visible, is_command_executable, load_builtin_aliases
-from app.shell_catalog import SHELL_BUILTINS, shell_help_rows
+from app.settings.commands import (
+    load_shell_builtins as _load_shell_builtins,
+    shell_help_rows,
+)
+
+# All shell builtin metadata comes from settings/builtin-commands.json.
+# No code change needed to add/rename/reorder builtins — edit that file.
+SHELL_BUILTINS: tuple[str, ...] = _load_shell_builtins()
 from app.ssh.manager import SSHManager
 from app.settings.theme import ArcTheme, THEME_KEYS, load_theme, reset_theme, save_theme
 from app.utils import formatter as fmt
@@ -108,7 +115,7 @@ GOODBYE_FILE = _GOODBYE_FILE  # settings/goodbye.txt (imported below)
 _HELP_CMD_WIDTH = 44
 
 # Shell built-ins accepted by the dispatcher/completer.
-# Metadata lives in app/shell_catalog.py so agents can edit a tiny file first.
+# Shell built-in names for dispatch and completion — loaded from settings.
 _SHELL_BUILTINS: tuple[str, ...] = SHELL_BUILTINS
 
 
