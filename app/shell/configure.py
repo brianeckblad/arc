@@ -432,55 +432,108 @@ class ConfigureMixin:
     def _cmd_terminal(self, args: list[str]) -> None:
         """Per-user terminal preferences — persisted to config/<user>/preferences.json.
 
-        terminal                     show current settings
+        terminal                     show current settings and how to change them
         terminal length <n>          page long output after n lines (0 = never page)
-        terminal width <n>           force render width in columns (0 = auto)
+        terminal width <n>           force render width in columns (0 = auto-detect)
         terminal spinner on|off      toggle the "querying SCM…" spinner
         """
         p = self._prefs
+        t = self._theme
 
-        if not args or args[0] == "?":
-            length_note = str(p.terminal_length) if p.terminal_length else "0  (paging disabled)"
-            width_note = str(p.terminal_width) if p.terminal_width else "0  (auto-detect)"
+        if not args or args[0] in ("?", "help"):
+            length_note = f"{p.terminal_length} lines" if p.terminal_length else "off  (no paging)"
+            width_note  = f"{p.terminal_width} columns" if p.terminal_width else "auto-detect"
+            spinner_note = "on" if p.spinner else "off"
+            w = 30
             console.print(
-                f"\n  [bold]terminal settings[/bold]  [dim]{'(stored in ' + str(_prefs_file_label()) + ')'}[/dim]\n\n"
-                f"    length   {length_note}\n"
-                f"    width    {width_note}\n"
-                f"    spinner  {'on' if p.spinner else 'off'}\n\n"
-                "  [dim]terminal length <n>  |  terminal width <n>  |  terminal spinner on|off[/dim]\n"
+                f"\n  [bold]Terminal Settings[/bold]  "
+                f"[dim]{_prefs_file_label()}[/dim]\n"
             )
+            # Current values
+            console.print(f"  [dim]{'Setting':<{w}} Current     How to change[/dim]")
+            console.print(f"  [dim]{'─' * (w + 40)}[/dim]")
+            console.print(
+                f"  {self._styled(f'terminal length', t.command_name):<{w+10}} "
+                f"{length_note:<12} "
+                f"[dim]terminal length <n>   (0 = disable paging)[/dim]"
+            )
+            console.print(
+                f"  {self._styled(f'terminal width', t.command_name):<{w+10}} "
+                f"{width_note:<12} "
+                f"[dim]terminal width <n>    (0 = auto-detect)[/dim]"
+            )
+            console.print(
+                f"  {self._styled(f'terminal spinner', t.command_name):<{w+10}} "
+                f"{spinner_note:<12} "
+                f"[dim]terminal spinner on|off[/dim]"
+            )
+            console.print()
+            console.print(
+                "  [dim]Examples:\n"
+                "    terminal length 40    → page after 40 lines (good for slow reading)\n"
+                "    terminal length 0     → disable paging entirely\n"
+                "    terminal width 120    → force 120-column output\n"
+                "    terminal spinner off  → remove the spinner (e.g. for CI / scripting)[/dim]"
+            )
+            console.print()
             return
 
         sub = args[0].lower()
-        if sub in ("length", "width"):
-            if len(args) < 2 or not args[1].isdigit():
-                console.print(f"[yellow]Usage:[/yellow] terminal {sub} <n>   [dim](0 = {'disable paging' if sub == 'length' else 'auto-detect'})[/dim]")
+
+        if sub == "length":
+            if len(args) < 2:
+                console.print(
+                    "[yellow]Usage:[/yellow] terminal length <n>\n"
+                    "  [dim]0 = disable paging entirely\n"
+                    f"  Current: {p.terminal_length or 0}[/dim]"
+                )
+                return
+            if not args[1].isdigit():
+                console.print("[yellow]Usage:[/yellow] terminal length <n>  (whole number, 0 = no paging)")
                 return
             value = int(args[1])
-            if sub == "length":
-                p.terminal_length = value
-                set_page_length(value)
-                note = f"paging after {value} lines" if value else "paging disabled"
-            else:
-                p.terminal_width = value
-                console.width = value if value > 0 else None
-                note = f"render width {value} columns" if value else "auto-detect width"
+            p.terminal_length = value
+            set_page_length(value)
+            note = f"paging after {value} lines" if value else "paging disabled"
+
+        elif sub == "width":
+            if len(args) < 2:
+                console.print(
+                    "[yellow]Usage:[/yellow] terminal width <n>\n"
+                    "  [dim]0 = auto-detect from your terminal window\n"
+                    f"  Current: {p.terminal_width or 0}[/dim]"
+                )
+                return
+            if not args[1].isdigit():
+                console.print("[yellow]Usage:[/yellow] terminal width <n>  (whole number, 0 = auto)")
+                return
+            value = int(args[1])
+            p.terminal_width = value
+            console.width = value if value > 0 else None
+            note = f"render width {value} columns" if value else "auto-detect width"
+
         elif sub == "spinner":
             state = (args[1].lower() if len(args) > 1 else "").strip()
             if state not in ("on", "off"):
-                console.print("[yellow]Usage:[/yellow] terminal spinner on|off")
+                console.print(
+                    "[yellow]Usage:[/yellow] terminal spinner on|off\n"
+                    f"  [dim]Current: {'on' if p.spinner else 'off'}[/dim]"
+                )
                 return
             p.spinner = state == "on"
             note = f"spinner {state}"
+
         else:
             console.print(
-                f"[yellow]Unknown terminal setting:[/yellow] [bold]{sub}[/bold]\n"
-                "  terminal length <n>  |  terminal width <n>  |  terminal spinner on|off"
+                f"[yellow]Unknown terminal setting:[/yellow] [bold]{sub}[/bold]\n\n"
+                "  terminal length <n>       page after n lines  [dim](0 = off)[/dim]\n"
+                "  terminal width <n>        force column width  [dim](0 = auto)[/dim]\n"
+                "  terminal spinner on|off   show/hide spinner\n"
             )
             return
 
         saved = save_prefs(p)
-        suffix = "" if saved else "  [yellow](could not write preferences.json — applies to this session only)[/yellow]"
+        suffix = "" if saved else "  [yellow](preferences.json not writable — applies to this session only)[/yellow]"
         console.print(f"[green]✓[/green] {note}{suffix}")
 
     def _cmd_cli(self, args: list[str]) -> None:
@@ -788,57 +841,838 @@ class ConfigureMixin:
             "  Usage: feature show [on|off|dev|<name>] | feature enable <flag> | feature disable <flag> | feature dev <flag>"
         )
 
-    def _cmd_dev(self, args: list[str]) -> None:
-        """Toggle development mode (hidden command).
 
-        Development mode reveals every command whose feature flag is "dev" —
-        work-in-progress commands that normal users never see.  This supports a
-        CI/CD lifecycle: ship a command as "dev", test it in development mode,
-        then flip its flag to true in its settings/features/ file when it is ready.
+    # ------------------------------------------------------------------
+    # command-structure helpers
+    # ------------------------------------------------------------------
 
-          dev            toggle development mode on/off
-          dev on         force development mode on
-          dev off        force development mode off
-          dev status     show current state (without changing it)
+    def _cs_tier(self, cmd_key: str) -> str:
+        """Return the tier label for a command key."""
+        from app.settings import command_structure as cs
+        from app.paths import COMMAND_STRUCTURE_GENERATED_JSON
+        import json as _json
 
-        The state is session-only.  Pre-enable it in CI with ARC_DEV_MODE=1.
+        # Check hand-curated JSON (tier 1)
+        try:
+            raw = _json.loads(__import__('app.paths', fromlist=['COMMAND_STRUCTURE_JSON']).COMMAND_STRUCTURE_JSON.read_text())
+            if cmd_key in raw or (not " " in cmd_key and f"set {cmd_key}" in raw):
+                return "1"
+        except Exception:
+            pass
+
+        # Check generated JSON (tier 1g)
+        if COMMAND_STRUCTURE_GENERATED_JSON.exists():
+            try:
+                gen = _json.loads(COMMAND_STRUCTURE_GENERATED_JSON.read_text())
+                if cmd_key in gen:
+                    return "1g"
+            except Exception:
+                pass
+
+        # Check field_catalog (tier 2)
+        try:
+            from app.settings.field_catalog import FIELD_CATALOG
+            if cmd_key in FIELD_CATALOG:
+                return "2"
+        except Exception:
+            pass
+
+        # Check usage-string fallback (tier 3)
+        from app.commands.registry import COMMANDS
+        cmd_def = COMMANDS.get(cmd_key)
+        if cmd_def and cmd_def.usage:
+            spec = cs._parse_usage_spec(cmd_key, cmd_def.usage)
+            if spec:
+                return "3"
+
+        return "-"
+
+    @staticmethod
+    def _format_spec(spec: list[dict]) -> str:
+        """Format a command arg spec in PAN-OS style.
+
+        kind=value   → <fieldname>         (user supplies free text)
+        kind=choice  → choice1|choice2     (fixed options, tab-completable)
+        kind=keyword → [keyword]           (optional trailing keyword)
         """
-        action = args[0].lower() if args else "toggle"
+        parts = []
+        for arg in spec[:8]:  # cap at 8 for display width
+            name = arg.get("name", "?")
+            kind = arg.get("kind", "value")
+            if kind == "value":
+                parts.append(f"<{name}>")
+            elif kind == "choice":
+                choices = arg.get("choices") or []
+                if choices:
+                    parts.append("|".join(choices[:4]) + ("…" if len(choices) > 4 else ""))
+                else:
+                    parts.append(f"<{name}>")
+            elif kind == "keyword":
+                parts.append(f"[{name}]")
+            else:
+                parts.append(f"<{name}>")
+        suffix = " …" if len(spec) > 8 else ""
+        return " ".join(parts) + suffix
 
-        if action == "status":
-            self._print_dev_status()
+    def _cs_list(self, mode: str = "enabled", match: str = "") -> None:
+        """List enabled/disabled commands with PAN-OS-style field display and pagination."""
+        from app.commands.registry import COMMANDS
+        from app.settings.features import is_enabled, feature_state
+        from app.settings import command_structure as cs
+        from app.docs import page_length
+
+        t = self._theme
+        cs.invalidate_cache()
+
+        # Build candidate list based on mode
+        if mode == "disabled":
+            candidates = sorted([
+                k for k in COMMANDS
+                if COMMANDS[k].feature_flag
+                and not is_enabled(self._features, COMMANDS[k].feature_flag, self._dev_mode)
+            ])
+            mode_label = "disabled"
+        else:  # "enabled" (default)
+            candidates = sorted([
+                k for k in COMMANDS
+                if COMMANDS[k].feature_flag
+                and is_enabled(self._features, COMMANDS[k].feature_flag, self._dev_mode)
+            ])
+            mode_label = "enabled"
+
+        # Apply match filter
+        if match:
+            candidates = [k for k in candidates if match.lower() in k.lower()]
+
+        tier_colors = {
+            "1": "green", "1g": "cyan", "2": "blue", "3": "yellow", "-": "red",
+        }
+        tier_labels = {
+            "1":  "hand-curated",
+            "1g": "cli-generated",
+            "2":  "openapi-spec",
+            "3":  "usage-parsed",
+            "-":  "NO SPEC",
+        }
+        col_cmd  = 46
+        col_tier = 14
+
+        filter_note = f" | match '{match}'" if match else ""
+        lines: list[str] = []
+        lines.append("")
+        lines.append(
+            f"  [bold yellow]COMMAND HELP SPEC COVERAGE[/bold yellow]  "
+            f"[dim]— {len(candidates)} {mode_label} commands{filter_note}  "
+            "| 'command-structure list ?' for tier definitions[/dim]"
+        )
+        lines.append("")
+        lines.append(
+            f"  [dim]{'Command':<{col_cmd}} {'Help spec tier':<{col_tier}} Fields[/dim]"
+        )
+        lines.append(f"  [dim]{'─' * (col_cmd + col_tier + 30)}[/dim]")
+
+        counts: dict[str, int] = {}
+        for key in candidates:
+            tier = self._cs_tier(key)
+            counts[tier] = counts.get(tier, 0) + 1
+            color = tier_colors.get(tier, "white")
+            label = tier_labels.get(tier, tier)
+            spec = cs.arg_spec(key)
+            fields_preview = self._format_spec(spec) if spec else "—"
+            cmd_cell  = f"{key:<{col_cmd}}"
+            tier_cell = f"[{color}]{label:<{col_tier}}[/{color}]"
+            lines.append(
+                f"  {self._styled(cmd_cell, t.command_name)} {tier_cell} [dim]{fields_preview}[/dim]"
+            )
+
+        lines.append("")
+        summary_parts = []
+        for tier, label in tier_labels.items():
+            n = counts.get(tier, 0)
+            if n:
+                color = tier_colors[tier]
+                summary_parts.append(f"[{color}]{n} {label}[/{color}]")
+        if summary_parts:
+            lines.append("  " + "  ".join(summary_parts))
+
+        need = counts.get("3", 0) + counts.get("-", 0)
+        if need and mode == "enabled":
+            lines.append(
+                f"  [dim]→ {need} command(s) can be improved: "
+                "run [bold]command-structure update[/bold][/dim]"
+            )
+        lines.append("")
+
+        output = "\n".join(lines)
+        pg = page_length()
+        if pg > 0 and len(lines) > pg:
+            with console.pager(styles=True):
+                console.print(output)
+        else:
+            console.print(output)
+
+
+    def _cs_update(self, targets: list[str]) -> None:
+        """Stream dev/commandupdate.py — same script the LLM 'commandupdate' trigger runs."""
+        import sys as _sys
+        import subprocess as _sp
+        from app.paths import REPO_ROOT
+        from app.settings import command_structure as cs
+
+        script = REPO_ROOT / "dev" / "commandupdate.py"
+        if not script.exists():
+            console.print("[red]dev/commandupdate.py not found.[/red]")
             return
+
+        extra: list[str] = list(targets)  # specific command, if given
+        console.print("\n[magenta]● command-structure update[/magenta]\n")
+        try:
+            proc = _sp.Popen(
+                [_sys.executable, str(script)] + extra,
+                stdout=_sp.PIPE, stderr=_sp.STDOUT,
+                text=True, bufsize=1, cwd=str(REPO_ROOT),
+            )
+            assert proc.stdout
+            for raw_line in proc.stdout:
+                console.print(raw_line.rstrip())
+            proc.wait()
+        except Exception as exc:
+            console.print(f"[red]Failed to run commandupdate.py:[/red] {exc}")
+            return
+
+        cs.invalidate_cache()
+        console.print(
+            "\n  [dim]Updated specs are live immediately — no restart needed.\n"
+            "  To get richer field metadata, edit [bold]settings/command-structure.json[/bold].[/dim]\n"
+        )
+
+
+    def _cs_clear(self) -> None:
+        """Wipe the CLI-generated command structure file."""
+        from app.paths import COMMAND_STRUCTURE_GENERATED_JSON
+        from app.settings import command_structure as cs
+        if COMMAND_STRUCTURE_GENERATED_JSON.exists():
+            COMMAND_STRUCTURE_GENERATED_JSON.unlink()
+            cs.invalidate_cache()
+            console.print("[cyan]command-structure-generated.json cleared.[/cyan]")
+        else:
+            console.print("[dim]Nothing to clear — generated file does not exist.[/dim]")
+
+    # =========================================================================
+    # Dev shell — modal sub-shell entered by typing `dev` at any prompt.
+    # =========================================================================
+
+    def _cmd_dev(self, args: list[str]) -> None:
+        """Enter the dev shell (modal, like configure mode).
+
+        Type ``dev`` to enter.  Inside the dev shell the prompt shows ``:dev``
+        and the following commands are available:
+
+          status                       health dashboard
+          docs update [--scm|--panos]  pull latest pan.dev specs + regenerate
+          docs status                  spec/doc freshness
+          catalog rebuild              regenerate code artifacts (no network)
+          command-structure list       contextual ? help coverage
+          command-structure update     generate entries for missing commands
+          command-structure clear      wipe the generated entries file
+          exit                         leave dev shell
+
+        For non-interactive/CI use: ``dev on`` / ``dev off`` still work as before.
+        """
+        if not args:
+            # Bare `dev` — enter the dev shell
+            self._dev_shell_enter()
+            return
+
+        action = args[0].lower()
         if action in ("on", "enable", "true"):
             self._dev_mode = True
             self._invalidate_visible_keys()
+            self._print_dev_status()
         elif action in ("off", "disable", "false"):
             self._dev_mode = False
+            self._state.dev_shell = False
             self._invalidate_visible_keys()
-        elif action == "toggle":
-            self._dev_mode = not self._dev_mode
-            self._invalidate_visible_keys()
+            self._print_dev_status()
+        elif action == "status":
+            self._print_dev_status()
         else:
             console.print(
-                f"[yellow]Usage:[/yellow] dev [on|off|status]  [dim](no argument toggles)[/dim]"
+                "[yellow]Usage:[/yellow] dev  (enter dev shell)  "
+                "| dev on | dev off | dev status"
             )
+
+    def _dev_shell_enter(self) -> None:
+        """Enter the dev shell — enable dev mode and show the dev menu."""
+        self._state.dev_shell = True
+        self._dev_mode = True
+        self._invalidate_visible_keys()
+        t = self._theme
+        console.print()
+        console.print(
+            f"  [magenta bold]● DEV SHELL[/magenta bold]  "
+            f"[dim]— self-service operator console[/dim]"
+        )
+        console.print()
+        rows = [
+            ("status",                     "Health dashboard — docs freshness, catalog drift, help coverage"),
+            ("docs update",                "Pull latest pan.dev specs + regenerate all catalogs"),
+            ("docs status",                "Show spec/doc timestamps and change summary"),
+            ("catalog rebuild",            "Regenerate code artifacts (field catalog, resource catalog, …)"),
+            ("command-structure list",     "Show contextual ? help coverage for all enabled commands"),
+            ("command-structure update",   "Auto-generate contextual help entries for enabled commands"),
+            ("command-structure clear",    "Wipe auto-generated entries (reset to tier 3 fallback)"),
+            ("exit",                       "Leave dev shell"),
+        ]
+        w = 32
+        for cmd, desc in rows:
+            console.print(
+                f"  {self._styled(f'{cmd:<{w}}', t.command_name)} "
+                f"{self._styled(desc, t.description_dim)}"
+            )
+        console.print()
+        console.print(f"  [dim]Prompt is now  arc:…:dev >  — type a command above or exit.[/dim]")
+        console.print()
+
+    def _dev_shell_exit(self) -> None:
+        """Leave the dev shell."""
+        import os as _os
+        self._state.dev_shell = False
+        # Only turn off dev mode if it wasn't pre-enabled via environment.
+        if not _os.environ.get("ARC_DEV_MODE"):
+            self._dev_mode = False
+            self._invalidate_visible_keys()
+        console.print("[cyan]Left dev shell.[/cyan]")
+
+    def _dispatch_dev_shell(self, line: str) -> bool | None:
+        """Route dev-shell commands.
+
+        Handles ``<cmd> ?`` for inline contextual help on any dev sub-command.
+        Returns a bool (handled) or None (not a dev command — fall through to
+        normal dispatch so regular ARC commands still work from the dev shell).
+        """
+        tokens = line.split()
+        if not tokens:
+            return None
+        cmd = tokens[0].lower()
+
+        # Inline ? on a dev sub-command → show that command's help
+        if len(tokens) >= 2 and tokens[-1] == "?":
+            self._dev_inline_help(tokens[:-1])
+            return False
+
+        if cmd in ("exit", "quit"):
+            self._dev_shell_exit()
+            return False
+
+        if cmd in ("?", "help") and len(tokens) == 1:
+            self._dev_shell_help()
+            return False
+
+        if cmd == "status":
+            self._dev_status()
+            return False
+
+        if cmd == "docs":
+            self._dev_docs(tokens[1:])
+            return False
+
+        if cmd == "catalog":
+            self._dev_catalog(tokens[1:])
+            return False
+
+        if cmd == "command-structure":
+            sub = tokens[1].lower() if len(tokens) > 1 else "?"
+            if sub in ("?", "help"):
+                self._dev_inline_help(["command-structure"])
+                return False
+            if sub == "list":
+                # Parse: list [enabled|disabled] [| match <word>]
+                rest = tokens[2:]
+                mode = "enabled"
+                match_word = ""
+                # Check for pipe filter
+                if "|" in rest:
+                    pipe_idx = rest.index("|")
+                    pipe_args = rest[pipe_idx + 1:]
+                    rest = rest[:pipe_idx]
+                    if pipe_args and pipe_args[0].lower() == "match" and len(pipe_args) > 1:
+                        match_word = " ".join(pipe_args[1:])
+                if rest and rest[0].lower() == "?":
+                    self._cs_tier_legend()
+                elif rest and rest[0].lower() in ("enabled", "disabled"):
+                    mode = rest[0].lower()
+                    self._cs_list(mode=mode, match=match_word)
+                else:
+                    self._cs_list(mode=mode, match=match_word)
+            elif sub == "update":
+                self._cs_update(tokens[2:])
+            elif sub == "clear":
+                self._cs_clear()
+            else:
+                self._dev_inline_help(["command-structure"])
+            return False
+
+        # Not a dev-shell command — fall through to normal dispatch.
+        return None
+
+    def _dev_inline_help(self, prefix_tokens: list[str]) -> None:
+        """Show contextual help for a dev shell command or sub-command."""
+        t = self._theme
+        w = 36
+        cmd = prefix_tokens[0].lower() if prefix_tokens else ""
+        sub = prefix_tokens[1].lower() if len(prefix_tokens) > 1 else ""
+
+        def _row(name: str, desc: str) -> None:
+            console.print(
+                f"  {self._styled(f'{name:<{w}}', t.command_name)} "
+                f"{self._styled(desc, t.description_dim)}"
+            )
+
+        console.print()
+
+        if cmd == "docs" and not sub:
+            console.print(f"  [bold yellow]docs[/bold yellow]  — manage pan.dev API documentation\n")
+            _row("docs update",           "Pull latest pan.dev specs + regenerate all catalogs")
+            _row("docs update --scm",     "Pull SCM API specs only")
+            _row("docs update --panos",   "Pull PAN-OS CLI docs only")
+            _row("docs status",           "Show last pull date, spec ages, CHANGES.md summary")
+
+        elif cmd == "docs" and sub == "update":
+            console.print(f"  [bold yellow]docs update[/bold yellow]  — pull latest pan.dev specs\n")
+            console.print(
+                "  Runs [bold]dev/docsupdate.py[/bold] as a subprocess with live output.\n"
+                "  After completion, run [bold]catalog rebuild[/bold] to regenerate code artifacts.\n\n"
+                "  Flags:\n"
+                "    [cyan]--scm[/cyan]    Pull SCM API specs only (skip PAN-OS)\n"
+                "    [cyan]--panos[/cyan]  Pull PAN-OS CLI docs only (skip SCM)\n"
+                "    (no flag)  Pull both\n"
+            )
+
+        elif cmd == "docs" and sub == "status":
+            console.print(f"  [bold yellow]docs status[/bold yellow]  — show documentation freshness\n")
+            console.print(
+                "  Reads [bold]docs/scm-api/MANIFEST.md[/bold] for the last pull date.\n"
+                "  Lists each spec file with its age and the CHANGES.md summary.\n"
+            )
+
+        elif cmd == "catalog" or (cmd == "catalog" and sub in ("rebuild", "")):
+            console.print(f"  [bold yellow]catalog rebuild[/bold yellow]  — regenerate all code artifacts\n")
+            console.print(
+                "  Runs all generator scripts in sequence (no network required):\n"
+                "    [cyan]generate_resource_catalog.py[/cyan]  → app/commands/resource_catalog.py\n"
+                "    [cyan]generate_feature_flags.py[/cyan]     → settings/features/\n"
+                "    [cyan]generate_field_library.py[/cyan]     → app/settings/field_catalog.py\n"
+                "    [cyan]generate_command_docs.py[/cyan]      → docs/commands/\n"
+                "    [cyan]generate_api_index.py[/cyan]         → dev/API_INDEX.md\n"
+                "    [cyan]generate_code_map.py[/cyan]          → dev/CODE_MAP.md\n\n"
+                "  Caches are invalidated automatically — changes are live without restart.\n"
+                "  Run [bold]docs update[/bold] first if you want fresh specs.\n"
+            )
+
+        elif cmd == "command-structure":
+            console.print(f"  [bold yellow]command-structure[/bold yellow]  — manage contextual ? help specs\n")
+            _row("command-structure list",          "Show all enabled commands + their help spec tier")
+            _row("command-structure list ?",        "Explain what each tier means")
+            _row("command-structure update",        "Auto-generate help specs for all commands missing one")
+            _row("command-structure update <cmd>",  "Generate help spec for one specific command")
+            _row("command-structure clear",         "Wipe the auto-generated specs file and start fresh")
+            console.print()
+            console.print(
+                "  [dim]After enabling a new feature, run [bold]command-structure update[/bold]\n"
+                "  to give that command full field-by-field ? help.\n"
+                "  Generated specs go in [bold]settings/command-structure-generated.json[/bold].\n"
+                "  For richer metadata (choices, hints), edit [bold]settings/command-structure.json[/bold].[/dim]"
+            )
+
+        elif cmd == "command-structure" and sub == "list":
+            console.print(f"  [bold yellow]command-structure list[/bold yellow]  — help spec coverage\n")
+            self._cs_tier_legend()
+
+        elif cmd == "status":
+            console.print(f"  [bold yellow]status[/bold yellow]  — dev shell health dashboard\n")
+            console.print(
+                "  Shows at a glance:\n"
+                "    • [bold]Docs[/bold]     — how old the last pan.dev spec pull is\n"
+                "    • [bold]Features[/bold] — count of on / dev / off feature flags\n"
+                "    • [bold]Help spec[/bold]— how many enabled commands have contextual ? help\n"
+                "    • [bold]Git[/bold]      — whether there are uncommitted changes\n"
+            )
+        else:
+            self._dev_shell_help()
+
+        console.print()
+
+    def _dev_shell_help(self) -> None:
+        """Print full dev shell command reference."""
+        t = self._theme
+        w = 36
+        console.print()
+        console.print(
+            "  [magenta bold]DEV SHELL COMMANDS[/magenta bold]  "
+            "[dim]— type <command> ? for detailed help[/dim]\n"
+        )
+        rows = [
+            ("status",                              "Health dashboard — docs age, feature counts, help coverage, git"),
+            ("docs update [--scm|--panos]",         "Pull latest pan.dev specs + regenerate all catalogs"),
+            ("docs status",                         "Last pull date, spec ages, CHANGES.md summary"),
+            ("catalog rebuild",                     "Regenerate code artifacts from pulled specs (no network)"),
+            ("command-structure list",              "Show all enabled commands and their contextual ? help tier"),
+            ("command-structure update [<cmd>]",    "Auto-generate ? help specs for commands that are missing one"),
+            ("command-structure clear",             "Wipe auto-generated specs (reset to usage-string fallback)"),
+            ("exit",                                "Leave dev shell (restores normal prompt)"),
+        ]
+        for cmd, desc in rows:
+            console.print(
+                f"  {self._styled(f'{cmd:<{w}}', t.command_name)} "
+                f"{self._styled(desc, t.description_dim)}"
+            )
+        console.print()
+        console.print(
+            "  [dim]Regular ARC commands (show, cd, feature …) work here too.\n"
+            "  Type any command followed by [bold]?[/bold] for contextual help.[/dim]"
+        )
+        console.print()
+
+    def _cs_tier_legend(self) -> None:
+        """Print the tier legend for command-structure list."""
+        t = self._theme
+        w = 16
+        console.print(
+            "  [bold yellow]HELP SPEC TIERS[/bold yellow]  "
+            "[dim]— how each command gets its contextual ? help[/dim]\n"
+        )
+        tiers = [
+            ("hand-curated",  "green",  "settings/command-structure.json",
+             "Best quality. You wrote the field order and the field metadata\n"
+             "    (choices, hints, required flags) is in command_structure.py.\n"
+             "    update/delete variants are auto-derived from the set entry."),
+            ("cli-generated", "cyan",   "settings/command-structure-generated.json",
+             "Run 'command-structure update' to generate this. Parses the\n"
+             "    command's usage string and writes inline arg specs. Good enough\n"
+             "    for most commands. Promote to hand-curated for richer metadata."),
+            ("openapi-spec",  "blue",   "app/settings/field_catalog.py",
+             "Auto-generated from the SCM OpenAPI specs by docsupdate.\n"
+             "    Covers generated 'set cngfw ...' commands. Regenerated by\n"
+             "    'catalog rebuild' after 'docs update'."),
+            ("usage-parsed",  "yellow", "(runtime only, not persisted)",
+             "Fallback: the usage string on the CommandDef is parsed at\n"
+             "    runtime. Works for simple commands. Run 'command-structure\n"
+             "    update' to promote these to cli-generated (persisted)."),
+            ("NO SPEC",       "red",    "(none)",
+             "No help spec found and no usage string to parse. ? shows\n"
+             "    only the command description. Run 'command-structure update'\n"
+             "    — if usage= is missing, add it to the CommandDef first."),
+        ]
+        for label, color, source, explanation in tiers:
+            console.print(
+                f"  [{color}]{label:<{w}}[/{color}]  "
+                f"[dim]source: {source}[/dim]"
+            )
+            for line in explanation.split("\n"):
+                console.print(f"  [dim]{line}[/dim]")
+            console.print()
+
+
+
+    # ------------------------------------------------------------------
+    # dev status
+    # ------------------------------------------------------------------
+
+    def _dev_status(self) -> None:  # noqa: C901
+        """Unified health dashboard for the dev shell."""
+        import re as _re
+        import time as _time
+        import subprocess as _sp
+        from app.commands.registry import COMMANDS
+        from app.settings.features import is_enabled
+        from app.settings import command_structure as cs
+        from app.paths import REPO_ROOT, COMMAND_STRUCTURE_GENERATED_JSON
+
+        console.print()
+        console.print("  [magenta bold]ARC DEV STATUS[/magenta bold]\n")
+
+        # ── docs freshness — parse pull date from MANIFEST.md ─────────
+        manifest = REPO_ROOT / "docs" / "scm-api" / "MANIFEST.md"
+        specs_dir = REPO_ROOT / "docs" / "scm-api" / "specs"
+        if manifest.exists():
+            txt = manifest.read_text(encoding="utf-8")
+            m = _re.search(r"Pulled on (\d{4}-\d{2}-\d{2})", txt)
+            pull_date = m.group(1) if m else "unknown"
+            specs = list(specs_dir.glob("*.yaml")) if specs_dir.exists() else []
+            if specs:
+                newest_mtime = max(s.stat().st_mtime for s in specs)
+                age_h = (_time.time() - newest_mtime) / 3600
+                age_str = f"{age_h:.0f}h ago" if age_h < 48 else f"{age_h/24:.0f}d ago"
+                color = "green" if age_h < 72 else "yellow" if age_h < 168 else "red"
+                console.print(
+                    f"  [bold]Docs[/bold]     Last pulled [bold]{pull_date}[/bold]  "
+                    f"[{color}]({age_str})[/{color}]  "
+                    f"[dim]{len(specs)} spec files[/dim]"
+                )
+            else:
+                console.print(f"  [bold]Docs[/bold]     Last pulled [bold]{pull_date}[/bold]  "
+                              "[dim](no spec files found)[/dim]")
+        else:
+            console.print("  [bold]Docs[/bold]     [red]not pulled yet[/red]  "
+                          "[dim]run: docs update[/dim]")
+
+        # ── feature coverage ──────────────────────────────────────────
+        all_flags = list(self._features.keys())
+        on_flags  = [f for f in all_flags if is_enabled(self._features, f, False)]
+        dev_flags = [f for f in all_flags if feature_state(self._features, f) == "dev"]
+        off_flags = [f for f in all_flags if not is_enabled(self._features, f, True)]
+        console.print(
+            f"  [bold]Features[/bold] [green]{len(on_flags)} enabled[/green]  "
+            f"[yellow]{len(dev_flags)} dev-only[/yellow]  "
+            f"[dim]{len(off_flags)} off  ({len(all_flags)} total)[/dim]"
+        )
+
+        # ── command-structure coverage ────────────────────────────────
+        cs.invalidate_cache()
+        enabled = [
+            k for k in COMMANDS
+            if COMMANDS[k].feature_flag
+            and is_enabled(self._features, COMMANDS[k].feature_flag, self._dev_mode)
+        ]
+        tiers = {k: self._cs_tier(k) for k in enabled}
+        t1  = sum(1 for v in tiers.values() if v == "1")
+        t1g = sum(1 for v in tiers.values() if v == "1g")
+        t2  = sum(1 for v in tiers.values() if v == "2")
+        t3  = sum(1 for v in tiers.values() if v == "3")
+        tn  = sum(1 for v in tiers.values() if v == "-")
+        need_update = t3 + tn
+        console.print(
+            f"  [bold]Help spec[/bold] [green]{t1} hand-curated[/green]  "
+            f"[cyan]{t1g} cli-generated[/cyan]  "
+            f"[blue]{t2} openapi[/blue]  "
+            f"[yellow]{t3} usage-parsed[/yellow]  "
+            f"[red]{tn} none[/red]  "
+            f"[dim]({len(enabled)} enabled commands)[/dim]"
+        )
+        if need_update > 0:
+            console.print(
+                f"  [dim]  → {need_update} command(s) can be improved: "
+                "run [bold]command-structure update[/bold][/dim]"
+            )
+
+        # ── git status ────────────────────────────────────────────────
+        result = _sp.run(["git", "status", "--short"], capture_output=True, text=True,
+                         cwd=str(REPO_ROOT))
+        changed = [l for l in result.stdout.splitlines() if l.strip()]
+        if changed:
+            console.print(
+                f"  [bold]Git[/bold]      [yellow]{len(changed)} uncommitted change(s)[/yellow]  "
+                f"[dim](run 'git status' for details)[/dim]"
+            )
+        else:
+            console.print("  [bold]Git[/bold]      [green]working tree clean[/green]")
+
+        console.print()
+        console.print(
+            "  [dim]Type [bold]docs status[/bold] for spec-by-spec ages  |  "
+            "[bold]command-structure list[/bold] for full help coverage  |  "
+            "[bold]?[/bold] for all dev commands[/dim]"
+        )
+        console.print()
+
+    # ------------------------------------------------------------------
+    # dev docs
+    # ------------------------------------------------------------------
+
+    def _dev_docs(self, args: list[str]) -> None:
+        """Handle dev-shell 'docs' sub-commands."""
+        sub = args[0].lower() if args else "?"
+        if sub in ("?", "help"):
+            self._dev_inline_help(["docs"])
+        elif sub == "update":
+            self._dev_docs_update(args[1:])
+        elif sub == "status":
+            self._dev_docs_status()
+        else:
+            console.print(f"[yellow]Unknown docs sub-command:[/yellow] {sub!r}  "
+                         "(try: docs update | docs status | docs ?)")
+
+    def _dev_docs_update(self, flags: list[str]) -> None:
+        """Stream docsupdate.py to pull latest pan.dev specs and regenerate catalogs."""
+        import sys as _sys
+        import subprocess as _sp
+        from app.paths import REPO_ROOT
+
+        script = REPO_ROOT / "dev" / "docsupdate.py"
+        if not script.exists():
+            console.print("[red]dev/docsupdate.py not found.[/red]")
             return
-        self._print_dev_status()
+
+        extra: list[str] = []
+        lf = [f.lower() for f in flags]
+        if "--scm" in lf:
+            extra += ["--scm-only"]
+        elif "--panos" in lf:
+            extra += ["--panos-only"]
+
+        console.print(
+            f"\n[magenta]● docs update[/magenta]  "
+            f"[dim]running dev/docsupdate.py … (30–120 s)[/dim]\n"
+        )
+        try:
+            proc = _sp.Popen(
+                [_sys.executable, str(script)] + extra,
+                stdout=_sp.PIPE, stderr=_sp.STDOUT,
+                text=True, bufsize=1, cwd=str(REPO_ROOT),
+            )
+            assert proc.stdout
+            for raw_line in proc.stdout:
+                console.print(raw_line.rstrip())
+            rc = proc.wait()
+        except Exception as exc:
+            console.print(f"[red]Failed to run docsupdate.py:[/red] {exc}")
+            return
+
+        if rc == 0:
+            console.print("\n[green]✓ docs update complete.[/green]  "
+                         "[dim]Run [bold]catalog rebuild[/bold] to regenerate code artifacts.[/dim]\n")
+        else:
+            console.print(f"\n[yellow]docsupdate.py exited with code {rc}[/yellow]\n")
+
+    def _dev_docs_status(self) -> None:
+        """Show doc/spec freshness with last pull date from MANIFEST.md."""
+        import re as _re
+        import time as _time
+        from app.paths import REPO_ROOT
+        from app.docs import page_length
+
+        manifest  = REPO_ROOT / "docs" / "scm-api" / "MANIFEST.md"
+        specs_dir = REPO_ROOT / "docs" / "scm-api" / "specs"
+        changes   = REPO_ROOT / "docs" / "scm-api" / "CHANGES.md"
+
+        lines: list[str] = []
+
+        # ── last pull date ────────────────────────────────────────────
+        if manifest.exists():
+            txt = manifest.read_text(encoding="utf-8")
+            m = _re.search(r"Pulled on (\d{4}-\d{2}-\d{2})", txt)
+            pull_date = m.group(1) if m else "unknown"
+            lines.append(f"  [bold]Last pulled:[/bold] [green]{pull_date}[/green]")
+        else:
+            lines.append("  [red]MANIFEST.md not found — run 'docs update' first.[/red]")
+
+        # ── spec file ages ────────────────────────────────────────────
+        if specs_dir.exists():
+            specs = sorted(specs_dir.glob("*.yaml"))
+            lines.append(f"\n  [bold]SCM Specs[/bold]  ({len(specs)} files)\n")
+            now = _time.time()
+            for s in specs:
+                age_h = (now - s.stat().st_mtime) / 3600
+                age_str = f"{age_h:.0f}h" if age_h < 48 else f"{age_h/24:.1f}d"
+                color = "green" if age_h < 72 else "yellow" if age_h < 168 else "red"
+                lines.append(f"    [{color}]{age_str:>7}[/{color}]  {s.name}")
+        else:
+            lines.append("\n  [red]docs/scm-api/specs/ not found — run 'docs update'[/red]")
+
+        # ── CHANGES.md ────────────────────────────────────────────────
+        if changes.exists():
+            lines.append("\n  [bold]CHANGES.md[/bold]\n")
+            for line in changes.read_text(encoding="utf-8").splitlines():
+                lines.append(f"  {line}")
+
+        output = "\n".join(lines) + "\n"
+        pg = page_length()
+        if pg > 0 and len(lines) > pg:
+            with console.pager(styles=True):
+                console.print(output)
+        else:
+            console.print()
+            console.print(output)
+
+    # ------------------------------------------------------------------
+    # dev catalog
+    # ------------------------------------------------------------------
+
+    def _dev_catalog(self, args: list[str]) -> None:
+        """Handle dev-shell 'catalog' sub-commands."""
+        sub = args[0].lower() if args else "rebuild"
+        if sub in ("rebuild", "regen", "update"):
+            self._dev_catalog_rebuild()
+        elif sub in ("?", "help"):
+            self._dev_inline_help(["catalog"])
+        else:
+            console.print(f"[yellow]Unknown catalog sub-command:[/yellow] {sub!r}  "
+                         "(try: catalog rebuild | catalog ?)")
+
+    def _dev_catalog_rebuild(self) -> None:  # noqa: C901
+        """Run all generator scripts to rebuild code artifacts."""
+        import sys as _sys
+        import subprocess as _sp
+        from app.paths import REPO_ROOT
+        from app.settings import command_structure as cs
+
+        scripts = [
+            ("dev/generate_resource_catalog.py",  "resource catalog    → app/commands/resource_catalog.py"),
+            ("dev/generate_feature_flags.py",      "feature flags       → settings/features/"),
+            ("dev/generate_field_library.py",      "field library       → app/settings/field_catalog.py"),
+            ("dev/generate_command_docs.py",       "command docs        → docs/commands/"),
+            ("dev/generate_api_index.py",          "API index           → dev/API_INDEX.md"),
+            ("dev/generate_code_map.py",           "code map            → dev/CODE_MAP.md"),
+        ]
+
+        console.print("\n[magenta]● catalog rebuild[/magenta]\n")
+        all_ok = True
+        for script_rel, label in scripts:
+            p = REPO_ROOT / script_rel
+            if not p.exists():
+                console.print(f"  [dim]skip  {label}  (script not found)[/dim]")
+                continue
+            result = _sp.run(
+                [_sys.executable, str(p)],
+                capture_output=True, text=True, cwd=str(REPO_ROOT),
+            )
+            if result.returncode == 0:
+                out_lines = [l for l in result.stdout.splitlines() if l.strip()]
+                summary = out_lines[-1] if out_lines else "ok"
+                console.print(f"  [green]✓[/green]  {label}  [dim]{summary}[/dim]")
+            else:
+                all_ok = False
+                console.print(f"  [red]✗[/red]  {label}  [red](exit {result.returncode})[/red]")
+                for line in (result.stderr or result.stdout).splitlines()[-5:]:
+                    console.print(f"       [dim]{line}[/dim]")
+
+        cs.invalidate_cache()
+        try:
+            from app.settings.features import _reload_cache
+            _reload_cache()
+        except Exception:
+            pass
+
+        console.print()
+        if all_ok:
+            console.print(
+                "[green]✓ catalog rebuild complete.[/green]  "
+                "[dim]Changes are live immediately — no restart needed.[/dim]\n"
+            )
+        else:
+            console.print(
+                "[yellow]catalog rebuild finished with errors — check output above.[/yellow]\n"
+            )
+
+
 
     def _print_dev_status(self) -> None:
-        """Print the current development-mode state and the dev-flag count."""
+        """Print current dev mode state (used by 'dev on/off' outside the shell)."""
         dev_flags = [f for f in self._features if feature_state(self._features, f) == "dev"]
-        if self._dev_mode:
+        if self._dev_mode or self._state.dev_shell:
             console.print(
                 f"[magenta]● Development mode ON[/magenta] — "
-                f"{len(dev_flags)} dev command group(s) now visible.  "
-                f"[dim]Type 'dev off' to hide them again.[/dim]"
+                f"{len(dev_flags)} dev command group(s) visible.  "
+                f"[dim]Type 'dev' to enter dev shell.[/dim]"
             )
         else:
             console.print(
                 f"[dim]○ Development mode OFF[/dim] — "
                 f"{len(dev_flags)} dev command group(s) hidden.  "
-                f"[dim]Type 'dev' to reveal them.[/dim]"
+                f"[dim]Type 'dev' to enter dev shell.[/dim]"
             )
+
 
     def _cmd_setup(self, args: list[str]) -> None:  # noqa: C901 (acceptable complexity)
         """Interactive credential setup wizard.

@@ -13,7 +13,7 @@ from app.shell._base import *  # noqa: F401,F403  (shared spine namespace)
 # Commands that own the terminal (interactive sessions, screen control) —
 # capturing their output for a pipe filter would break them.
 _PIPE_UNSUPPORTED = {
-    "connect", "remote", "configure", "conf", "setup",
+    "connect", "configure", "conf", "setup",
     "clear", "docs", "exit", "quit", "dev",
 }
 
@@ -103,8 +103,14 @@ class DispatchMixin:
             rest = tokens[1] if len(tokens) > 1 else ""
         command_line = rest.strip()
         first = command_line.split()[0].lower() if command_line.split() else ""
-        if not first:
-            console.print("[yellow]Usage:[/yellow] watch [seconds] <command>")
+
+        if not first or first in ("?", "help"):
+            console.print(
+                "[yellow]Usage:[/yellow] watch [seconds] <command>\n"
+                "  [dim]watch show interfaces          — repeat every 10 s\n"
+                "  watch 5 show bgp-peers            — repeat every 5 s\n"
+                "  watch 30 show security policy     — repeat every 30 s[/dim]"
+            )
             return False
         if first in _PIPE_UNSUPPORTED or first == "watch":
             console.print(f"[yellow]'{first}' is interactive — watch doesn't apply.[/yellow]")
@@ -203,6 +209,13 @@ class DispatchMixin:
         ``+``-prefixed lines (multi-line entries have several). Anything else
         (timestamps, comments) is ignored — parse defensively, never raise.
         """
+        if rest and rest[0] in ("?", "help"):
+            console.print(
+                "\n  [bold]history[/bold]  — show recent commands\n\n"
+                "  [cyan]history[/cyan]        Show last 20 commands\n"
+                "  [cyan]history <n>[/cyan]    Show last n commands  [dim](e.g. history 50)[/dim]\n"
+            )
+            return
         count = 20
         if rest:
             if not rest[0].isdigit() or int(rest[0]) < 1:
@@ -245,6 +258,19 @@ class DispatchMixin:
         with another alias name is NOT re-expanded).
         """
         aliases = self._prefs.aliases
+
+        if rest and rest[0] in ("?", "help"):
+            console.print(
+                "\n  [bold]alias[/bold]  — user-defined command shortcuts\n\n"
+                "  [cyan]alias[/cyan]                      List all defined aliases\n"
+                "  [cyan]alias <name> <expansion>[/cyan]   Create an alias\n"
+                "  [cyan]alias <name>[/cyan]               Show one alias\n"
+                "  [cyan]alias delete <name>[/cyan]        Remove an alias\n\n"
+                "  [dim]Example:  alias sap  show address  →  type 'sap' runs 'show address'\n"
+                "  Aliases expand once at dispatch — cannot be recursive.\n"
+                "  Cannot shadow built-in commands or registered command words.[/dim]\n"
+            )
+            return
 
         if not rest:
             if not aliases:
@@ -385,11 +411,19 @@ class DispatchMixin:
             if expansion:
                 line = expansion + (" " + remainder if remainder else "")
 
+        # Dev shell — intercept dev-shell commands before normal dispatch.
+        if self._state.dev_shell:
+            handled = self._dispatch_dev_shell(line)
+            if handled is not None:
+                return handled
+
         # `watch [N] <command>` — re-run every N seconds until Ctrl-C.
         # Parsed before pipe filters so the whole pipeline is re-run each tick.
+        # `watch ?` and `watch help` are intercepted and show usage instead.
         watch_tokens = line.split()
-        if watch_tokens and watch_tokens[0].lower() == "watch" and len(watch_tokens) > 1:
-            return self._cmd_watch(line.split(None, 1)[1])
+        if watch_tokens and watch_tokens[0].lower() == "watch":
+            rest = line.split(None, 1)[1] if len(watch_tokens) > 1 else ""
+            return self._cmd_watch(rest)
 
         # PAN-OS style output filtering: <command> | match <pat> | count …
         head, pipe_spec = split_pipe_line(line)
@@ -463,7 +497,11 @@ class DispatchMixin:
 
                 # Special case: `set ?` / `set <sub> ?` in configure mode.
                 if prefix_tokens[0].lower() == "set" and self._state.configure_mode:
-                    self._cmd_set(prefix_tokens[1:] + ["?"])
+                    if len(prefix_tokens) == 1:
+                        # bare `set ?` — show full registry listing
+                        self._cmd_show_write_help("set")
+                    else:
+                        self._cmd_set(prefix_tokens[1:] + ["?"])
                     return False
                 # Special case: `delete ?` in configure mode.
                 if prefix_tokens[0].lower() == "delete" and self._state.configure_mode:
@@ -477,6 +515,20 @@ class DispatchMixin:
                 if prefix_tokens[0].lower() == "feature":
                     self._cmd_feature(prefix_tokens[1:] + ["?"])
                     return False
+                # Special case: `terminal ?` / `terminal length ?` etc.
+                if prefix_tokens[0].lower() == "terminal":
+                    self._cmd_terminal(prefix_tokens[1:] + ["?"])
+                    return False
+                # Special case: `alias ?`, `history ?`, `find ?`
+                if prefix_tokens[0].lower() == "alias":
+                    self._cmd_alias(["?"])
+                    return False
+                if prefix_tokens[0].lower() == "history":
+                    self._cmd_history(["?"])
+                    return False
+                if prefix_tokens[0].lower() in ("find",):
+                    self._cmd_find(["?"])
+                    return False
                 # General case: prefix help for registered commands.
                 self._cmd_help_inline(prefix_tokens)
                 return False
@@ -486,9 +538,10 @@ class DispatchMixin:
 
         # ---- exit / quit ----
         if cmd in ("exit", "quit"):
+            if self._state.dev_shell:
+                self._dev_shell_exit()
+                return False
             if self._state.configure_mode:
-                # Uncommitted candidate changes? Force a commit/abandon/cancel
-                # decision so nothing is silently left staged in SCM.
                 if not self._confirm_configure_exit():
                     return False
                 self._state.configure_mode = False
@@ -558,11 +611,14 @@ class DispatchMixin:
             self._cmd_connect(tokens[1:])
             return False
 
-        if cmd == "remote":
-            self._cmd_connect(tokens[1:], require_target=True)
-            return False
-
         if cmd == "folder":
+            if not self._state.configure_mode:
+                console.print(
+                    "[yellow]The folder command requires configure mode.[/yellow]\n"
+                    "  Enter [bold]configure[/bold] first, or use "
+                    "[bold]cd folder <name>[/bold] to switch folders."
+                )
+                return False
             self._cmd_folder(tokens[1:])
             return False
 

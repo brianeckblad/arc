@@ -1,32 +1,30 @@
 """Loader for the per-command argument *order* that drives Tab completion.
 
-The user-facing file is intentionally tiny and curated:
-``settings/command-structure.json`` lists, for selected friendly commands, just
-the **fields in the order you type them** — nothing else.  One entry per curated
-``set <object>`` command::
+``settings/command-structure.json`` lists, for curated commands, the
+**fields in the order you type them**.  Keys can be full command strings
+(preferred) or bare object names that are implicitly prefixed with ``set``:
 
     {
-      "address": ["name", "type", "value", "description", "tag"]
+      "set address":       ["name", "type", "value", "description", "tag"],
+      "set address-group": ["name", "type", "value", "description", "tag"],
+      "update address":    ["name", "type", "value"],
+      "delete address":    ["name"]
     }
 
-Reorder a command by moving the field names in the array.  Everything else — which
-field is a fixed choice (and what the choices are), which are required, the Tab
-hints — is *not* in the JSON.  It comes from the code-side field library below
-(seeded from the SCM API schema), keyed by ``(object, field)`` with a generic
-fallback by field name.  So a non-programmer only ever touches field order.
+Bare object keys (legacy) are still supported and get the ``set `` prefix.
 
-The loader compiles each entry into the internal shape the completer consumes: an
-ordered list of arg dicts with keys ``name``, ``kind`` (``value`` | ``choice`` |
-``keyword``), ``required`` (bool), ``choices`` (list), ``choice_hints`` (dict),
-``hint`` and optional ``value_hint``.
+Reorder a command by moving field names.  Everything else — choices,
+required flags, Tab hints — comes from ``_FIELD_LIBRARY`` / ``_GENERIC_FIELDS``
+below.  A non-programmer only ever touches the JSON field lists.
 
-Generated OpenAPI commands are intentionally **not** all copied into this JSON.
-They use each command's ``usage`` string instead (for example generic writes
-offer ``json|file <payload-or-path>``).  Add a JSON entry only when a command has a
-curated, human-friendly parser that is better than the generic generated form.
+``update <obj>`` and ``delete <obj>`` entries are auto-derived from ``set <obj>``
+when not explicitly listed: update reuses the same fields; delete uses only
+``name``.
 
-Any missing/malformed file leaves every command on its usage-string fallback,
-so the shell always starts cleanly.
+Generated OpenAPI commands use the field_catalog instead.  Add a JSON entry
+when you want a curated parser that beats the generated form.
+
+Any missing/malformed file falls back to usage-string completion.
 """
 
 from __future__ import annotations
@@ -35,7 +33,7 @@ import json
 import logging
 from dataclasses import dataclass, field
 
-from app.paths import COMMAND_STRUCTURE_JSON
+from app.paths import COMMAND_STRUCTURE_JSON, COMMAND_STRUCTURE_GENERATED_JSON
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +56,7 @@ _cache: dict[str, dict] | None = None
 # Per-(object, field) definitions.  Keys are the object name (JSON key) and
 # the field name (array elements in the JSON).
 _FIELD_LIBRARY: dict[tuple[str, str], dict] = {
+    # ── address ──────────────────────────────────────────────────────────────
     ("address", "name"): {
         "kind": "value", "required": True,
         "hint": "Enter a unique name for the address object",
@@ -76,6 +75,108 @@ _FIELD_LIBRARY: dict[tuple[str, str], dict] = {
     ("address", "value"): {
         "kind": "value", "required": True,
         "hint": "Enter the value for the chosen type (e.g. 10.1.2.3/32)",
+    },
+    # ── address-group ────────────────────────────────────────────────────────
+    ("address-group", "name"): {
+        "kind": "value", "required": True,
+        "hint": "Enter a unique name for the address group",
+    },
+    ("address-group", "type"): {
+        "kind": "choice", "required": True,
+        "choices": ["static", "dynamic"],
+        "choice_hints": {
+            "static":  "Explicit list of address objects",
+            "dynamic": "Tag-based match expression",
+        },
+        "hint": "Group type",
+    },
+    ("address-group", "value"): {
+        "kind": "value", "required": True,
+        "hint": "static: space-separated address names  |  dynamic: tag match expression",
+    },
+    # ── tag ──────────────────────────────────────────────────────────────────
+    ("tag", "name"): {
+        "kind": "value", "required": True,
+        "hint": "Enter a unique name for the tag",
+    },
+    ("tag", "color"): {
+        "kind": "keyword", "required": False,
+        "choices": [
+            "Red", "Orange", "Yellow", "Green", "Cyan", "Blue", "Violet",
+            "Magenta", "Brown", "Olive", "Maroon", "Black", "White",
+            "Gold", "Light Green", "Lime", "Forest Green", "Turquoise Blue",
+            "Azure Blue", "Cerulean Blue", "Medium Blue", "Cobalt Blue",
+            "Lavender Blue", "Light Gray", "Medium Gray",
+        ],
+        "hint": "Tag colour (e.g. Red, Blue, Gold)",
+        "value_hint": "Enter a colour name (Red, Orange, Green, Blue, …)",
+    },
+    ("tag", "comments"): {
+        "kind": "keyword", "required": False,
+        "hint": "Optional comments",
+        "value_hint": "Enter optional comments",
+    },
+    # ── service ──────────────────────────────────────────────────────────────
+    ("service", "name"): {
+        "kind": "value", "required": True,
+        "hint": "Enter a unique name for the service",
+    },
+    ("service", "protocol"): {
+        "kind": "choice", "required": True,
+        "choices": ["tcp", "udp"],
+        "choice_hints": {
+            "tcp": "TCP service",
+            "udp": "UDP service",
+        },
+        "hint": "Choose the IP protocol",
+    },
+    ("service", "port"): {
+        "kind": "value", "required": True,
+        "hint": "Destination port or range (e.g. 80, 8080-8090, 80,443)",
+    },
+    ("service", "source-port"): {
+        "kind": "keyword", "required": False,
+        "hint": "Source port or range (e.g. 1024-65535)",
+        "value_hint": "Enter source port or range",
+    },
+    # ── service-group ────────────────────────────────────────────────────────
+    ("service-group", "name"): {
+        "kind": "value", "required": True,
+        "hint": "Enter a unique name for the service group",
+    },
+    ("service-group", "members"): {
+        "kind": "value", "required": True,
+        "hint": "Space-separated service object names (must already exist)",
+    },
+    # ── external-dynamic-list ────────────────────────────────────────────────
+    ("external-dynamic-list", "name"): {
+        "kind": "value", "required": True,
+        "hint": "Enter a unique name for the EDL",
+    },
+    ("external-dynamic-list", "type"): {
+        "kind": "choice", "required": True,
+        "choices": ["ip", "domain", "url"],
+        "choice_hints": {
+            "ip":     "List of IP addresses / CIDRs",
+            "domain": "List of domain names",
+            "url":    "List of URLs",
+        },
+        "hint": "EDL content type",
+    },
+    ("external-dynamic-list", "url"): {
+        "kind": "keyword", "required": True,
+        "hint": "URL to fetch the list from (must be reachable by the firewall)",
+        "value_hint": "https://example.com/list.txt",
+    },
+    # ── url-category ─────────────────────────────────────────────────────────
+    ("url-category", "name"): {
+        "kind": "value", "required": True,
+        "hint": "Enter a unique name for the URL category",
+    },
+    ("url-category", "list"): {
+        "kind": "keyword", "required": True,
+        "hint": "Space-separated URLs to include in this category",
+        "value_hint": "Enter one or more URLs",
     },
 }
 
@@ -132,31 +233,82 @@ def _resolve_field(obj: str, field: str) -> dict:
     return arg
 
 
-def _load_json() -> dict[str, dict]:
-    """Parse the JSON structure file (``{object: [field, field, ...]}``) into command arg specs.
+def _resolve_arg(obj: str, item) -> dict:
+    """Resolve one arg item — either a field name string or an inline arg dict."""
+    if isinstance(item, str):
+        return _resolve_field(obj, item.strip())
+    if isinstance(item, dict) and "name" in item:
+        return dict(item)
+    return {"name": str(item), "kind": "value", "required": True, "hint": f"Enter {item}"}
 
-    Each entry becomes one ``set <object>`` command whose ordered arguments are
-    resolved through the field library. Keys starting with ``_`` are treated as
-    comments and ignored.
+
+def _load_json() -> dict[str, dict]:
+    """Parse ``settings/command-structure.json`` into command arg specs.
+
+    Key formats accepted:
+    - Full command key  ``"set address-group": [...]``  → used as-is
+    - Bare object name  ``"address": [...]``  → prefixed with ``set ``
+
+    Value formats accepted:
+    - List of strings  → resolved via _FIELD_LIBRARY (human-editable)
+    - List of dicts    → used inline (written by command-structure update)
+
+    Keys starting with ``_`` are comments and skipped.
+    Auto-derives ``update <obj>`` and ``delete <obj>`` from each ``set <obj>``.
     """
     structure: dict[str, dict] = {}
     raw = json.loads(COMMAND_STRUCTURE_JSON.read_text(encoding="utf-8"))
     if not isinstance(raw, dict):
         return {}
-    
-    for obj, fields in raw.items():
-        # Skip underscore-prefixed keys (comments/metadata)
-        if obj.startswith("_"):
+
+    for key, fields in raw.items():
+        if key.startswith("_") or not isinstance(fields, list) or not fields:
             continue
-        # Expect an array of field names
-        if not isinstance(fields, list):
-            continue
-        field_names = [f.strip() for f in fields if isinstance(f, str) and f.strip()]
-        if not field_names:
-            continue
-        structure[f"set {obj}"] = {"args": [_resolve_field(obj, f) for f in field_names]}
-    
+        if " " in key:
+            cmd_key = key
+            obj = key.split()[-1]
+        else:
+            cmd_key = f"set {key}"
+            obj = key
+        structure[cmd_key] = {"args": [_resolve_arg(obj, f) for f in fields]}
+
+    set_entries = {k: v for k, v in structure.items() if k.startswith("set ")}
+    for set_key, entry in set_entries.items():
+        obj = set_key[4:]
+        update_key = f"update {obj}"
+        delete_key = f"delete {obj}"
+        if update_key not in structure:
+            structure[update_key] = entry
+        if delete_key not in structure:
+            name_only = [a for a in entry["args"] if a["name"] == "name"]
+            if name_only:
+                structure[delete_key] = {"args": name_only}
+
     return structure
+
+
+def _load_generated_json() -> dict[str, dict]:
+    """Load ``settings/command-structure-generated.json`` written by the CLI.
+
+    Stores inline arg dicts written by ``command-structure update``.
+    Missing file is silently ignored.
+    """
+    if not COMMAND_STRUCTURE_GENERATED_JSON.exists():
+        return {}
+    try:
+        raw = json.loads(COMMAND_STRUCTURE_GENERATED_JSON.read_text(encoding="utf-8"))
+        if not isinstance(raw, dict):
+            return {}
+        result: dict[str, dict] = {}
+        for key, fields in raw.items():
+            if key.startswith("_") or not isinstance(fields, list) or not fields:
+                continue
+            obj = key.split()[-1] if " " in key else key
+            result[key] = {"args": [_resolve_arg(obj, f) for f in fields]}
+        return result
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        logger.warning("command-structure-generated parse error: %s", exc)
+        return {}
 
 
 def _generated_entries() -> dict[str, dict]:
@@ -180,18 +332,25 @@ def _generated_entries() -> dict[str, dict]:
 
 
 def load_command_structure() -> dict[str, dict]:
-    """Return ``{command_key: entry}`` — generated catalog + hand-written JSON.
+    """Return ``{command_key: entry}`` — priority: hand JSON > generated JSON > field_catalog.
 
-    The hand-written ``settings/command-structure.json`` always wins over the
-    generated field catalog for the same command key.  Any read/parse failure
-    degrades to whichever source still loads (worst case ``{}`` — completion
-    falls back to usage strings).
+    Priority (highest wins):
+      1. ``settings/command-structure.json``           — hand-curated
+      2. ``settings/command-structure-generated.json`` — written by ``command-structure update``
+      3. ``app/settings/field_catalog.py``             — auto-generated from OpenAPI specs
+
+    Any read/parse failure degrades gracefully; worst case ``{}`` causes
+    ``arg_spec()`` to fall back to the usage-string parser.
     """
     global _cache
     if _cache is not None:
         return _cache
 
+    # Layer 3: OpenAPI auto-generated (lowest priority)
     structure: dict[str, dict] = _generated_entries()
+    # Layer 2: CLI-generated (command-structure update)
+    structure.update(_load_generated_json())
+    # Layer 1: Hand-curated (highest priority)
     try:
         if COMMAND_STRUCTURE_JSON.exists():
             structure.update(_load_json())
@@ -202,17 +361,156 @@ def load_command_structure() -> dict[str, dict]:
     return structure
 
 
+def _parse_usage_spec(command_key: str, usage: str) -> list[dict] | None:
+    """Derive a basic arg spec from a CommandDef ``usage`` string.
+
+    Parses the portion of the usage string *after* the command key tokens and
+    produces a list of arg dicts compatible with ``help_options`` / ``_walk``.
+
+    Recognised patterns (PAN-OS-style):
+      ``<name>``                  → required value
+      ``[keyword <value>]``       → optional keyword
+      ``choice1|choice2``         → required choice (no brackets)
+      ``[choice1|choice2]``       → optional choice
+      ``<range>``  e.g. ``<0-4>`` → required value (with range hint)
+
+    Returns ``None`` when the usage string is absent, trivial, or cannot be
+    meaningfully parsed (so the caller falls back to plain inline help).
+    """
+    import re as _re
+
+    if not usage:
+        return None
+
+    # Strip the command key prefix from the usage string.
+    suffix = usage
+    for tok in command_key.split():
+        suffix = suffix.lstrip()
+        if suffix.lower().startswith(tok.lower()):
+            suffix = suffix[len(tok):]
+    suffix = suffix.strip()
+
+    if not suffix:
+        return None  # command takes no args — nothing to show
+
+    args: list[dict] = []
+    # Tokenise into top-level chunks: bracket groups or bare words.
+    # We walk char-by-char to handle nested brackets correctly.
+    chunks: list[str] = []
+    depth = 0
+    current: list[str] = []
+    for ch in suffix:
+        if ch == "[":
+            if depth == 0 and current:
+                chunks.append("".join(current).strip())
+                current = []
+            depth += 1
+            current.append(ch)
+        elif ch == "]":
+            depth -= 1
+            current.append(ch)
+            if depth == 0:
+                chunks.append("".join(current).strip())
+                current = []
+        elif ch == " " and depth == 0:
+            if current:
+                chunks.append("".join(current).strip())
+                current = []
+        else:
+            current.append(ch)
+    if current:
+        chunks.append("".join(current).strip())
+
+    chunks = [c for c in chunks if c]
+
+    for chunk in chunks:
+        optional = chunk.startswith("[") and chunk.endswith("]")
+        inner = chunk[1:-1].strip() if optional else chunk
+
+        # [keyword <value>] or [keyword value]
+        if optional:
+            parts = inner.split(None, 1)
+            if len(parts) == 2 and not parts[0].startswith("<") and "|" not in parts[0]:
+                keyword = parts[0]
+                val_hint = parts[1].strip("<>[]")
+                args.append({
+                    "name": keyword, "kind": "keyword", "required": False,
+                    "hint": f"Enter {keyword}", "value_hint": val_hint,
+                })
+                continue
+            # [choice1|choice2]
+            if "|" in inner:
+                choices = [c.strip("<>") for c in inner.split("|")]
+                args.append({
+                    "name": choices[0], "kind": "choice", "required": False,
+                    "choices": choices, "choice_hints": {},
+                    "hint": "Choose one (optional)",
+                })
+                continue
+            # bare optional keyword with no value
+            args.append({
+                "name": inner.strip("<>"), "kind": "keyword", "required": False,
+                "hint": f"Enter {inner.strip('<>')}",
+                "value_hint": inner.strip("<>"),
+            })
+            continue
+
+        # Required choice:  choice1|choice2  or  <choice1|choice2>
+        if "|" in inner:
+            choices = [c.strip("<>[]") for c in inner.split("|")]
+            args.append({
+                "name": "type", "kind": "choice", "required": True,
+                "choices": choices, "choice_hints": {},
+                "hint": "Choose one",
+            })
+            continue
+
+        # Required value: <name>, <value>, <0-4>, <ip/netmask>, etc.
+        if inner.startswith("<") and inner.endswith(">"):
+            field_name = inner[1:-1]
+            # Range hint like <1-1440>
+            hint = f"Enter {field_name}"
+            if _re.match(r"^\d+[-–]\d+$", field_name):
+                hint = f"Enter a value ({field_name})"
+            args.append({
+                "name": field_name.split("/")[0].split("-")[0] if "/" in field_name or (
+                    field_name[0].isdigit()
+                ) else field_name,
+                "kind": "value", "required": True, "hint": hint,
+            })
+            continue
+
+        # Bare word that isn't a choice/variable — a fixed keyword (subcommand token)
+        # Skip it: it's already consumed by the command key matching.
+
+    return args if args else None
+
+
 def arg_spec(command_key: str) -> list[dict] | None:
     """Return the ordered ``args`` list for *command_key*, or ``None`` if absent.
 
-    ``None`` signals the caller to fall back to usage-string parsing.
+    Priority:
+    1. Hand-curated ``settings/command-structure.json`` entry
+    2. Auto-generated ``field_catalog.py`` entry
+    3. Parsed from the CommandDef ``usage`` string (automatic fallback)
+
+    ``None`` is returned only when all three sources produce nothing, signalling
+    the caller to fall back to plain inline help.
     """
     entry = load_command_structure().get(command_key)
-    if not entry:
-        return None
-    args = entry.get("args")
-    if isinstance(args, list) and args:
-        return args
+    if entry:
+        args = entry.get("args")
+        if isinstance(args, list) and args:
+            return args
+
+    # Automatic fallback: derive basic arg spec from the CommandDef usage string.
+    try:
+        from app.commands.registry import COMMANDS
+        cmd_def = COMMANDS.get(command_key)
+        if cmd_def and cmd_def.usage:
+            return _parse_usage_spec(command_key, cmd_def.usage)
+    except Exception:  # noqa: BLE001
+        pass
     return None
 
 

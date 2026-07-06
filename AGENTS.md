@@ -2,8 +2,8 @@
 
 **ARC (Assisted Remote Console)** is a PAN-OS-style interactive shell for Palo
 Alto firewalls managed by Strata Cloud Manager (SCM). Commands execute through
-SCM REST APIs by default; live device state goes over SSH (`--remote`,
-`connect`, `remote <device>`). SCM is the only API integration.
+SCM REST APIs by default; live device state goes over SSH (`connect`,
+`--remote`). SCM is the only API integration.
 
 This file is the **single hub** for anyone (human or agent) working on ARC.
 Read it, then follow the routing tables below to the one or two spoke files a
@@ -30,10 +30,11 @@ the smallest file that owns each concern.
 | `theme` (colours) | `settings/theme.json`, `app/settings/theme.py` | same | `--only 10` |
 | `terminal` / prefs (pager, width, spinner) | `app/settings/user_prefs.py`, `_cmd_terminal` in `app/shell/configure.py` | same | `--only 4` |
 | `settings` (banner, goodbye, labels — no code) | `settings/` | `settings/banner.txt` etc. | `--only 7,8,9,10` |
-| `argspec` (greedy `set <object>` parsing, slot completion) | `settings/command-structure.json` (hand, wins), `app/settings/field_catalog.py` (AUTO-GENERATED from specs), `app/settings/command_structure.py` (walker) | hand file, or `python dev/generate_field_library.py` | `--only 4` |
+| `argspec` (greedy `set <object>` parsing, slot completion, contextual `?` help) | `settings/command-structure.json` (hand-curated, highest priority), `app/settings/field_catalog.py` (AUTO-GENERATED from OpenAPI specs), `app/settings/command_structure.py` (walker + usage-string fallback) | hand file, or `python dev/generate_field_library.py` | `--only 4` |
 | `auth` (credentials, profiles) | `app/config.py`, `app/cli.py` (auth group) | same | `--file app/config.py` |
 | `scm-api` / `endpoint <resource>` | `dev/API_INDEX.md`; deep dive: `docs/scm-api/specs/<cat>.md` | `app/api/client.py` | full suite |
-| `docsupdate` / docs agent | `dev/DOCS_AGENT.md` | run `python dev/docsupdate.py` | `--self-test` |
+| `docsupdate` / docs agent | `dev/DOCS_AGENT.md` | run `python dev/docsupdate.py` (same as `dev docs update` in the app) | `--self-test` |
+| `commandupdate` | — | run `python dev/commandupdate.py` (same as `dev command-structure update` in the app) | `--only 1,2,4` |
 | `panos` (PAN-OS CLI tree: op cmds, break-glass config, live data) | `settings/panos-sources.json` (URLs), `dev/panos_curation.json` (overrides/recovery/scm_map), `app/commands/panos_generated.py` | curation file, or `python dev/panosupdate.py && python dev/generate_panos_catalog.py` | full suite |
 | `watch` (re-run command loop) | `_cmd_watch` in `app/shell/dispatch.py` | same | `--only 1,2` |
 | `logs` (SLS fleet queries: show log traffic/threat/system/detail) | `app/api/sls.py` (client + SQL builder), log handlers in `app/commands/operations.py` | same | `python dev/test_sls.py` + `--only 1,2,3` |
@@ -162,7 +163,17 @@ like address types). `generated.py` builds the payload from the parsed fields
 commands are NOT wired through the catalog — they opt in via the hand-written
 `settings/command-structure.json`, which always wins on key collisions.
 
----
+**Contextual `?` help — five tiers** (`app/settings/command_structure.py` `arg_spec()`):
+
+| Tier | Source | How to update |
+|---|---|---|
+| **1 hand-curated** | `settings/command-structure.json` | Edit JSON field list; add `_FIELD_LIBRARY` entries for non-standard field metadata. `update <obj>` / `delete <obj>` auto-derived from `set <obj>`. |
+| **1g cli-generated** | `settings/command-structure-generated.json` | Run `commandupdate` / `dev command-structure update`. Parses `CommandDef.usage` strings. Overwrites on re-run. |
+| **2 openapi-spec** | `app/settings/field_catalog.py` | Run `python dev/generate_field_library.py` (auto-runs on `docsupdate`). |
+| **3 usage-parsed** | `CommandDef.usage` at runtime | Automatic fallback — no file written. Add `usage=` to the CommandDef to improve quality. |
+| **- none** | — | Run `commandupdate` or add `usage=` to CommandDef. |
+
+When a new feature is enabled: tier 3 fires automatically; run `commandupdate` to persist tier 1g; edit `command-structure.json` for richest metadata (choices, hints).
 
 ## Add a Command
 
@@ -213,7 +224,7 @@ message. `ExecutionContext` fields: `.scm .ssh .config .device .folder .tsg_id`.
 | Mode | Trigger | Path |
 |---|---|---|
 | API (default) | any command | `_dispatch` → `match_command` → `_execute_api` → handler → `_render` |
-| SSH | `--remote <device>`, `remote <device>`, `connect` | `_execute_remote` / interactive PTY |
+| SSH | `--remote <device>`, `connect` | `_execute_remote` / interactive PTY |
 
 - Errors: `SCMClient` raises (`httpx.HTTPStatusError` etc.) — never swallow into
   `[]`. `_execute_api` converts 401/403/404/network errors into actionable
@@ -243,22 +254,53 @@ message. `ExecutionContext` fields: `.scm .ssh .config .device .folder .tsg_id`.
   progressive (next valid tokens only, not full command dumps), three tiers
   GLOBAL / FOLDER / DEVICE + SHELL. `<command> help` opens full docs;
   `help all` is the unfiltered dump.
+- **`?` MUST preserve the input buffer.** After help prints, the prefix is
+  restored so the user continues typing — Cisco / PAN-OS invariant. Implemented
+  via `run_in_terminal` in `_make_key_bindings` (`app/shell/_base.py`). Never
+  use `validate_and_handle` for `?` — that clears the buffer.
+- **Every shell builtin must handle `?` and route it in dispatch.** When `<builtin> ?`
+  is typed, dispatch must call the builtin's own handler with `["?"]` (not fall
+  through to the generic "is a shell built-in" message). Pattern: see the
+  `terminal`, `feature`, `alias`, `history`, `find` cases in
+  `_dispatch` (`app/shell/dispatch.py`). Add a `?`/`help` branch at the top of
+  each `_cmd_*` handler that prints usage with examples.
 - Prompt encodes context: `arc:global >` · `arc:Production >` ·
-  `arc:fw01:device >` · `arc:fw01:Production >` · configure mode ends with `#`.
-  Never show `:Shared` (it's the default state).
+  `arc:fw01:device >` · `arc:fw01:Production >` · configure mode ends with `#`
+  · dev shell adds `:dev`. Never show `:Shared`.
 - Unambiguous token-prefix shorthand (`sh sec pol` → `show security policy`);
   ambiguous prefixes never auto-expand.
-- Tab completion is context-aware (devices after `cd `/`remote `, folders after
-  `folder `, TSGs after `tsg `, profiles after `account `, usage-driven argument
-  slots). Structure-aware completion via `settings/command-structure.json`
-  overrides usage-string walking for curated `set <object>` commands, with
-  greedy no-quote parsing of free-text fields.
-- `cd` never opens SSH; `connect`/`remote` do (true transparent PTY).
+- Tab completion is context-aware: dev shell has its own completer branch
+  (`_complete_dev_shell` in `app/shell/completer.py`); normal mode uses
+  devices after `cd `, folders after `cd folder `, usage-driven argument slots.
+- `cd` never opens SSH; `connect` does (true transparent PTY).
 - Availability gates: device-scoped commands hidden without a device;
-  `commit` only in configure mode; hard error for unknown device/folder when
-  the cache is populated (graceful free-form fallback only when SCM is down).
+  `commit` / write commands only in configure mode; `folder` command only in
+  configure mode; hard error for unknown device/folder when cache is populated.
 
----
+### Dev Shell — self-service operator console (no IDE needed)
+
+Type `dev` to enter (modal, like `configure`). Prompt shows `:dev`. `exit` to leave.
+`dev on`/`dev off` still work for scripting/CI. `_dispatch_dev_shell` intercepts
+dev commands first, then falls through so normal ARC commands work from dev shell.
+
+**Shared scripts** — dev shell streams these; LLM trigger words run them directly:
+
+| Dev shell command | LLM trigger | Script |
+|---|---|---|
+| `docs update [--scm\|--panos]` | `docsupdate` | `python dev/docsupdate.py` |
+| `command-structure update [<cmd>]` | `commandupdate` | `python dev/commandupdate.py` |
+| `catalog rebuild` | — | `dev/generate_*.py` (6 scripts in order) |
+| `docs status` | — | reads `docs/scm-api/MANIFEST.md` + `CHANGES.md` |
+| `command-structure list [enabled\|disabled] [\| match <word>]` | — | — |
+| `status` | — | health dashboard (docs age, features, help-spec coverage, git) |
+
+**Workflow after enabling a new feature:**
+```
+feature enable <flag>  →  dev  →  docs update  →  catalog rebuild  →  command-structure update  →  exit
+```
+
+**Living-tool invariant:** every generated artifact has a `dev` sub-command that
+recreates it. No IDE, no Python knowledge beyond `arc` itself.
 
 ## SCM REST API
 
@@ -340,8 +382,10 @@ Version is `0.1.<commit-count>` from `app/__init__.py` — never hand-edit
   when the user asks. Simple conventional-commit messages without nested quotes
   (multi-line via `git commit -F <file>`).
 - User trigger words: `gitp` = stage all + commit + push · `docsupdate` = pull
-  pan.dev docs + follow `dev/DOCS_AGENT.md` · `ck`/`ctx`/`wipe` = write /
-  summarize / clear the `SESSION.md` scratch notes (gitignored session memory).
+  pan.dev docs + follow `dev/DOCS_AGENT.md` · `commandupdate` = update
+  contextual ? help specs for all enabled commands (runs `python dev/commandupdate.py`) ·
+  `ck`/`ctx`/`wipe` = write / summarize / clear the `SESSION.md` scratch notes
+  (gitignored session memory).
 - Keep diffs small and focused; match existing naming and style; comments
   explain *why* (constraints, trade-offs), not *what*.
 - Write for a junior engineer learning network operations: obvious control

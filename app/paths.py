@@ -47,6 +47,11 @@ PANOS_SOURCES_FILE = SETTINGS_DIR / "panos-sources.json"
 # the code-side field library.
 COMMAND_STRUCTURE_JSON = SETTINGS_DIR / "command-structure.json"
 
+# CLI-generated command structure entries — written by `command-structure update`
+# inside ARC (dev mode). Loaded between the hand-curated JSON and field_catalog;
+# the hand file wins on collisions. Never edit by hand — use the CLI command.
+COMMAND_STRUCTURE_GENERATED_JSON = SETTINGS_DIR / "command-structure-generated.json"
+
 # Per-user secrets directory (config.json is written here, never committed).
 CONFIG_DIR = REPO_ROOT / "config"
 

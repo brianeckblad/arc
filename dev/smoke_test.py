@@ -752,11 +752,11 @@ def test_formatter() -> None:
 # UPDATE THIS LIST whenever the banner lines change.
 _BANNER_LINES: list[tuple[str, str]] = [
     # (visible_command_text,  expected_padding_spaces_after_[/cyan])
-    ("cd <device>",     "               "),   # 11 chars → 15 sp → col 28
-    ("remote <device>", "           "),        # 15 chars → 11 sp → col 28
-    ("folder <name>",   "             "),       # 13 chars → 13 sp → col 28
-    ("account <name>",  "            "),        # 14 chars → 12 sp → col 28
-    ("?",               "                         "),  # 1 char → 25 sp → col 28
+    ("cd <device>",      "               "),   # 11 chars → 15 sp → col 28
+    ("connect <device>", "          "),         # 16 chars → 10 sp → col 28
+    ("cd folder <name>", "          "),         # 16 chars → 10 sp → col 28
+    ("account <name>",   "            "),        # 14 chars → 12 sp → col 28
+    ("?",                "                         "),  # 1 char → 25 sp → col 28
 ]
 
 _BANNER_TARGET_COL = 28

@@ -7,16 +7,15 @@ the packet would hit and the resulting action — without needing a live device.
 This works wherever you are in the tree: the rules evaluated are those of the
 currently-selected folder (``cd folder <name>``).
 
-Two command names map here (same handler):
-  packet-tracer ...                 (Cisco-ASA style name)
+Command name:
   test security-policy-match ...    (PAN-OS operational style name)
 
-Both accept PAN-OS-style keyword arguments:
+Accepts PAN-OS-style keyword arguments:
   from <zone> to <zone> source <ip> destination <ip>
   [application <app>] [destination-port <n>] [protocol <n>] [source-user <user>]
 
 Example:
-  packet-tracer from trust to untrust source 10.0.0.5 destination 8.8.8.8 \
+  test security-policy-match from trust to untrust source 10.0.0.5 destination 8.8.8.8 \
                 application dns destination-port 53 protocol 17
 
 Matching is intentionally honest about its limits (see MVP NOTES below) so the
@@ -197,22 +196,9 @@ def _ssh_packet_tracer(args: dict) -> str:
 # ---------------------------------------------------------------------------
 
 COMMANDS: dict[str, CommandDef] = {
-    "packet-tracer": CommandDef(
-        description=(
-            "Trace a packet through the folder's security rule base — "
-            "packet-tracer from <zone> to <zone> source <ip> destination <ip> "
-            "[application <app>] [destination-port <n>] [protocol <n>]"
-        ),
-        category="diagnostics",
-        scope="folder",
-        api_handler=_packet_tracer,
-        ssh_command=_ssh_packet_tracer,
-        render="raw",
-        feature_flag="packet_tracer",
-    ),
     "test security-policy-match": CommandDef(
         description=(
-            "Test which security rule a packet matches (alias of packet-tracer) — "
+            "Test which security rule a packet matches — "
             "test security-policy-match source <ip> destination <ip> "
             "[from <zone>] [to <zone>] [application <app>] [destination-port <n>]"
         ),

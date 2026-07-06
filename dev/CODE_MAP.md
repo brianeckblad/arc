@@ -19,6 +19,51 @@ Symbol                                   Lines          Purpose
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
+## `app/shell/configure.py`  (1866 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+_prefs_file_label()                      10-16          Repo-relative path of the preferences file, for display.
+capture_write_ops()                      19-49          Run a write handler against a recording client and capture its mutatio
+class ConfigureMixin                     52-1794        
+  ._cmd_configure()                      53-73          Enter configure mode (Cisco-style).
+  ._stage_write()                        75-102         Validate a configure-mode write and stage it locally (no SCM change).
+  ._cmd_show_pending()                   104-125        List the locally staged configure-mode changes (`show config`).
+  ._cmd_abandon()                        127-147        Discard all locally staged changes (configure mode only).
+  ._rollback_version()                   153-170        Version number of the CURRENT running config (the revert target).
+  ._arm_commit_confirmed()               172-182        
+  ._cancel_commit_confirmed()            184-196        
+  ._commit_confirmed_expired()           198-226        Timer thread: the operator never confirmed — revert and re-push.
+  ._cmd_commit_staged()                  228-327        Apply all staged changes to SCM, then push the candidate to devices.
+  ._commit_check()                       329-372        Re-validate every staged change against CURRENT SCM state (Junos-style
+  ._watch_job()                          374-401        Poll a push job every few seconds until it finishes (or timeout).
+  ._confirm_configure_exit()             403-430        Ask what to do with staged changes when leaving configure mode.
+  ._cmd_terminal()                       432-537        Per-user terminal preferences — persisted to config/<user>/preferences
+  ._cmd_cli()                            539-593        Read/write CLI theme settings (configure mode only).
+  ._cmd_feature()                        595-842        Show or change feature-flag states at runtime.
+  ._cs_tier()                            849-888        Return the tier label for a command key.
+  ._format_spec()                        891-915        Format a command arg spec in PAN-OS style.
+  ._cs_list()                            917-1012       List enabled/disabled commands with PAN-OS-style field display and pag
+  ._cs_update()                          1015-1047      Stream dev/commandupdate.py — same script the LLM 'commandupdate' trig
+  ._cs_clear()                           1050-1059      Wipe the CLI-generated command structure file.
+  ._cmd_dev()                            1065-1103      Enter the dev shell (modal, like configure mode).
+  ._dev_shell_enter()                    1105-1135      Enter the dev shell — enable dev mode and show the dev menu.
+  ._dev_shell_exit()                     1137-1145      Leave the dev shell.
+  ._dispatch_dev_shell()                 1147-1217      Route dev-shell commands.
+  ._dev_inline_help()                    1219-1304      Show contextual help for a dev shell command or sub-command.
+  ._dev_shell_help()                     1306-1335      Print full dev shell command reference.
+  ._cs_tier_legend()                     1337-1374      Print the tier legend for command-structure list.
+  ._dev_status()                         1382-1477      Unified health dashboard for the dev shell.
+  ._dev_docs()                           1483-1494      Handle dev-shell 'docs' sub-commands.
+  ._dev_docs_update()                    1496-1536      Stream docsupdate.py to pull latest pan.dev specs and regenerate catal
+  ._dev_docs_status()                    1538-1586      Show doc/spec freshness with last pull date from MANIFEST.md.
+  ._dev_catalog()                        1592-1601      Handle dev-shell 'catalog' sub-commands.
+  ._dev_catalog_rebuild()                1603-1656      Run all generator scripts to rebuild code artifacts.
+  ._print_dev_status()                   1660-1674      Print current dev mode state (used by 'dev on/off' outside the shell).
+  ._cmd_setup()                          1677-1794      Interactive credential setup wizard.
+_setup_bearer_instructions()             1801-1829      Print bearer-token setup commands for the detected OS.
+_setup_oauth_instructions()              1832-1864      Print OAuth client credential setup commands for the detected OS.
+
 ## `app/api/client.py`  (1241 lines)
 
 Symbol                                   Lines          Purpose
@@ -178,34 +223,6 @@ _update_external_dynamic_list()          991-1047       Update an existing EDL (
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
-## `app/shell/configure.py`  (1032 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_prefs_file_label()                      10-16          Repo-relative path of the preferences file, for display.
-capture_write_ops()                      19-49          Run a write handler against a recording client and capture its mutatio
-class ConfigureMixin                     52-960         
-  ._cmd_configure()                      53-73          Enter configure mode (Cisco-style).
-  ._stage_write()                        75-102         Validate a configure-mode write and stage it locally (no SCM change).
-  ._cmd_show_pending()                   104-125        List the locally staged configure-mode changes (`show config`).
-  ._cmd_abandon()                        127-147        Discard all locally staged changes (configure mode only).
-  ._rollback_version()                   153-170        Version number of the CURRENT running config (the revert target).
-  ._arm_commit_confirmed()               172-182        
-  ._cancel_commit_confirmed()            184-196        
-  ._commit_confirmed_expired()           198-226        Timer thread: the operator never confirmed — revert and re-push.
-  ._cmd_commit_staged()                  228-327        Apply all staged changes to SCM, then push the candidate to devices.
-  ._commit_check()                       329-372        Re-validate every staged change against CURRENT SCM state (Junos-style
-  ._watch_job()                          374-401        Poll a push job every few seconds until it finishes (or timeout).
-  ._confirm_configure_exit()             403-430        Ask what to do with staged changes when leaving configure mode.
-  ._cmd_terminal()                       432-484        Per-user terminal preferences — persisted to config/<user>/preferences
-  ._cmd_cli()                            486-540        Read/write CLI theme settings (configure mode only).
-  ._cmd_feature()                        542-789        Show or change feature-flag states at runtime.
-  ._cmd_dev()                            791-825        Toggle development mode (hidden command).
-  ._print_dev_status()                   827-841        Print the current development-mode state and the dev-flag count.
-  ._cmd_setup()                          843-960        Interactive credential setup wizard.
-_setup_bearer_instructions()             967-995        Print bearer-token setup commands for the detected OS.
-_setup_oauth_instructions()              998-1030       Print OAuth client credential setup commands for the detected OS.
-
 ## `app/utils/formatter.py`  (947 lines)
 
 Symbol                                   Lines          Purpose
@@ -267,58 +284,106 @@ cliup()                                  820-839        Rebuild the offline brow
 scm_get()                                851-863        Perform a raw GET request against the SCM API.
 run()                                    870-871        
 
-## `app/shell/dispatch.py`  (710 lines)
+## `app/shell/dispatch.py`  (766 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 split_pipe_line()                        23-38          Split *line* at the first unquoted ``|``.
 parse_output_filters()                   41-79          Parse a pipe filter chain into ``[(op, pattern), …]``.
 _line_matches()                          82-88          Regex match (case-insensitive) with plain-substring fallback.
-class DispatchMixin                      91-709         
-  ._cmd_watch()                          92-126         Re-run *rest* every N seconds until Ctrl-C (`watch [N] <command>`).
-  ._dispatch_piped()                     128-178        Run *head*, filter its captured output through the pipe *spec*.
-  ._save_pipe_output()                   180-197        Write piped output *lines* to *target* as plain UTF-8 text.
-  ._cmd_history()                        199-237        Print the last N commands from the prompt history (`history [n]`).
-  ._cmd_alias()                          239-297        User-defined aliases (`alias` / `alias <name> <expansion…>` /
-  ._show_command_not_found()             299-370        Show a helpful message when a command is not recognized.
-  ._dispatch()                           372-709        Process one input line.  Returns True when the user wants to exit ARC.
+class DispatchMixin                      91-765         
+  ._cmd_watch()                          92-132         Re-run *rest* every N seconds until Ctrl-C (`watch [N] <command>`).
+  ._dispatch_piped()                     134-184        Run *head*, filter its captured output through the pipe *spec*.
+  ._save_pipe_output()                   186-203        Write piped output *lines* to *target* as plain UTF-8 text.
+  ._cmd_history()                        205-250        Print the last N commands from the prompt history (`history [n]`).
+  ._cmd_alias()                          252-323        User-defined aliases (`alias` / `alias <name> <expansion…>` /
+  ._show_command_not_found()             325-396        Show a helpful message when a command is not recognized.
+  ._dispatch()                           398-765        Process one input line.  Returns True when the user wants to exit ARC.
 
-## `app/shell/navigation.py`  (708 lines)
+## `app/settings/command_structure.py`  (722 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class NavigationMixin                    11-707         
-  ._cache_stale()                        13-15          True when a navigation cache is old enough to warrant a re-fetch.
-  ._cmd_cd()                             17-71          Unified context navigation — device or folder.
-  ._cmd_cd_device()                      73-129         Switch the active SCM/API device context to *target*.
-  ._find_device()                        131-147        Find a device in the cache by hostname, serial, name, or IP.
-  ._refresh_devices()                    149-168        Fetch managed devices and populate the cache used by tab completion an
-  ._refresh_folders()                    170-181        Fetch SCM folder names and populate the cache used by 'folder' tab com
-  ._refresh_tsgs()                       183-198        Fetch TSG entries from SCM IAM and populate the cache used by 'tsg' ta
-  ._cmd_pwd()                            200-244        Show current device context, active SCM folder, TSG, and SSH credentia
-  ._cmd_folder()                         246-338        Set or display the active SCM folder context.
-  ._cmd_folder_create()                  340-460        Interactive folder creation: prompt for a parent, confirm, and POST to
-  ._reset_tenant_context()               462-476        Point shell state at *new_tsg* and rebuild the navigation caches.
-  ._cmd_tsg()                            478-578        Switch the active Tenant Services Group (TSG) context.
-  ._cmd_account()                        580-707        List or switch named credential profiles.
+_field_meta()                            200-207        Return the raw metadata dict for *field* of *object* (library → generi
+_resolve_field()                         210-233        Build one arg dict for *field* of *object*, from the field library.
+_resolve_arg()                           236-242        Resolve one arg item — either a field name string or an inline arg dic
+_load_json()                             245-287        Parse ``settings/command-structure.json`` into command arg specs.
+_load_generated_json()                   290-311        Load ``settings/command-structure-generated.json`` written by the CLI.
+_generated_entries()                     314-331        Arg specs for generated `set` commands, from the spec-derived catalog.
+load_command_structure()                 334-361        Return ``{command_key: entry}`` — priority: hand JSON > generated JSON
+_parse_usage_spec()                      364-486        Derive a basic arg spec from a CommandDef ``usage`` string.
+arg_spec()                               489-514        Return the ordered ``args`` list for *command_key*, or ``None`` if abs
+invalidate_cache()                       517-520        Force a re-read on next access (used by tools/tests that rewrite the f
+class _NextState                         540-550        What the *next* token can be — used to drive Tab completion.
+_walk()                                  553-639        Consume *tokens* against *spec*, returning (assignments, positionals, 
+parse()                                  642-656        Parse *remainder* tokens into an args dict using the command structure
+help_options()                           659-688        Return Cisco-style ``?`` help rows for the next token after *typed*.
+completion_options()                     691-719        Return ``{text, display, meta}`` options for the next token after *typ
 
-## `app/shell/completer.py`  (589 lines)
+## `app/shell/navigation.py`  (706 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+class NavigationMixin                    11-705         
+  ._cache_stale()                        13-15          True when a navigation cache is old enough to warrant a re-fetch.
+  ._cmd_cd()                             17-78          Change device or folder context (navigation only).
+  ._cmd_cd_device()                      80-136         Switch the active SCM/API device context to *target*.
+  ._find_device()                        138-154        Find a device in the cache by hostname, serial, name, or IP.
+  ._refresh_devices()                    156-175        Fetch managed devices and populate the cache used by tab completion an
+  ._refresh_folders()                    177-188        Fetch SCM folder names and populate the cache used by 'folder' tab com
+  ._refresh_tsgs()                       190-205        Fetch TSG entries from SCM IAM and populate the cache used by 'tsg' ta
+  ._cmd_pwd()                            207-251        Show current device context, active SCM folder, TSG, and SSH credentia
+  ._switch_folder()                      253-280        Validate and apply a folder context change — called only by `cd folder
+  ._cmd_folder()                         282-336        Manage SCM folders — list available folders or create a new one.
+  ._cmd_folder_create()                  338-458        Interactive folder creation: prompt for a parent, confirm, and POST to
+  ._reset_tenant_context()               460-474        Point shell state at *new_tsg* and rebuild the navigation caches.
+  ._cmd_tsg()                            476-576        Switch the active Tenant Services Group (TSG) context.
+  ._cmd_account()                        578-705        List or switch named credential profiles.
+
+## `app/shell/completer.py`  (663 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _parse_usage()                           26-62          Parse a usage string into (required_slots, optional_keywords).
 _usage_options()                         65-99          Return (token, display_meta) completions for the slot after *typed* ar
 _tokenize_partial()                      102-135        Split *text* for completion, honouring quotes, tracking the in-progres
-class ArcCompleter                       138-588        Context-aware tab completer.
+class ArcCompleter                       138-662        Context-aware tab completer.
   .__init__()                            147-148        
   ._command_visible()                    150-159        Return True when a registered command is visible in this shell mode.
-  .get_completions()                     161-436        
-  ._match_complete_command()             438-453        Return the longest complete command key the user has fully entered.
-  ._complete_arguments()                 455-507        Yield completions for the argument region of a complete command.
-  ._object_names()                       522-546        Existing object names in the active folder, cached for a minute.
-  ._dynamic_name_options()               548-560        Live object names for the name slot of `delete X` / `update X`.
-  ._arg_options()                        562-579        Resolve next-slot argument options: structure file first, usage fallba
-  ._all_commands()                       582-588        
+  .get_completions()                     161-434        
+  ._complete_dev_shell()                 436-510        Yield completions for dev shell commands.
+  ._match_complete_command()             512-527        Return the longest complete command key the user has fully entered.
+  ._complete_arguments()                 529-581        Yield completions for the argument region of a complete command.
+  ._object_names()                       596-620        Existing object names in the active folder, cached for a minute.
+  ._dynamic_name_options()               622-634        Live object names for the name slot of `delete X` / `update X`.
+  ._arg_options()                        636-653        Resolve next-slot argument options: structure file first, usage fallba
+  ._all_commands()                       656-662        
+
+## `app/shell/help.py`  (591 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+class HelpMixin                          8-589          
+  ._match_structured()                   9-25           Find the longest command key (with a structure spec) inside *prefix_to
+  ._print_context_help()                 27-44          Print Cisco-style context-sensitive help for a structured command.
+  ._render_context_help()                46-64          Render the next-option rows: ``  token   description`` (token column a
+  ._cmd_help_inline()                    66-153         Cisco-style compact inline help — one line per command, no panels.
+  ._cmd_help_docs()                      155-196        Show the full documentation page for a command or topic.
+  ._cmd_help_full()                      198-244        Print the full command reference regardless of context.
+  ._cmd_show_write_help()                246-269        Show available set/delete/update commands in configure mode.
+  ._print_shell_builtins()               271-284        Print the shell built-in commands section (shared by inline and full h
+  ._is_command_visible()                 286-296        Single source of truth: does this command exist for this operator?
+  ._cmd_find()                           298-361        PAN-OS style command search: ``find command keyword <text>``.
+  ._visible_command_keys()               363-374        Cached list of visible registry keys — the per-keystroke hot path.
+  ._invalidate_visible_keys()            376-377        
+  ._is_command_available()               379-395        _is_command_visible plus the current-context gates.
+  ._is_config_command()                  398-402        Return True when a command should appear in configure-mode `?` help.
+  ._root_verb_options()                  404-439        Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
+  ._collapsed_prefix_help_options()      441-496        Return collapsed next-token help options for a command prefix.
+  ._collapsed_tier_help_options()        498-533        Return collapsed bare-tier help options for one scope.
+  ._context_annotation()                 535-556        Return a short inline context note for commands whose output depends o
+  ._print_context_hint_for()             558-562        Print a one-line context note below an exact-match docs result.
+  ._print_inline_usage()                 564-589        Print the description + usage syntax for a complete command in `?` hel
 
 ## `app/config.py`  (580 lines)
 
@@ -345,32 +410,6 @@ load_config()                            348-444        Load config for the name
 save_config()                            447-518        Persist config: secrets to OS keychain, non-sensitive values to config
 delete_profile()                         521-547        Remove a named profile from config.json and its keychain entries.
 clear_keychain()                         550-579        Remove ARC secrets from the OS keychain.
-
-## `app/shell/help.py`  (575 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class HelpMixin                          8-573          
-  ._match_structured()                   9-25           Find the longest command key (with a structure spec) inside *prefix_to
-  ._print_context_help()                 27-44          Print Cisco-style context-sensitive help for a structured command.
-  ._render_context_help()                46-64          Render the next-option rows: ``  token   description`` (token column a
-  ._cmd_help_inline()                    66-153         Cisco-style compact inline help — one line per command, no panels.
-  ._cmd_help_docs()                      155-196        Show the full documentation page for a command or topic.
-  ._cmd_help_full()                      198-244        Print the full command reference regardless of context.
-  ._cmd_show_write_help()                246-268        Show available delete/update commands in configure mode.
-  ._print_shell_builtins()               270-283        Print the shell built-in commands section (shared by inline and full h
-  ._is_command_visible()                 285-295        Single source of truth: does this command exist for this operator?
-  ._cmd_find()                           297-349        PAN-OS style command search: ``find command keyword <text>``.
-  ._visible_command_keys()               351-362        Cached list of visible registry keys — the per-keystroke hot path.
-  ._invalidate_visible_keys()            364-365        
-  ._is_command_available()               367-379        _is_command_visible plus the current-context gates.
-  ._is_config_command()                  382-386        Return True when a command should appear in configure-mode `?` help.
-  ._root_verb_options()                  388-423        Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
-  ._collapsed_prefix_help_options()      425-480        Return collapsed next-token help options for a command prefix.
-  ._collapsed_tier_help_options()        482-517        Return collapsed bare-tier help options for one scope.
-  ._context_annotation()                 519-540        Return a short inline context note for commands whose output depends o
-  ._print_context_hint_for()             542-546        Print a one-line context note below an exact-match docs result.
-  ._print_inline_usage()                 548-573        Print the description + usage syntax for a complete command in `?` hel
 
 ## `app/commands/operations.py`  (500 lines)
 
@@ -419,23 +458,6 @@ _show_config_format_set()                297-312        Dump the active folder's
 _show_config_running()                   315-335        Show the running config version — or one resource as set commands.
 _show_config_versions()                  338-359        List SCM config versions, or show one version's full record.
 _load_config_version()                   362-411        Rollback: load a config version as the tenant's candidate config.
-
-## `app/settings/command_structure.py`  (424 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_field_meta()                            99-106         Return the raw metadata dict for *field* of *object* (library → generi
-_resolve_field()                         109-132        Build one arg dict for *field* of *object*, from the field library.
-_load_json()                             135-159        Parse the JSON structure file (``{object: [field, field, ...]}``) into
-_generated_entries()                     162-179        Arg specs for generated `set` commands, from the spec-derived catalog.
-load_command_structure()                 182-202        Return ``{command_key: entry}`` — generated catalog + hand-written JSO
-arg_spec()                               205-216        Return the ordered ``args`` list for *command_key*, or ``None`` if abs
-invalidate_cache()                       219-222        Force a re-read on next access (used by tools/tests that rewrite the f
-class _NextState                         242-252        What the *next* token can be — used to drive Tab completion.
-_walk()                                  255-341        Consume *tokens* against *spec*, returning (assignments, positionals, 
-parse()                                  344-358        Parse *remainder* tokens into an args dict using the command structure
-help_options()                           361-390        Return Cisco-style ``?`` help rows for the next token after *typed*.
-completion_options()                     393-421        Return ``{text, display, meta}`` options for the next token after *typ
 
 ## `app/commands/network.py`  (424 lines)
 

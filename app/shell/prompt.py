@@ -19,7 +19,9 @@ class PromptMixin:
         prompt_tail = " # " if self._state.configure_mode else " > "
         # Development mode marker — makes the hidden mode visible so operators
         # always know when work-in-progress (dev) commands are exposed.
-        dev_seg = "<sep>:</sep><dev>dev</dev>" if getattr(self, "_dev_mode", False) else ""
+        # In the dev shell, always show the marker regardless of _dev_mode attr.
+        in_dev_shell = self._state.dev_shell
+        dev_seg = "<sep>:</sep><dev>dev</dev>" if (in_dev_shell or getattr(self, "_dev_mode", False)) else ""
 
         if self._state.device:
             name = device_display_name(self._state.device)
@@ -138,13 +140,13 @@ class PromptMixin:
 
         # Alignment: 2-space indent, descriptions all start at visual col 28.
         # Spaces after [/cyan] = 28 − 2 − len(visible command text):
-        #   cd <device>    11 → 15 sp   remote <device> 15 → 11 sp
-        #   folder <name>  13 → 13 sp   account <name>  14 → 12 sp
-        #   ?               1 → 25 sp
+        #   cd <device>      11 → 15 sp   connect <device>  16 → 10 sp
+        #   cd folder <name> 16 → 10 sp   account <name>    14 → 12 sp
+        #   ?                 1 → 25 sp
         console.print(
             "  [cyan]cd <device>[/cyan]               Change to Device\n"
-            "  [cyan]remote <device>[/cyan]           SSH to device  [dim](keyboard-interactive + 2FA)[/dim]\n"
-            "  [cyan]folder <name>[/cyan]             Change to Folder\n"
+            "  [cyan]connect <device>[/cyan]          SSH to device  [dim](keyboard-interactive + 2FA)[/dim]\n"
+            "  [cyan]cd folder <name>[/cyan]          Change to Folder\n"
             "  [cyan]account <name>[/cyan]            List / switch credential profiles\n"
             "  [cyan]?[/cyan]                         Context-Aware Help  [dim](or  help <topic>)[/dim]"
         )

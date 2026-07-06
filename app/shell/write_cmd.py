@@ -24,23 +24,9 @@ class WriteMixin:
             )
             return
 
-        # `set ?` — show what set can do
+        # `set ?` — show all enabled set commands from the registry
         if not args or (len(args) == 1 and args[0] == "?"):
-            t = self._theme
-            console.print()
-            console.print(f"  {self._styled('set — Create or modify configuration', t.section_header)}")
-            console.print()
-            set_ops = [
-                ("set folder <name>",                   "Create a folder (prompts for parent placement)"),
-                ("set folder <name> parent <parent>",   "Create a folder under a specific parent"),
-                ("set folder new subfolder <name>",     "Create a subfolder under the active folder"),
-            ]
-            for cmd_str, desc in set_ops:
-                cmd_cell = self._help_cell(cmd_str, width=50)
-                console.print(f"    {cmd_cell} {self._styled(desc, t.description_dim)}")
-            console.print()
-            console.print(f"  {self._styled('<set command> help  → full docs  |  exit → leave configure mode', t.description_dim)}")
-            console.print()
+            self._cmd_show_write_help("set")
             return
 
         sub = args[0].lower()

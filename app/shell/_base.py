@@ -51,6 +51,7 @@ except ImportError:
     _TTY_AVAILABLE = False
 
 from prompt_toolkit import PromptSession
+from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.formatted_text import HTML
@@ -211,8 +212,10 @@ def tokenize(line: str) -> list[str]:
 def _make_key_bindings(shell=None) -> KeyBindings:
     """Return key bindings for the ARC shell.
 
-    '?' is bound to submit immediately — no Enter required.  This mirrors the
-    Cisco / PAN-OS convention where '?' instantly shows context-sensitive help.
+    '?' is bound to show inline context-sensitive help WITHOUT submitting the
+    line.  After help is printed the prefix is restored to the buffer so the
+    user can keep typing — exactly the Cisco / PAN-OS UX convention.
+
     Pressing '?' a second time on the same unchanged prefix escalates to full
     help (the typed-`??` gesture, which an instant-submit '?' cannot enter
     literally).
@@ -222,14 +225,22 @@ def _make_key_bindings(shell=None) -> KeyBindings:
     @kb.add("?")
     def _handle_question(event) -> None:
         buf = event.current_buffer
-        # Preserve any partial command the user has already typed so that
-        # dispatch can show context-sensitive help instead of the full menu.
-        # e.g.  "show address" + ? → submit "show address ?"
-        # Cisco/Palo-style: single ? always shows next options in context.
-        # For full docs, use "<command> help" instead.
         prefix = buf.text.rstrip()
-        buf.text = (prefix + " ?") if prefix else "?"
-        buf.validate_and_handle()
+        query = (prefix + " ?") if prefix else "?"
+
+        # Print help inline via run_in_terminal so prompt_toolkit temporarily
+        # hides the prompt, lets the help output print cleanly, then redraws
+        # the prompt with the original prefix restored — Cisco/PAN-OS style.
+        if shell is not None:
+            def _show() -> None:
+                shell._dispatch(query)
+            run_in_terminal(_show)
+
+        # Restore prefix + trailing space so the user can continue typing
+        # without having to retype the command they already had.
+        new_text = (prefix + " ") if prefix else ""
+        buf.text = new_text
+        buf.cursor_position = len(new_text)
 
     @kb.add("tab")
     def _handle_tab(event) -> None:
@@ -279,6 +290,9 @@ class ShellState:
     folders_loaded_at: float = 0.0
     # TSG entries fetched from /iam/v1/tenants — each dict has 'id' and 'display_name'
     tsgs_cache: list[dict] = field(default_factory=list)
+    # Dev shell mode — entered via `dev` command, exited with `exit`.
+    # While active: dev-flagged commands visible, dev sub-commands available.
+    dev_shell: bool = False
 
 
 # Auto-export every module global so mixins can `from app.shell._base import *`

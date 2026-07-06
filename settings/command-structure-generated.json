@@ -1,0 +1,1590 @@
+{
+  "delete security-rule": [
+    {
+      "name": "name",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter name"
+    }
+  ],
+  "load config version": [
+    {
+      "name": "id",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter id"
+    },
+    {
+      "name": "confirm",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter confirm",
+      "value_hint": "confirm"
+    }
+  ],
+  "ping host": [
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip"
+    }
+  ],
+  "set deviceconfig setting management admin-session max-session-count": [
+    {
+      "name": "0",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a value (0-4)"
+    }
+  ],
+  "set deviceconfig setting management admin-session max-session-time": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "set deviceconfig setting management api key certificate": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "set deviceconfig setting management api key lifetime": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "1-525600",
+        "0"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    }
+  ],
+  "set deviceconfig setting management appusage-lifetime": [
+    {
+      "name": "60",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a value (60-365)"
+    }
+  ],
+  "set deviceconfig setting management audit-tracking op-commands": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "yes",
+        "no"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    }
+  ],
+  "set deviceconfig setting management audit-tracking send-syslog": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "set deviceconfig setting management audit-tracking ui-actions": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "yes",
+        "no"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    }
+  ],
+  "set deviceconfig setting management browse-activity-report-setting average-browse-time": [
+    {
+      "name": "1",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a value (1-300)"
+    }
+  ],
+  "set deviceconfig setting management browse-activity-report-setting page-load-threshold": [
+    {
+      "name": "1",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a value (1-60)"
+    }
+  ],
+  "set deviceconfig setting management common-criteria self-test-schedule": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "crypto",
+        "software-integrity\nset"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    }
+  ],
+  "set deviceconfig setting management common-criteria self-test-schedule crypto start-time": [
+    {
+      "name": "start-time1> <start-time2>...",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter start-time1> <start-time2>...",
+      "value_hint": "start-time1> <start-time2>..."
+    }
+  ],
+  "set deviceconfig setting management common-criteria self-test-schedule software-integrity start-time": [
+    {
+      "name": "start-time1> <start-time2>...",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter start-time1> <start-time2>...",
+      "value_hint": "start-time1> <start-time2>..."
+    }
+  ],
+  "set deviceconfig setting management disable-predefined-correlation-objs": [
+    {
+      "name": "disable-predefined-correlation-objs1> <disable-predefined-correlation-objs2>...",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter disable-predefined-correlation-objs1> <disable-predefined-correlation-objs2>...",
+      "value_hint": "disable-predefined-correlation-objs1> <disable-predefined-correlation-objs2>..."
+    }
+  ],
+  "set deviceconfig setting management disable-predefined-reports": [
+    {
+      "name": "disable-predefined-reports1> <disable-predefined-reports2>...",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter disable-predefined-reports1> <disable-predefined-reports2>...",
+      "value_hint": "disable-predefined-reports1> <disable-predefined-reports2>..."
+    }
+  ],
+  "set deviceconfig setting management hostname-type-in-syslog": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "none",
+        "FQDN",
+        "hostname",
+        "ipv4-address",
+        "ipv6-address"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    }
+  ],
+  "set deviceconfig setting management idle-timeout": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "1-1440",
+        "0"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    }
+  ],
+  "set deviceconfig setting management max-audit-versions": [
+    {
+      "name": "1",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a value (1-1048576)"
+    }
+  ],
+  "set deviceconfig setting management max-rows-in-csv-export": [
+    {
+      "name": "1",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a value (1-1048576)"
+    }
+  ],
+  "set deviceconfig setting management max-rows-in-pdf-report": [
+    {
+      "name": "1",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a value (1-1048576)"
+    }
+  ],
+  "set deviceconfig setting management panorama-ssl-send-retries": [
+    {
+      "name": "1",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a value (1-64)"
+    }
+  ],
+  "set deviceconfig setting management panorama-tcp-receive-timeout": [
+    {
+      "name": "1",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a value (1-240)"
+    }
+  ],
+  "set deviceconfig setting management panorama-tcp-send-timeout": [
+    {
+      "name": "1",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a value (1-240)"
+    }
+  ],
+  "set deviceconfig setting management report-expiration-period": [
+    {
+      "name": "1",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a value (1-2000)"
+    }
+  ],
+  "set deviceconfig setting management report-run-time": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "set deviceconfig setting management rule-audit-comment-regex": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "set deviceconfig setting management secure-conn-client": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "check-server-identity",
+        "enable-secure-lc-communication",
+        "enable-secure-pandb-communication",
+        "enable-secure-panorama-communication",
+        "enable-secure-user-id-communication",
+        "enable-secure-wildfire-communication"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "yes",
+        "no>\nset"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    }
+  ],
+  "set deviceconfig setting management secure-conn-client certificate-type local certificate": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "set deviceconfig setting management secure-conn-client certificate-type local certificate-profile": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "set deviceconfig setting management secure-conn-client certificate-type scep certificate-profile": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "set deviceconfig setting management secure-conn-client certificate-type scep scep-profile": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "set deviceconfig setting management secure-conn-server certificate-profile": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "set deviceconfig setting management secure-conn-server enable-secure-user-id-communication": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "yes",
+        "no"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    }
+  ],
+  "set deviceconfig setting management secure-conn-server ssl-tls-service-profile": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "set deviceconfig system": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "accounting-server-profile",
+        "authentication-profile",
+        "certificate-profile",
+        "dns-security-server",
+        "domain",
+        "domain-lookup-url",
+        "hostname",
+        "ip-address-lookup-url",
+        "login-banner",
+        "netmask",
+        "non-ui-authentication-profile",
+        "secure-proxy-password",
+        "secure-proxy-server",
+        "secure-proxy-user",
+        "ssl-tls-service-profile",
+        "syslog-certificate",
+        "update-server"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "ack-login-banner",
+        "inline-cloud-proxy",
+        "ipv6-enable",
+        "lcaas-use-proxy",
+        "server-verification"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "yes",
+        "no>\nset"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "default-gateway",
+        "ip-address",
+        "ipv6-address",
+        "ipv6-default-gateway"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    }
+  ],
+  "set deviceconfig system dns-setting servers primary": [
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    }
+  ],
+  "set deviceconfig system dns-setting servers secondary": [
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    }
+  ],
+  "set deviceconfig system panorama local-panorama panorama-server": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "set deviceconfig system service": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "disable-http",
+        "disable-http-ocsp",
+        "disable-https",
+        "disable-icmp",
+        "disable-snmp",
+        "disable-ssh",
+        "disable-telnet",
+        "disable-userid-service",
+        "disable-userid-syslog-listener-ssl",
+        "disable-userid-syslog-listener-udp"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "yes",
+        "no>\nset"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    }
+  ],
+  "show config format set": [
+    {
+      "name": "address",
+      "kind": "choice",
+      "required": false,
+      "choices": [
+        "address",
+        "address-group",
+        "service",
+        "service-group",
+        "tag",
+        "external-dynamic-list"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one (optional)"
+    }
+  ],
+  "show config running": [
+    {
+      "name": "address",
+      "kind": "choice",
+      "required": false,
+      "choices": [
+        "address",
+        "address-group",
+        "service",
+        "service-group",
+        "tag",
+        "external-dynamic-list"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one (optional)"
+    }
+  ],
+  "show config versions": [
+    {
+      "name": "id",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter id",
+      "value_hint": "id"
+    }
+  ],
+  "show device": [
+    {
+      "name": "hostname",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter hostname"
+    }
+  ],
+  "show device snippets": [
+    {
+      "name": "hostname",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter hostname"
+    }
+  ],
+  "show interface": [
+    {
+      "name": "name",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter name"
+    }
+  ],
+  "show jobs id": [
+    {
+      "name": "n",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter n"
+    }
+  ],
+  "show log detail": [
+    {
+      "name": "n",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter n"
+    }
+  ],
+  "show log system": [
+    {
+      "name": "last",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter last",
+      "value_hint": "Nm|Nh|Nd"
+    },
+    {
+      "name": "limit",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter limit",
+      "value_hint": "n"
+    }
+  ],
+  "show log threat": [
+    {
+      "name": "src",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter src",
+      "value_hint": "ip"
+    },
+    {
+      "name": "dst",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter dst",
+      "value_hint": "ip"
+    },
+    {
+      "name": "port",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter port",
+      "value_hint": "n"
+    },
+    {
+      "name": "rule",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter rule",
+      "value_hint": "name"
+    },
+    {
+      "name": "app",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter app",
+      "value_hint": "name"
+    },
+    {
+      "name": "last",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter last",
+      "value_hint": "Nm|Nh|Nd"
+    },
+    {
+      "name": "limit",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter limit",
+      "value_hint": "n"
+    }
+  ],
+  "show log traffic": [
+    {
+      "name": "src",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter src",
+      "value_hint": "ip"
+    },
+    {
+      "name": "dst",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter dst",
+      "value_hint": "ip"
+    },
+    {
+      "name": "port",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter port",
+      "value_hint": "n"
+    },
+    {
+      "name": "rule",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter rule",
+      "value_hint": "name"
+    },
+    {
+      "name": "app",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter app",
+      "value_hint": "name"
+    },
+    {
+      "name": "last",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter last",
+      "value_hint": "Nm|Nh|Nd"
+    },
+    {
+      "name": "limit",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter limit",
+      "value_hint": "n"
+    }
+  ],
+  "show routing bfd active-profile name": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "value",
+        "default"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    }
+  ],
+  "show routing bfd details virtual-router": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "yes",
+        "no"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "1",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a value (1-1024)"
+    }
+  ],
+  "show routing bfd drop-counters session-id": [
+    {
+      "name": "1",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a value (1-1024)"
+    }
+  ],
+  "show routing bfd summary virtual-router": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "yes",
+        "no"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "1",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a value (1-1024)"
+    }
+  ],
+  "show routing fib virtual-router": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "yes",
+        "no"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "both",
+        "ipv4",
+        "ipv6"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    }
+  ],
+  "show routing multicast fib group": [
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    },
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing multicast group-permission interface": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing multicast igmp interface virtual-router": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing multicast igmp membership interface": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing multicast igmp statistics interface": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing multicast pim group-mapping group": [
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing multicast pim interface virtual-router": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing multicast pim neighbor virtual-router": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing multicast pim state virtual-router": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "ip/netmask",
+        "any"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "yes",
+        "no"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    }
+  ],
+  "show routing multicast pim statistics interface": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    }
+  ],
+  "show routing multicast route group": [
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    },
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing path-monitor virtual-router": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing protocol bgp": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "loc-rib",
+        "loc-rib-detail",
+        "rib-out",
+        "rib-out-detail"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    },
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "1",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a value (1-524288)"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "ipv4",
+        "ipv6",
+        "both"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "unicast",
+        "multicast",
+        "both"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    }
+  ],
+  "show routing protocol bgp peer peer-name": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing protocol bgp peer-group group-name": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing protocol bgp policy virtual-router": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "aggregate",
+        "cond-adv",
+        "export",
+        "import"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    }
+  ],
+  "show routing protocol bgp summary virtual-router": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing protocol ospf": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "area",
+        "dumplsdb",
+        "graceful-restart",
+        "interface",
+        "lsdb",
+        "neighbor",
+        "summary",
+        "virt-link",
+        "virt-neighbor"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing protocol ospfv3": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "area",
+        "graceful-restart",
+        "summary",
+        "virt-link"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing protocol ospfv3 dumplsdb scope": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "link-local",
+        "area-local",
+        "as-local",
+        "all"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    },
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    },
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "yes",
+        "no"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "inter-area-prefix",
+        "inter-area-router",
+        "intra-area-prefix",
+        "network",
+        "router",
+        "nssa"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing protocol ospfv3 interface brief": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "yes",
+        "no"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing protocol ospfv3 lsdb scope": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "link-local",
+        "area-local",
+        "as-local",
+        "all"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    },
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    },
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "yes",
+        "no"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "inter-area-prefix",
+        "inter-area-router",
+        "intra-area-prefix",
+        "network",
+        "router",
+        "nssa"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing protocol ospfv3 neighbor brief": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "yes",
+        "no"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing protocol ospfv3 virt-neighbor brief": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "yes",
+        "no"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing protocol redist": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "all",
+        "bgp",
+        "ospf",
+        "ospfv3",
+        "rip"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing protocol rip": [
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "database",
+        "interface",
+        "peer",
+        "summary"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show routing route destination": [
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip/netmask"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "static",
+        "connect",
+        "bgp",
+        "ospf",
+        "rip"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    },
+    {
+      "name": "1",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter a value (1-524288)"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "yes",
+        "no"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "both",
+        "ipv4",
+        "ipv6"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    },
+    {
+      "name": "type",
+      "kind": "choice",
+      "required": true,
+      "choices": [
+        "both",
+        "unicast",
+        "multicast"
+      ],
+      "choice_hints": {},
+      "hint": "Choose one"
+    }
+  ],
+  "show routing summary virtual-router": [
+    {
+      "name": "value",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter value"
+    }
+  ],
+  "show snippet": [
+    {
+      "name": "name",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter name"
+    }
+  ],
+  "test nat-policy-match": [
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip"
+    },
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip"
+    }
+  ],
+  "test security-policy-match": [
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip"
+    },
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip"
+    },
+    {
+      "name": "from",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter from",
+      "value_hint": "zone"
+    },
+    {
+      "name": "to",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter to",
+      "value_hint": "zone"
+    },
+    {
+      "name": "application",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter application",
+      "value_hint": "app"
+    },
+    {
+      "name": "destination-port",
+      "kind": "keyword",
+      "required": false,
+      "hint": "Enter destination-port",
+      "value_hint": "n"
+    }
+  ],
+  "test url": [
+    {
+      "name": "url",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter url"
+    }
+  ],
+  "traceroute host": [
+    {
+      "name": "ip",
+      "kind": "value",
+      "required": true,
+      "hint": "Enter ip"
+    }
+  ]
+}

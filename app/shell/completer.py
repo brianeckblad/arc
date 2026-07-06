@@ -169,6 +169,11 @@ class ArcCompleter(Completer):
 
         parts = text.split()
 
+        # ---- dev shell mode: complete dev-shell sub-commands first ----
+        if getattr(self._shell._state, "dev_shell", False):
+            yield from self._complete_dev_shell(parts, text)
+            return
+
         if not parts:
             for name in sorted(self._all_commands(include_remote_suffix=False)):
                 yield Completion(name, start_position=0)
@@ -180,7 +185,7 @@ class ArcCompleter(Completer):
         partial_arg = parts[1] if len(parts) > 1 else ""
 
         # ---- cd / remote / connect → device name or subcommand completion ----
-        if first in ("cd", "remote", "connect") and has_arg_space:
+        if first in ("cd", "connect") and has_arg_space:
             second = parts[1].lower() if len(parts) > 1 else ""
             # cd device / cd folder sub-commands
             if first == "cd" and len(parts) <= 2:
@@ -219,21 +224,14 @@ class ArcCompleter(Completer):
             return
 
 
-        # ---- folder → SCM folder name completion + 'create' subcommand ----
+        # ---- folder → 'create' subcommand only (switching uses 'cd folder') ----
         if first == "folder" and has_arg_space:
-            # 'create' is a special subcommand — offer it before folder names.
             if len(parts) <= 2 and "create".startswith(partial_arg.lower()):
                 yield Completion(
                     "create",
                     start_position=-len(partial_arg),
                     display_meta="create a new folder",
                 )
-            # Don't complete further after 'folder create <name>' (arbitrary name).
-            if len(parts) >= 2 and parts[1].lower() == "create":
-                return
-            for folder in self._shell._state.folders_cache:
-                if folder.lower().startswith(partial_arg.lower()):
-                    yield Completion(folder, start_position=-len(partial_arg))
             return
 
         # ---- feature → subcommand + flag name completion ----
@@ -434,6 +432,82 @@ class ArcCompleter(Completer):
                 else:
                     yield Completion(" " + text_ins, start_position=0,
                                      display=display, display_meta=opt["meta"])
+
+    def _complete_dev_shell(self, parts: list[str], text: str):
+        """Yield completions for dev shell commands.
+
+        Handles all dev-shell sub-commands: status, docs, catalog,
+        command-structure, exit, plus normal ARC commands that still work
+        from the dev shell.
+        """
+        # Dev shell top-level commands
+        _DEV_TOP = {
+            "status":            "Health dashboard",
+            "docs":              "Manage pan.dev API documentation",
+            "catalog":           "Regenerate code artifacts",
+            "command-structure": "Manage contextual ? help specs",
+            "exit":              "Leave dev shell",
+        }
+        # Sub-command trees
+        _DEV_SUBS = {
+            "docs":              [("update", "Pull latest pan.dev specs + regenerate"),
+                                  ("status", "Last pull date and spec ages")],
+            "docs update":       [("--scm", "SCM API specs only"),
+                                  ("--panos", "PAN-OS CLI docs only")],
+            "catalog":           [("rebuild", "Run all generators (no network)")],
+            "command-structure": [("list",    "Show all enabled commands + tiers"),
+                                  ("update",  "Auto-generate help specs for missing commands"),
+                                  ("clear",   "Wipe auto-generated specs")],
+            "command-structure list": [("enabled",  "Show enabled commands only"),
+                                       ("disabled", "Show disabled commands only")],
+        }
+
+        ends_with_space = text.endswith(" ")
+        first = parts[0].lower() if parts else ""
+        partial = parts[-1] if not ends_with_space and len(parts) > 1 else ""
+
+        if not parts or (len(parts) == 1 and not ends_with_space):
+            # Complete top-level dev commands
+            for name, meta in _DEV_TOP.items():
+                if name.startswith(first):
+                    yield Completion(name, start_position=-len(first), display_meta=meta)
+            # Also offer normal ARC commands (cd, show, feature, etc.)
+            for name in sorted(self._all_commands(include_remote_suffix=False)):
+                if name.startswith(first) and name not in _DEV_TOP:
+                    yield Completion(name, start_position=-len(first))
+            return
+
+        # Build the command prefix seen so far (excluding the partial last token)
+        if ends_with_space:
+            prefix = " ".join(p.lower() for p in parts)
+        else:
+            prefix = " ".join(p.lower() for p in parts[:-1])
+
+        if prefix in _DEV_SUBS:
+            for sub, meta in _DEV_SUBS[prefix]:
+                if sub.startswith(partial.lower()):
+                    yield Completion(sub, start_position=-len(partial), display_meta=meta)
+            return
+
+        # command-structure update <cmd> — complete enabled command names
+        if prefix.startswith("command-structure update"):
+            from app.commands.registry import COMMANDS
+            from app.settings.features import is_enabled
+            features = getattr(self._shell, "_features", {})
+            dev_mode = getattr(self._shell, "_dev_mode", False)
+            for key in sorted(COMMANDS):
+                cmd = COMMANDS[key]
+                if cmd.feature_flag and is_enabled(features, cmd.feature_flag, dev_mode):
+                    if key.startswith(partial.lower()):
+                        yield Completion(key, start_position=-len(partial),
+                                        display_meta=cmd.description[:50])
+            return
+
+        # Fall through to normal ARC command-name prefix completion
+        text_trim = text.rstrip()
+        for name in sorted(self._all_commands(include_remote_suffix=False)):
+            if name.startswith(text_trim) and name != text_trim:
+                yield Completion(name, start_position=-len(text_trim))
 
     def _match_complete_command(self, parts: list[str], ends_with_space: bool) -> str | None:
         """Return the longest complete command key the user has fully entered.

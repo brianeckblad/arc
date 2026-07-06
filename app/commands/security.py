@@ -26,8 +26,8 @@ from app.commands.base import (
 # Plain list commands use show_handler(<SCMClient method>) from base.py;
 # pan.dev: GET /config/security/v1/<resource>?folder=<folder>
 #
-# NOTE: `test security-policy-match` and `packet-tracer` live in
-# app/commands/packet_tracer.py (they simulate the folder rule base).
+# NOTE: `test security-policy-match` lives in
+# app/commands/packet_tracer.py (simulates the folder rule base).
 # ---------------------------------------------------------------------------
 
 COMMANDS: dict[str, CommandDef] = {

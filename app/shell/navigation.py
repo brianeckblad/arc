@@ -15,14 +15,17 @@ class NavigationMixin:
         return time.monotonic() - loaded_at > _CACHE_MAX_AGE_S
 
     def _cmd_cd(self, args: list[str]) -> None:
-        """Unified context navigation — device or folder.
+        """Change device or folder context (navigation only).
 
         Usage:
           cd device <name>   — set device context (Tab -> device list)
-          cd folder <name>   — set folder scope (Tab -> folder list)
+          cd folder <name>   — set folder context (Tab -> folder list)
+          cd folder ..       — reset folder to Shared
           cd ..  |  cd /     — clear device context and return to global
           cd <name>          — shorthand for 'cd device <name>' (backward compat)
           cd                 — show current context
+
+        To list or create folders, use the 'folder' command (configure mode).
         """
         # Bare `cd` — show current position
         if not args:
@@ -63,8 +66,12 @@ class NavigationMixin:
             if not rest:
                 console.print("[yellow]Usage:[/yellow] cd folder <name>  (Tab to list folders)")
                 return
-            # Delegate to the existing folder command for validation + state update
-            self._cmd_folder(rest)
+            target = rest[0]
+            if target in ("..", "/"):
+                self._state.folder = "Shared"
+                console.print("[cyan]SCM folder reset to:[/cyan] [bold]Shared[/bold]")
+            else:
+                self._switch_folder(" ".join(rest))
             return
 
         # Backward compat: `cd <name>` with no subcommand keyword → device
@@ -243,71 +250,8 @@ class NavigationMixin:
             f"[dim]{client_id}[/dim]"
         )
 
-    def _cmd_folder(self, args: list[str]) -> None:
-        """Set or display the active SCM folder context.
-
-        The active folder is passed as the ``?folder=`` query parameter on
-        every SCM REST call.  It is always visible in the prompt so there is
-        no ambiguity about which folder a command is scoped to.
-
-        Usage:
-          folder                  — list available folders and show the active one
-          folder <name>           — switch to <name>
-          folder ..               — switch to 'Shared' (root / default)
-          folder create <name>    — create a new folder (interactive parent selection)
-        """
-        # Subcommand: folder create <name>
-        if args and args[0].lower() == "create":
-            folder_name = args[1] if len(args) > 1 else None
-            if not self._state.configure_mode:
-                console.print(
-                    "[yellow]Write operation blocked:[/yellow] folder creation requires configure mode.\n"
-                    "  Enter [bold]configure[/bold] first, then run [bold]folder create <name>[/bold]."
-                )
-                return
-            self._cmd_folder_create(folder_name)
-            return
-
-        if not args:
-            # Show current folder and available options, same pattern as `tsg` with no args.
-            console.print(f"[cyan]Active SCM folder:[/cyan] [bold]{self._state.folder}[/bold]")
-            if self._state.folders_cache:
-                console.print("\n[bold yellow]Available Folders[/bold yellow]  "
-                              "[dim](Tab after 'folder ' to complete)[/dim]")
-                for name in sorted(self._state.folders_cache):
-                    marker = " [green]◀ active[/green]" if name == self._state.folder else ""
-                    console.print(f"  [green]{name}[/green]{marker}")
-            else:
-                console.print(
-                    "[dim]No folder list cached — run [bold]show devices[/bold] or "
-                    "[bold]folder[/bold] after SCM is connected to populate.[/dim]"
-                )
-                self._refresh_folders(silent=False)
-                if self._state.folders_cache:
-                    console.print("\n[bold yellow]Available Folders[/bold yellow]")
-                    for name in sorted(self._state.folders_cache):
-                        marker = " [green]◀ active[/green]" if name == self._state.folder else ""
-                        console.print(f"  [green]{name}[/green]{marker}")
-            console.print(
-                "\n[dim]  folder <name> → switch  |  "
-                "folder .. → back to Shared  |  "
-                "Tab after 'folder ' → complete folder name[/dim]"
-            )
-            return
-
-        # `folder ..` or `folder /` → reset to default (Shared).
-        if args[0] in ("..", "/"):
-            self._state.folder = "Shared"
-            console.print("[cyan]SCM folder reset to:[/cyan] [bold]Shared[/bold]")
-            return
-
-        new_folder = args[0]
-
-        # Validate against the known folder list when the cache is populated.
-        # This prevents silently setting a folder that doesn't exist in the
-        # active TSG — same principle as cd refusing unknown devices.
-        # A miss on a stale cache gets one silent re-fetch first, so folders
-        # created after startup (here or in the SCM UI) are still accepted.
+    def _switch_folder(self, new_folder: str) -> None:
+        """Validate and apply a folder context change — called only by `cd folder <name>`."""
         cache_meaningful = (
             bool(self._state.folders_cache)
             and self._state.folders_cache != ["Shared", "Global"]
@@ -320,13 +264,11 @@ class NavigationMixin:
             console.print(
                 f"[red]Folder '{new_folder}' not found in TSG {active_tsg}.[/red]\n"
                 f"  [dim]Available folders: {', '.join(sorted(self._state.folders_cache))}\n"
-                "  Tab after 'folder ' to complete, or 'folder' alone to list folders.[/dim]"
+                "  Tab after 'cd folder ' to complete, or 'folder' to list folders.[/dim]"
             )
             return
 
         self._state.folder = new_folder
-        # Clear device context when switching folder — a device cd'd to in one
-        # folder may not be visible or relevant in another.
         if self._state.device:
             device_name = device_display_name(self._state.device)
             self._state.device = None
@@ -336,6 +278,62 @@ class NavigationMixin:
             )
         else:
             console.print(f"[cyan]SCM folder set to:[/cyan] [bold]{new_folder}[/bold]")
+
+    def _cmd_folder(self, args: list[str]) -> None:
+        """Manage SCM folders — list available folders or create a new one.
+
+        Requires configure mode.  Use 'cd folder <name>' to switch the active folder.
+
+        Usage:
+          folder                  — list available folders and show the active one
+          folder create <name>    — create a new folder (interactive parent selection)
+        """
+        if not self._state.configure_mode:
+            console.print(
+                "[yellow]The folder command requires configure mode.[/yellow]\n"
+                "  Enter [bold]configure[/bold] first, or use "
+                "[bold]cd folder <name>[/bold] to switch folders."
+            )
+            return
+
+        # Subcommand: folder create <name>
+        if args and args[0].lower() == "create":
+            folder_name = args[1] if len(args) > 1 else None
+            self._cmd_folder_create(folder_name)
+            return
+
+        # Redirect switch attempts
+        if args and args[0] not in ("create",):
+            console.print(
+                "[yellow]Use 'cd folder <name>' to switch folders.[/yellow]\n"
+                "  [dim]'folder' manages folders (list, create). "
+                "'cd folder <name>' changes your active folder.[/dim]"
+            )
+            return
+
+        # Bare `folder` — list available folders
+        console.print(f"[cyan]Active SCM folder:[/cyan] [bold]{self._state.folder}[/bold]")
+        if self._state.folders_cache:
+            console.print("\n[bold yellow]Available Folders[/bold yellow]  "
+                          "[dim](use 'cd folder <name>' to switch)[/dim]")
+            for name in sorted(self._state.folders_cache):
+                marker = " [green]◀ active[/green]" if name == self._state.folder else ""
+                console.print(f"  [green]{name}[/green]{marker}")
+        else:
+            console.print(
+                "[dim]No folder list cached — run [bold]show devices[/bold] or "
+                "[bold]folder[/bold] after SCM is connected to populate.[/dim]"
+            )
+            self._refresh_folders(silent=False)
+            if self._state.folders_cache:
+                console.print("\n[bold yellow]Available Folders[/bold yellow]")
+                for name in sorted(self._state.folders_cache):
+                    marker = " [green]◀ active[/green]" if name == self._state.folder else ""
+                    console.print(f"  [green]{name}[/green]{marker}")
+        console.print(
+            "\n[dim]  cd folder <name> → switch  |  "
+            "folder create <name> → new folder[/dim]"
+        )
 
     def _cmd_folder_create(self, name: Optional[str]) -> None:
         """Interactive folder creation: prompt for a parent, confirm, and POST to SCM.

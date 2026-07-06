@@ -113,7 +113,7 @@ class HelpMixin:
             else:
                 prefix = " ".join(prefix_tokens).lower()
                 _builtin_names = {
-                    "cd", "connect", "remote", "folder", "tsg", "configure",
+                    "cd", "connect", "folder", "tsg", "configure",
                     "pwd", "docs", "help", "clear", "exit", "quit",
                 }
                 if prefix in _builtin_names:
@@ -244,10 +244,11 @@ class HelpMixin:
             _print_full_help()
 
     def _cmd_show_write_help(self, verb: str) -> None:
-        """Show available delete/update commands in configure mode."""
+        """Show available set/delete/update commands in configure mode."""
         t = self._theme
         dd = t.description_dim
         _LABELS = {
+            "set":    ("set — Create or modify configuration objects", "No set commands enabled. Run: feature enable <flag>"),
             "delete": ("delete — Remove configuration objects", "No delete commands enabled. Enable flags: feature enable delete_objects"),
             "update": ("update — Modify existing objects (GET→merge→PUT)", "No update commands enabled. Run: feature enable update_objects"),
         }
@@ -303,6 +304,17 @@ class HelpMixin:
         what they found. Composable: ``find command keyword address | match cngfw``.
         """
         tokens = list(args)
+        if tokens and tokens[0] in ("?", "help"):
+            console.print(
+                "\n  [bold]find command keyword[/bold]  — search all commands by name or description\n\n"
+                "  [cyan]find command keyword <text>[/cyan]          Search all commands\n"
+                "  [cyan]find command keyword <text> | match <w>[/cyan]  Narrow results further\n\n"
+                "  [dim]Searches both the command name and its description.\n"
+                "  Shows every command including disabled ones (with their feature flag).\n"
+                "  Example:  find command keyword bgp\n"
+                "            find command keyword address | match group[/dim]\n"
+            )
+            return
         if [t.lower() for t in tokens[:2]] == ["command", "keyword"]:
             tokens = tokens[2:]
         elif tokens and tokens[0].lower() == "command":
@@ -368,13 +380,17 @@ class HelpMixin:
         """_is_command_visible plus the current-context gates.
 
         A visible command is still unavailable when it needs a device context
-        (scope="device" with no `cd <device>`) or configure mode (`commit`).
+        (scope="device" with no `cd <device>`) or configure mode (`commit`,
+        `set *`, `delete *`, `update *`, `load *`).
         """
         if not self._is_command_visible(key, cmd_def):
             return False
         if cmd_def.scope == "device" and not self._state.device:
             return False
-        if key == "commit" and not self._state.configure_mode:
+        _configure_only = key == "commit" or key.startswith(
+            ("set ", "delete ", "update ", "load ")
+        )
+        if _configure_only and not self._state.configure_mode:
             return False
         return True
 

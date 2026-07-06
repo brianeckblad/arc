@@ -1,21 +1,70 @@
 {
   "_comment": [
-    "command-structure.json \u2014 the ORDER of fields for each 'set <object>' command.",
+    "command-structure.json — field order for curated ARC commands.",
     "",
-    "Format: Each key is an object type, value is an array of field names in order.",
-    "Reorder a command by moving field names in the array. That is all you edit here.",
-    "Everything else (which fields are choices, the choices themselves, the hints,",
-    "which are required) comes from the API/field library in code \u2014 never this file.",
+    "Keys are full command strings: 'set address-group', 'update tag', etc.",
+    "Bare object names (e.g. 'address') are still accepted and get a 'set ' prefix.",
     "",
-    "You do NOT need quotes around values with spaces \u2014 ARC works out where each",
-    "field ends from the structure below (quotes still work for rare edge cases).",
-    "Keys starting with _ are instructions/metadata and are ignored by the parser."
+    "Value: array of field names in the order the user types them.",
+    "  required positionals first, optional keywords last.",
+    "  Field metadata (choices, hints, required) lives in command_structure.py.",
+    "",
+    "update <obj> and delete <obj> are AUTO-DERIVED from set <obj> entries:",
+    "  update reuses the same fields; delete uses only 'name'.",
+    "  Add an explicit entry to override.",
+    "",
+    "You do NOT need quotes around values with spaces — ARC's greedy parser",
+    "works out field boundaries from the structure below.",
+    "Keys starting with _ are comments and are ignored by the parser."
   ],
-  "address": [
+
+  "set address": [
     "name",
     "type",
     "value",
     "description",
     "tag"
+  ],
+
+  "set address-group": [
+    "name",
+    "type",
+    "value",
+    "description",
+    "tag"
+  ],
+
+  "set tag": [
+    "name",
+    "color",
+    "comments"
+  ],
+
+  "set service": [
+    "name",
+    "protocol",
+    "port",
+    "source-port",
+    "description",
+    "tag"
+  ],
+
+  "set service-group": [
+    "name",
+    "members",
+    "tag"
+  ],
+
+  "set external-dynamic-list": [
+    "name",
+    "type",
+    "url",
+    "description"
+  ],
+
+  "set url-category": [
+    "name",
+    "list",
+    "description"
   ]
 }
