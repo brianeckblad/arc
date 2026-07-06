@@ -54,7 +54,7 @@ class ConfigureMixin:
         """Enter configure mode (Cisco-style).
 
         In configure mode, 'set' creates objects and 'exit' leaves configure mode.
-        Shortcuts like 'conf' and 'conf t' are defined in settings/builtin_commands.json.
+        Shortcuts like 'conf' and 'conf t' are defined in settings/builtin-commands.json.
         """
         if args:
             console.print(

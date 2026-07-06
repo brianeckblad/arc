@@ -286,7 +286,7 @@ class HelpMixin:
     def _is_command_visible(self, key: str, cmd_def: CommandDef) -> bool:
         """Single source of truth: does this command appear in ``?`` for this operator?
 
-        Context-independent gates only — settings/builtin_commands.json visibility
+        Context-independent gates only — settings/builtin-commands.json visibility
         (honoring dev mode for "hidden" state) and the feature flag
         (settings/features/, honoring dev mode).
         Dispatch, tab completion, and help must all use this same check.

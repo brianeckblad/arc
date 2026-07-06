@@ -54,7 +54,7 @@ COMMAND_STRUCTURE_GENERATED_JSON = SETTINGS_DIR / "command-structure-generated.j
 
 # System command aliases — shorthand input → canonical dispatch line.
 # User-defined aliases live in config/<user>/preferences.json.
-COMMAND_ALIASES_JSON = SETTINGS_DIR / "command_aliases.json"
+COMMAND_ALIASES_JSON = SETTINGS_DIR / "command-aliases.json"
 
 # Per-user secrets directory (config.json is written here, never committed).
 CONFIG_DIR = REPO_ROOT / "config"

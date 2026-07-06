@@ -1,8 +1,8 @@
-"""Builtin command visibility — reads settings/builtin_commands.json.
+"""Builtin command visibility — reads settings/builtin-commands.json.
 
 INDEPENDENT of feature flags (settings/features/).
 - settings/features/: enables/disables functional command areas
-- builtin_commands.json: per-command visibility/execution for builtins
+- builtin-commands.json: per-command visibility/execution for builtins
 
 Three states:
   true     — visible in ? and executable (default when absent)
@@ -21,7 +21,7 @@ from pathlib import Path
 
 from app.paths import SETTINGS_DIR, COMMAND_ALIASES_JSON
 
-COMMANDS_FILE = SETTINGS_DIR / "builtin_commands.json"
+COMMANDS_FILE = SETTINGS_DIR / "builtin-commands.json"
 
 # Canonical state strings
 STATE_VISIBLE = "visible"
@@ -30,7 +30,7 @@ STATE_BLOCKED = "blocked"
 
 
 def _coerce_visibility(val: object) -> str:
-    """Normalise a raw builtin_commands.json value to a state string."""
+    """Normalise a raw builtin-commands.json value to a state string."""
     if val is True:
         return STATE_VISIBLE
     if val is False:
@@ -46,7 +46,7 @@ def _coerce_visibility(val: object) -> str:
 
 
 def load_command_visibility() -> dict[str, str]:
-    """Load builtin command visibility from settings/builtin_commands.json.
+    """Load builtin command visibility from settings/builtin-commands.json.
 
     Returns a dict mapping command key → state ("visible" | "hidden" | "blocked").
     Keys starting with "_" are ignored. Missing file → empty dict (all visible).
@@ -82,7 +82,7 @@ def is_command_visible(command_key: str, visibility: dict[str, str],
 
 
 def load_builtin_aliases() -> dict[str, str]:
-    """Load system command aliases from settings/command_aliases.json.
+    """Load system command aliases from settings/command-aliases.json.
 
     Returns ``{input_line: canonical_line}`` (keys lowercased, stripped).
     Applied in dispatch before prefix expansion — ``conf t`` → ``configure``.
