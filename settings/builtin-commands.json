@@ -1,11 +1,10 @@
 {
-  "_README": "Builtin command registry — visibility, display names, and help text for all shell builtins. Loaded by app/settings/commands.py. Values for 'visible': true (shown + executable), false (hidden + blocked), hidden (executable but not shown in ? — dev mode reveals it). 'configure_only': shown only in configure mode. 'hide_in_configure': hidden in configure mode. 'display': the name shown in ? help (can include placeholders). 'help': the description shown in ? help. Entries without 'help' appear in SHELL_BUILTINS for dispatch/completion but not in ? help rows.",
-
+  "_README": "Builtin command registry \u2014 visibility, display names, and help text for all shell builtins. Loaded by app/settings/commands.py. Values for 'visible': true (shown + executable), false (hidden + blocked), hidden (executable but not shown in ? \u2014 dev mode reveals it). 'configure_only': shown only in configure mode. 'hide_in_configure': hidden in configure mode. 'display': the name shown in ? help (can include placeholders). 'help': the description shown in ? help. Entries without 'help' appear in SHELL_BUILTINS for dispatch/completion but not in ? help rows.",
   "_comment_navigation": "=== Navigation ===",
   "arc": {
     "visible": true,
     "display": "arc",
-    "help": "Application info and management  (arc show | arc ?)"
+    "help": "Application info  (arc show | arc show version | arc show session | arc ?)"
   },
   "cd": {
     "visible": true,
@@ -15,7 +14,7 @@
   "connect": {
     "visible": true,
     "display": "connect <device>",
-    "help": "SSH to device — interactive session  (keyboard-interactive + 2FA)"
+    "help": "SSH to device \u2014 interactive session  (keyboard-interactive + 2FA)"
   },
   "pwd": {
     "visible": true,
@@ -25,7 +24,7 @@
   "folder": {
     "visible": true,
     "display": "folder",
-    "help": "Manage SCM folders — list, create  (configure mode)",
+    "help": "Manage SCM folders \u2014 list, create  (configure mode)",
     "configure_only": true
   },
   "tsg": {
@@ -38,7 +37,6 @@
     "display": "account <name>",
     "help": "List or switch credential profiles  (Tab -> profile names)"
   },
-
   "_comment_configure": "=== Configure mode ===",
   "configure": {
     "visible": true,
@@ -49,37 +47,37 @@
   "set": {
     "visible": true,
     "display": "set <type> <name>",
-    "help": "Create configuration  (configure mode)  — set ? for sub-commands",
+    "help": "Create configuration  (configure mode)  \u2014 set ? for sub-commands",
     "configure_only": true
   },
   "update": {
     "visible": true,
     "display": "update <type> <name>",
-    "help": "Modify existing object  (configure mode)  — update ? for types",
+    "help": "Modify existing object  (configure mode)  \u2014 update ? for types",
     "configure_only": true
   },
   "delete": {
     "visible": true,
     "display": "delete <type> <name>",
-    "help": "Delete configuration object  (configure mode)  — delete ? for types",
+    "help": "Delete configuration object  (configure mode)  \u2014 delete ? for types",
     "configure_only": true
   },
   "show config": {
     "visible": true,
     "display": "show config",
-    "help": "List staged changes pending commit  (local — not yet in SCM)",
+    "help": "List staged changes pending commit  (local \u2014 not yet in SCM)",
     "configure_only": true
   },
   "commit": {
     "visible": true,
     "display": "commit",
-    "help": "Apply staged changes + push to devices  (commit watch → follow the job)",
+    "help": "Apply staged changes + push to devices  (commit watch \u2192 follow the job)",
     "configure_only": true
   },
   "abandon": {
     "visible": true,
     "display": "abandon",
-    "help": "Discard staged changes  (local only — SCM is never touched)",
+    "help": "Discard staged changes  (local only \u2014 SCM is never touched)",
     "configure_only": true
   },
   "cli": {
@@ -88,7 +86,6 @@
     "help": "CLI theme operations  (show | color | reset)",
     "configure_only": true
   },
-
   "_comment_utilities": "=== Utilities ===",
   "feature": {
     "visible": true,
@@ -98,7 +95,7 @@
   "find": {
     "visible": true,
     "display": "find command keyword <text>",
-    "help": "Search ALL commands (incl. disabled) — PAN-OS style"
+    "help": "Search ALL commands (incl. disabled) \u2014 PAN-OS style"
   },
   "terminal": {
     "visible": true,
@@ -108,12 +105,12 @@
   "history": {
     "visible": true,
     "display": "history",
-    "help": "Show recent commands  (history <n> — default 20)"
+    "help": "Show recent commands  (history <n> \u2014 default 20)"
   },
   "alias": {
     "visible": true,
     "display": "alias",
-    "help": "User-defined shortcuts  (alias <name> <cmd…> | alias delete <name>)"
+    "help": "User-defined shortcuts  (alias <name> <cmd\u2026> | alias delete <name>)"
   },
   "watch": {
     "visible": true,
@@ -143,7 +140,6 @@
   "?": {
     "visible": true
   },
-
   "_comment_exit": "=== Exit ===",
   "exit": {
     "visible": true,

@@ -14,13 +14,13 @@
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
-## `app/shell/configure.py`  (2052 lines)
+## `app/shell/configure.py`  (2121 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _prefs_file_label()                      10-16          Repo-relative path of the preferences file, for display.
 capture_write_ops()                      19-49          Run a write handler against a recording client and capture its mutatio
-class ConfigureMixin                     52-1981        
+class ConfigureMixin                     52-2050        
   ._cmd_configure()                      53-74          Enter configure mode (Cisco-style).
   ._stage_write()                        76-103         Validate a configure-mode write and stage it locally (no SCM change).
   ._cmd_show_pending()                   105-126        List the locally staged configure-mode changes (`show config`).
@@ -56,10 +56,18 @@ class ConfigureMixin                     52-1981
   ._dev_catalog_rebuild()                1603-1656      Run all generator scripts to rebuild code artifacts.
   ._print_dev_status()                   1660-1674      Print current dev mode state (used by 'dev on/off' outside the shell).
   ._cmd_setup()                          1677-1794      Interactive credential setup wizard.
-  ._cmd_arc()                            1800-1830      ARC application information and management.
-  ._arc_show()                           1832-1981      Show comprehensive ARC application information.
-_setup_bearer_instructions()             1988-2016      Print bearer-token setup commands for the detected OS.
-_setup_oauth_instructions()              2019-2051      Print OAuth client credential setup commands for the detected OS.
+  ._cmd_arc()                            1800-1853      ARC application information and management.
+  ._arc_help()                           1855-1878      Print arc sub-command reference.
+  ._arc_row()                            1884-1890      Print one labelled row in the arc show style.
+  ._arc_show_version()                   1892-1915      arc show version — version, Python, platform.
+  ._arc_show_paths()                     1917-1930      arc show paths — app root, settings, config directories.
+  ._arc_show_scm()                       1932-1970      arc show scm — SCM API spec freshness and last change.
+  ._arc_show_commands()                  1972-2003      arc show commands — command counts and feature flag stats.
+  ._arc_show_settings()                  2005-2027      arc show settings — settings file inventory.
+  ._arc_show_session()                   2029-2046      arc show session — active profile, TSG, folder, device, modes.
+  ._arc_show()                           2048-2050      arc show (all) — kept for backward compat; calls _cmd_arc(['show']).
+_setup_bearer_instructions()             2057-2085      Print bearer-token setup commands for the detected OS.
+_setup_oauth_instructions()              2088-2120      Print OAuth client credential setup commands for the detected OS.
 
 ## `app/settings/field_catalog.py`  (1924 lines)
 

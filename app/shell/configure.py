@@ -1800,66 +1800,105 @@ class ConfigureMixin:
     def _cmd_arc(self, args: list[str]) -> None:  # noqa: C901
         """ARC application information and management.
 
-        arc show    — show application info (version, paths, spec age, stats)
-        arc ?       — show sub-commands
+        arc show              — show all sections
+        arc show version      — version, Python, platform
+        arc show paths        — app root, settings, config directories
+        arc show scm          — SCM API spec freshness and last changes
+        arc show commands     — command counts and feature flag stats
+        arc show settings     — settings file inventory
+        arc show session      — active profile, TSG, folder, device, mode
+        arc ?                 — list sub-commands
         """
         sub = args[0].lower() if args else "?"
+        section = args[1].lower() if len(args) > 1 else "all"
+
+        _SECTIONS = {
+            "version":  self._arc_show_version,
+            "paths":    self._arc_show_paths,
+            "scm":      self._arc_show_scm,
+            "commands": self._arc_show_commands,
+            "settings": self._arc_show_settings,
+            "session":  self._arc_show_session,
+        }
+
         if sub == "show":
-            self._arc_show()
-        elif sub in ("?", "help"):
-            t = self._theme
-            w = 20
-            console.print()
-            console.print(
-                "  [bold yellow]arc[/bold yellow]  "
-                "[dim]— application information and management[/dim]\n"
-            )
-            rows = [
-                ("arc show", "Application info — version, paths, spec age, command stats"),
-            ]
-            for cmd, desc in rows:
+            if section == "all":
+                # Print header then all sections
+                console.print()
                 console.print(
-                    f"  {self._styled(f'{cmd:<{w}}', t.command_name)} "
-                    f"{self._styled(desc, t.description_dim)}"
+                    "  [bold cyan]ARC[/bold cyan]  "
+                    "[dim]Assisted Remote Console — Palo Alto Networks SCM + PAN-OS[/dim]\n"
                 )
-            console.print()
+                for fn in _SECTIONS.values():
+                    fn(header=True)
+            elif section in _SECTIONS:
+                console.print()
+                _SECTIONS[section](header=False)
+                console.print()
+            elif section == "?":
+                self._arc_help()
+            else:
+                console.print(
+                    f"[yellow]Unknown section:[/yellow] {section!r}\n"
+                    "  arc show  |  arc show version  |  arc show paths  |  "
+                    "arc show scm  |  arc show commands  |  arc show settings  |  arc show session"
+                )
+
+        elif sub in ("?", "help"):
+            self._arc_help()
         else:
             console.print(
                 f"[yellow]Unknown arc sub-command:[/yellow] {sub!r}\n"
                 "  Try: [bold]arc show[/bold]  |  [bold]arc ?[/bold]"
             )
 
-    def _arc_show(self) -> None:  # noqa: C901
-        """Show comprehensive ARC application information."""
-        import re as _re
-        import sys as _sys
-        import platform as _platform
-        import subprocess as _sp
-        import datetime as _dt
-        from app import __version__
-        from app.paths import (
-            REPO_ROOT, CONFIG_DIR, FEATURES_DIR, SETTINGS_DIR,
-            COMMAND_STRUCTURE_JSON, COMMAND_ALIASES_JSON,
-        )
-        from app.commands.registry import COMMANDS
-        from app.settings.features import is_enabled, is_feature_visible, feature_state
-
+    def _arc_help(self) -> None:
+        """Print arc sub-command reference."""
         t = self._theme
-
-        def _row(label: str, value: str, dim_note: str = "") -> None:
-            lw = 24
-            console.print(
-                f"  {self._styled(f'{label:<{lw}}', t.command_name)} {value}"
-                + (f"  [dim]{dim_note}[/dim]" if dim_note else "")
-            )
-
+        w = 24
         console.print()
         console.print(
-            "  [bold cyan]ARC[/bold cyan]  "
-            "[dim]Assisted Remote Console — Palo Alto Networks SCM + PAN-OS[/dim]\n"
+            "  [bold yellow]arc[/bold yellow]  "
+            "[dim]— application information and management[/dim]\n"
+        )
+        rows = [
+            ("arc show",          "All sections"),
+            ("arc show version",  "Version, Python, platform"),
+            ("arc show paths",    "App root, settings, config directories"),
+            ("arc show scm",      "SCM API spec freshness and last changes"),
+            ("arc show commands", "Command counts and feature flag stats"),
+            ("arc show settings", "Settings file inventory"),
+            ("arc show session",  "Active profile, TSG, folder, device, mode"),
+        ]
+        for cmd, desc in rows:
+            console.print(
+                f"  {self._styled(f'{cmd:<{w}}', t.command_name)} "
+                f"{self._styled(desc, t.description_dim)}"
+            )
+        console.print()
+
+    # ------------------------------------------------------------------
+    # arc show section helpers
+    # ------------------------------------------------------------------
+
+    def _arc_row(self, label: str, value: str, dim_note: str = "") -> None:
+        """Print one labelled row in the arc show style."""
+        lw = 24
+        console.print(
+            f"  {self._styled(f'{label:<{lw}}', self._theme.command_name)} {value}"
+            + (f"  [dim]{dim_note}[/dim]" if dim_note else "")
         )
 
-        # ── Version ──────────────────────────────────────────────────────────
+    def _arc_show_version(self, header: bool = False) -> None:
+        """arc show version — version, Python, platform."""
+        import sys as _sys, platform as _platform, subprocess as _sp
+        from app import __version__
+        from app.paths import REPO_ROOT
+
+        if header:
+            console.print(f"  [dim]{'─' * 52}[/dim]")
+            console.print("  [bold]Version[/bold]\n")
+
         try:
             git_result = _sp.run(
                 ["git", "rev-parse", "--short", "HEAD"],
@@ -1869,25 +1908,36 @@ class ConfigureMixin:
         except Exception:
             git_ref = ""
 
-        _row("Version",   f"[bold]{__version__}[/bold]",
-             f"commit {git_ref}" if git_ref else "")
-        _row("Python",    _sys.version.split()[0],
-             _platform.python_implementation())
-        _row("Platform",  _platform.system() + " " + _platform.release())
+        self._arc_row("Version",  f"[bold]{__version__}[/bold]",
+                      f"commit {git_ref}" if git_ref else "")
+        self._arc_row("Python",   _sys.version.split()[0],
+                      _platform.python_implementation())
+        self._arc_row("Platform", _platform.system() + " " + _platform.release())
 
-        # ── Paths ─────────────────────────────────────────────────────────────
-        console.print()
-        console.print(f"  [dim]{'─' * 52}[/dim]")
-        console.print("  [bold]Paths[/bold]\n")
-        _row("App root",  str(REPO_ROOT))
-        _row("Settings",  str(SETTINGS_DIR.relative_to(REPO_ROOT)))
-        _row("Config",    str(CONFIG_DIR.relative_to(REPO_ROOT)),
-             "per-user, gitignored")
+    def _arc_show_paths(self, header: bool = False) -> None:
+        """arc show paths — app root, settings, config directories."""
+        from app.paths import REPO_ROOT, SETTINGS_DIR, CONFIG_DIR, FEATURES_DIR
 
-        # ── SCM API docs ──────────────────────────────────────────────────────
-        console.print()
-        console.print(f"  [dim]{'─' * 52}[/dim]")
-        console.print("  [bold]SCM API Specs[/bold]\n")
+        if header:
+            console.print()
+            console.print(f"  [dim]{'─' * 52}[/dim]")
+            console.print("  [bold]Paths[/bold]\n")
+
+        self._arc_row("App root",  str(REPO_ROOT))
+        self._arc_row("Settings",  str(SETTINGS_DIR.relative_to(REPO_ROOT)))
+        self._arc_row("Features",  str(FEATURES_DIR.relative_to(REPO_ROOT)))
+        self._arc_row("Config",    str(CONFIG_DIR.relative_to(REPO_ROOT)),
+                      "per-user, gitignored")
+
+    def _arc_show_scm(self, header: bool = False) -> None:
+        """arc show scm — SCM API spec freshness and last change."""
+        import re as _re, datetime as _dt
+        from app.paths import REPO_ROOT
+
+        if header:
+            console.print()
+            console.print(f"  [dim]{'─' * 52}[/dim]")
+            console.print("  [bold]SCM API Specs[/bold]\n")
 
         manifest  = REPO_ROOT / "docs" / "scm-api" / "MANIFEST.md"
         specs_dir = REPO_ROOT / "docs" / "scm-api" / "specs"
@@ -1901,28 +1951,33 @@ class ConfigureMixin:
                 pulled_dt = _dt.date.fromisoformat(pull_date)
                 age = (_dt.date.today() - pulled_dt).days
                 color = "green" if age <= 3 else "yellow" if age <= 14 else "red"
-                _row("Last docsupdate", f"[bold]{pull_date}[/bold]",
-                     f"[{color}]{age}d ago[/{color}]")
+                self._arc_row("Last docsupdate", f"[bold]{pull_date}[/bold]",
+                              f"[{color}]{age}d ago[/{color}]")
             else:
-                _row("Last docsupdate", "[dim]unknown[/dim]")
+                self._arc_row("Last docsupdate", "[dim]unknown[/dim]")
         else:
-            _row("Last docsupdate", "[red]never[/red]", "run: dev → docs update")
+            self._arc_row("Last docsupdate", "[red]never[/red]", "run: dev → docs update")
 
         if specs_dir.exists():
             specs = list(specs_dir.glob("*.yaml"))
-            _row("Spec files",  f"{len(specs)} yaml specs", "docs/scm-api/specs/")
+            self._arc_row("Spec files", f"{len(specs)} yaml specs", "docs/scm-api/specs/")
 
         if changes.exists():
             for line in changes.read_text(encoding="utf-8").splitlines():
                 stripped = line.strip()
                 if stripped and not stripped.startswith("#") and not stripped.startswith(">"):
-                    _row("Last change",  stripped[:64])
+                    self._arc_row("Last change", stripped[:64])
                     break
 
-        # ── Command stats ─────────────────────────────────────────────────────
-        console.print()
-        console.print(f"  [dim]{'─' * 52}[/dim]")
-        console.print("  [bold]Commands[/bold]\n")
+    def _arc_show_commands(self, header: bool = False) -> None:
+        """arc show commands — command counts and feature flag stats."""
+        from app.commands.registry import COMMANDS
+        from app.settings.features import is_enabled, is_feature_visible, feature_state
+
+        if header:
+            console.print()
+            console.print(f"  [dim]{'─' * 52}[/dim]")
+            console.print("  [bold]Commands[/bold]\n")
 
         total   = len(COMMANDS)
         enabled = sum(1 for c in COMMANDS.values()
@@ -1933,52 +1988,66 @@ class ConfigureMixin:
                       if feature_state(self._features, c.feature_flag) == "dev")
         gated   = sum(1 for c in COMMANDS.values() if c.feature_flag)
 
-        _row("Total registered",  f"{total:,}")
-        _row("Enabled",           f"[green]{enabled:,}[/green]",    "executable")
-        _row("Visible in ?",      f"[green]{visible:,}[/green]",    "shown in help")
-        _row("Dev-mode only",     f"[yellow]{dev_cnt:,}[/yellow]",  "revealed by: dev on")
-        _row("Always on",         f"{total - gated:,}",             "no feature gate")
+        self._arc_row("Total registered", f"{total:,}")
+        self._arc_row("Enabled",          f"[green]{enabled:,}[/green]",    "executable")
+        self._arc_row("Visible in ?",     f"[green]{visible:,}[/green]",    "shown in help")
+        self._arc_row("Dev-mode only",    f"[yellow]{dev_cnt:,}[/yellow]",  "revealed by: dev on")
+        self._arc_row("Always on",        f"{total - gated:,}",             "no feature gate")
 
-        # ── Feature flags ─────────────────────────────────────────────────────
         all_f = list(self._features.keys())
         on_f  = sum(1 for f in all_f if feature_state(self._features, f) == "on")
         dev_f = sum(1 for f in all_f if feature_state(self._features, f) == "dev")
         off_f = len(all_f) - on_f - dev_f
-        _row("Feature flags",
-             f"[green]{on_f} on[/green]  [yellow]{dev_f} dev[/yellow]  [dim]{off_f} off[/dim]",
-             f"({len(all_f)} total in settings/features/)")
+        self._arc_row("Feature flags",
+                      f"[green]{on_f} on[/green]  [yellow]{dev_f} dev[/yellow]  [dim]{off_f} off[/dim]",
+                      f"({len(all_f)} total in settings/features/)")
 
-        # ── Settings files ────────────────────────────────────────────────────
-        console.print()
-        console.print(f"  [dim]{'─' * 52}[/dim]")
-        console.print("  [bold]Settings Files[/bold]\n")
-        settings_files = [
+    def _arc_show_settings(self, header: bool = False) -> None:
+        """arc show settings — settings file inventory."""
+        from app.paths import SETTINGS_DIR, COMMAND_STRUCTURE_JSON, COMMAND_ALIASES_JSON
+
+        if header:
+            console.print()
+            console.print(f"  [dim]{'─' * 52}[/dim]")
+            console.print("  [bold]Settings Files[/bold]\n")
+
+        files = [
             ("command-structure.json", COMMAND_STRUCTURE_JSON),
             ("command-aliases.json",   COMMAND_ALIASES_JSON),
             ("builtin-commands.json",  SETTINGS_DIR / "builtin-commands.json"),
+            ("app-variables.json",     SETTINGS_DIR / "app-variables.json"),
             ("theme.json",             SETTINGS_DIR / "theme.json"),
             ("cli-structure.yaml",     SETTINGS_DIR / "cli-structure.yaml"),
         ]
-        for name, path in settings_files:
+        for name, path in files:
             if path.exists():
                 size = path.stat().st_size
-                _row(name, f"[dim]{size:,} bytes[/dim]")
+                self._arc_row(name, f"[dim]{size:,} bytes[/dim]")
             else:
-                _row(name, "[red]missing[/red]")
+                self._arc_row(name, "[red]missing[/red]")
 
-        # ── Active session ────────────────────────────────────────────────────
-        console.print()
-        console.print(f"  [dim]{'─' * 52}[/dim]")
-        console.print("  [bold]Active Session[/bold]\n")
-        _row("Profile",   f"[bold]{self._config.profile_name}[/bold]")
-        _row("TSG",       self._state.tsg_id or "(root)")
-        _row("Folder",    self._state.folder)
-        _row("Device",    device_display_name(self._state.device) if self._state.device else "[dim]none[/dim]")
-        _row("SCM",       "[green]connected[/green]" if self._scm else "[dim]not connected[/dim]")
-        _row("Dev mode",  "[magenta]on[/magenta]" if self._dev_mode else "[dim]off[/dim]")
-        _row("Configure", "[yellow]active[/yellow]" if self._state.configure_mode else "[dim]off[/dim]")
+    def _arc_show_session(self, header: bool = False) -> None:
+        """arc show session — active profile, TSG, folder, device, modes."""
+        if header:
+            console.print()
+            console.print(f"  [dim]{'─' * 52}[/dim]")
+            console.print("  [bold]Active Session[/bold]\n")
 
-        console.print()
+        self._arc_row("Profile",   f"[bold]{self._config.profile_name}[/bold]")
+        self._arc_row("TSG",       self._state.tsg_id or "(root)")
+        self._arc_row("Folder",    self._state.folder)
+        self._arc_row("Device",    device_display_name(self._state.device)
+                      if self._state.device else "[dim]none[/dim]")
+        self._arc_row("SCM",       "[green]connected[/green]" if self._scm
+                      else "[dim]not connected[/dim]")
+        self._arc_row("Dev mode",  "[magenta]on[/magenta]" if self._dev_mode
+                      else "[dim]off[/dim]")
+        self._arc_row("Configure", "[yellow]active[/yellow]" if self._state.configure_mode
+                      else "[dim]off[/dim]")
+
+    def _arc_show(self) -> None:
+        """arc show (all) — kept for backward compat; calls _cmd_arc(['show'])."""
+        self._cmd_arc(["show"])
 
 
 # ---------------------------------------------------------------------------
