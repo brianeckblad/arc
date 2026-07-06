@@ -160,6 +160,8 @@ class DispatchMixin:
             self._render_as_json = False
 
         lines = capture.get().splitlines()
+        # Strip ANSI escape codes that may be present from Rich rendering
+        lines = [_ANSI_RE.sub("", l) for l in lines]
         counted = False
         save_target: str | None = None
         for op, pattern in filters:
@@ -168,7 +170,7 @@ class DispatchMixin:
             elif op == "except":
                 lines = [l for l in lines if not _line_matches(l, pattern)]
             elif op == "count":
-                total = sum(1 for l in lines if _ANSI_RE.sub("", l).strip())
+                total = sum(1 for l in lines if l.strip())
                 lines = [f"Count: {total} line(s)"]
                 counted = True
             elif op == "save":
@@ -179,8 +181,10 @@ class DispatchMixin:
         if counted:
             console.print(lines[0])
             return should_exit
-        for line in lines:
-            console.file.write(line + "\n")
+        output = "\n".join(lines)
+        if output:
+            console.file.write(output + "\n")
+            console.file.flush()
         return should_exit
 
     def _save_pipe_output(self, lines: list[str], target: str) -> None:

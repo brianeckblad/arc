@@ -189,7 +189,9 @@ class ExecutionMixin:
         return ssh_command(args)
 
     def _render(self, key: str, cmd_def: CommandDef, data) -> None:  # noqa: C901
-        # `<command> | json` — emit the raw data for scripts, skipping tables.
+        # `<command> | json` — emit the raw data as JSON, bypassing all table formatters.
+        # console.print with markup=False is used so the output goes into console.capture()
+        # when piping; console.file.write would bypass the capture buffer.
         if getattr(self, "_render_as_json", False):
             import json as _json
             try:
