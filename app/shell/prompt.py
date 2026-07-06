@@ -138,18 +138,28 @@ class PromptMixin:
             )
 
     def _print_startup_help(self) -> None:
-        """Print compact startup command hints shown after SCM connection status."""
+        """Print compact startup command hints — loaded from settings/builtin-commands.json.
 
-        # Alignment: 2-space indent, descriptions all start at visual col 28.
-        # Spaces after [/cyan] = 28 − 2 − len(visible command text):
-        #   cd <device>      11 → 15 sp   connect <device>  16 → 10 sp
-        #   cd folder <name> 16 → 10 sp   account <name>    14 → 12 sp
-        #   ?                 1 → 25 sp
-        console.print(
-            "  [cyan]cd <device>[/cyan]               Change to Device\n"
-            "  [cyan]connect <device>[/cyan]          SSH to device  [dim](keyboard-interactive + 2FA)[/dim]\n"
-            "  [cyan]cd folder <name>[/cyan]          Change to Folder\n"
-            "  [cyan]account <name>[/cyan]            List / switch credential profiles\n"
-            "  [cyan]?[/cyan]                         Context-Aware Help  [dim](or  help <topic>)[/dim]"
-        )
+        Entries with ``onlogin: true`` and a ``startup_hint`` are shown.
+        To hide a hint: set ``"onlogin": false`` on that entry.
+        To add a hint: set ``"onlogin": true`` and add ``"startup_hint": "..."``
+        to any entry in settings/builtin-commands.json.
+        """
+        from app.settings.commands import load_startup_hints
+        from app.settings.app_vars import resolve as _resolve
+
+        hints = load_startup_hints()
+        if not hints:
+            return
+
+        # Align: 2-space indent, descriptions start at col 28.
+        # All display names are padded to the same width with trailing spaces.
+        max_display = max(len(display) for display, _ in hints)
+        # Use the wider of the longest name or the minimum target width
+        pad_to = max(max_display, 16)
+
+        for display, hint in hints:
+            spaces = " " * (pad_to - len(display) + 2)
+            line = f"  [cyan]{display}[/cyan]{spaces}{_resolve(hint)}"
+            console.print(line)
         console.print()

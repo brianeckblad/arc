@@ -158,3 +158,22 @@ def shell_help_rows(configure_mode: bool) -> tuple[ShellBuiltinHelp, ...]:
 def shell_help_names() -> list[str]:
     """Return all builtin help display names in order (used by smoke tests)."""
     return [row.name for row in load_shell_help_rows()]
+
+
+def load_startup_hints() -> list[tuple[str, str]]:
+    """Return ``[(display, hint), …]`` for entries with ``onlogin: true``.
+
+    Order reflects the order in settings/builtin-commands.json.
+    ``display`` is the ``display`` field (or key); ``hint`` is ``startup_hint``.
+    Only entries where ``onlogin`` is True and ``startup_hint`` is non-empty
+    are returned. Disabling a startup hint: set ``"onlogin": false`` in the file.
+    """
+    raw = _load_raw()
+    hints: list[tuple[str, str]] = []
+    for key, val in raw.items():
+        if key.startswith("_") or not isinstance(val, dict):
+            continue
+        if val.get("onlogin") and val.get("startup_hint"):
+            display = str(val.get("display") or key)
+            hints.append((display, str(val["startup_hint"])))
+    return hints

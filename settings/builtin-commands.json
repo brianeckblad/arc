@@ -1,156 +1,189 @@
 {
-  "_README": "Builtin command registry \u2014 visibility, display names, and help text for all shell builtins. Loaded by app/settings/commands.py. Values for 'visible': true (shown + executable), false (hidden + blocked), hidden (executable but not shown in ? \u2014 dev mode reveals it). 'configure_only': shown only in configure mode. 'hide_in_configure': hidden in configure mode. 'display': the name shown in ? help (can include placeholders). 'help': the description shown in ? help. Entries without 'help' appear in SHELL_BUILTINS for dispatch/completion but not in ? help rows.",
+  "_README": "Builtin command registry — visibility, display names, and help text for all shell builtins. Loaded by app/settings/commands.py. Values for 'visible': true (shown + executable), false (hidden + blocked), hidden (executable but not shown in ? — dev mode reveals it). 'configure_only': shown only in configure mode. 'hide_in_configure': hidden in configure mode. 'display': the name shown in ? help (can include placeholders). 'help': the description shown in ? help. Entries without 'help' appear in SHELL_BUILTINS for dispatch/completion but not in ? help rows.",
   "_comment_navigation": "=== Navigation ===",
   "arc": {
-    "visible": true,
+    "visible": "hidden",
     "display": "arc",
-    "help": "Application info  (arc show | arc show version | arc show session | arc ?)"
+    "help": "Application info  (arc show | arc show version | arc show session | arc ?)",
+    "onlogin": true,
+    "startup_hint": "Application info  (arc show | arc ?)"
   },
   "cd": {
     "visible": true,
     "display": "cd <device|folder>",
-    "help": "Change device or folder context  (cd device <name> | cd folder <name> | cd ..)"
+    "help": "Change device or folder context  (cd device <name> | cd folder <name> | cd ..)",
+    "onlogin": true,
+    "startup_hint": "Change to Device  (cd device <name> | cd folder <name>)"
   },
   "connect": {
     "visible": true,
     "display": "connect <device>",
-    "help": "SSH to device \u2014 interactive session  (keyboard-interactive + 2FA)"
+    "help": "SSH to device — interactive session  (keyboard-interactive + 2FA)",
+    "onlogin": true,
+    "startup_hint": "SSH to device  [dim](keyboard-interactive + 2FA)[/dim]"
   },
   "pwd": {
     "visible": true,
     "display": "pwd",
-    "help": "Show device, folder, TSG, and active account"
+    "help": "Show device, folder, TSG, and active account",
+    "onlogin": false
   },
   "folder": {
     "visible": true,
     "display": "folder",
-    "help": "Manage SCM folders \u2014 list, create  (configure mode)",
-    "configure_only": true
+    "help": "Manage SCM folders — list, create  (configure mode)",
+    "configure_only": true,
+    "onlogin": false
   },
   "tsg": {
     "visible": true,
     "display": "tsg <id>",
-    "help": "Set active TSG  (Tab -> configured TSG)"
+    "help": "Set active TSG  (Tab -> configured TSG)",
+    "onlogin": false
   },
   "account": {
     "visible": true,
     "display": "account <name>",
-    "help": "List or switch credential profiles  (Tab -> profile names)"
+    "help": "List or switch credential profiles  (Tab -> profile names)",
+    "onlogin": true,
+    "startup_hint": "List / switch credential profiles"
   },
   "_comment_configure": "=== Configure mode ===",
   "configure": {
     "visible": true,
     "display": "configure",
     "help": "Enter configure mode  (arc:global #)",
-    "hide_in_configure": true
+    "hide_in_configure": true,
+    "onlogin": false
   },
   "set": {
     "visible": true,
     "display": "set <type> <name>",
-    "help": "Create configuration  (configure mode)  \u2014 set ? for sub-commands",
-    "configure_only": true
+    "help": "Create configuration  (configure mode)  — set ? for sub-commands",
+    "configure_only": true,
+    "onlogin": false
   },
   "update": {
     "visible": true,
     "display": "update <type> <name>",
-    "help": "Modify existing object  (configure mode)  \u2014 update ? for types",
-    "configure_only": true
+    "help": "Modify existing object  (configure mode)  — update ? for types",
+    "configure_only": true,
+    "onlogin": false
   },
   "delete": {
     "visible": true,
     "display": "delete <type> <name>",
-    "help": "Delete configuration object  (configure mode)  \u2014 delete ? for types",
-    "configure_only": true
+    "help": "Delete configuration object  (configure mode)  — delete ? for types",
+    "configure_only": true,
+    "onlogin": false
   },
   "show config": {
     "visible": true,
     "display": "show config",
-    "help": "List staged changes pending commit  (local \u2014 not yet in SCM)",
-    "configure_only": true
+    "help": "List staged changes pending commit  (local — not yet in SCM)",
+    "configure_only": true,
+    "onlogin": false
   },
   "commit": {
     "visible": true,
     "display": "commit",
-    "help": "Apply staged changes + push to devices  (commit watch \u2192 follow the job)",
-    "configure_only": true
+    "help": "Apply staged changes + push to devices  (commit watch → follow the job)",
+    "configure_only": true,
+    "onlogin": false
   },
   "abandon": {
     "visible": true,
     "display": "abandon",
-    "help": "Discard staged changes  (local only \u2014 SCM is never touched)",
-    "configure_only": true
+    "help": "Discard staged changes  (local only — SCM is never touched)",
+    "configure_only": true,
+    "onlogin": false
   },
   "cli": {
     "visible": true,
     "display": "cli <subcommand>",
     "help": "CLI theme operations  (show | color | reset)",
-    "configure_only": true
+    "configure_only": true,
+    "onlogin": false
   },
   "_comment_utilities": "=== Utilities ===",
   "feature": {
     "visible": true,
     "display": "feature <subcommand>",
-    "help": "Feature flags  (show | enable <flag> | disable <flag>)"
+    "help": "Feature flags  (show | enable <flag> | disable <flag>)",
+    "onlogin": false
   },
   "find": {
     "visible": true,
     "display": "find command keyword <text>",
-    "help": "Search ALL commands (incl. disabled) \u2014 PAN-OS style"
+    "help": "Search ALL commands (incl. disabled) — PAN-OS style",
+    "onlogin": false
   },
   "terminal": {
     "visible": true,
     "display": "terminal",
-    "help": "Pager/width/spinner preferences  (terminal length 0 = no paging)"
+    "help": "Pager/width/spinner preferences  (terminal length 0 = no paging)",
+    "onlogin": false
   },
   "history": {
     "visible": true,
     "display": "history",
-    "help": "Show recent commands  (history <n> \u2014 default 20)"
+    "help": "Show recent commands  (history <n> — default 20)",
+    "onlogin": false
   },
   "alias": {
     "visible": true,
     "display": "alias",
-    "help": "User-defined shortcuts  (alias <name> <cmd\u2026> | alias delete <name>)"
+    "help": "User-defined shortcuts  (alias <name> <cmd…> | alias delete <name>)",
+    "onlogin": false
   },
   "watch": {
     "visible": true,
     "display": "watch <sec> <cmd>",
-    "help": "Re-run a command every N seconds until Ctrl-C  (SSH session reused)"
+    "help": "Re-run a command every N seconds until Ctrl-C  (SSH session reused)",
+    "onlogin": false
   },
   "setup": {
     "visible": true,
     "display": "setup",
-    "help": "Guided credential setup wizard  (auto-detects OS, two questions)"
+    "help": "Guided credential setup wizard  (auto-detects OS, two questions)",
+    "onlogin": false
   },
   "docs": {
     "visible": true,
     "display": "docs",
-    "help": "Open docs in browser"
+    "help": "Open docs in browser",
+    "onlogin": false
   },
   "clear": {
     "visible": true,
     "display": "clear",
-    "help": "Clear the terminal screen"
+    "help": "Clear the terminal screen",
+    "onlogin": false
   },
   "help": {
     "visible": true,
     "display": "help",
-    "help": "Show help  (help <topic> | help all)"
+    "help": "Show help  (help <topic> | help all)",
+    "onlogin": false
   },
   "?": {
-    "visible": true
+    "visible": "hidden",
+    "onlogin": true,
+    "startup_hint": "Context-Aware Help  [dim](or  help <topic>)[/dim]"
   },
   "_comment_exit": "=== Exit ===",
   "exit": {
-    "visible": true,
-    "display": "exit / quit",
-    "help": "Exit ARC (or leave configure mode)",
-    "configure_only": true
-  },
-  "quit": {
     "visible": "hidden",
     "display": "exit / quit",
     "help": "Exit ARC (or leave configure mode)",
-    "configure_only": true
+    "configure_only": true,
+    "onlogin": false
+  },
+  "quit": {
+    "visible": true,
+    "display": "exit / quit",
+    "help": "Exit ARC (or leave configure mode)",
+    "configure_only": true,
+    "onlogin": false
   }
 }

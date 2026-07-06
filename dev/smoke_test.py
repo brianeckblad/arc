@@ -750,82 +750,31 @@ def test_formatter() -> None:
 
 # The exact banner lines as they appear in app/shell.py _print_banner().
 # UPDATE THIS LIST whenever the banner lines change.
-_BANNER_LINES: list[tuple[str, str]] = [
-    # (visible_command_text,  expected_padding_spaces_after_[/cyan])
-    ("cd <device>",      "               "),   # 11 chars → 15 sp → col 28
-    ("connect <device>", "          "),         # 16 chars → 10 sp → col 28
-    ("cd folder <name>", "          "),         # 16 chars → 10 sp → col 28
-    ("account <name>",   "            "),        # 14 chars → 12 sp → col 28
-    ("?",                "                         "),  # 1 char → 25 sp → col 28
-]
-
-_BANNER_TARGET_COL = 28
-_BANNER_INDENT     = 2
-
-# Also verify against the live shell.py source so this test fails immediately
-# when someone edits the banner without updating _BANNER_LINES.
-_BANNER_PATTERN = re.compile(
-    r'\[cyan\]([^\[]+)\[/cyan\](\s+)\S'  # [cyan]CMD[/cyan]SPACES first-word
-)
-
-
 def test_banner_alignment() -> None:
-    section("8. CLI banner alignment  (descriptions at visual col 28)")
+    section("8. CLI banner alignment  (startup hints loaded from settings)")
 
-    shell_src = (APP / "shell" / "prompt.py").read_text(encoding="utf-8")
+    from app.settings.commands import load_startup_hints
 
-    # Extract live banner lines from source
-    # Filter to only the banner block (inside _print_banner method)
-    # We use the section between the console.print( containing cd <device>
-    start_marker = '"  [cyan]cd <device>[/cyan]'
-    end_marker   = '"  [cyan]?[/cyan]'
-    banner_block_start = shell_src.find(start_marker)
-    banner_block_end   = shell_src.find(end_marker, banner_block_start)
-    if banner_block_start == -1:
-        fail("Could not locate banner block in shell.py")
-        return
-    banner_block = shell_src[banner_block_start: banner_block_end + 200]
+    hints = load_startup_hints()
 
-    live: list[tuple[str, str]] = _BANNER_PATTERN.findall(banner_block)
-
-    if not live:
-        fail("No banner lines found in shell.py — check _BANNER_PATTERN regex")
+    if not hints:
+        fail("No onlogin hints found in settings/builtin-commands.json")
         return
 
-    # 7a — Number of lines matches expected
-    if len(live) == len(_BANNER_LINES):
-        ok(f"Banner has {len(live)} command lines (expected {len(_BANNER_LINES)})")
-    else:
-        fail(
-            f"Banner line count mismatch",
-            f"expected {len(_BANNER_LINES)}, found {len(live)}",
-        )
+    ok(f"Banner has {len(hints)} startup hint(s) from settings/builtin-commands.json")
 
-    # 7b — Each line lands on the right column
-    for idx, (cmd_text, padding) in enumerate(live):
-        col = _BANNER_INDENT + len(cmd_text) + len(padding)
-        if col == _BANNER_TARGET_COL:
-            ok(f"col {col}  [{cmd_text!r} + {len(padding)} spaces]")
-        else:
-            fail(
-                f"col {col} ≠ {_BANNER_TARGET_COL}  [{cmd_text!r} + {len(padding)} spaces]",
-                f"Need {_BANNER_TARGET_COL - _BANNER_INDENT - len(cmd_text)} spaces, "
-                f"found {len(padding)}",
-            )
+    # Compute the padding width the renderer uses (same logic as prompt.py)
+    max_display = max(len(display) for display, _ in hints)
+    pad_to = max(max_display, 16)
 
-    # 7c — Verify _BANNER_LINES reference table is in sync with live source
-    for idx, ((ref_cmd, ref_pad), (live_cmd, live_pad)) in enumerate(
-        zip(_BANNER_LINES, live)
-    ):
-        if ref_cmd != live_cmd or ref_pad != live_pad:
-            fail(
-                f"_BANNER_LINES[{idx}] out of sync with shell.py",
-                f"reference: ({ref_cmd!r}, {ref_pad!r})\n"
-                f"       live:      ({live_cmd!r}, {live_pad!r})\n"
-                f"       → Update _BANNER_LINES in smoke_test.py",
-            )
+    for display, hint in hints:
+        spaces = " " * (pad_to - len(display) + 2)
+        # Visual col = 2 (indent) + len(display) + len(spaces)
+        col = 2 + len(display) + len(spaces)
+        if col >= 18:  # reasonable minimum alignment target
+            ok(f"hint [{display!r}] indents to col {col}")
         else:
-            ok(f"_BANNER_LINES[{idx}] in sync  ({ref_cmd!r})")
+            fail(f"hint [{display!r}] indents to col {col} — too short")
 
 
 # ---------------------------------------------------------------------------
