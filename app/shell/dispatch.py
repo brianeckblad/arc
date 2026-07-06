@@ -526,8 +526,10 @@ class DispatchMixin:
                 if prefix_tokens[0].lower() == "terminal":
                     self._cmd_terminal(prefix_tokens[1:] + ["?"])
                     return False
-                # Special case: `alias ?`, `history ?`, `find ?`
-                if prefix_tokens[0].lower() == "alias":
+                # Special case: `arc ?` — route to arc handler
+                if prefix_tokens[0].lower() == "arc":
+                    self._cmd_arc(prefix_tokens[1:] + ["?"])
+                    return False
                     self._cmd_alias(["?"])
                     return False
                 if prefix_tokens[0].lower() == "history":
@@ -651,6 +653,10 @@ class DispatchMixin:
 
         if cmd == "setup":
             self._cmd_setup(tokens[1:])
+            return False
+
+        if cmd == "arc":
+            self._cmd_arc(tokens[1:])
             return False
 
         # Hidden command — not advertised in ? or tab completion.  Reveals

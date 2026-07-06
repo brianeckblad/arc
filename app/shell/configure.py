@@ -1863,3 +1863,191 @@ def _setup_oauth_instructions(console, os_name: str) -> None:  # type: ignore[ty
             "  export SCM_TSG_ID=..."
         )
 
+
+    # =========================================================================
+    # arc — application information and management
+    # =========================================================================
+
+    def _cmd_arc(self, args: list[str]) -> None:  # noqa: C901
+        """ARC application information and management.
+
+        arc show    — show application info (version, paths, spec age, stats)
+        arc ?       — show sub-commands
+        """
+        sub = args[0].lower() if args else "?"
+        if sub == "show":
+            self._arc_show()
+        elif sub in ("?", "help"):
+            t = self._theme
+            w = 20
+            console.print()
+            console.print(
+                "  [bold yellow]arc[/bold yellow]  "
+                "[dim]— application information and management[/dim]\n"
+            )
+            rows = [
+                ("arc show", "Application info — version, paths, spec age, command stats"),
+            ]
+            for cmd, desc in rows:
+                console.print(
+                    f"  {self._styled(f'{cmd:<{w}}', t.command_name)} "
+                    f"{self._styled(desc, t.description_dim)}"
+                )
+            console.print()
+        else:
+            console.print(
+                f"[yellow]Unknown arc sub-command:[/yellow] {sub!r}\n"
+                "  Try: [bold]arc show[/bold]  |  [bold]arc ?[/bold]"
+            )
+
+    def _arc_show(self) -> None:  # noqa: C901
+        """Show comprehensive ARC application information."""
+        import re as _re
+        import sys as _sys
+        import time as _time
+        import platform as _platform
+        import subprocess as _sp
+        import datetime as _dt
+        from app import __version__
+        from app.paths import (
+            REPO_ROOT, CONFIG_DIR, FEATURES_DIR, SETTINGS_DIR,
+            COMMAND_STRUCTURE_JSON, COMMAND_ALIASES_JSON,
+        )
+        from app.commands.registry import COMMANDS
+        from app.settings.features import is_enabled, is_feature_visible, feature_state
+
+        t = self._theme
+
+        def _row(label: str, value: str, dim_note: str = "") -> None:
+            lw = 24
+            console.print(
+                f"  {self._styled(f'{label:<{lw}}', t.command_name)} {value}"
+                + (f"  [dim]{dim_note}[/dim]" if dim_note else "")
+            )
+
+        console.print()
+        console.print(
+            "  [bold cyan]ARC[/bold cyan]  "
+            "[dim]Assisted Remote Console — Palo Alto Networks SCM + PAN-OS[/dim]\n"
+        )
+
+        # ── Version ──────────────────────────────────────────────────────────
+        try:
+            git_result = _sp.run(
+                ["git", "rev-parse", "--short", "HEAD"],
+                capture_output=True, text=True, cwd=str(REPO_ROOT)
+            )
+            git_ref = git_result.stdout.strip() if git_result.returncode == 0 else ""
+        except Exception:
+            git_ref = ""
+
+        _row("Version",   f"[bold]{__version__}[/bold]",
+             f"commit {git_ref}" if git_ref else "")
+        _row("Python",    _sys.version.split()[0],
+             _platform.python_implementation())
+        _row("Platform",  _platform.system() + " " + _platform.release())
+
+        # ── Paths ─────────────────────────────────────────────────────────────
+        console.print()
+        console.print(f"  [dim]{'─' * 52}[/dim]")
+        console.print("  [bold]Paths[/bold]\n")
+        _row("App root",  str(REPO_ROOT))
+        _row("Settings",  str(SETTINGS_DIR.relative_to(REPO_ROOT)))
+        _row("Config",    str(CONFIG_DIR.relative_to(REPO_ROOT)),
+             "per-user, gitignored")
+
+        # ── SCM API docs ──────────────────────────────────────────────────────
+        console.print()
+        console.print(f"  [dim]{'─' * 52}[/dim]")
+        console.print("  [bold]SCM API Specs[/bold]\n")
+
+        manifest  = REPO_ROOT / "docs" / "scm-api" / "MANIFEST.md"
+        specs_dir = REPO_ROOT / "docs" / "scm-api" / "specs"
+        changes   = REPO_ROOT / "docs" / "scm-api" / "CHANGES.md"
+
+        if manifest.exists():
+            txt = manifest.read_text(encoding="utf-8")
+            m = _re.search(r"Pulled on (\d{4}-\d{2}-\d{2})", txt)
+            if m:
+                pull_date = m.group(1)
+                pulled_dt = _dt.date.fromisoformat(pull_date)
+                age = (_dt.date.today() - pulled_dt).days
+                color = "green" if age <= 3 else "yellow" if age <= 14 else "red"
+                _row("Last docsupdate", f"[bold]{pull_date}[/bold]",
+                     f"[{color}]{age}d ago[/{color}]")
+            else:
+                _row("Last docsupdate", "[dim]unknown[/dim]")
+        else:
+            _row("Last docsupdate", "[red]never[/red]", "run: dev → docs update")
+
+        if specs_dir.exists():
+            specs = list(specs_dir.glob("*.yaml"))
+            _row("Spec files",  f"{len(specs)} yaml specs", "docs/scm-api/specs/")
+
+        if changes.exists():
+            for line in changes.read_text(encoding="utf-8").splitlines():
+                stripped = line.strip()
+                if stripped and not stripped.startswith("#") and not stripped.startswith(">"):
+                    _row("Last change",  stripped[:64])
+                    break
+
+        # ── Command stats ─────────────────────────────────────────────────────
+        console.print()
+        console.print(f"  [dim]{'─' * 52}[/dim]")
+        console.print("  [bold]Commands[/bold]\n")
+
+        total   = len(COMMANDS)
+        enabled = sum(1 for c in COMMANDS.values()
+                      if is_enabled(self._features, c.feature_flag, self._dev_mode))
+        visible = sum(1 for c in COMMANDS.values()
+                      if is_feature_visible(self._features, c.feature_flag, self._dev_mode))
+        dev_cnt = sum(1 for c in COMMANDS.values()
+                      if feature_state(self._features, c.feature_flag) == "dev")
+        gated   = sum(1 for c in COMMANDS.values() if c.feature_flag)
+
+        _row("Total registered",  f"{total:,}")
+        _row("Enabled",           f"[green]{enabled:,}[/green]",    "executable")
+        _row("Visible in ?",      f"[green]{visible:,}[/green]",    "shown in help")
+        _row("Dev-mode only",     f"[yellow]{dev_cnt:,}[/yellow]",  "revealed by: dev on")
+        _row("Always on",         f"{total - gated:,}",             "no feature gate")
+
+        # ── Feature flags ─────────────────────────────────────────────────────
+        all_f = list(self._features.keys())
+        on_f  = sum(1 for f in all_f if feature_state(self._features, f) == "on")
+        dev_f = sum(1 for f in all_f if feature_state(self._features, f) == "dev")
+        off_f = len(all_f) - on_f - dev_f
+        _row("Feature flags",
+             f"[green]{on_f} on[/green]  [yellow]{dev_f} dev[/yellow]  [dim]{off_f} off[/dim]",
+             f"({len(all_f)} total in settings/features/)")
+
+        # ── Settings files ────────────────────────────────────────────────────
+        console.print()
+        console.print(f"  [dim]{'─' * 52}[/dim]")
+        console.print("  [bold]Settings Files[/bold]\n")
+        settings_files = [
+            ("command-structure.json", COMMAND_STRUCTURE_JSON),
+            ("command-aliases.json",   COMMAND_ALIASES_JSON),
+            ("builtin-commands.json",  SETTINGS_DIR / "builtin-commands.json"),
+            ("theme.json",             SETTINGS_DIR / "theme.json"),
+            ("cli-structure.yaml",     SETTINGS_DIR / "cli-structure.yaml"),
+        ]
+        for name, path in settings_files:
+            if path.exists():
+                size = path.stat().st_size
+                _row(name, f"[dim]{size:,} bytes[/dim]")
+            else:
+                _row(name, "[red]missing[/red]")
+
+        # ── Active session ────────────────────────────────────────────────────
+        console.print()
+        console.print(f"  [dim]{'─' * 52}[/dim]")
+        console.print("  [bold]Active Session[/bold]\n")
+        _row("Profile",   f"[bold]{self._config.profile_name}[/bold]")
+        _row("TSG",       self._state.tsg_id or "(root)")
+        _row("Folder",    self._state.folder)
+        _row("Device",    device_display_name(self._state.device) if self._state.device else "[dim]none[/dim]")
+        _row("SCM",       "[green]connected[/green]" if self._scm else "[dim]not connected[/dim]")
+        _row("Dev mode",  "[magenta]on[/magenta]" if self._dev_mode else "[dim]off[/dim]")
+        _row("Configure", "[yellow]active[/yellow]" if self._state.configure_mode else "[dim]off[/dim]")
+
+        console.print()

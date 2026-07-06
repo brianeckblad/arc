@@ -14,12 +14,7 @@
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
-## `app/settings/field_catalog.py`  (1924 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-
-## `app/shell/configure.py`  (1866 lines)
+## `app/shell/configure.py`  (2054 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -62,7 +57,12 @@ class ConfigureMixin                     52-1794
   ._print_dev_status()                   1660-1674      Print current dev mode state (used by 'dev on/off' outside the shell).
   ._cmd_setup()                          1677-1794      Interactive credential setup wizard.
 _setup_bearer_instructions()             1801-1829      Print bearer-token setup commands for the detected OS.
-_setup_oauth_instructions()              1832-1864      Print OAuth client credential setup commands for the detected OS.
+_setup_oauth_instructions()              1832-2053      Print OAuth client credential setup commands for the detected OS.
+
+## `app/settings/field_catalog.py`  (1924 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
 ## `app/api/client.py`  (1241 lines)
 
@@ -284,21 +284,21 @@ cliup()                                  820-839        Rebuild the offline brow
 scm_get()                                851-863        Perform a raw GET request against the SCM API.
 run()                                    870-871        
 
-## `app/shell/dispatch.py`  (780 lines)
+## `app/shell/dispatch.py`  (786 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 split_pipe_line()                        23-38          Split *line* at the first unquoted ``|``.
 parse_output_filters()                   41-79          Parse a pipe filter chain into ``[(op, pattern), …]``.
 _line_matches()                          82-88          Regex match (case-insensitive) with plain-substring fallback.
-class DispatchMixin                      91-779         
+class DispatchMixin                      91-785         
   ._cmd_watch()                          92-132         Re-run *rest* every N seconds until Ctrl-C (`watch [N] <command>`).
   ._dispatch_piped()                     134-184        Run *head*, filter its captured output through the pipe *spec*.
   ._save_pipe_output()                   186-203        Write piped output *lines* to *target* as plain UTF-8 text.
   ._cmd_history()                        205-250        Print the last N commands from the prompt history (`history [n]`).
   ._cmd_alias()                          252-323        User-defined aliases (`alias` / `alias <name> <expansion…>` /
   ._show_command_not_found()             325-396        Show a helpful message when a command is not recognized.
-  ._dispatch()                           398-779        Process one input line.  Returns True when the user wants to exit ARC.
+  ._dispatch()                           398-785        Process one input line.  Returns True when the user wants to exit ARC.
 
 ## `app/settings/command_structure.py`  (715 lines)
 

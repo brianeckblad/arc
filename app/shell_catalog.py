@@ -28,7 +28,7 @@ class ShellBuiltinHelp:
 # Shell built-ins accepted by the dispatcher/completer.
 # Add the runtime behavior in `ArcShell._dispatch()` and `_cmd_*` methods.
 SHELL_BUILTINS: tuple[str, ...] = (
-    "cd", "connect", "docs",
+    "cd", "connect", "arc", "docs",
     "pwd",
     "folder", "tsg", "account",
     "configure", "cli",
@@ -52,6 +52,7 @@ SHELL_BUILTINS: tuple[str, ...] = (
 # `configure_only=True` means visible only while in configure mode.
 # `hide_in_configure=True` means visible only outside configure mode.
 SHELL_HELP_ROWS: tuple[ShellBuiltinHelp, ...] = (
+    ShellBuiltinHelp("arc show",              "Application info — version, paths, spec age, command stats"),
     ShellBuiltinHelp("cd <device|folder>",   "Change device or folder context  (cd device <name> | cd folder <name> | cd ..)"),
     ShellBuiltinHelp("connect <device>",     "SSH to device — interactive session  (keyboard-interactive + 2FA)"),
     ShellBuiltinHelp("folder",               "Manage SCM folders — list, create  (configure mode)", configure_only=True),

@@ -1,6 +1,7 @@
 {
   "_README": "Builtin command visibility — independent of feature flags. Values: true (visible + executable), false (hidden + blocked), hidden (works but not shown in ? — dev mode reveals it). Use settings/features/ for functional areas; use settings/command_aliases.json for command shortcuts.",
   "_comment_visibility": "=== Visibility ===",
+  "arc": true,
   "account": true,
   "cd": true,
   "clear": true,
