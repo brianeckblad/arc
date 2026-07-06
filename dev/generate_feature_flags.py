@@ -322,7 +322,7 @@ def build_feature_files() -> dict[str, dict[str, object]]:
 
     def _file_map(stem: str) -> dict[str, object]:
         if stem not in files:
-            files[stem] = {"_README": _file_readme(stem)}
+            files[stem] = {"_README": _file_readme(stem), "_default": False}
         return files[stem]
 
     for category, resource in sorted(
@@ -341,16 +341,30 @@ def build_feature_files() -> dict[str, dict[str, object]]:
                 by_file.setdefault(_flag_file(flag, catalog_flag_specs, explicit_meta), []).append((action, flag))
         for stem, action_flags in by_file.items():
             target = _file_map(stem)
-            target[_comment_key(category, resource)] = (
-                f"{category_label}: {_resource_flag_name(resource)}"
-            )
+            # Collect non-default flags for this group before writing section comment.
+            # Skip flags whose state matches the file default (false) — they are
+            # redundant since the loader falls back to _default when a flag is absent.
+            non_default = [
+                (act, flag)
+                for act, flag in action_flags
+                if _carry_state(flag, existing_states) is not False
+            ]
+            if non_default:
+                target[_comment_key(category, resource)] = (
+                    f"{category_label}: {_resource_flag_name(resource)}"
+                )
             for _action, flag in action_flags:
-                target[flag] = _carry_state(flag, existing_states)
+                state = _carry_state(flag, existing_states)
                 emitted.add(flag)
+                if state is False:
+                    continue  # inherits from _default: false — no need to write
+                target[flag] = state
 
     for flag in sorted(explicit - emitted):
+        state = _carry_state(flag, existing_states)
         target = _file_map(_flag_file(flag, catalog_flag_specs, explicit_meta))
-        target[flag] = _carry_state(flag, existing_states)
+        if state is not False:
+            target[flag] = state
 
     return files
 

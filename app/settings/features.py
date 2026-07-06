@@ -102,8 +102,11 @@ def _feature_files() -> list[Path]:
 def load_features_with_sources() -> tuple[FeatureMap, dict[str, Path]]:
     """Read every feature file; return (flag→state, flag→owning file).
 
-    The ownership map is what lets ``feature enable <flag>`` persist a change
-    back into the right per-domain file.
+    Supports a ``_default`` key per file — the state assigned to any flag that
+    is absent from the map.  ``_default: false`` (the generated default) is
+    already handled by the STATE_OFF fallback in ``feature_state()``, but
+    ``_default: "dev"`` requires this loader to store the domain default so
+    flags inherit it when absent.
     """
     flags: FeatureMap = {}
     sources: dict[str, Path] = {}
@@ -116,11 +119,24 @@ def load_features_with_sources() -> tuple[FeatureMap, dict[str, Path]]:
             continue
         if not isinstance(raw, dict):
             continue
+
+        # Read the file-level default (for domains where _default != false).
+        file_default = _coerce_state(raw["_default"]) if "_default" in raw else STATE_OFF
+
         for key, val in raw.items():
-            if key.startswith("_"):  # _README / _section_* comments
+            if key.startswith("_"):  # _README / _default / _section_* comments
                 continue
-            flags[key] = _coerce_state(val)
+            state = _coerce_state(val)
+            flags[key] = state
             sources[key] = path
+
+        # Store the file default under a well-known sentinel so feature_state()
+        # can use it for flags that are absent (not written because they equal
+        # the default).  Only store when the default is non-off so we don't
+        # pollute the map with useless entries.
+        if file_default != STATE_OFF:
+            stem = path.stem  # e.g. "scm-adnsr"
+            flags[f"_domain_default_{stem}"] = file_default
 
     # Environment overrides: ARC_FEATURE_SHOW_ADDRESS=on|dev|off.
     for env_key, env_val in os.environ.items():
