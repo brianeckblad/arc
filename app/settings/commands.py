@@ -1,36 +1,60 @@
-"""Builtin command visibility — reads settings/builtin-commands.json.
+"""Builtin command visibility, help rows, and alias loader.
 
-INDEPENDENT of feature flags (settings/features/).
-- settings/features/: enables/disables functional command areas
-- builtin-commands.json: per-command visibility/execution for builtins
+Single source of truth: settings/builtin-commands.json.
+Operators manage all shell builtins there — no Python code changes needed.
 
-Three states:
-  true     — visible in ? and executable (default when absent)
-  false    — hidden from ? AND blocked from execution
-  "hidden" — works (executable) but NOT shown in ? or tab completion;
-             dev mode reveals hidden commands in ? (like "dev" feature flags)
+'visible' states:
+  true     — shown in ? and executable
+  false    — hidden from ? AND blocked
+  "hidden" — executable but not shown in ? (dev mode reveals it)
 
-Use cases:
-  hidden → backwards-compat aliases (quit vs exit), power-user shortcuts
-  false  → deprecated commands you want to fully remove from UX
+Entry format (rich):
+  "cd": {"visible": true, "display": "cd <device|folder>", "help": "...", "configure_only": false}
+Entry format (simple, visibility only):
+  "cd": true
 """
 from __future__ import annotations
 
 import json
-from pathlib import Path
+import logging
+from dataclasses import dataclass
+from typing import Tuple
 
 from app.paths import SETTINGS_DIR, COMMAND_ALIASES_JSON
 
 COMMANDS_FILE = SETTINGS_DIR / "builtin-commands.json"
 
-# Canonical state strings
+logger = logging.getLogger(__name__)
+
 STATE_VISIBLE = "visible"
 STATE_HIDDEN  = "hidden"
 STATE_BLOCKED = "blocked"
 
 
+@dataclass(frozen=True)
+class ShellBuiltinHelp:
+    """One row in the SHELL section of ``?`` output."""
+    name: str
+    description: str
+    configure_only: bool = False
+    hide_in_configure: bool = False
+
+
+def _load_raw() -> dict:
+    """Read and parse builtin-commands.json."""
+    if not COMMANDS_FILE.exists():
+        return {}
+    try:
+        return json.loads(COMMANDS_FILE.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        logger.warning("builtin-commands.json parse error: %s", exc)
+        return {}
+
+
 def _coerce_visibility(val: object) -> str:
-    """Normalise a raw builtin-commands.json value to a state string."""
+    """Normalise a raw visibility value to STATE_VISIBLE/HIDDEN/BLOCKED."""
+    if isinstance(val, dict):
+        val = val.get("visible", True)
     if val is True:
         return STATE_VISIBLE
     if val is False:
@@ -42,53 +66,71 @@ def _coerce_visibility(val: object) -> str:
         return STATE_VISIBLE
     if token in ("false", "off", "blocked", "0"):
         return STATE_BLOCKED
-    return STATE_VISIBLE  # unknown → safe default (visible)
+    return STATE_VISIBLE
 
 
 def load_command_visibility() -> dict[str, str]:
-    """Load builtin command visibility from settings/builtin-commands.json.
+    """Return {key: state} for all builtin commands."""
+    raw = _load_raw()
+    return {
+        key: _coerce_visibility(val)
+        for key, val in raw.items()
+        if not key.startswith("_")
+    }
 
-    Returns a dict mapping command key → state ("visible" | "hidden" | "blocked").
-    Keys starting with "_" are ignored. Missing file → empty dict (all visible).
+
+def load_shell_builtins() -> Tuple[str, ...]:
+    """Return all builtin command keys (for dispatch + completion)."""
+    raw = _load_raw()
+    return tuple(key for key in raw if not key.startswith("_"))
+
+
+def load_shell_help_rows() -> Tuple[ShellBuiltinHelp, ...]:
+    """Return ShellBuiltinHelp rows for entries that have a 'help' field.
+
+    Deduplicates rows with the same display name (e.g. exit + quit → one row).
     """
-    if not COMMANDS_FILE.exists():
-        return {}
-    try:
-        data = json.loads(COMMANDS_FILE.read_text(encoding="utf-8"))
-        return {
-            key: _coerce_visibility(val)
-            for key, val in data.items()
-            if not key.startswith("_")
-        }
-    except (json.JSONDecodeError, IOError):
-        return {}
+    raw = _load_raw()
+    rows: list[ShellBuiltinHelp] = []
+    seen_display: set[str] = set()
+    for key, val in raw.items():
+        if key.startswith("_") or not isinstance(val, dict):
+            continue
+        help_text = val.get("help")
+        if not help_text:
+            continue
+        display = str(val.get("display") or key)
+        if display in seen_display:
+            continue
+        seen_display.add(display)
+        rows.append(ShellBuiltinHelp(
+            name=display,
+            description=str(help_text),
+            configure_only=bool(val.get("configure_only", False)),
+            hide_in_configure=bool(val.get("hide_in_configure", False)),
+        ))
+    return tuple(rows)
 
 
 def is_command_visible(command_key: str, visibility: dict[str, str],
                        dev_mode: bool = False) -> bool:
-    """Return True when *command_key* should appear in ``?`` / tab completion.
-
-    hidden + dev_mode → True   (dev mode reveals hidden commands)
-    hidden + normal   → False
-    blocked           → False  (never shown)
-    visible / absent  → True
-    """
+    """Return True when command_key should appear in ? / tab completion."""
     state = visibility.get(command_key, STATE_VISIBLE)
     if state == STATE_VISIBLE:
         return True
     if state == STATE_HIDDEN:
-        return dev_mode   # revealed in dev mode, hidden otherwise
-    return False          # STATE_BLOCKED
+        return dev_mode
+    return False
+
+
+def is_command_executable(command_key: str, visibility: dict[str, str]) -> bool:
+    """Return True when command_key is allowed to run."""
+    state = visibility.get(command_key, STATE_VISIBLE)
+    return state != STATE_BLOCKED
 
 
 def load_builtin_aliases() -> dict[str, str]:
-    """Load system command aliases from settings/command-aliases.json.
-
-    Returns ``{input_line: canonical_line}`` (keys lowercased, stripped).
-    Applied in dispatch before prefix expansion — ``conf t`` → ``configure``.
-    User-defined aliases live in config/<user>/preferences.json.
-    Missing file → empty dict.
-    """
+    """Load system aliases from settings/command-aliases.json."""
     if not COMMAND_ALIASES_JSON.exists():
         return {}
     try:
@@ -100,14 +142,3 @@ def load_builtin_aliases() -> dict[str, str]:
         }
     except (json.JSONDecodeError, IOError):
         return {}
-
-
-def is_command_executable(command_key: str, visibility: dict[str, str]) -> bool:
-    """Return True when *command_key* is allowed to run.
-
-    hidden → executable (works without appearing in help)
-    blocked → not executable
-    visible / absent → executable
-    """
-    state = visibility.get(command_key, STATE_VISIBLE)
-    return state != STATE_BLOCKED

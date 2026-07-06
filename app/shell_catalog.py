@@ -1,93 +1,33 @@
-"""Small shell catalog for built-in command metadata.
+"""Shell catalog — loads builtin command metadata from settings/builtin-commands.json.
 
-This is intentionally tiny and boring: agents should edit this file before
-reading `app/shell.py` when they need to add, remove, or rename a shell builtin.
-
-String-theory model:
-- `app/shell.py` is the shell spine (prompt loop, dispatch, execution).
-- This file is one small attached string: builtin names + inline-help labels.
-- Future strings can follow this pattern (`shell_help.py`, `shell_nav.py`, ...)
-  when a section grows large enough to extract safely.
+This file is intentionally thin: all data lives in the settings file.
+Add, rename, or update a shell builtin by editing settings/builtin-commands.json.
 """
-
 from __future__ import annotations
 
-from dataclasses import dataclass
-
-
-@dataclass(frozen=True)
-class ShellBuiltinHelp:
-    """One row in the SHELL section of `?` output."""
-
-    name: str
-    description: str
-    configure_only: bool = False
-    hide_in_configure: bool = False
-
-
-# Shell built-ins accepted by the dispatcher/completer.
-# Add the runtime behavior in `ArcShell._dispatch()` and `_cmd_*` methods.
-SHELL_BUILTINS: tuple[str, ...] = (
-    "cd", "connect", "arc", "docs",
-    "pwd",
-    "folder", "tsg", "account",
-    "configure", "cli",
-    "feature",
-    "find",
-    "terminal",
-    "history",
-    "alias",
-    "setup",
-    "set",
-    "update",
-    "delete",
-    "abandon",
-    "watch",
-    "clear", "exit", "quit",
-    "help", "?",
+from app.settings.commands import (
+    ShellBuiltinHelp,
+    load_shell_builtins,
+    load_shell_help_rows,
 )
 
+# Shell built-ins for dispatch and tab completion — loaded from settings.
+SHELL_BUILTINS: tuple[str, ...] = load_shell_builtins()
 
-# Rows shown in the SHELL section of quick inline help.
-# `configure_only=True` means visible only while in configure mode.
-# `hide_in_configure=True` means visible only outside configure mode.
-SHELL_HELP_ROWS: tuple[ShellBuiltinHelp, ...] = (
-    ShellBuiltinHelp("arc",                  "Application info and management  (arc show | arc ?)"),
-    ShellBuiltinHelp("cd <device|folder>",   "Change device or folder context  (cd device <name> | cd folder <name> | cd ..)"),
-    ShellBuiltinHelp("connect <device>",     "SSH to device — interactive session  (keyboard-interactive + 2FA)"),
-    ShellBuiltinHelp("folder",               "Manage SCM folders — list, create  (configure mode)", configure_only=True),
-    ShellBuiltinHelp("tsg <id>",             "Set active TSG  (Tab -> configured TSG)"),
-    ShellBuiltinHelp("account <name>",       "List or switch credential profiles  (Tab -> profile names)"),
-    ShellBuiltinHelp("configure",            "Enter configure mode  (arc:global #)", hide_in_configure=True),
-    ShellBuiltinHelp("set <type> <name>",    "Create configuration  (configure mode)  — set ? for sub-commands", configure_only=True),
-    ShellBuiltinHelp("update <type> <name>", "Modify existing object  (configure mode)  — update ? for types", configure_only=True),
-    ShellBuiltinHelp("delete <type> <name>", "Delete configuration object  (configure mode)  — delete ? for types", configure_only=True),
-    ShellBuiltinHelp("show config",          "List staged changes pending commit  (local — not yet in SCM)", configure_only=True),
-    ShellBuiltinHelp("commit",               "Apply staged changes + push to devices  (commit watch → follow the job)", configure_only=True),
-    ShellBuiltinHelp("abandon",              "Discard staged changes  (local only — SCM is never touched)", configure_only=True),
-    ShellBuiltinHelp("cli <subcommand>",     "CLI theme operations  (show | color | reset)", configure_only=True),
-    ShellBuiltinHelp("feature <subcommand>", "Feature flags  (show | enable <flag> | disable <flag>)"),
-    ShellBuiltinHelp("find command keyword <text>", "Search ALL commands (incl. disabled) — PAN-OS style"),
-    ShellBuiltinHelp("terminal",             "Pager/width/spinner preferences  (terminal length 0 = no paging)"),
-    ShellBuiltinHelp("history",              "Show recent commands  (history <n> — default 20)"),
-    ShellBuiltinHelp("alias",                "User-defined shortcuts  (alias <name> <cmd…> | alias delete <name>)"),
-    ShellBuiltinHelp("watch <sec> <cmd>",    "Re-run a command every N seconds until Ctrl-C  (SSH session reused)"),
-    ShellBuiltinHelp("setup",                "Guided credential setup wizard  (auto-detects OS, two questions)"),
-    ShellBuiltinHelp("pwd",                  "Show device, folder, TSG, and active account"),
-    ShellBuiltinHelp("docs",                 "Open docs in browser"),
-    ShellBuiltinHelp("clear",                "Clear the terminal screen"),
-    ShellBuiltinHelp("exit / quit",          "Exit ARC (or leave configure mode)", configure_only=True),
-)
+# Help rows for the SHELL section of ? output — loaded from settings.
+SHELL_HELP_ROWS: tuple[ShellBuiltinHelp, ...] = load_shell_help_rows()
 
 
 def shell_help_rows(configure_mode: bool) -> tuple[ShellBuiltinHelp, ...]:
     """Return SHELL help rows visible in the current shell mode."""
     if configure_mode:
         return tuple(row for row in SHELL_HELP_ROWS if row.configure_only)
-    return tuple(row for row in SHELL_HELP_ROWS if not row.configure_only and not row.hide_in_configure)
+    return tuple(
+        row for row in SHELL_HELP_ROWS
+        if not row.configure_only and not row.hide_in_configure
+    )
 
 
 def shell_help_names() -> list[str]:
-    """Return all builtin help names in display order for smoke tests."""
+    """Return all builtin help names in display order (used by smoke tests)."""
     return [row.name for row in SHELL_HELP_ROWS]
-
