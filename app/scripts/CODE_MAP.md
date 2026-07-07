@@ -416,24 +416,25 @@ class DispatchMixin                      107-835
   ._show_command_not_found()             374-445        Show a helpful message when a command is not recognized.
   ._dispatch()                           447-835        Process one input line.  Returns True when the user wants to exit ARC.
 
-## `app/shell/completer.py`  (719 lines)
+## `app/shell/completer.py`  (727 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _parse_usage()                           26-62          Parse a usage string into (required_slots, optional_keywords).
 _usage_options()                         65-99          Return (token, display_meta) completions for the slot after *typed* ar
 _tokenize_partial()                      102-135        Split *text* for completion, honouring quotes, tracking the in-progres
-class ArcCompleter                       138-718        Context-aware tab completer.
+class ArcCompleter                       138-726        Context-aware tab completer.
   .__init__()                            147-148        
   ._command_visible()                    150-159        Return True when a registered command is visible in this shell mode.
-  .get_completions()                     161-448        
-  ._complete_dev_shell()                 450-524        Yield completions for dev shell commands.
-  ._match_complete_command()             526-541        Return the longest complete command key the user has fully entered.
-  ._complete_arguments()                 543-595        Yield completions for the argument region of a complete command.
-  ._object_names()                       620-659        Existing object names in the active folder, cached for a minute.
-  ._dynamic_name_options()               661-687        Live object names for name-completion slots.
-  ._arg_options()                        689-706        Resolve next-slot argument options: structure file first, usage fallba
-  ._all_commands()                       709-718        
+  .get_completions()                     161-182        
+  ._complete_normal()                    184-457        Yield completions for non-dev-shell commands.
+  ._complete_dev_shell()                 459-532        Yield completions for dev shell commands.
+  ._match_complete_command()             534-549        Return the longest complete command key the user has fully entered.
+  ._complete_arguments()                 551-603        Yield completions for the argument region of a complete command.
+  ._object_names()                       628-667        Existing object names in the active folder, cached for a minute.
+  ._dynamic_name_options()               669-695        Live object names for name-completion slots.
+  ._arg_options()                        697-714        Resolve next-slot argument options: structure file first, usage fallba
+  ._all_commands()                       717-726        
 
 ## `app/shell/navigation.py`  (705 lines)
 

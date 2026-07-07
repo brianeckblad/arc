@@ -179,6 +179,15 @@ class ArcCompleter(Completer):
                 yield Completion(name, start_position=0)
             return
 
+        yield from self._complete_normal(parts, text)
+
+    def _complete_normal(self, parts: list[str], text: str):
+        """Yield completions for non-dev-shell commands.
+
+        Handles all built-in argument completions (feature, find, cd, etc.)
+        and falls through to registry-based and prefix-name completion.
+        Called from both get_completions and _complete_dev_shell fallthrough.
+        """
         first = parts[0].lower()
         # True if the user has typed at least one space after the first token
         has_arg_space = len(parts) > 1 or text.endswith(" ")
@@ -517,11 +526,10 @@ class ArcCompleter(Completer):
                                         display_meta=cmd.description[:50])
             return
 
-        # Fall through to normal ARC command-name prefix completion
-        text_trim = text.rstrip()
-        for name in sorted(self._all_commands(include_remote_suffix=False)):
-            if name.startswith(text_trim) and name != text_trim:
-                yield Completion(name, start_position=-len(text_trim))
+        # Fall through to normal completion — handles feature, find, etc. argument
+        # completion and the default command-name prefix completion.
+        if parts:
+            yield from self._complete_normal(parts, text)
 
     def _match_complete_command(self, parts: list[str], ends_with_space: bool) -> str | None:
         """Return the longest complete command key the user has fully entered.
