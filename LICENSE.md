@@ -13,13 +13,17 @@ No rights are granted except those expressly stated in this License or granted s
 
 “Licensor” means the Author, as the original author and copyright holder of the Software, and any lawful successor, assignee, estate, trustee, executor, administrator, beneficiary, heir, legal representative, or other party legally authorized to control the Software.
 
-“Software” means this software project and all related source code, scripts, modules, libraries, APIs, SDKs, schemas, configuration files, documentation, examples, workflows, conversion logic, migration logic, policy models, object models, interfaces, command-line tools, build files, test files, and other associated materials.
+“Software” means this software project and all related source code, scripts, modules, libraries, APIs, SDKs, schemas, configuration files, documentation, examples, workflows, conversion logic, migration logic, policy models, object models, interfaces, command-line tools, build files, test files, and other associated materials authored or owned by the Licensor. The Software does not include Third-Party Materials, which remain governed by their own respective licenses.
 
 “Authorized Entity” means any individual, team, company, organization, or legal entity that has received written permission from the Licensor to use the Software.
 
 “Internal Use” means use solely for an Authorized Entity’s own internal technical operations, including firewall configuration, firewall migration, firewall automation, source-of-truth management, policy management, SCM programming, Palo Alto Networks integration, network security administration, and related internal infrastructure work.
 
 “Restricted Provider” means any person or organization that provides, sells, licenses, develops, supports, manages, consults on, integrates, migrates, automates, commercializes, or provides services related to firewalls, network security, managed security, managed networking, security operations, firewall policy management, firewall migration, firewall automation, or substantially similar products or services.
+
+“You” and “Your” mean any individual, entity, or organization that accesses, receives, possesses, downloads, uses, copies, modifies, executes, or otherwise interacts with the Software in any form, including any Authorized Entity and its employees, contractors, and agents. The obligations and restrictions imposed on You apply regardless of whether You are an Authorized Entity.
+
+“Third-Party Materials” means any software, libraries, components, packages, dependencies, or other materials that are included in, depended upon by, linked to, or distributed alongside the Software but are owned by parties other than the Licensor and licensed under their own separate license terms.
 
 2. Limited Internal Use Permission
 
@@ -110,6 +114,8 @@ A contribution does not create an implied license back to the contributor.
 14. Ownership
 
 The Licensor retains all rights, title, and interest in and to the Software.
+
+This includes all intellectual property rights in and to the Software, including copyright, trade-secret, patent, database, and moral rights, whether registered or unregistered.
 
 No ownership rights are transferred by this License.
 
@@ -205,11 +211,15 @@ You may not assign, transfer, delegate, sublicense, or otherwise convey any righ
 
 The Licensor may assign, transfer, delegate, sublicense, sell, convey, inherit, bequeath, or otherwise transfer rights in the Software to any successor, assignee, estate, trust, beneficiary, heir, legal representative, company, or other party.
 
-28. Governing Law
+28. Governing Law and Venue
 
-This License shall be governed by the laws of the jurisdiction selected by the Licensor in a separate written notice or agreement.
+This License shall be governed by and construed in accordance with the laws of the United States of America and the State of [INSERT U.S. STATE], without regard to its conflict-of-law rules. Matters of copyright, patent, and other federal intellectual property rights shall be governed by applicable United States federal law.
 
-If no jurisdiction is selected, this License shall be governed by the laws applicable to the Licensor’s primary residence or principal place of business, without regard to conflict-of-law rules.
+If no state is designated above, this License shall be governed by the laws of the State in which the Licensor maintains a primary residence or principal place of business, together with applicable United States federal law, without regard to conflict-of-law rules.
+
+The state and federal courts located in the Licensor’s designated jurisdiction shall have exclusive jurisdiction and venue over any dispute arising from or relating to this License, and You consent to the personal jurisdiction of those courts.
+
+To the maximum extent permitted by law, each party waives any right to a trial by jury in any proceeding arising from or relating to this License.
 
 29. Entire Agreement
 
@@ -217,8 +227,74 @@ This License is the entire agreement governing access to and use of the Software
 
 Any conflicting terms in purchase orders, employment policies, company repositories, contribution comments, issue discussions, pull requests, internal tickets, emails, chat messages, documentation, or other communications are rejected unless expressly agreed to in writing by the Licensor.
 
-30. Survival
+30. Third-Party Materials
 
-All provisions concerning ownership, restrictions, confidentiality, contributions, no commercial services, no third-party use, no Restricted Provider use, no SaaS use, no derivative or competing use, no redistribution, no implied rights, warranty disclaimers, limitation of liability, indemnification, governing law, enforcement, and remedies survive termination, revocation, deletion, separation, death, incapacity, assignment, or expiration of any authorization.
+The Software may include, depend on, link to, or be distributed alongside Third-Party Materials that are owned by their respective owners and licensed under their own separate license terms.
+
+Nothing in this License grants You any rights in Third-Party Materials beyond those granted by the applicable third-party license, and nothing in this License is intended to limit, restrict, or supersede Your rights or obligations under any applicable open-source or third-party license as applied to those Third-Party Materials.
+
+The Licensor claims no ownership of Third-Party Materials. To the extent of any conflict between this License and an applicable third-party license with respect to the Third-Party Materials themselves, the applicable third-party license governs those materials. The Licensor’s own original code, documentation, and materials remain governed exclusively by this License.
+
+31. Equitable Relief and Remedies
+
+You acknowledge that any actual or threatened breach of this License may cause the Licensor irreparable harm for which monetary damages would be inadequate.
+
+Accordingly, in addition to any other remedies available at law or in equity, the Licensor is entitled to seek injunctive relief, specific performance, and other equitable remedies to enforce this License, without the necessity of posting a bond or proving actual damages. The Licensor’s rights and remedies under this License are cumulative and not exclusive.
+
+32. Acceptance
+
+By accessing, receiving, possessing, downloading, installing, copying, executing, modifying, or otherwise using the Software, You acknowledge that You have read, understood, and agree to be bound by this License.
+
+If You do not agree to this License, You have no permission to access or use the Software, must not access or use it, and must delete or return all copies in Your possession or control.
+
+33. Notices and Marking
+
+You must not remove, obscure, alter, or fail to reproduce any copyright notice, proprietary legend, attribution, or license text contained in or accompanying the Software.
+
+Every copy of the Software, and every permitted modified version, that You make for authorized Internal Use must retain this License and the copyright notice in full and in unaltered form.
+
+34. Personnel and Need-to-Know Access
+
+Access to the Software within an Authorized Entity must be limited to those employees and individual contractors who require access for authorized Internal Use and who are bound by written obligations of confidentiality and use at least as protective of the Software as this License.
+
+You are fully responsible and liable for any act or omission relating to the Software by any person, entity, or system to whom You provide, expose, or make the Software available, as if such act or omission were Your own.
+
+You may not provide, expose, or make the Software available to any independent contractor, vendor, agent, or other person or organization that is a Restricted Provider.
+
+35. Security Incident and Unauthorized Disclosure Notification
+
+If You become aware of any actual or suspected unauthorized access, use, copying, disclosure, loss, theft, exfiltration, publication, distribution, or transfer of the Software, You must promptly notify the Licensor in writing, take immediate steps to stop and remediate the incident, preserve relevant evidence, and cooperate reasonably with the Licensor to contain and investigate the incident.
+
+You may not make any public statement regarding the incident that references or attributes the Software to the Licensor without the Licensor’s prior written consent.
+
+36. Audit and Verification
+
+Upon reasonable written notice, the Licensor may require You to certify in writing Your compliance with this License, including the number and location of all copies of the Software and the identity of all persons and systems with access.
+
+The Licensor, or an independent representative bound by confidentiality, may audit or inspect Your use of the Software to verify compliance with this License and to confirm the deletion or return of copies following termination or revocation. You must reasonably cooperate with any such audit.
+
+37. Change of Control and No Transfer by Operation of Law
+
+Any authorization granted to an Authorized Entity is personal to that Authorized Entity and may not be assigned, transferred, delegated, or conveyed, in whole or in part, by agreement, merger, acquisition, reorganization, sale of assets, change of control, operation of law, or otherwise, without the Licensor’s prior written permission. Any attempted transfer in violation of this Section is void and of no effect.
+
+Unless the Licensor consents in writing, all rights and permissions granted to an Authorized Entity terminate automatically upon (a) a change of control of the Authorized Entity, (b) a merger, acquisition, or reorganization in which the Authorized Entity is not the surviving controlling party, or (c) the Authorized Entity’s insolvency, bankruptcy, dissolution, assignment for the benefit of creditors, or the appointment of a receiver, trustee, or similar officer.
+
+38. Notices
+
+Any notice, request for permission, certification, or other communication required or permitted under this License must be provided to the Licensor in writing at the contact address designated by the Licensor.
+
+Any permission, consent, waiver, or authorization by the Licensor is effective only if provided in writing and signed by the Licensor.
+
+Licensor contact for permissions and notices: notices@arc-license.example
+
+39. Interpretation; No Third-Party Beneficiaries
+
+Section headings are for convenience only and do not affect the interpretation of this License. The words “including,” “includes,” and “such as” mean “including without limitation.” The word “or” is not exclusive.
+
+This License does not create, and is not intended to create, any right, benefit, remedy, or cause of action in favor of any person or entity other than the Licensor and the Authorized Entity.
+
+40. Survival
+
+All provisions concerning ownership, restrictions, confidentiality, access control, notices and marking, personnel and need-to-know access, security incident notification, audit and verification, change of control and no transfer, contributions, no commercial services, no third-party use, no Restricted Provider use, no SaaS use, no derivative or competing use, no redistribution, no implied rights, third-party materials, warranty disclaimers, limitation of liability, indemnification, equitable relief and remedies, governing law, enforcement, and remedies survive termination, revocation, deletion, separation, death, incapacity, assignment, or expiration of any authorization.
 
 END OF LICENSE
