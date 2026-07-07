@@ -158,6 +158,18 @@ class ArcCompleter(Completer):
             return False
         return self._shell._is_command_visible(key, command_def)
 
+    def _command_is_dev_gated(self, key: str) -> bool:
+        """Return True when the command exists but is gated behind dev mode.
+
+        Used to surface `[dev mode]` hints in tab completion so operators
+        know the command exists and how to unlock it, rather than seeing nothing.
+        """
+        command_def = COMMANDS.get(key)
+        if command_def is None or not command_def.feature_flag:
+            return False
+        features = getattr(self._shell, "_features", {})
+        return feature_state(features, command_def.feature_flag) == "dev"
+
     def get_completions(self, document, complete_event):
         raw = document.text_before_cursor.lstrip()
         # Normalize internal whitespace: multiple spaces and tabs → single space.
@@ -476,6 +488,18 @@ class ArcCompleter(Completer):
                 continue
             yield Completion(name, start_position=-len(text))
 
+        # Also surface dev-gated commands with a hint so operators can discover them.
+        if not full_is_command:
+            for name in sorted(self._dev_gated_commands()):
+                if not name.startswith(text_trim):
+                    continue
+                if name == text_trim:
+                    continue
+                yield Completion(
+                    name, start_position=-len(text),
+                    display_meta="[dim][dev mode][/dim]",
+                )
+
         # When the typed text is itself a complete command but has no trailing
         # space yet, also surface its first argument slot (with a leading space)
         # so `set address` + Tab reveals what comes next instead of nothing.
@@ -751,3 +775,19 @@ class ArcCompleter(Completer):
             return builtins + commands
         with_remote = [f"{c} --remote" for c in commands]
         return builtins + commands + with_remote
+
+    def _dev_gated_commands(self) -> list[str]:
+        """Return command keys that are gated by a 'dev' feature flag.
+
+        These are visible only in dev mode, but we surface them in normal
+        tab completion with a '[dev mode]' hint so operators know they exist.
+        """
+        dev_mode = getattr(self._shell, "_dev_mode", False)
+        if dev_mode:
+            return []  # already visible in normal listing
+        features = getattr(self._shell, "_features", {})
+        result = []
+        for key, cmd in COMMANDS.items():
+            if cmd.feature_flag and feature_state(features, cmd.feature_flag) == "dev":
+                result.append(key)
+        return result

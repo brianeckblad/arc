@@ -147,6 +147,40 @@ class ConfigureMixin:
         self._state.staged_ops = []
         console.print("[green]✓[/green] Staged changes discarded — SCM was never touched.")
 
+    def _cmd_unstage(self, args: list[str]) -> None:
+        """Remove a single staged change by its index number (configure mode only).
+
+        Usage: unstage <n>   — remove item <n> from 'show config' list
+        """
+        if not self._state.configure_mode:
+            console.print(
+                "[yellow]unstage is a configure-mode command.[/yellow] "
+                "Enter [bold]configure[/bold] first."
+            )
+            return
+        staged = self._state.staged_ops
+        if not staged:
+            console.print("[dim]No staged changes to unstage.[/dim]")
+            return
+        if not args or not args[0].isdigit():
+            console.print(
+                f"[yellow]Usage:[/yellow] unstage <n>   (1–{len(staged)} from [bold]show config[/bold])"
+            )
+            return
+        n = int(args[0])
+        if not (1 <= n <= len(staged)):
+            console.print(
+                f"[yellow]Index {n} out of range[/yellow] — "
+                f"valid range is 1–{len(staged)} ([bold]show config[/bold] to review)."
+            )
+            return
+        removed = staged.pop(n - 1)
+        label = f"{removed['command']} {removed['detail']}".strip()
+        console.print(
+            f"[green]✓[/green] Removed staged change #{n}: [bold]{label}[/bold]  "
+            f"[dim]({len(staged)} remaining — SCM was never touched)[/dim]"
+        )
+
     # ------------------------------------------------------------------
     # commit confirmed — Junos-style auto-revert safety net
     # ------------------------------------------------------------------
@@ -157,7 +191,13 @@ class ConfigureMixin:
             data = self._scm._request(
                 "GET", self._scm.OPERATIONS_URL, "/config-versions/running"
             )
-        except Exception:  # noqa: BLE001 — caller refuses to arm without a target
+        except Exception as exc:  # noqa: BLE001
+            # Log visibly so the operator knows WHY we can't arm auto-revert,
+            # rather than silently failing and leaving them unprotected.
+            console.print(
+                f"[yellow]⚠ Could not fetch running config version:[/yellow] {exc}\n"
+                "  commit confirmed will be skipped — run a plain [bold]commit[/bold] instead."
+            )
             return None
         records = data.get("data") if isinstance(data, dict) and isinstance(data.get("data"), list) else data
         if isinstance(records, dict):
@@ -174,7 +214,12 @@ class ConfigureMixin:
         self._cancel_commit_confirmed(silent=True)
         timer = threading.Timer(minutes * 60, self._commit_confirmed_expired)
         timer.daemon = True
-        self._pending_confirm = {"timer": timer, "version": version, "minutes": minutes}
+        self._pending_confirm = {
+            "timer": timer,
+            "version": version,
+            "minutes": minutes,
+            "armed_at": time.monotonic(),
+        }
         timer.start()
         console.print(
             f"[yellow]⏱ commit confirmed:[/yellow] auto-revert to config version "
@@ -259,7 +304,7 @@ class ConfigureMixin:
         description = " ".join(tokens).strip().strip('"')
 
         if not self._scm:
-            console.print("[red]SCM not connected — cannot commit.[/red]")
+            console.print("[red]SCM is not configured — run [bold]arc auth configure[/bold] to set up credentials.[/red]")
             return
 
         # commit confirmed: capture the revert target BEFORE anything changes.
@@ -341,7 +386,7 @@ class ConfigureMixin:
             console.print("[dim]No staged changes to check.[/dim]")
             return
         if not self._scm:
-            console.print("[red]SCM not connected — cannot validate.[/red]")
+            console.print("[red]SCM is not configured — run [bold]arc auth configure[/bold] to set up credentials.[/red]")
             return
         failures = 0
         for index, entry in enumerate(staged, 1):
@@ -382,7 +427,11 @@ class ConfigureMixin:
                     job = self._scm.get_job(job_id) or {}
                     if str(job.get("status", "")).upper() == "FIN":
                         break
-                    time.sleep(5)
+                    # Interruptible poll — check every 0.2 s so Ctrl-C is
+                    # responsive instead of blocking for the full 5 s sleep.
+                    poll_deadline = time.monotonic() + 5
+                    while time.monotonic() < poll_deadline:
+                        time.sleep(min(0.2, poll_deadline - time.monotonic()))
         except Exception as exc:  # noqa: BLE001 — polling must never crash the shell
             console.print(f"[yellow]Stopped watching job {job_id}:[/yellow] {exc}")
             return
@@ -1020,7 +1069,8 @@ class ConfigureMixin:
                 stdout=_sp.PIPE, stderr=_sp.STDOUT,
                 text=True, bufsize=1, cwd=str(REPO_ROOT),
             )
-            assert proc.stdout
+            if not proc.stdout:
+                raise RuntimeError("Popen stdout pipe not available — check subprocess flags")
             for raw_line in proc.stdout:
                 console.print(raw_line.rstrip())
             proc.wait()
@@ -1529,7 +1579,8 @@ class ConfigureMixin:
                 stdout=_sp.PIPE, stderr=_sp.STDOUT,
                 text=True, bufsize=1, cwd=str(REPO_ROOT),
             )
-            assert proc.stdout
+            if not proc.stdout:
+                raise RuntimeError("Popen stdout pipe not available — check subprocess flags")
             for raw_line in proc.stdout:
                 console.print(raw_line.rstrip())
             rc = proc.wait()

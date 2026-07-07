@@ -193,13 +193,14 @@ def _expand_unambiguous_prefix(tokens: list[str], phrases: list[list[str]]) -> l
 
 
 PROMPT_STYLE = Style.from_dict({
-    "arc":    "bold ansicyan",
-    "device": "bold ansiyellow",
-    "folder": "bold ansigreen",
-    "ctx":    "ansicyan dim",        # context-tier label (:global, :device)
-    "sep":    "ansicyan",
-    "arrow":  "bold ansicyan",
-    "dev":    "bold ansimagenta",     # development-mode marker in the prompt
+    "arc":     "bold ansicyan",
+    "device":  "bold ansiyellow",
+    "folder":  "bold ansigreen",
+    "ctx":     "ansicyan dim",        # context-tier label (:global, :device)
+    "sep":     "ansicyan",
+    "arrow":   "bold ansicyan",
+    "dev":     "bold ansimagenta",    # development-mode marker in the prompt
+    "confirm": "bold ansired",        # commit confirmed countdown
 })
 
 
@@ -303,5 +304,40 @@ class ShellState:
     dev_shell: bool = False
 
 
-# Auto-export every module global so mixins can `from app.shell._base import *`
-__all__ = [n for n in dir() if not n.startswith('__') and n != 'annotations']
+# Explicit re-export list for `from app.shell._base import *`.
+# Mixins depend on every symbol listed here — add here when adding a new
+# module-level export to this file (functions, constants, imported names).
+__all__ = [
+    # stdlib re-exports (used across multiple mixins)
+    "os", "re", "random", "select", "shlex", "shutil", "signal", "sys",
+    "time", "traceback", "ET", "Path", "Optional",
+    # third-party re-exports
+    "httpx", "termios", "tty", "_TTY_AVAILABLE",
+    "PromptSession", "run_in_terminal", "AutoSuggestFromHistory",
+    "Completer", "Completion", "HTML", "FileHistory", "KeyBindings", "Style",
+    "Console", "Panel", "platformdirs",
+    # app imports
+    "SCMClient", "__version__", "_BANNER_FILE", "_GOODBYE_FILE",
+    "COMMANDS", "CATEGORIES", "CommandDef", "ExecutionContext", "match_command",
+    "ArcConfig", "list_profiles", "load_config", "set_active_profile",
+    "_cd_hint", "_configure_banner", "_help_footer", "_section_label",
+    "_verb_description", "_verb_visible",
+    "available_help_topics", "open_docs_in_browser", "page_length",
+    "render_help_topic", "set_page_length",
+    "UserPrefs", "load_prefs", "save_prefs",
+    "dev_mode_from_env", "feature_state", "is_enabled", "is_feature_visible", "load_features",
+    "load_command_visibility", "is_command_visible", "is_command_executable", "load_builtin_aliases",
+    "_load_shell_builtins", "shell_help_rows",
+    "SHELL_BUILTINS", "_SHELL_BUILTINS",
+    "SSHManager",
+    "ArcTheme", "THEME_KEYS", "load_theme", "reset_theme", "save_theme",
+    "fmt",
+    # module-level constants and helpers
+    "console", "HISTORY_FILE", "GOODBYE_FILE", "_HELP_CMD_WIDTH",
+    "PROMPT_STYLE",
+    # functions
+    "device_display_name", "device_ssh_host", "tsg_display", "active_tsg_label",
+    "_expand_unambiguous_prefix", "tokenize", "_make_key_bindings",
+    # dataclass
+    "ShellState",
+]

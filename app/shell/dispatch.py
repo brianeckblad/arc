@@ -41,8 +41,9 @@ def split_pipe_line(line: str) -> tuple[str, str | None]:
 def parse_output_filters(spec: str) -> tuple[list[tuple[str, str]] | None, str]:
     """Parse a pipe filter chain into ``[(op, pattern), …]``.
 
-    Supported (PAN-OS / Cisco vocabulary): ``match``/``include`` <pattern>,
-    ``except``/``exclude`` <pattern>, ``count``,
+    Supported (PAN-OS / Cisco vocabulary): ``match``/``include`` <pattern>
+    (``include`` is an alias for ``match``), ``except``/``exclude`` <pattern>
+    (``exclude`` is an alias for ``except``), ``count``,
     ``json`` (dump command's raw data as JSON — bypasses table rendering),
     ``bare`` (strip all formatting; output plain text one content-line at a time),
     and ``save <file>`` (write filtered output to file — must be last).
@@ -71,7 +72,7 @@ def parse_output_filters(spec: str) -> tuple[list[tuple[str, str]] | None, str]:
         else:
             return None, (
                 f"unknown filter '{op}' — supported: "
-                "match <pat> | except <pat> | count | json | bare | save <file>"
+                "match <pat> (or include) | except <pat> (or exclude) | count | json | bare | save <file>"
             )
     for index, (op, _) in enumerate(filters):
         if op == "save" and index != len(filters) - 1:
@@ -142,7 +143,11 @@ class DispatchMixin:
                 console.print(f"[dim]── watch #{iteration} ──[/dim]")
                 if self._dispatch(command_line):
                     return False  # inner 'exit' stops the watch, not ARC
-                time.sleep(interval)
+                # Interruptible sleep: wake up every 0.2 s to check for Ctrl-C
+                # instead of blocking the input handler for the full interval.
+                deadline = time.monotonic() + interval
+                while time.monotonic() < deadline:
+                    time.sleep(min(0.2, deadline - time.monotonic()))
         except KeyboardInterrupt:
             console.print(f"\n[dim]watch stopped after {iteration} run(s).[/dim]")
         return False
@@ -165,8 +170,7 @@ class DispatchMixin:
         # For builtin commands that write directly to console (arc show, pwd, etc.),
         # | json falls back to post-processing the captured text (see below).
         json_mode = any(op == "json" for op, _ in filters)
-        bare_mode = any(op == "bare" for op, _ in filters)
-        remaining_filters = [f for f in filters if f[0] not in ("json", "bare")]
+        remaining_filters = [f for f in filters if f[0] != "json"]
 
         self._piping = True
         self._render_as_json = json_mode
@@ -180,15 +184,6 @@ class DispatchMixin:
         lines = capture.get().splitlines()
         # Strip ANSI escape codes
         lines = [_ANSI_RE.sub("", l) for l in lines]
-
-        # `| bare` — strip all table/box-drawing characters, output content only
-        if bare_mode:
-            bare_lines = []
-            for l in lines:
-                result = _bare_line(l)
-                if result:
-                    bare_lines.append(result)
-            lines = bare_lines
 
         # `| json` fallback for non-API output — convert lines to JSON array of strings
         # (API commands already emitted JSON via _render_as_json; their output
@@ -205,11 +200,19 @@ class DispatchMixin:
                 content_lines = [l for l in lines if l.strip()]
                 lines = _json.dumps(content_lines, indent=2, ensure_ascii=False).splitlines()
 
-        # Apply remaining filters (match/except/count/save) to the processed lines
+        # Apply filter chain in order: bare → match/except → count/save
         counted = False
         save_target: str | None = None
         for op, pattern in remaining_filters:
-            if op == "match":
+            if op == "bare":
+                # Strip box-drawing and formatting; drop empty/decoration-only lines.
+                bare_lines = []
+                for l in lines:
+                    result = _bare_line(l)
+                    if result:
+                        bare_lines.append(result)
+                lines = bare_lines
+            elif op == "match":
                 lines = [l for l in lines if _line_matches(l, pattern)]
             elif op == "except":
                 lines = [l for l in lines if not _line_matches(l, pattern)]
@@ -611,6 +614,11 @@ class DispatchMixin:
         # ---- abandon (configure mode): discard locally staged changes ----
         if cmd == "abandon":
             self._cmd_abandon(tokens[1:])
+            return False
+
+        # ---- unstage (configure mode): remove a single staged change by index ----
+        if cmd == "unstage":
+            self._cmd_unstage(tokens[1:])
             return False
 
         # ---- terminal: per-user pager/width/spinner preferences ----

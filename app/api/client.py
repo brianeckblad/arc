@@ -93,6 +93,10 @@ class SCMClient:
         self._cfg = cfg
         self._http = httpx.Client(timeout=30)
         self._token: str = ""
+        # Optional progress callback — set by the execution layer during paginated
+        # fetches so the spinner text updates as pages arrive.  Signature:
+        #   _page_reporter(fetched_so_far: int, total: int) -> None
+        self._page_reporter: Optional[callable] = None
 
         # Auth priority:
         #   1. OAuth client credentials (client_id + client_secret + tsg_id) — always
@@ -180,12 +184,15 @@ class SCMClient:
                 retry_after = resp.headers.get("Retry-After")
                 if retry_after is not None:
                     try:
+                        # Accept both float ("1.5") and integer ("60") values.
                         parsed = float(retry_after)
                         if parsed >= 0:
                             delay = parsed
                     except ValueError:
                         pass
-                time.sleep(min(delay, 15.0))
+                # Cap at 120s so we always respect reasonable Retry-After values
+                # (SCM can legitimately say "wait 60s") without an unbounded wait.
+                time.sleep(min(delay, 120.0))
                 continue
             break
         resp.raise_for_status()
@@ -200,6 +207,7 @@ class SCMClient:
         path: str,
         params: Optional[dict],
         first: dict,
+        on_page: Optional[callable] = None,
     ) -> list[dict]:
         """Follow limit/offset pagination after an already-fetched first page.
 
@@ -209,6 +217,9 @@ class SCMClient:
         collected, a page comes back empty, or the page-count safety cap is
         hit (in which case whatever was fetched is returned — no exception).
         *params* is copied before mutation.
+
+        *on_page*, if provided, is called after each follow-on page fetch with
+        ``(fetched_so_far, total)`` so callers can update a progress display.
         """
         items: list[dict] = list(first["data"])
         total = first.get("total")
@@ -228,6 +239,18 @@ class SCMClient:
                 break
             items.extend(rows)
             pages += 1
+            if on_page is not None:
+                on_page(len(items), total)
+            elif self._page_reporter is not None:
+                self._page_reporter(len(items), total)
+        if len(items) < total:
+            import warnings
+            warnings.warn(
+                f"Pagination safety cap reached ({self._MAX_LIST_PAGES} pages): "
+                f"returned {len(items)} of {total} items from {path}. "
+                "Increase _MAX_LIST_PAGES or add server-side filters to see all results.",
+                stacklevel=3,
+            )
         return items
 
     def _list(self, base_url: str, path: str, params: Optional[dict] = None) -> list[dict]:

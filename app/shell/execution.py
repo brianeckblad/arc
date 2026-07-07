@@ -80,8 +80,19 @@ class ExecutionMixin:
                 and getattr(getattr(self, "_prefs", None), "spinner", True)
             )
             if use_spinner:
-                with console.status("[dim]querying SCM…[/dim]", spinner="dots"):
-                    data = cmd_def.api_handler(ctx, args)
+                status_ctx = console.status("[dim]querying SCM…[/dim]", spinner="dots")
+                # Attach a progress reporter so paginated fetches update the
+                # spinner text as each page arrives, keeping the operator informed.
+                if self._scm is not None:
+                    def _on_page(fetched: int, total: int) -> None:
+                        status_ctx.update(f"[dim]fetching… {fetched}/{total}[/dim]")
+                    self._scm._page_reporter = _on_page
+                try:
+                    with status_ctx:
+                        data = cmd_def.api_handler(ctx, args)
+                finally:
+                    if self._scm is not None:
+                        self._scm._page_reporter = None
             else:
                 data = cmd_def.api_handler(ctx, args)
             self._render(key, cmd_def, data)
@@ -106,7 +117,23 @@ class ExecutionMixin:
                     f"[bold]{self._state.folder}[/bold]."
                 )
             else:
-                detail = " ".join((exc.response.text or "").split())[:200]
+                raw_detail = (exc.response.text or "").strip()
+                # Sanitize: mask anything that looks like a bearer token or secret
+                # before displaying to avoid leaking credentials from API error bodies.
+                import re as _re
+                sanitized = _re.sub(
+                    r'(Bearer\s+)[A-Za-z0-9\-._~+/]+=*',
+                    r'\1[REDACTED]',
+                    raw_detail,
+                    flags=_re.IGNORECASE,
+                )
+                sanitized = _re.sub(
+                    r'("(?:token|secret|password|bearer)"\s*:\s*")[^"]{8,}(")',
+                    r'\1[REDACTED]\2',
+                    sanitized,
+                    flags=_re.IGNORECASE,
+                )
+                detail = " ".join(sanitized.split())[:200]
                 console.print(
                     f"[red]API error ({status}).[/red] {detail}"
                     if detail else f"[red]API error ({status}).[/red]"
@@ -137,7 +164,11 @@ class ExecutionMixin:
 
         host = device_ssh_host(device)
         if not host:
-            console.print("[red]Cannot determine device IP/hostname for SSH.[/red]")
+            console.print(
+                "[red]Cannot determine SSH target — no IP or hostname for this device.[/red]\n"
+                "  Check [bold]show devices[/bold] for the device's IP address, "
+                "or use [bold]arc auth configure[/bold] to set up SSH credentials."
+            )
             return
 
         ssh_cmd = self._resolve_ssh_command(cmd_def, args)

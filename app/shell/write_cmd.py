@@ -122,7 +122,7 @@ class WriteMixin:
                 return
             parent = self._state.folder  # create under the active folder
             if not self._scm:
-                console.print("[red]SCM not configured — cannot create folders.[/red]")
+                console.print("[red]SCM is not configured — run [bold]arc auth configure[/bold] to set up credentials.[/red]")
                 return
             try:
                 self._scm.create_folder(subfolder_name, parent)
@@ -139,7 +139,7 @@ class WriteMixin:
         if len(args) >= 3 and args[1].lower() == "parent":
             parent_name = " ".join(args[2:])
             if not self._scm:
-                console.print("[red]SCM not configured — cannot create folders.[/red]")
+                console.print("[red]SCM is not configured — run [bold]arc auth configure[/bold] to set up credentials.[/red]")
                 return
             try:
                 self._scm.create_folder(folder_name, parent_name)

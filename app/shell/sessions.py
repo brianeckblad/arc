@@ -80,6 +80,8 @@ class SessionsMixin:
                 "  Run [bold]arc auth configure[/bold] to store credentials so they\n"
                 "  auto-fill next time, or see [bold]help config osx[/bold] / "
                 "[bold]help config win[/bold] / [bold]help config nix[/bold].\n"
+                "  [dim]Tip: prefer SSH agent ([bold]ssh-add[/bold]) over stored keys —\n"
+                "  agent-based auth never writes private key material to ARC config.[/dim]\n"
             )
 
         console.print(f"[dim]Connecting SSH: {ssh_user}@{host}:{ssh_port}…[/dim]")
@@ -126,7 +128,7 @@ class SessionsMixin:
         try:
             channel.resize_pty(width=cols, height=rows)
         except Exception:
-            pass
+            pass  # PTY resize is best-effort; failure does not affect the session
 
         console.print(
             f"\n[green]✓[/green] Authenticated — handing terminal to "
@@ -142,7 +144,7 @@ class SessionsMixin:
                 c, r = shutil.get_terminal_size()
                 channel.resize_pty(width=c, height=r)
             except Exception:
-                pass
+                pass  # PTY resize is best-effort; failure does not affect the session
 
         old_sigwinch = signal.signal(signal.SIGWINCH, _handle_resize)
         old_tty = termios.tcgetattr(sys.stdin)
@@ -179,8 +181,9 @@ class SessionsMixin:
                     sys.stdout.buffer.flush()
                     break
 
-        except Exception:
-            pass  # Session ended unexpectedly — restore terminal below.
+        except Exception as exc:
+            # Session ended unexpectedly — log for visibility, restore terminal below.
+            console.print(f"\n[yellow]SSH session interrupted:[/yellow] {exc}")
 
         finally:
             termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_tty)

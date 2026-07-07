@@ -21,7 +21,8 @@ class NavigationMixin:
           cd device <name>   — set device context (Tab -> device list)
           cd folder <name>   — set folder context (Tab -> folder list)
           cd folder ..       — reset folder to Shared
-          cd ..  |  cd /     — clear device context and return to global
+          cd ..  |  cd /     — context-aware back: clears device if set,
+                               resets folder to Shared if no device set
           cd <name>          — shorthand for 'cd device <name>' (backward compat)
           cd                 — show current context
 
@@ -42,13 +43,22 @@ class NavigationMixin:
                     f"[cyan]context:[/cyan] global  "
                     f"[cyan]folder:[/cyan] [bold green]{folder}[/bold green]"
                 )
-            console.print("[dim]  cd device <name>  |  cd folder <name>  |  cd .. → clear device[/dim]")
+            console.print("[dim]  cd device <name>  |  cd folder <name>  |  cd .. → back (device → folder → global)[/dim]")
             return
 
-        # cd ..  or  cd /  — clear device
+        # cd ..  or  cd /  — context-aware navigation:
+        #   • device is set → clear device (return to folder-only context)
+        #   • no device, folder is set → reset folder to Shared (return to global)
+        #   • already global → no-op with a hint
         if args[0] in ("..", "/"):
-            self._state.device = None
-            console.print(_cd_hint("clear"))
+            if self._state.device:
+                self._state.device = None
+                console.print(_cd_hint("clear"))
+            elif self._state.folder and self._state.folder.lower() != "shared":
+                self._state.folder = "Shared"
+                console.print("[cyan]SCM folder reset to:[/cyan] [bold]Shared[/bold]  [dim](global context)[/dim]")
+            else:
+                console.print("[dim]Already at global context — no device or folder to clear.[/dim]")
             return
 
         # Subcommand dispatch
@@ -355,7 +365,7 @@ class NavigationMixin:
         name = name.strip()
 
         if not self._scm:
-            console.print("[red]SCM not configured — cannot create folders.[/red]")
+            console.print("[red]SCM is not configured — run [bold]arc auth configure[/bold] to set up credentials.[/red]")
             return
 
         console.print("[dim]Fetching folder list…[/dim]", end="\r")

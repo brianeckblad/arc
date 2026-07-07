@@ -13,6 +13,10 @@ class PromptMixin:
           No device, named folder   → arc:Production >     (folder context)
           Device, Shared folder     → arc:fw01:device >    (device context)
           Device, named folder      → arc:fw01:Production > (folder context on device)
+
+        While a `commit confirmed` countdown is active, a [CONFIRM: Xm Ys]
+        segment is appended before the arrow so the operator always knows the
+        revert timer is running.
         """
         folder    = self._state.folder or "Shared"
         at_shared = folder.lower() == "shared"
@@ -23,6 +27,19 @@ class PromptMixin:
         in_dev_shell = self._state.dev_shell
         dev_seg = "<sep>:</sep><dev>dev</dev>" if (in_dev_shell or getattr(self, "_dev_mode", False)) else ""
 
+        # commit confirmed countdown — shown while a revert timer is armed.
+        confirm_seg = ""
+        pending = getattr(self, "_pending_confirm", None)
+        if pending:
+            import time as _time
+            armed_at = pending.get("armed_at", 0.0)
+            total_secs = pending.get("minutes", 0) * 60
+            elapsed = _time.monotonic() - armed_at
+            remaining = max(0.0, total_secs - elapsed)
+            mins = int(remaining) // 60
+            secs = int(remaining) % 60
+            confirm_seg = f"<sep> </sep><confirm>[CONFIRM: {mins}m {secs:02d}s]</confirm>"
+
         if self._state.device:
             name = device_display_name(self._state.device)
             if at_shared:
@@ -32,6 +49,7 @@ class PromptMixin:
                     f"<sep>:</sep><device>{name}</device>"
                     f"<sep>:</sep><ctx>device</ctx>"
                     f"{dev_seg}"
+                    f"{confirm_seg}"
                     f"<arrow>{prompt_tail}</arrow>"
                 )
             # Device selected and in a specific folder — show both
@@ -40,6 +58,7 @@ class PromptMixin:
                 f"<sep>:</sep><device>{name}</device>"
                 f"<sep>:</sep><folder>{folder}</folder>"
                 f"{dev_seg}"
+                f"{confirm_seg}"
                 f"<arrow>{prompt_tail}</arrow>"
             )
 
@@ -49,6 +68,7 @@ class PromptMixin:
                 f"<arc>arc</arc>"
                 f"<sep>:</sep><ctx>global</ctx>"
                 f"{dev_seg}"
+                f"{confirm_seg}"
                 f"<arrow>{prompt_tail}</arrow>"
             )
 
@@ -57,6 +77,7 @@ class PromptMixin:
             f"<arc>arc</arc>"
             f"<sep>:</sep><folder>{folder}</folder>"
             f"{dev_seg}"
+            f"{confirm_seg}"
             f"<arrow>{prompt_tail}</arrow>"
         )
 

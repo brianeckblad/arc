@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import threading
 from datetime import datetime, timezone
 from typing import Any
 
@@ -117,9 +118,11 @@ def _pending_ping(ctx: ExecutionContext, args: dict) -> str:
 # handlers receive an ExecutionContext without shell state, so `show log
 # detail <n>` re-reads row n from here.  Rendered tables show a mapped subset;
 # this keeps every SLS field for the detail view.  One shell process = one
-# operator session, so a module-level list is safe here.
+# operator session, so a module-level list is safe here.  The lock guards
+# against future concurrent use (e.g. watch + a second command).
 _LAST_ROWS: list[dict] = []
 _LAST_QUERY_DESC: str = ""   # e.g. "traffic (last 1h)" — for detail-view titles
+_LAST_ROWS_LOCK = threading.Lock()
 
 _LOG_USAGE = (
     "Usage: show log <traffic|threat|system> [src <ip>] [dst <ip>] [port <n>] "
@@ -128,6 +131,7 @@ _LOG_USAGE = (
 
 # Only SLS clients are cached — one per SCMConfig object, created on first use.
 _SLS_CLIENTS: dict[int, Any] = {}
+_SLS_CLIENTS_LOCK = threading.Lock()
 
 
 def _get_sls(ctx: ExecutionContext):
@@ -141,9 +145,10 @@ def _get_sls(ctx: ExecutionContext):
             "SCM_CLIENT_SECRET / SCM_TSG_ID (or SCM_BEARER_TOKEN) and restart."
         )
     key = id(cfg)
-    if key not in _SLS_CLIENTS:
-        _SLS_CLIENTS[key] = SLSClient(cfg)
-    return _SLS_CLIENTS[key]
+    with _SLS_CLIENTS_LOCK:
+        if key not in _SLS_CLIENTS:
+            _SLS_CLIENTS[key] = SLSClient(cfg)
+        return _SLS_CLIENTS[key]
 
 
 def _parse_log_window(value: str) -> int:
@@ -251,8 +256,9 @@ def _show_log_sls(log_type: str):
         rows = client.query_logs(log_type, filters, limit=limit, minutes_back=minutes_back)
 
         global _LAST_QUERY_DESC
-        _LAST_ROWS[:] = rows
-        _LAST_QUERY_DESC = f"{log_type} (last {minutes_back}m)"
+        with _LAST_ROWS_LOCK:
+            _LAST_ROWS[:] = rows
+            _LAST_QUERY_DESC = f"{log_type} (last {minutes_back}m)"
 
         if not rows:
             return (
@@ -283,18 +289,21 @@ def _show_log_detail(ctx: ExecutionContext, args: dict) -> Any:
     Reads from the module-level _LAST_ROWS stash populated by the
     `show log traffic|threat|system` handlers (see comment above).
     """
-    if not _LAST_ROWS:
+    with _LAST_ROWS_LOCK:
+        rows_snapshot = list(_LAST_ROWS)
+        desc_snapshot = _LAST_QUERY_DESC
+    if not rows_snapshot:
         raise ValueError(
             "No log rows to detail — run a query first, e.g. "
             "show log traffic last 1h, then: show log detail <n>"
         )
     raw = str(args.get("id", "") or "").strip()
-    if not raw.isdigit() or not (1 <= int(raw) <= len(_LAST_ROWS)):
+    if not raw.isdigit() or not (1 <= int(raw) <= len(rows_snapshot)):
         raise ValueError(
-            f"Usage: show log detail <n>   (1–{len(_LAST_ROWS)} from the last "
-            f"{_LAST_QUERY_DESC or 'log'} query)"
+            f"Usage: show log detail <n>   (1–{len(rows_snapshot)} from the last "
+            f"{desc_snapshot or 'log'} query)"
         )
-    return _LAST_ROWS[int(raw) - 1]
+    return rows_snapshot[int(raw) - 1]
 
 
 # ---------------------------------------------------------------------------

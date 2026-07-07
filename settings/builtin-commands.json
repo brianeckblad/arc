@@ -252,6 +252,15 @@
     "onlogin": false,
     "startup_hint": ""
   },
+  "unstage": {
+    "visible": true,
+    "display": "unstage <n>",
+    "help": "Remove one staged change by index  (unstage 2 removes item #2 from show config)",
+    "configure_only": true,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
   "update": {
     "visible": true,
     "display": "update <type> <name>",
