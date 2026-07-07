@@ -29,7 +29,6 @@ COMMAND_DOCS_ROOT = DOCS_ROOT / "commands"
 SHELL_TOPICS = {
     "cd":           "commands/cd.md",
     "connect":      "commands/connect.md",
-    "connect":      "commands/connect.md",
     "exit":         "commands/exit.md",
     "quit":         "commands/exit.md",
     "pwd":          "commands/pwd.md",

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Callable
 
 from rich.console import Console
 from rich.panel import Panel
@@ -32,7 +32,7 @@ def _inheritance_note(obj: dict) -> str:
     return ""
 
 
-
+def _kv_table(data: dict, title: str = "") -> Table:
     t = Table(box=box.ROUNDED, show_header=False, title=title, min_width=50)
     t.add_column("Key", style="bold cyan", no_wrap=True)
     t.add_column("Value", style="white")
@@ -651,13 +651,14 @@ def format_snippet_detail(snippet: dict) -> list:
     renderables: list = []
 
     # --- Header: identity and metadata ---
-    flat: dict[str, str] = {}
-    flat["Name"]        = name
-    flat["ID"]          = snippet.get("id", "") or ""
-    flat["Type"]        = snippet.get("type", "") or ""
-    flat["Prefix"]      = "enabled" if snippet.get("enable_prefix") else "disabled"
-    flat["Shared in"]   = snippet.get("shared_in", "") or ""
-    flat["Description"] = snippet.get("description", "") or ""
+    flat: dict[str, str] = {
+        "Name": name,
+        "ID": snippet.get("id", "") or "",
+        "Type": snippet.get("type", "") or "",
+        "Prefix": "enabled" if snippet.get("enable_prefix") else "disabled",
+        "Shared in": snippet.get("shared_in", "") or "",
+        "Description": snippet.get("description", "") or "",
+    }
 
     labels = snippet.get("labels", [])
     if labels:
@@ -707,13 +708,14 @@ def format_snippet_detail_full(data: dict) -> list:
     renderables: list = []
 
     # --- Header ---
-    flat: dict[str, str] = {}
-    flat["Name"]        = name
-    flat["ID"]          = snippet.get("id", "") or ""
-    flat["Type"]        = snippet.get("type", "") or ""
-    flat["Prefix"]      = "enabled" if snippet.get("enable_prefix") else "disabled"
-    flat["Shared in"]   = snippet.get("shared_in", "") or ""
-    flat["Description"] = snippet.get("description", "") or ""
+    flat: dict[str, str] = {
+        "Name": name,
+        "ID": snippet.get("id", "") or "",
+        "Type": snippet.get("type", "") or "",
+        "Prefix": "enabled" if snippet.get("enable_prefix") else "disabled",
+        "Shared in": snippet.get("shared_in", "") or "",
+        "Description": snippet.get("description", "") or "",
+    }
 
     labels = snippet.get("labels", [])
     if labels:
@@ -751,7 +753,7 @@ def format_snippet_detail_full(data: dict) -> list:
 
     # Render each object type as a dedicated table.
     # Known types get purpose-built renderers; everything else gets a generic table.
-    _KNOWN_RENDERERS: dict[str, callable] = {
+    _KNOWN_RENDERERS: dict[str, Callable[[list[dict], str], Table]] = {
         "Addresses":        _snippet_addresses_table,
         "Address Groups":   _snippet_address_groups_table,
         "Services":         _snippet_services_table,
@@ -970,4 +972,3 @@ def _flatten(d: Any, prefix: str = "") -> dict:
     else:
         result[prefix] = d
     return result
-

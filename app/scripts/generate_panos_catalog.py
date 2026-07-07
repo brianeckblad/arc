@@ -542,9 +542,9 @@ def registry_keys() -> tuple[set[str], set[str]]:
     for module in (setup, objects, security, network, identity, operations, packet_tracer):
         curated.update(module.COMMANDS)
 
-    from app.commands.generated import COMMANDS as generated
+    from app.commands.generated import COMMANDS as generated_commands
 
-    return curated, set(generated)
+    return curated, set(generated_commands)
 
 
 # ── build ────────────────────────────────────────────────────────────────────

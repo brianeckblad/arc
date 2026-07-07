@@ -263,7 +263,7 @@ def _test_url(ctx: ExecutionContext, args: dict) -> Any:
 
 
 def _ssh_test_url(args: dict) -> str:
-    url = args.get("_positional", ["http://example.com"])[0] if args.get("_positional") else "http://example.com"
+    url = args.get("_positional", ["https://example.com"])[0] if args.get("_positional") else "https://example.com"
     return f"test url {url}"
 
 

@@ -41,7 +41,7 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from app.paths import COMMAND_STRUCTURE_JSON
 from app.commands.registry import COMMANDS
-from app.settings.features import load_features, is_enabled, feature_state
+from app.settings.features import load_features, is_enabled
 from app.settings.command_structure import (
     load_command_structure,
     _parse_usage_spec,
@@ -96,7 +96,7 @@ def main() -> int:
     try:
         from app.settings.field_catalog import FIELD_CATALOG
         fc_keys = set(FIELD_CATALOG.keys())
-    except Exception:
+    except ImportError:
         fc_keys = set()
 
     # Determine which commands to process
@@ -114,7 +114,7 @@ def main() -> int:
     if COMMAND_STRUCTURE_JSON.exists():
         try:
             existing = json.loads(COMMAND_STRUCTURE_JSON.read_text(encoding="utf-8"))
-        except Exception:
+        except (OSError, json.JSONDecodeError):
             existing = {}
 
     added, skipped, failed = [], [], []

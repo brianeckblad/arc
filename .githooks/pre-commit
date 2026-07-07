@@ -29,8 +29,7 @@ git add dev/CODE_MAP.md 2>/dev/null || true
 #   Validates path-discovery + endpoint-diff logic in update_scm_docs.py.
 # ---------------------------------------------------------------------------
 echo "[arc] docs engine self-test…"
-python3 dev/update_scm_docs.py --self-test >/dev/null 2>&1
-if [ $? -ne 0 ]; then
+if ! python3 dev/update_scm_docs.py --self-test >/dev/null 2>&1; then
     echo "[arc] ✗ docs engine self-test failed — commit blocked"
     exit 1
 fi
@@ -39,8 +38,7 @@ fi
 # Step 1 — smoke tests (alignment + imports + registry + types + formatter)
 # ---------------------------------------------------------------------------
 echo "[arc] running smoke tests…"
-python3 dev/smoke_test.py --quiet
-if [ $? -ne 0 ]; then
+if ! python3 dev/smoke_test.py --quiet; then
     echo "[arc] ✗ smoke tests failed — commit blocked"
     exit 1
 fi

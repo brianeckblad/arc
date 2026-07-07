@@ -16,6 +16,11 @@
 # Each entry has:
 #   description: shown after the verb name in bare ?
 #   hint: optional dim secondary hint
+#   visible: true (default) | false | "hidden" | "dev"
+#     true    — always shown in ?
+#     false   — never shown in ?
+#     "hidden" — not shown in ? normally; dev mode reveals it
+#     "dev"   — shown only in dev mode
 #
 # Add a new verb here if you add a command with a new first token
 # (e.g. "debug", "trace", "export").
@@ -28,30 +33,37 @@
 verb_groups:
 
   show:
+    visible: true
     description: "Show configuration and status"
     hint: "type 'show ?' for sub-commands"
 
   set:
+    visible: true
     description: "Create or modify configuration"
     hint: "configure mode only — type 'set ?' for sub-commands"
 
   update:
+    visible: true
     description: "Modify an existing configuration object (GET→merge→PUT)"
     hint: "configure mode only — type 'update ?' for types"
 
   delete:
+    visible: true
     description: "Remove configuration objects"
     hint: "configure mode only — type 'delete ?' for types"
 
   test:
+    visible: "hidden"
     description: "Test policy and connectivity"
     hint: "type 'test ?' for sub-commands"
 
   ping:
+    visible: true
     description: "Ping a host from a managed device"
     hint: "use --remote or connect first"
 
   request:
+    visible: true
     description: "Request system operations"
     hint: "type 'request ?' for sub-commands"
 

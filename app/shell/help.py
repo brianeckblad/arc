@@ -45,7 +45,6 @@ class HelpMixin:
 
     def _render_context_help(self, rows: list[dict]) -> None:
         """Render the next-option rows: ``  token   description`` (token column aligned)."""
-        t = self._theme
         console.print()
         if not rows:
             # Nothing more to type — the command is complete.
@@ -277,7 +276,7 @@ class HelpMixin:
             f"\n  {self._styled(hdr, t.section_header)}  "
             f"{self._styled(f'— {hint}', t.description_dim)}"
         )
-        for row in shell_help_rows(self._state.configure_mode):
+        for row in shell_help_rows(self._state.configure_mode, dev_mode=self._dev_mode):
             name = row.name
             desc = row.description
             cmd_cell = self._help_cell(name)
@@ -297,34 +296,45 @@ class HelpMixin:
 
 
     def _cmd_find(self, args: list[str]) -> None:
-        """PAN-OS style command search: ``find command keyword <text>``.
+        """PAN-OS style command search: ``find command <text>``.
 
         Searches ALL registered commands (including feature-disabled ones —
         finding hidden capability is the point) by key and description. Each
         row shows the gating flag and its state so the operator can enable
-        what they found. Composable: ``find command keyword address | match cngfw``.
+        what they found. Composable: ``find command address | match cngfw``.
+
+        Sub-commands:
+          command <text>   Search all registered commands by name or description
         """
         tokens = list(args)
         if tokens and tokens[0] in ("?", "help"):
             console.print(
-                "\n  [bold]find command keyword[/bold]  — search all commands by name or description\n\n"
-                "  [cyan]find command keyword <text>[/cyan]          Search all commands\n"
-                "  [cyan]find command keyword <text> | match <w>[/cyan]  Narrow results further\n\n"
+                "\n  [bold]find[/bold]  — search commands and configuration\n\n"
+                "  [cyan]find command <text>[/cyan]              Search all commands by name or description\n"
+                "  [cyan]find command <text> | match <w>[/cyan]  Narrow results further\n\n"
                 "  [dim]Searches both the command name and its description.\n"
                 "  Shows every command including disabled ones (with their feature flag).\n"
-                "  Example:  find command keyword bgp\n"
-                "            find command keyword address | match group[/dim]\n"
+                "  Example:  find command bgp\n"
+                "            find command address | match group[/dim]\n"
             )
             return
+        # Accept legacy syntax "find command keyword <text>" and "find command <text>"
         if [t.lower() for t in tokens[:2]] == ["command", "keyword"]:
             tokens = tokens[2:]
         elif tokens and tokens[0].lower() == "command":
             tokens = tokens[1:]
+        else:
+            sub = tokens[0].lower() if tokens else ""
+            console.print(
+                f"[yellow]Unknown find sub-command:[/yellow] [bold]{sub or '(none)'}[/bold]\n"
+                "  Available: [cyan]find command <text>[/cyan]"
+            )
+            return
         pattern = " ".join(tokens).strip().lower()
         if not pattern:
             console.print(
-                "[yellow]Usage:[/yellow] find command keyword <text>\n"
-                "  [dim]e.g. find command keyword address   |   find command keyword bgp | match peer[/dim]"
+                "[yellow]Usage:[/yellow] find command <text>\n"
+                "  [dim]e.g. find command address   |   find command bgp | match peer[/dim]"
             )
             return
 
@@ -427,6 +437,9 @@ class HelpMixin:
 
         options: list[tuple[str, str]] = []
         for verb in sorted(verb_counts):
+            # Respect verb-level visibility from cli-structure.yaml.
+            if not _verb_visible(verb, dev_mode=self._dev_mode):
+                continue
             # A verb that is itself a complete command (e.g. packet-tracer,
             # commit) takes its description from the command — which honours the
             # doc front-matter — so editing that doc updates bare `?`.
@@ -588,4 +601,3 @@ class HelpMixin:
         for index, line in enumerate(usage.split("\n")):
             suffix = remote_hint if index == 0 else ""
             console.print(f"    {line}{suffix}")
-

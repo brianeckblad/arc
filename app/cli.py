@@ -570,31 +570,31 @@ def auth_test(
             probe_results.append((label, False, _short_err(str(exc))))
             return False
 
-    STRATA = "https://api.strata.paloaltonetworks.com"
-    SASE   = "https://api.sase.paloaltonetworks.com"
+    strata = "https://api.strata.paloaltonetworks.com"
+    sase = "https://api.sase.paloaltonetworks.com"
 
     console.print("  [dim]── Objects gateway (strata/config/objects/v1) ──[/dim]")
     _probe_url("GET /config/objects/v1/addresses",
-               f"{STRATA}/config/objects/v1/addresses",
+               f"{strata}/config/objects/v1/addresses",
                {"folder": "Shared"})
     _probe_url("GET /config/objects/v1/services",
-               f"{STRATA}/config/objects/v1/services",
+               f"{strata}/config/objects/v1/services",
                {"folder": "Shared"})
 
     console.print("  [dim]── Security gateway (strata/config/security/v1) ──[/dim]")
     _probe_url("GET /config/security/v1/security-rules",
-               f"{STRATA}/config/security/v1/security-rules",
+               f"{strata}/config/security/v1/security-rules",
                {"folder": "Shared", "position": "pre"})
 
     console.print("  [dim]── Setup gateway (strata/config/setup/v1) ──[/dim]")
     _probe_url("GET /config/setup/v1/devices",
-               f"{STRATA}/config/setup/v1/devices")
+               f"{strata}/config/setup/v1/devices")
     _probe_url("GET /config/setup/v1/folders",
-               f"{STRATA}/config/setup/v1/folders")
+               f"{strata}/config/setup/v1/folders")
 
     console.print("  [dim]── IAM/Tenancy gateway (sase) ──[/dim]")
     _probe_url("GET /tenancy/v1/tenant_service_groups",
-               f"{SASE}/tenancy/v1/tenant_service_groups")
+               f"{sase}/tenancy/v1/tenant_service_groups")
 
     any_ok       = any(ok for _, ok, _ in probe_results)
     all_ok_probes = all(ok for _, ok, _ in probe_results)
@@ -873,4 +873,3 @@ def run() -> None:
 
 if __name__ == "__main__":
     run()
-

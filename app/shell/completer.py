@@ -266,7 +266,21 @@ class ArcCompleter(Completer):
                         yield Completion(flag, start_position=-len(partial_flag), display_meta=meta)
             return
 
-        # ---- configure → mode-entry completion ----
+        # ---- find → subcommand completion ----
+        if first == "find" and has_arg_space:
+            second = parts[1].lower() if len(parts) > 1 else ""
+            # Sub-commands available under find (extend this tuple as new ones are added)
+            _FIND_SUBS: tuple[tuple[str, str], ...] = (
+                ("command", "search all commands by name or description"),
+            )
+            if len(parts) <= 2:
+                for sub, meta in _FIND_SUBS:
+                    if sub.startswith(partial_arg.lower()):
+                        yield Completion(sub, start_position=-len(partial_arg), display_meta=meta)
+            # Search text after sub-command is free-form — no further completion
+            return
+
+
         if first == "configure" and has_arg_space:
             for sub in ("t", "terminal"):
                 if sub.startswith(partial_arg.lower()):
@@ -693,7 +707,10 @@ class ArcCompleter(Completer):
 
 
     def _all_commands(self, include_remote_suffix: bool) -> list[str]:
-        builtins = list(_SHELL_BUILTINS)
+        dev_mode = getattr(self._shell, "_dev_mode", False)
+        vis = getattr(self._shell, "_command_visibility", {})
+        # Filter builtins the same way ? does — dev mode reveals everything.
+        builtins = [b for b in _SHELL_BUILTINS if is_command_visible(b, vis, dev_mode)]
         commands = self._shell._visible_command_keys()
         if not include_remote_suffix:
             return builtins + commands

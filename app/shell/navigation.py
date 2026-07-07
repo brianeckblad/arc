@@ -676,7 +676,6 @@ class NavigationMixin:
                 self._refresh_tsgs(silent=True)
 
                 device_count = len(self._state.devices_cache)
-                client_id    = new_cfg.scm.client_id or "(bearer token)"
                 console.print(
                     f"[green]✓[/green] Switched to profile [bold]{target}[/bold]  "
                     f"[dim]|  TSG:[/dim] [cyan]{new_cfg.scm.tsg_id}[/cyan]  "

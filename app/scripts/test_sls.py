@@ -18,7 +18,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from app.api import sls as sls_mod                      # noqa: E402
 from app.api.sls import SLSClient, SLSError, build_query  # noqa: E402
 from app.config import SCMConfig                        # noqa: E402
 from app.commands import operations as ops              # noqa: E402

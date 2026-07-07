@@ -579,6 +579,7 @@ class DispatchMixin:
                 if prefix_tokens[0].lower() == "arc":
                     self._cmd_arc(prefix_tokens[1:] + ["?"])
                     return False
+                if prefix_tokens[0].lower() == "alias":
                     self._cmd_alias(["?"])
                     return False
                 if prefix_tokens[0].lower() == "history":
@@ -818,7 +819,7 @@ class DispatchMixin:
             self._show_command_not_found(tokens)
             return False
         # Check executability: hidden commands run fine; blocked (false) commands don't.
-        if not is_command_executable(key, self._command_visibility):
+        if not is_command_executable(key, self._command_visibility, self._dev_mode):
             self._show_command_not_found(tokens)
             return False
         # Feature-flagged commands that are fully off are not executable either.

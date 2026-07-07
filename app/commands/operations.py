@@ -266,7 +266,7 @@ def _show_log_sls(log_type: str):
         # (log_type, rows) tuple → fmt.format_logs(rows, log_type=…) titles the
         # table; the short type string IS the contract (not a descriptive title).
         # Full records: `show log detail <n>`; text filtering: `| match <text>`.
-        return (log_type, mapped)
+        return log_type, mapped
 
     handler.__name__ = f"_show_log_{log_type}_sls"
     handler.__doc__ = (
@@ -498,5 +498,4 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
 }
 
 COMMANDS.update(_EXTRA_COMMANDS)
-
 

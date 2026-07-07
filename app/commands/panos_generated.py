@@ -26,7 +26,7 @@ from app.commands.base import CommandDef, ExecutionContext, require_device, requ
 
 try:
     from app.commands.panos_catalog import PANOS_CATALOG
-except Exception:  # noqa: BLE001 — missing catalog must never break startup
+except ImportError:
     PANOS_CATALOG = []
 
 # Poll a live-device operations job for up to this long (they normally finish

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """ARC smoke test suite.
 
-Covers eleven concern areas:
+Covers twelve concern areas:
   1. Syntax       — py_compile every Python module under app/
   2. Imports      — every module imports cleanly (no side-effect errors)
   3. Registry     — COMMANDS dict is structurally valid (no lambdas, required fields, etc.)
@@ -13,6 +13,7 @@ Covers eleven concern areas:
   9. Inline help  — builtin names in sync via settings/builtin-commands.json; no markup; width fit
  10. Theme system — ArcTheme fields, THEME_KEYS, load_theme(), file locations
  11. Code map     — app/scripts/CODE_MAP.md is current (no line-range drift in large files)
+ 12. Visibility   — builtin (true/hidden/false) and feature-flag (on/dev/hidden/off) states
 
 Run directly:
     python app/scripts/smoke_test.py
@@ -97,7 +98,7 @@ def _parse_cli_args() -> tuple[set[int], bool]:
     """
     args = sys.argv[1:]
     quiet = "--quiet" in args
-    all_sections = set(range(1, 12))
+    all_sections = set(range(1, 13))
 
     if "--only" in args:
         idx = args.index("--only")
@@ -383,13 +384,13 @@ def test_arg_parser() -> None:
     # 4c2 — spec-derived field catalog: every entry is internally consistent
     #       and merged into arg_spec (hand-written command-structure.json wins).
     try:
-        from app.settings.field_catalog import FIELD_CATALOG
+        from app.settings.field_catalog import FIELD_CATALOG as field_catalog
     except Exception as exc:  # noqa: BLE001
-        FIELD_CATALOG = None
+        field_catalog = None
         fail("field_catalog import failed", str(exc))
-    if FIELD_CATALOG is not None:
+    if field_catalog is not None:
         catalog_problems = []
-        for fc_key, fc_entry in FIELD_CATALOG.items():
+        for fc_key, fc_entry in field_catalog.items():
             fc_args = fc_entry.get("args") or []
             arg_names = {a.get("name") for a in fc_args}
             payload = fc_entry.get("payload") or {}
@@ -415,14 +416,14 @@ def test_arg_parser() -> None:
             fail(f"field catalog: {len(catalog_problems)} inconsistent entrie(s)",
                  "; ".join(catalog_problems[:4]))
         else:
-            ok(f"field catalog: {len(FIELD_CATALOG)} generated set command(s) internally consistent")
+            ok(f"field catalog: {len(field_catalog)} generated set command(s) internally consistent")
 
         from app.settings import command_structure as _cs
         _cs.invalidate_cache()
         merged = _cs.load_command_structure()
-        if FIELD_CATALOG and all(k in merged for k in list(FIELD_CATALOG)[:20]):
+        if field_catalog and all(k in merged for k in list(field_catalog)[:20]):
             ok("field catalog entries merged into arg_spec")
-        elif FIELD_CATALOG:
+        elif field_catalog:
             fail("field catalog entries missing from load_command_structure()")
         if _cs.arg_spec("set address") is not None:
             ok("hand-written command-structure.json still resolves (set address)")
@@ -687,7 +688,7 @@ def test_config() -> None:
 
     # 6h — CommandDef.feature_flag field exists
     from app.commands.base import CommandDef
-    cd = CommandDef(description="test", category="test", scope="folder")
+    cd = CommandDef(description="test", category="setup", scope="folder")
     if hasattr(cd, "feature_flag") and cd.feature_flag == "":
         ok("CommandDef.feature_flag defaults to ''")
     else:
@@ -806,7 +807,7 @@ def test_inline_help_alignment() -> None:
     from app.commands.registry import COMMANDS
     from app.shell import _SHELL_BUILTINS, _expand_unambiguous_prefix
     from app.settings.commands import load_shell_builtins, shell_help_names, shell_help_rows
-    SHELL_BUILTINS = load_shell_builtins()
+    shell_builtins = load_shell_builtins()
     markup_keys = [k for k in COMMANDS if _MARKUP_RE.search(k)]
     if markup_keys:
         fail(f"Registered commands contain [markup] in key (breaks alignment): {markup_keys}")
@@ -858,8 +859,8 @@ def test_inline_help_alignment() -> None:
             fail(f"shorthand expansion mismatch for {raw!r}", f"expected {expected!r}, got {got!r}")
 
     # 9c — Verify shell.py is wired to settings/builtin-commands.json source of truth.
-    if tuple(_SHELL_BUILTINS) == tuple(SHELL_BUILTINS):
-        ok(f"_SHELL_BUILTINS wired to settings/builtin-commands.json ({len(SHELL_BUILTINS)} entries)")
+    if tuple(_SHELL_BUILTINS) == tuple(shell_builtins):
+        ok(f"_SHELL_BUILTINS wired to settings/builtin-commands.json ({len(shell_builtins)} entries)")
     else:
         fail("_SHELL_BUILTINS differs from settings/builtin-commands.json")
 
@@ -1142,23 +1143,213 @@ def test_code_map() -> None:
         fail("Code map drift check raised", str(exc))
 
 
+def test_command_visibility() -> None:
+    section("12. Command visibility  (builtin + feature-flag states)")
+
+    from app.settings.commands import (
+        _coerce_visibility,
+        is_command_visible, is_command_executable,
+        shell_help_rows,
+        STATE_VISIBLE, STATE_DEV, STATE_HIDDEN, STATE_BLOCKED,
+        load_command_visibility,
+    )
+    from app.settings.features import (
+        is_enabled, is_feature_visible,
+        STATE_ON, STATE_DEV as FEAT_DEV, STATE_OFF,
+        STATE_HIDDEN as FEAT_HIDDEN,
+    )
+    from app.shell.help import HelpMixin
+    from app.commands.registry import COMMANDS, CommandDef
+
+    # ------------------------------------------------------------------
+    # A. JSON parsing — _coerce_visibility must map all 4 string values
+    #    correctly so settings/builtin-commands.json works as documented.
+    # ------------------------------------------------------------------
+    _parse_cases = [
+        (True,       STATE_VISIBLE, "true  → visible"),
+        ("dev",      STATE_DEV,     '"dev"    → dev'),
+        ("hidden",   STATE_HIDDEN,  '"hidden" → hidden'),
+        (False,      STATE_BLOCKED, "false → blocked"),
+        ("wip",      STATE_DEV,     '"wip"    → dev (alias)'),
+        ("on",       STATE_VISIBLE, '"on"     → visible (alias)'),
+        ("off",      STATE_BLOCKED, '"off"    → blocked (alias)'),
+    ]
+    all_ok = True
+    for raw, expected, label in _parse_cases:
+        # Wrap in dict as _coerce_visibility sees it when reading JSON entries
+        got = _coerce_visibility({"visible": raw})
+        if got != expected:
+            fail(f"_coerce_visibility parsing: {label}", f"got {got!r}")
+            all_ok = False
+    if all_ok:
+        ok(f"_coerce_visibility parses all {len(_parse_cases)} JSON visible values correctly")
+
+    # ------------------------------------------------------------------
+    # B. Builtin command pipeline — uses the real _is_command_visible from
+    #    HelpMixin, bound to a fake shell, so the same code path runs here
+    #    as in the live shell.  Toggling shell._dev_mode drives everything.
+    # ------------------------------------------------------------------
+
+    def _make_shell(vis: dict[str, str], features: dict[str, str],
+                    dev_mode: bool) -> SimpleNamespace:
+        """Minimal shell stand-in that runs the real _is_command_visible."""
+        shell = SimpleNamespace(
+            _command_visibility=vis,
+            _features=features,
+            _dev_mode=dev_mode,
+            _visible_keys_cache=None,
+        )
+        shell._is_command_visible = HelpMixin._is_command_visible.__get__(shell)
+        shell._visible_command_keys = HelpMixin._visible_command_keys.__get__(shell)
+        shell._invalidate_visible_keys = HelpMixin._invalidate_visible_keys.__get__(shell)
+        return shell
+
+    # Synthetic ungated CommandDef so builtin-only visibility drives the result
+    _ungated  = CommandDef(description="smoke-test fixture", category="setup", scope="global")
+    _test_cmd = CommandDef(description="smoke-test fixture", category="setup", scope="global", feature_flag="smoke_test_flag")
+
+    _BUILTIN_STATES = [
+        (STATE_VISIBLE, False, True,  True,  True,  "true"),
+        (STATE_DEV,     False, False, False, True,  '"dev"'),
+        (STATE_HIDDEN,  False, False, True,  True,  '"hidden"'),
+        (STATE_BLOCKED, False, False, False, False, "false"),  # never visible
+    ]
+    # columns: state, dev_mode, expect_visible_normal, expect_exec_normal,
+    #          expect_visible_dev, label
+    all_ok = True
+    for state, _, exp_vis_normal, exp_exec_normal, exp_vis_dev, label in _BUILTIN_STATES:
+        vis = {"testcmd": state}
+        shell_normal = _make_shell(vis, {}, dev_mode=False)
+        shell_dev    = _make_shell(vis, {}, dev_mode=True)
+
+        vis_normal = shell_normal._is_command_visible("testcmd", _ungated)
+        exec_normal = is_command_executable("testcmd", vis, dev_mode=False)
+        vis_in_dev  = shell_dev._is_command_visible("testcmd", _ungated)
+
+        if vis_normal != exp_vis_normal:
+            fail(f"builtin visible:{label} — shell._is_command_visible (dev_mode=False) returned {vis_normal}")
+            all_ok = False
+        if exec_normal != exp_exec_normal:
+            fail(f"builtin visible:{label} — is_command_executable (dev_mode=False) returned {exec_normal}")
+            all_ok = False
+        if vis_in_dev != exp_vis_dev:
+            fail(f"builtin visible:{label} — shell._is_command_visible (dev_mode=True) returned {vis_in_dev}")
+            all_ok = False
+    if all_ok:
+        ok("builtin true/dev/hidden/false — correct via shell._is_command_visible at dev_mode=False and True")
+
+    # Verify _dev_mode toggle on the SAME shell object changes visibility
+    toggle_shell = _make_shell({"x": STATE_DEV}, {}, dev_mode=False)
+    assert not toggle_shell._is_command_visible("x", _ungated), "toggle: hidden before"
+    toggle_shell._dev_mode = True
+    toggle_shell._invalidate_visible_keys()
+    assert toggle_shell._is_command_visible("x", _ungated), "toggle: visible after"
+    ok("toggling shell._dev_mode=True reveals a 'dev' builtin via _is_command_visible")
+
+    # ------------------------------------------------------------------
+    # C. Feature flag pipeline — same approach, ungated builtin vis so
+    #    only the feature flag drives the result.
+    # ------------------------------------------------------------------
+    _FLAG_STATES = [
+        (STATE_ON,    True,  True,  True,  '"on"'),
+        (FEAT_DEV,    False, False, True,  '"dev"'),
+        (FEAT_HIDDEN, False, True,  True,  '"hidden"'),
+        (STATE_OFF,   False, False, False, '"off"'),  # never visible
+    ]
+    # columns: state, exp_vis_normal, exp_exec_normal, exp_vis_dev, label
+    # Pick a real command to use as a vehicle — one we can swap the flag on
+    for state, exp_vis_normal, exp_exec_normal, exp_vis_dev, label in _FLAG_STATES:
+        flags = {"smoke_test_flag": state}
+        shell_normal = _make_shell({}, flags, dev_mode=False)
+        shell_dev    = _make_shell({}, flags, dev_mode=True)
+
+        vis_normal  = shell_normal._is_command_visible("anycmd", _test_cmd)
+        exec_normal = is_enabled(flags, "smoke_test_flag", dev_mode=False)
+        vis_in_dev  = shell_dev._is_command_visible("anycmd", _test_cmd)
+
+        if vis_normal != exp_vis_normal:
+            fail(f"feature {label} — _is_command_visible (dev_mode=False) returned {vis_normal}")
+            all_ok = False
+        if exec_normal != exp_exec_normal:
+            fail(f"feature {label} — is_enabled (dev_mode=False) returned {exec_normal}")
+            all_ok = False
+        if vis_in_dev != exp_vis_dev:
+            fail(f"feature {label} — _is_command_visible (dev_mode=True) returned {vis_in_dev}")
+            all_ok = False
+    if all_ok:
+        ok("feature on/dev/hidden/off — correct via shell._is_command_visible at dev_mode=False and True")
+
+    # Verify _dev_mode toggle on the SAME shell flips a "dev" feature flag
+    toggle_shell2 = _make_shell({}, {"smoke_test_flag": FEAT_DEV}, dev_mode=False)
+    assert not toggle_shell2._is_command_visible("anycmd", _test_cmd), "flag toggle: hidden before"
+    toggle_shell2._dev_mode = True
+    toggle_shell2._invalidate_visible_keys()
+    assert toggle_shell2._is_command_visible("anycmd", _test_cmd), "flag toggle: visible after"
+    ok("toggling shell._dev_mode=True reveals a 'dev' feature-flagged command")
+
+    # ------------------------------------------------------------------
+    # D. shell_help_rows end-to-end — real JSON file + real 'arc' entry
+    # ------------------------------------------------------------------
+    real_vis = load_command_visibility()
+    arc_state = real_vis.get("arc")
+    if arc_state != STATE_HIDDEN:
+        fail(f"settings/builtin-commands.json: 'arc' should be hidden, got {arc_state!r}")
+    else:
+        ok("settings/builtin-commands.json: 'arc' is marked hidden")
+
+    normal_rows = shell_help_rows(configure_mode=False, dev_mode=False)
+    dev_rows    = shell_help_rows(configure_mode=False, dev_mode=True)
+    normal_names = {r.name for r in normal_rows}
+    dev_names    = {r.name for r in dev_rows}
+
+    if "arc" in normal_names:
+        fail("shell_help_rows(dev_mode=False) leaks hidden builtin 'arc' into ?")
+    else:
+        ok("shell_help_rows(dev_mode=False) correctly hides 'arc'")
+
+    if "arc" not in dev_names:
+        fail("shell_help_rows(dev_mode=True) does not reveal hidden builtin 'arc'")
+    else:
+        ok("shell_help_rows(dev_mode=True) correctly reveals 'arc'")
+
+    if not any(r.name.startswith("cd") for r in normal_rows):
+        fail("shell_help_rows(dev_mode=False) is missing visible builtin 'cd'")
+    else:
+        ok("shell_help_rows(dev_mode=False) correctly includes visible builtin 'cd'")
+
+    # ------------------------------------------------------------------
+    # E. Registry sanity
+    # ------------------------------------------------------------------
+    ungated = [k for k, v in COMMANDS.items() if not v.feature_flag]
+    gated   = [k for k, v in COMMANDS.items() if v.feature_flag]
+    if not ungated:
+        fail("No registered commands without a feature flag")
+    else:
+        ok(f"{len(ungated)} registered commands are always-on (no feature flag)")
+    if not gated:
+        fail("No registered commands have a feature flag")
+    else:
+        ok(f"{len(gated)} registered commands are gated by a feature flag")
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
 # Maps section number to (function, short label)
 _SECTION_MAP = [
-    (1, test_syntax,               "Syntax"),
-    (2, test_imports,              "Imports"),
-    (3, test_registry,             "Registry"),
-    (4, test_arg_parser,           "Arg parser"),
-    (5, test_token_optimizations,  "Token optimizations"),
-    (6, test_config,               "Config types"),
-    (7, test_formatter,            "Formatter"),
-    (8, test_banner_alignment,     "Banner alignment"),
-    (9, test_inline_help_alignment,"Inline help alignment"),
-    (10, test_theme,               "Theme"),
-    (11, test_code_map,            "Code map freshness"),
+    (1,  test_syntax,               "Syntax"),
+    (2,  test_imports,              "Imports"),
+    (3,  test_registry,             "Registry"),
+    (4,  test_arg_parser,           "Arg parser"),
+    (5,  test_token_optimizations,  "Token optimizations"),
+    (6,  test_config,               "Config types"),
+    (7,  test_formatter,            "Formatter"),
+    (8,  test_banner_alignment,     "Banner alignment"),
+    (9,  test_inline_help_alignment,"Inline help alignment"),
+    (10, test_theme,                "Theme"),
+    (11, test_code_map,             "Code map freshness"),
+    (12, test_command_visibility,   "Command visibility"),
 ]
 
 

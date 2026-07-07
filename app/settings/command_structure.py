@@ -207,7 +207,7 @@ def _generated_entries() -> dict[str, dict]:
     """
     try:
         from app.settings.field_catalog import FIELD_CATALOG
-    except Exception:  # noqa: BLE001 — a missing/broken catalog must never break startup
+    except ImportError:
         return {}
     entries: dict[str, dict] = {}
     for key, entry in FIELD_CATALOG.items():
@@ -393,7 +393,7 @@ def arg_spec(command_key: str) -> list[dict] | None:
         cmd_def = COMMANDS.get(command_key)
         if cmd_def and cmd_def.usage:
             return _parse_usage_spec(command_key, cmd_def.usage)
-    except Exception:  # noqa: BLE001
+    except ImportError:
         pass
     return None
 
@@ -603,5 +603,4 @@ def completion_options(spec: list[dict], typed: list[str]) -> list[dict]:
                         "meta": "optional" if not keyword.get("required") else "required"})
 
     return options
-
 

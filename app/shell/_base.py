@@ -78,6 +78,7 @@ from app.settings.cli_structure import (
     help_footer as _help_footer,
     section_label as _section_label,
     verb_description as _verb_description,
+    verb_visible as _verb_visible,
 )
 from app.docs import (
     available_help_topics,

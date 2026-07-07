@@ -566,6 +566,7 @@ def _set_external_dynamic_list(ctx: ExecutionContext, args: dict) -> Any:
             f"  Valid types: {', '.join(sorted(_VALID))}\n"
             "  e.g. set external-dynamic-list Bad-IPs type ip url https://..."
         )
+    url_idx = 0
     try:
         url_idx   = pos_lower.index("url")
         fetch_url = pos[url_idx + 1] if url_idx + 1 < len(pos) else ""
@@ -1110,5 +1111,4 @@ _UPDATE_COMMANDS: dict[str, CommandDef] = {
 }
 
 COMMANDS.update(_UPDATE_COMMANDS)
-
 

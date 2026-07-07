@@ -65,7 +65,7 @@ def _dynamic_vars() -> dict[str, str]:
             m = re.search(r"Pulled on (\d{4}-\d{2}-\d{2})", txt)
             if m:
                 dyn["docs_date"] = m.group(1)
-        except Exception:
+        except OSError:
             pass
 
     return dyn

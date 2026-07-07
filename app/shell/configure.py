@@ -905,7 +905,7 @@ class ConfigureMixin:
     def _cs_list(self, mode: str = "enabled", match: str = "") -> None:
         """List enabled/disabled commands with PAN-OS-style field display and pagination."""
         from app.commands.registry import COMMANDS
-        from app.settings.features import is_enabled, feature_state
+        from app.settings.features import is_enabled
         from app.settings import command_structure as cs
         from app.docs import page_length
 
@@ -1336,7 +1336,6 @@ class ConfigureMixin:
 
     def _cs_tier_legend(self) -> None:
         """Print the tier legend for command-structure list."""
-        t = self._theme
         w = 16
         console.print(
             "  [bold yellow]HELP SPEC TIERS[/bold yellow]  "
@@ -1387,7 +1386,7 @@ class ConfigureMixin:
         from app.commands.registry import COMMANDS
         from app.settings.features import is_enabled
         from app.settings import command_structure as cs
-        from app.paths import REPO_ROOT, COMMAND_STRUCTURE_GENERATED_JSON
+        from app.paths import REPO_ROOT
 
         console.print()
         console.print("  [magenta bold]ARC DEV STATUS[/magenta bold]\n")
@@ -1641,7 +1640,7 @@ class ConfigureMixin:
         try:
             from app.settings.features import _reload_cache
             _reload_cache()
-        except Exception:
+        except ImportError:
             pass
 
         console.print()
@@ -1905,7 +1904,7 @@ class ConfigureMixin:
                 capture_output=True, text=True, cwd=str(REPO_ROOT)
             )
             git_ref = git_result.stdout.strip() if git_result.returncode == 0 else ""
-        except Exception:
+        except OSError:
             git_ref = ""
 
         self._arc_row("Version",  f"[bold]{__version__}[/bold]",

@@ -24,12 +24,12 @@ from app.commands.base import CommandDef, ExecutionContext, require_scm
 
 try:
     from app.commands.resource_catalog import CATALOG
-except Exception:  # noqa: BLE001 — missing/older catalog must never break startup
+except ImportError:
     CATALOG = []
 
 try:
     from app.settings.field_catalog import FIELD_CATALOG
-except Exception:  # noqa: BLE001 — missing/broken field catalog degrades to json|file
+except ImportError:
     FIELD_CATALOG = {}
 
 logger = logging.getLogger(__name__)
@@ -248,4 +248,3 @@ def _build() -> dict[str, CommandDef]:
 
 
 COMMANDS: dict[str, CommandDef] = _build()
-

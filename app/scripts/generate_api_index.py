@@ -98,10 +98,10 @@ def _registry_commands() -> dict[str, list[str]]:
     mapping: dict[str, list[str]] = {}
 
     try:
-        from app.commands.resource_catalog import CATALOG
-    except Exception:  # noqa: BLE001
-        CATALOG = []
-    for entry in CATALOG:
+        from app.commands.resource_catalog import CATALOG as catalog
+    except ImportError:
+        catalog = []
+    for entry in catalog:
         command = str(entry.get("command") or "").strip()
         url = str(entry.get("base_url") or "") + str(entry.get("path") or "")
         key = _resource_key(url)
@@ -110,7 +110,7 @@ def _registry_commands() -> dict[str, list[str]]:
 
     try:
         from app.settings.command_help import parse_front_matter
-    except Exception:  # noqa: BLE001
+    except ImportError:
         return mapping
     for doc in COMMAND_DOCS_DIR.glob("*.md"):
         meta, _body = parse_front_matter(doc.read_text(encoding="utf-8"))

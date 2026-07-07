@@ -65,9 +65,11 @@ def _seed_help() -> dict[str, tuple[str, str]]:
         return {}
     try:
         import yaml
-
+    except ImportError:
+        return {}
+    try:
         parsed = yaml.safe_load(legacy.read_text(encoding="utf-8")) or {}
-    except Exception:  # noqa: BLE001
+    except (OSError, yaml.YAMLError):
         return {}
     seed: dict[str, tuple[str, str]] = {}
     for category, entries in parsed.items() if isinstance(parsed, dict) else []:
@@ -185,11 +187,11 @@ _API: dict[str, str] = {
 def _generated_api_map() -> dict[str, str]:
     """Return API notes for commands created from the generated endpoint catalog."""
     try:
-        from app.commands.resource_catalog import CATALOG
-    except Exception:  # noqa: BLE001 — stale/missing catalog should not block docs
+        from app.commands.resource_catalog import CATALOG as catalog
+    except ImportError:
         return {}
     out: dict[str, str] = {}
-    for entry in CATALOG:
+    for entry in catalog:
         command = str(entry.get("command", ""))
         method = str(entry.get("method", ""))
         base_url = str(entry.get("base_url", "")).rstrip("/")
@@ -202,10 +204,10 @@ def _generated_api_map() -> dict[str, str]:
 def _generated_commands() -> set[str]:
     """Return command keys created from the generated endpoint catalog."""
     try:
-        from app.commands.resource_catalog import CATALOG
-    except Exception:  # noqa: BLE001 — stale/missing catalog should not block docs
+        from app.commands.resource_catalog import CATALOG as catalog
+    except ImportError:
         return set()
-    return {str(entry.get("command", "")) for entry in CATALOG if entry.get("command")}
+    return {str(entry.get("command", "")) for entry in catalog if entry.get("command")}
 
 
 def _generated_usage_map() -> dict[str, str]:
@@ -216,20 +218,20 @@ def _generated_usage_map() -> dict[str, str]:
     live registry has already loaded stale front-matter overrides.
     """
     try:
-        from app.commands.resource_catalog import CATALOG
-    except Exception:  # noqa: BLE001 — stale/missing catalog should not block docs
+        from app.commands.resource_catalog import CATALOG as catalog
+    except ImportError:
         return {}
     try:
-        from app.commands.generated import FIELD_CATALOG, _field_usage
-    except Exception:  # noqa: BLE001
-        FIELD_CATALOG, _field_usage = {}, None
+        from app.commands.generated import FIELD_CATALOG as field_catalog, _field_usage
+    except ImportError:
+        field_catalog, _field_usage = {}, None
     usage: dict[str, str] = {}
-    for entry in CATALOG:
+    for entry in catalog:
         command = str(entry.get("command", ""))
         if not command:
             continue
-        if _field_usage and command.startswith("set ") and command in FIELD_CATALOG:
-            usage[command] = _field_usage(command, FIELD_CATALOG[command])
+        if _field_usage and command.startswith("set ") and command in field_catalog:
+            usage[command] = _field_usage(command, field_catalog[command])
             continue
         path_params = " ".join(f"{name} <value>" for name in entry.get("path_params") or [])
         if command.startswith(("set ", "update ")):

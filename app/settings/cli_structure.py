@@ -62,14 +62,38 @@ def invalidate_cache() -> None:
 
 # Default verb-group metadata used when cli-structure.yaml is absent.
 _DEFAULT_VERB_GROUPS: dict[str, dict[str, str]] = {
-    "show":    {"description": "Show configuration and status",            "hint": "type 'show ?' for sub-commands"},
-    "set":     {"description": "Create or modify configuration",           "hint": "configure mode — type 'set ?' for sub-commands"},
-    "commit":  {"description": "Push candidate config to managed devices", "hint": ""},
-    "test":    {"description": "Test policy and connectivity",             "hint": "type 'test ?' for sub-commands"},
-    "ping":    {"description": "Ping a host from a managed device",        "hint": "use --remote or connect first"},
-    "request": {"description": "Request system operations",               "hint": "type 'request ?' for sub-commands"},
-    "delete":  {"description": "Remove configuration objects",             "hint": "configure mode — type 'delete ?' for sub-commands"},
+    "show":    {"visible": "true", "description": "Show configuration and status",            "hint": "type 'show ?' for sub-commands"},
+    "set":     {"visible": "true", "description": "Create or modify configuration",           "hint": "configure mode — type 'set ?' for sub-commands"},
+    "commit":  {"visible": "true", "description": "Push candidate config to managed devices", "hint": ""},
+    "test":    {"visible": "hidden","description": "Test policy and connectivity",            "hint": "type 'test ?' for sub-commands"},
+    "ping":    {"visible": "true", "description": "Ping a host from a managed device",        "hint": "use --remote or connect first"},
+    "request": {"visible": "true", "description": "Request system operations",               "hint": "type 'request ?' for sub-commands"},
+    "delete":  {"visible": "true", "description": "Remove configuration objects",             "hint": "configure mode — type 'delete ?' for sub-commands"},
 }
+
+# Maps raw visible values to canonical states (same semantics as builtin commands).
+_VERB_VIS_ON     = "true"
+_VERB_VIS_HIDDEN = "hidden"
+_VERB_VIS_DEV    = "dev"
+_VERB_VIS_OFF    = "false"
+
+
+def _coerce_verb_visible(raw: object) -> str:
+    """Normalise a verb visible value to a canonical state string."""
+    if raw is True or raw is None:        # default: visible
+        return _VERB_VIS_ON
+    if raw is False:
+        return _VERB_VIS_OFF
+    token = str(raw).strip().lower()
+    if token in ("true", "on", "1", "yes", "visible"):
+        return _VERB_VIS_ON
+    if token in ("hidden", "invisible"):
+        return _VERB_VIS_HIDDEN
+    if token in ("dev", "development", "wip"):
+        return _VERB_VIS_DEV
+    if token in ("false", "off", "0", "no", "blocked"):
+        return _VERB_VIS_OFF
+    return _VERB_VIS_ON
 
 
 def verb_description(verb: str, count: int) -> str:
@@ -88,6 +112,24 @@ def verb_description(verb: str, count: int) -> str:
         return desc
     # Fallback for unknown verbs.
     return f"({count} sub-command{'s' if count != 1 else ''} — type '{verb} ?' to expand)"
+
+
+def verb_visible(verb: str, dev_mode: bool = False) -> bool:
+    """Return True when *verb* should appear as a top-level entry in bare ? output.
+
+    Dev mode reveals hidden/dev verbs but never false/blocked ones.
+    """
+    data = _load()
+    groups: dict = data.get("verb_groups") or {}
+    entry = groups.get(verb) or _DEFAULT_VERB_GROUPS.get(verb)
+    raw = entry.get("visible", True) if isinstance(entry, dict) else True
+    state = _coerce_verb_visible(raw)
+    if state == _VERB_VIS_OFF:
+        return False
+    if state == _VERB_VIS_ON:
+        return True
+    # _VERB_VIS_HIDDEN and _VERB_VIS_DEV — visible only in dev mode
+    return dev_mode
 
 
 def section_label(key: str, default: str) -> str:

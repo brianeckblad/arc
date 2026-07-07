@@ -204,16 +204,19 @@ def is_feature_visible(flags: FeatureMap, flag_name: str, dev_mode: bool = False
     """Return True when a command should appear in ``?`` / tab completion.
 
     * ON     → always visible.
-    * HIDDEN → visible only in dev mode (hidden from normal users).
+    * HIDDEN → visible only in dev mode.
     * DEV    → visible only in dev mode.
-    * OFF    → never visible.
+    * OFF    → never visible (dev mode does not reveal blocked commands).
     """
+    if not flag_name:
+        return True
     state = feature_state(flags, flag_name)
     if state == STATE_ON:
         return True
-    if state in (STATE_DEV, STATE_HIDDEN):
-        return dev_mode
-    return False
+    if state == STATE_OFF:
+        return False
+    # STATE_DEV and STATE_HIDDEN — visible only in dev mode
+    return dev_mode
 
 
 def dev_mode_from_env() -> bool:

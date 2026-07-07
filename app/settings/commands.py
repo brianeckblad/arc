@@ -4,9 +4,10 @@ Single source of truth: settings/builtin-commands.json.
 Operators manage all shell builtins there — no Python code changes needed.
 
 'visible' states:
-  true     — shown in ? and executable
-  false    — hidden from ? AND blocked
-  "hidden" — executable but not shown in ? (dev mode reveals it)
+  true     — shown in ? and executable (normal users)
+  "dev"    — only visible and executable in dev mode (work-in-progress builtins)
+  "hidden" — executable by everyone but not shown in ? (dev mode reveals it in ?)
+  false    — hidden from ? AND blocked for everyone (including dev mode)
 
 Entry format (rich):
   "cd": {"visible": true, "display": "cd <device|folder>", "help": "...", "configure_only": false}
@@ -27,6 +28,7 @@ COMMANDS_FILE = SETTINGS_DIR / "builtin-commands.json"
 logger = logging.getLogger(__name__)
 
 STATE_VISIBLE = "visible"
+STATE_DEV     = "dev"
 STATE_HIDDEN  = "hidden"
 STATE_BLOCKED = "blocked"
 
@@ -52,7 +54,7 @@ def _load_raw() -> dict:
 
 
 def _coerce_visibility(val: object) -> str:
-    """Normalise a raw visibility value to STATE_VISIBLE/HIDDEN/BLOCKED."""
+    """Normalise a raw visibility value to STATE_VISIBLE/DEV/HIDDEN/BLOCKED."""
     if isinstance(val, dict):
         val = val.get("visible", True)
     if val is True:
@@ -60,6 +62,8 @@ def _coerce_visibility(val: object) -> str:
     if val is False:
         return STATE_BLOCKED
     token = str(val).strip().lower()
+    if token in ("dev", "development", "wip"):
+        return STATE_DEV
     if token == "hidden":
         return STATE_HIDDEN
     if token in ("true", "on", "visible", "1"):
@@ -85,9 +89,11 @@ def load_shell_builtins() -> Tuple[str, ...]:
     return tuple(key for key in raw if not key.startswith("_"))
 
 
-def load_shell_help_rows() -> Tuple[ShellBuiltinHelp, ...]:
+def load_shell_help_rows(dev_mode: bool = False) -> Tuple[ShellBuiltinHelp, ...]:
     """Return ShellBuiltinHelp rows for entries that have a 'help' field.
 
+    In dev mode every state is included so developers see all builtins.
+    Normal mode: blocked, dev, and hidden entries are omitted.
     Deduplicates rows with the same display name (e.g. exit + quit → one row).
     """
     raw = _load_raw()
@@ -96,6 +102,14 @@ def load_shell_help_rows() -> Tuple[ShellBuiltinHelp, ...]:
     for key, val in raw.items():
         if key.startswith("_") or not isinstance(val, dict):
             continue
+        if not dev_mode:
+            state = _coerce_visibility(val)
+            if state in (STATE_BLOCKED, STATE_DEV, STATE_HIDDEN):
+                continue
+        else:
+            state = _coerce_visibility(val)
+            if state == STATE_BLOCKED:
+                continue  # false is never shown, even in dev mode
         help_text = val.get("help")
         if not help_text:
             continue
@@ -114,19 +128,34 @@ def load_shell_help_rows() -> Tuple[ShellBuiltinHelp, ...]:
 
 def is_command_visible(command_key: str, visibility: dict[str, str],
                        dev_mode: bool = False) -> bool:
-    """Return True when command_key should appear in ? / tab completion."""
+    """Return True when command_key should appear in ? / tab completion.
+
+    Dev mode reveals hidden and dev-state commands, but never blocked (false) ones.
+    """
     state = visibility.get(command_key, STATE_VISIBLE)
+    if state == STATE_BLOCKED:
+        return False
     if state == STATE_VISIBLE:
         return True
-    if state == STATE_HIDDEN:
-        return dev_mode
-    return False
+    # STATE_DEV and STATE_HIDDEN — visible only in dev mode
+    return dev_mode
 
 
-def is_command_executable(command_key: str, visibility: dict[str, str]) -> bool:
-    """Return True when command_key is allowed to run."""
+def is_command_executable(command_key: str, visibility: dict[str, str],
+                          dev_mode: bool = False) -> bool:
+    """Return True when command_key is allowed to run.
+
+    * visible  — always executable
+    * hidden   — always executable (just not advertised in ?)
+    * dev      — executable only in dev mode
+    * blocked  — never executable
+    """
     state = visibility.get(command_key, STATE_VISIBLE)
-    return state != STATE_BLOCKED
+    if state == STATE_BLOCKED:
+        return False
+    if state == STATE_DEV:
+        return dev_mode
+    return True
 
 
 def load_builtin_aliases() -> dict[str, str]:
@@ -144,15 +173,21 @@ def load_builtin_aliases() -> dict[str, str]:
         return {}
 
 
-def shell_help_rows(configure_mode: bool) -> tuple[ShellBuiltinHelp, ...]:
-    """Return SHELL help rows visible in the current shell mode."""
-    rows = load_shell_help_rows()
+def shell_help_rows(configure_mode: bool, dev_mode: bool = False) -> tuple[ShellBuiltinHelp, ...]:
+    """Return SHELL help rows visible in the current shell mode.
+
+    Dev mode shows all rows regardless of configure context so developers
+    have full visibility of every builtin command.
+    """
+    rows = load_shell_help_rows(dev_mode=dev_mode)
+    if dev_mode:
+        # Dev mode: show everything (no configure_mode filtering)
+        return rows
     if configure_mode:
         return tuple(row for row in rows if row.configure_only)
-    return tuple(
-        row for row in rows
-        if not row.configure_only and not row.hide_in_configure
-    )
+    # Normal mode: show non-configure-only commands.
+    # hide_in_configure only applies when *inside* configure mode — ignore it here.
+    return tuple(row for row in rows if not row.configure_only)
 
 
 def shell_help_names() -> list[str]:

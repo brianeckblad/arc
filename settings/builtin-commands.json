@@ -1,10 +1,47 @@
 {
-  "_README": "Builtin command registry — visibility, display names, and help text for all shell builtins. Loaded by app/settings/commands.py. Values for 'visible': true (shown + executable), false (hidden + blocked), hidden (executable but not shown in ? — dev mode reveals it). 'configure_only': shown only in configure mode. 'hide_in_configure': hidden in configure mode. 'display': the name shown in ? help (can include placeholders). 'help': the description shown in ? help. Entries without 'help' appear in SHELL_BUILTINS for dispatch/completion but not in ? help rows.",
-  "_comment_navigation": "=== Navigation ===",
+  "_README": "Builtin command registry — visibility, display names, and help text for all shell builtins. Loaded by app/settings/commands.py. Values for 'visible': true (shown + executable), \"dev\" (dev mode only — hidden + blocked for normal users), \"hidden\" (executable always, not shown in ? — dev mode reveals it), false (hidden + blocked for everyone). 'configure_only': shown only in configure mode. 'hide_in_configure': hidden in configure mode. 'display': the name shown in ? help. 'help': the description shown in ? help. Entries without 'help' appear in SHELL_BUILTINS for dispatch/completion but not in ? help rows.",
+  "?": {
+    "visible": "hidden",
+    "display": "?",
+    "help": "",
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": "Context-Aware Help  [dim](or  help <topic>)[/dim]"
+  },
+  "abandon": {
+    "visible": true,
+    "display": "abandon",
+    "help": "Discard staged changes  (local only — SCM is never touched)",
+    "configure_only": true,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
+  "account": {
+    "visible": true,
+    "display": "account <name>",
+    "help": "List or switch credential profiles  (Tab -> profile names)",
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": true,
+    "startup_hint": "List / switch credential profiles"
+  },
+  "alias": {
+    "visible": true,
+    "display": "alias",
+    "help": "User-defined shortcuts  (alias <name> <cmd…> | alias delete <name>)",
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
   "arc": {
     "visible": "hidden",
     "display": "arc",
     "help": "Application info  (arc show | arc show version | arc show session | arc ?)",
+    "configure_only": false,
+    "hide_in_configure": false,
     "onlogin": true,
     "startup_hint": "Application info  (arc show | arc ?)"
   },
@@ -12,178 +49,207 @@
     "visible": true,
     "display": "cd <device|folder>",
     "help": "Change device or folder context  (cd device <name> | cd folder <name> | cd ..)",
+    "configure_only": false,
+    "hide_in_configure": false,
     "onlogin": true,
     "startup_hint": "Change to Device  (cd device <name> | cd folder <name>)"
   },
-  "connect": {
+  "clear": {
     "visible": true,
-    "display": "connect <device>",
-    "help": "SSH to device — interactive session  (keyboard-interactive + 2FA)",
-    "onlogin": true,
-    "startup_hint": "SSH to device  [dim](keyboard-interactive + 2FA)[/dim]"
-  },
-  "pwd": {
-    "visible": true,
-    "display": "pwd",
-    "help": "Show device, folder, TSG, and active account",
-    "onlogin": false
-  },
-  "folder": {
-    "visible": true,
-    "display": "folder",
-    "help": "Manage SCM folders — list, create  (configure mode)",
-    "configure_only": true,
-    "onlogin": false
-  },
-  "tsg": {
-    "visible": true,
-    "display": "tsg <id>",
-    "help": "Set active TSG  (Tab -> configured TSG)",
-    "onlogin": false
-  },
-  "account": {
-    "visible": true,
-    "display": "account <name>",
-    "help": "List or switch credential profiles  (Tab -> profile names)",
-    "onlogin": true,
-    "startup_hint": "List / switch credential profiles"
-  },
-  "_comment_configure": "=== Configure mode ===",
-  "configure": {
-    "visible": true,
-    "display": "configure",
-    "help": "Enter configure mode  (arc:global #)",
-    "hide_in_configure": true,
-    "onlogin": false
-  },
-  "set": {
-    "visible": true,
-    "display": "set <type> <name>",
-    "help": "Create configuration  (configure mode)  — set ? for sub-commands",
-    "configure_only": true,
-    "onlogin": false
-  },
-  "update": {
-    "visible": true,
-    "display": "update <type> <name>",
-    "help": "Modify existing object  (configure mode)  — update ? for types",
-    "configure_only": true,
-    "onlogin": false
-  },
-  "delete": {
-    "visible": true,
-    "display": "delete <type> <name>",
-    "help": "Delete configuration object  (configure mode)  — delete ? for types",
-    "configure_only": true,
-    "onlogin": false
-  },
-  "show config": {
-    "visible": true,
-    "display": "show config",
-    "help": "List staged changes pending commit  (local — not yet in SCM)",
-    "configure_only": true,
-    "onlogin": false
-  },
-  "commit": {
-    "visible": true,
-    "display": "commit",
-    "help": "Apply staged changes + push to devices  (commit watch → follow the job)",
-    "configure_only": true,
-    "onlogin": false
-  },
-  "abandon": {
-    "visible": true,
-    "display": "abandon",
-    "help": "Discard staged changes  (local only — SCM is never touched)",
-    "configure_only": true,
-    "onlogin": false
+    "display": "clear",
+    "help": "Clear the terminal screen",
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
   },
   "cli": {
     "visible": true,
     "display": "cli <subcommand>",
     "help": "CLI theme operations  (show | color | reset)",
     "configure_only": true,
-    "onlogin": false
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
   },
-  "_comment_utilities": "=== Utilities ===",
-  "feature": {
+  "commit": {
     "visible": true,
-    "display": "feature <subcommand>",
-    "help": "Feature flags  (show | enable <flag> | disable <flag>)",
-    "onlogin": false
+    "display": "commit",
+    "help": "Apply staged changes + push to devices  (commit watch → follow the job)",
+    "configure_only": true,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
   },
-  "find": {
+  "configure": {
     "visible": true,
-    "display": "find command keyword <text>",
-    "help": "Search ALL commands (incl. disabled) — PAN-OS style",
-    "onlogin": false
+    "display": "configure",
+    "help": "Enter configure mode  (arc:global #)",
+    "configure_only": false,
+    "hide_in_configure": true,
+    "onlogin": true,
+    "startup_hint": "Enter configure mode  (arc:global #)"
   },
-  "terminal": {
+  "connect": {
     "visible": true,
-    "display": "terminal",
-    "help": "Pager/width/spinner preferences  (terminal length 0 = no paging)",
-    "onlogin": false
+    "display": "connect <device>",
+    "help": "SSH to device — interactive session  (keyboard-interactive + 2FA)",
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": true,
+    "startup_hint": "SSH to device  [dim](keyboard-interactive + 2FA)[/dim]"
   },
-  "history": {
+  "delete": {
     "visible": true,
-    "display": "history",
-    "help": "Show recent commands  (history <n> — default 20)",
-    "onlogin": false
-  },
-  "alias": {
-    "visible": true,
-    "display": "alias",
-    "help": "User-defined shortcuts  (alias <name> <cmd…> | alias delete <name>)",
-    "onlogin": false
-  },
-  "watch": {
-    "visible": true,
-    "display": "watch <sec> <cmd>",
-    "help": "Re-run a command every N seconds until Ctrl-C  (SSH session reused)",
-    "onlogin": false
-  },
-  "setup": {
-    "visible": true,
-    "display": "setup",
-    "help": "Guided credential setup wizard  (auto-detects OS, two questions)",
-    "onlogin": false
+    "display": "delete <type> <name>",
+    "help": "Delete configuration object  (configure mode)  — delete ? for types",
+    "configure_only": true,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
   },
   "docs": {
     "visible": true,
     "display": "docs",
     "help": "Open docs in browser",
-    "onlogin": false
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
   },
-  "clear": {
-    "visible": true,
-    "display": "clear",
-    "help": "Clear the terminal screen",
-    "onlogin": false
-  },
-  "help": {
-    "visible": true,
-    "display": "help",
-    "help": "Show help  (help <topic> | help all)",
-    "onlogin": false
-  },
-  "?": {
-    "visible": "hidden",
-    "onlogin": true,
-    "startup_hint": "Context-Aware Help  [dim](or  help <topic>)[/dim]"
-  },
-  "_comment_exit": "=== Exit ===",
   "exit": {
     "visible": "hidden",
     "display": "exit / quit",
     "help": "Exit ARC (or leave configure mode)",
     "configure_only": true,
-    "onlogin": false
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
+  "feature": {
+    "visible": "dev",
+    "display": "feature <subcommand>",
+    "help": "Feature flags  (show | enable <flag> | disable <flag>)",
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
+  "find": {
+    "visible": true,
+    "display": "find",
+    "help": "Search ALL commands (incl. disabled, hidden, etc.) — PAN-OS style",
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
+  "folder": {
+    "visible": true,
+    "display": "folder",
+    "help": "Manage SCM folders — list, create  (configure mode)",
+    "configure_only": true,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
+  "help": {
+    "visible": true,
+    "display": "help",
+    "help": "Show help  (help <topic> | help all)",
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
+  "history": {
+    "visible": true,
+    "display": "history",
+    "help": "Show recent commands  (history <n> — default 20)",
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
+  "pwd": {
+    "visible": true,
+    "display": "pwd",
+    "help": "Show device, folder, TSG, and active account",
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
+  "set": {
+    "visible": true,
+    "display": "set <type> <name>",
+    "help": "Create configuration  (configure mode)  — set ? for sub-commands",
+    "configure_only": true,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
+  "setup": {
+    "visible": true,
+    "display": "setup",
+    "help": "Guided credential setup wizard  (auto-detects OS, two questions)",
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
+  "show config": {
+    "visible": true,
+    "display": "show config",
+    "help": "List staged changes pending commit  (local — not yet in SCM)",
+    "configure_only": true,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
+  "terminal": {
+    "visible": true,
+    "display": "terminal",
+    "help": "Pager/width/spinner preferences  (terminal length 0 = no paging)",
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
+  "tsg": {
+    "visible": true,
+    "display": "tsg <id>",
+    "help": "Set active TSG  (Tab -> configured TSG)",
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
+  "update": {
+    "visible": true,
+    "display": "update <type> <name>",
+    "help": "Modify existing object  (configure mode)  — update ? for types",
+    "configure_only": true,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
+  "watch": {
+    "visible": true,
+    "display": "watch",
+    "help": "Re-run a command every N seconds until Ctrl-C  (SSH session reused)",
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
   },
   "quit": {
     "visible": true,
     "display": "exit / quit",
     "help": "Exit ARC (or leave configure mode)",
-    "configure_only": true,
-    "onlogin": false
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
   }
 }
