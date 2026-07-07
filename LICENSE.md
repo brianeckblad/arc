@@ -27,9 +27,11 @@ No rights are granted except those expressly stated in this License or granted s
 
 2. Limited Internal Use Permission
 
-Subject to this License, the Licensor grants each Authorized Entity a limited, revocable, non-exclusive, non-transferable permission to use, copy, and modify the Software solely for Internal Use.
+The Software is licensed, not sold. Subject to this License, the Licensor grants each Authorized Entity a limited, revocable, non-exclusive, non-transferable permission to use, copy, and modify the Software solely for Internal Use.
 
 This permission does not include any right to distribute, sublicense, sell, host, provide, transfer, publish, repackage, or make the Software available to any third party.
+
+The Licensor reserves all rights not expressly granted, and retains ownership of all copies of the Software in whatever form and wherever located.
 
 3. No Third-Party Use
 
@@ -53,7 +55,7 @@ This restriction applies whether the use is internal, external, commercial, nonc
 
 6. No Resale, Redistribution, or Repackaging
 
-You may not sell, resell, rent, lease, license, sublicense, distribute, publish, mirror, upload, assign, transfer, repackage, white-label, bundle, embed, incorporate, or otherwise provide the Software or any portion of it to any other person or organization without prior written permission from the Licensor.
+You may not sell, resell, rent, lease, lend, license, sublicense, time-share, operate as a service bureau, distribute, publish, mirror, upload, assign, transfer, repackage, white-label, bundle, embed, incorporate, or otherwise provide the Software or any portion of it to any other person or organization without prior written permission from the Licensor.
 
 You may not include the Software or any portion of it in any commercial product, commercial service, appliance, platform, SaaS offering, managed service, migration toolkit, firewall automation product, security operations product, infrastructure automation product, or source-of-truth platform without prior written permission from the Licensor.
 
@@ -293,8 +295,28 @@ Section headings are for convenience only and do not affect the interpretation o
 
 This License does not create, and is not intended to create, any right, benefit, remedy, or cause of action in favor of any person or entity other than the Licensor and the Authorized Entity.
 
-40. Survival
+40. Copyright and Unauthorized Use
 
-All provisions concerning ownership, restrictions, confidentiality, access control, notices and marking, personnel and need-to-know access, security incident notification, audit and verification, change of control and no transfer, contributions, no commercial services, no third-party use, no Restricted Provider use, no SaaS use, no derivative or competing use, no redistribution, no implied rights, third-party materials, warranty disclaimers, limitation of liability, indemnification, equitable relief and remedies, governing law, enforcement, and remedies survive termination, revocation, deletion, separation, death, incapacity, assignment, or expiration of any authorization.
+The Software is protected by copyright and other intellectual property laws and treaties, and by trade-secret and contract law. As between You and the Licensor, the Licensor owns all copies of the Software and all intellectual property rights in the Software.
+
+Any access, use, reproduction, copying, modification, distribution, transfer, hosting, public display, or other exploitation of the Software that is not expressly authorized by this License is unauthorized and exceeds the scope of any permission granted. Such unauthorized activity constitutes, among other things, infringement of the Licensor’s copyright, and may constitute misappropriation of trade secrets, breach of contract, and a violation of other applicable laws.
+
+Unauthorized use may subject You to civil liability, including actual damages, statutory damages, disgorgement of profits, injunctive relief, and the Licensor’s costs and attorneys’ fees, and may subject You to criminal penalties under applicable law. The Licensor reserves the right to enforce its rights and pursue all available remedies to the fullest extent permitted by law.
+
+41. Anti-Circumvention and Technical Protection Measures
+
+You may not circumvent, disable, bypass, remove, deactivate, tamper with, or interfere with any license key, access control, authentication, feature flag, entitlement, usage restriction, activation mechanism, rate limit, or other technical or organizational measure that is intended to protect the Software or to control or limit access to or use of the Software or any of its features.
+
+You may not enable, unlock, access, or use any feature, component, command, or capability of the Software that has not been made available or authorized to You, whether or not that feature is present, referenced, or discoverable in the source code, configuration, or documentation.
+
+42. No Reverse Engineering or Derivation of Restricted Know-How
+
+Because the Software may be provided in source-available form, You acknowledge that access to or possession of the source code does not grant any right to use, extract, reuse, or exploit the source code, its structure, sequence, organization, algorithms, logic, data models, or the know-how embodied in it, except as expressly permitted for authorized Internal Use.
+
+Except to the extent this restriction is prohibited by applicable law, You may not reverse engineer, decompile, disassemble, or otherwise attempt to derive from the Software any component, technique, method, model, or trade secret for the purpose of building, improving, supporting, or operating any product or service, or for any purpose not expressly authorized by this License.
+
+43. Survival
+
+All provisions concerning ownership, restrictions, confidentiality, access control, notices and marking, personnel and need-to-know access, security incident notification, audit and verification, change of control and no transfer, copyright and unauthorized use, anti-circumvention, no reverse engineering, contributions, no commercial services, no third-party use, no Restricted Provider use, no SaaS use, no derivative or competing use, no redistribution, no implied rights, third-party materials, warranty disclaimers, limitation of liability, indemnification, equitable relief and remedies, governing law, enforcement, and remedies survive termination, revocation, deletion, separation, death, incapacity, assignment, or expiration of any authorization.
 
 END OF LICENSE
