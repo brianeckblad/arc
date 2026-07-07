@@ -197,7 +197,7 @@ Type `dev` to enter (modal, prompt `:dev`). `exit` to leave. `dev on`/`dev off` 
 |---|---|---|
 | `docs update [--scm\|--panos]` | `docsupdate` | `python app/scripts/docsupdate.py` — **auto-chains `catalog rebuild`** on success |
 | `command-structure update [<cmd>]` | `commandupdate` | `python app/scripts/commandupdate.py` |
-| `catalog rebuild` | — | `app/scripts/generate_*.py` (6 scripts, includes CODE_MAP regeneration) |
+| `catalog rebuild` | — | `app/scripts/generate_*.py` (6 scripts, includes CODE_MAP regeneration + silent `arc cliup`) |
 | `status` | — | health dashboard |
 
 ---

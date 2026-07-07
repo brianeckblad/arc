@@ -23,6 +23,9 @@ arc auth configure       # wizard: client_id / client_secret / TSG / SSH
 arc auth test            # 5-step connectivity + auth diagnostic
 # or, inside the shell, type `setup` for the guided two-question wizard
 
+# build the offline browser docs portal (run once after install, and after `docs update`)
+arc cliup                # downloads vendor JS/CSS + bundles all docs → docs/index.html
+
 # first commands
 arc:global > show devices
 arc:global > folder Production        # scope SCM calls to a folder

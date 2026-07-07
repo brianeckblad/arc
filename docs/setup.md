@@ -180,6 +180,39 @@ show devices     # should list your managed devices
 
 ---
 
+## Browser docs portal (arc cliup)
+
+ARC ships with an offline browser-based docs portal (`docs/index.html`).
+Run `arc cliup` once after installing to build it:
+
+```bash
+arc cliup
+```
+
+This downloads the vendor JS/CSS files (once, then cached) and bundles all
+Markdown docs into `docs/docs-bundle.js` so the portal works via `file://`
+with no web server needed.
+
+**Open the portal:**
+```bash
+open docs/index.html          # macOS
+xdg-open docs/index.html      # Linux
+start docs/index.html         # Windows
+```
+
+**When to re-run `arc cliup`:**
+
+| Event | Action |
+|-------|--------|
+| First install | `arc cliup` |
+| After `docs update` in the dev shell | Automatic — `catalog rebuild` runs `cliup` silently |
+| After editing any `docs/commands/*.md` file | `arc cliup` |
+
+> The full chain: `docs update` → `catalog rebuild` → `arc cliup` (silent).
+> For standalone edits to Markdown files, run `arc cliup` manually.
+
+---
+
 ## Profiles (multiple accounts)
 
 Create a named profile so you can switch between SCM environments:

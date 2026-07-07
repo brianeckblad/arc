@@ -1712,6 +1712,14 @@ class ConfigureMixin:
                 "[green]✓ catalog rebuild complete.[/green]  "
                 "[dim]Changes are live immediately — no restart needed.[/dim]\n"
             )
+            # Rebuild the offline browser docs bundle so docs/index.html stays
+            # in sync with the freshly generated command docs.
+            try:
+                from app.cli import _do_cliup
+                _do_cliup(silent=True, skip_vendor=True)
+                console.print("[dim]  docs/docs-bundle.js rebuilt (arc cliup)[/dim]")
+            except Exception:
+                pass  # cliup is best-effort — don't fail the whole rebuild over it
         else:
             console.print(
                 "[yellow]catalog rebuild finished with errors — check output above.[/yellow]\n"
