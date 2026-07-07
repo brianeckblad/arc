@@ -174,18 +174,20 @@ Every OpenAPI operation → feature-gated command via `resource_catalog.py` + `g
 | SSH | `--remote`, `connect` | `_execute_remote` / interactive PTY |
 
 - `SCMClient` raises on errors — never swallow into `[]`. 401 auto-reauthenticates once.
-- **Writes are STAGED.** `set`/`delete`/`update` route through `_stage_write`; `commit` replays. `show config` lists the queue. Never bypass staging.
-- `commit confirmed [min]` — Junos-style auto-revert, cancelled by `commit confirm`.
+- **Writes are STAGED.** `set`/`delete`/`update` route through `_stage_write`; `commit` replays. `show config` lists the queue. `unstage <n>` removes one entry by index. `abandon` discards all. Never bypass staging.
+- `commit confirmed [min]` — Junos-style auto-revert, cancelled by `commit confirm`. While the countdown runs, the prompt shows a `[CONFIRM: Xm Ys]` segment in red.
 
 ### Shell UX invariants (do not regress)
 
 - `?` is Cisco-style progressive help: context-aware, three tiers GLOBAL / FOLDER / DEVICE + SHELL. In dev mode `?` shows the full command tree (all non-`false` commands + builtins) then appends the DEV SHELL section.
 - **`?` must preserve the input buffer** — uses `run_in_terminal` in `_make_key_bindings`. Never use `validate_and_handle` for `?`.
 - Every builtin must handle `<builtin> ?` — dispatch calls the handler with `["?"]`. See `terminal`, `feature`, `find` cases in `app/shell/dispatch.py`.
-- Prompt: `arc:global >` · `arc:Production >` · `arc:fw01:device >` · configure `#` · dev shell `:dev`. Never show `:Shared`.
+- Prompt: `arc:global >` · `arc:Production >` · `arc:fw01:device >` · configure `#` · dev shell `:dev`. Never show `:Shared`. While `commit confirmed` countdown is active, prompt appends `[CONFIRM: Xm Ys]` in red.
 - Unambiguous prefix shorthand (`sh sec pol` → `show security policy`); ambiguous never auto-expands.
 - `cd` never opens SSH; `connect` does.
+- `cd ..` is context-aware: clears device if one is set; resets folder to Shared if no device is set; no-op at global. `cd folder ..` always resets to Shared regardless.
 - `find command <text>` — sub-command `command` tab-completes; search text is free-form.
+- Tab completion surfaces dev-gated commands with a `[dev mode]` meta hint so operators can discover them without entering dev mode.
 
 ### Dev Shell (`dev` command)
 
@@ -193,9 +195,9 @@ Type `dev` to enter (modal, prompt `:dev`). `exit` to leave. `dev on`/`dev off` 
 
 | Dev shell command | LLM trigger | Script |
 |---|---|---|
-| `docs update [--scm\|--panos]` | `docsupdate` | `python app/scripts/docsupdate.py` |
+| `docs update [--scm\|--panos]` | `docsupdate` | `python app/scripts/docsupdate.py` — **auto-chains `catalog rebuild`** on success |
 | `command-structure update [<cmd>]` | `commandupdate` | `python app/scripts/commandupdate.py` |
-| `catalog rebuild` | — | `app/scripts/generate_*.py` (6 scripts) |
+| `catalog rebuild` | — | `app/scripts/generate_*.py` (6 scripts, includes CODE_MAP regeneration) |
 | `status` | — | health dashboard |
 
 ---
@@ -206,7 +208,7 @@ Type `dev` to enter (modal, prompt `:dev`). `exit` to leave. `dev on`/`dev off` 
 
 Gateways: objects/security/setup/network/identity/device at `api.strata.paloaltonetworks.com/config/<domain>/v1`; IAM at `api.sase.paloaltonetworks.com`; token at `auth.apps.paloaltonetworks.com/auth/v1/oauth2/access_token`.
 
-After `docsupdate`: check `docs/scm-api/CHANGES.md`; removed/renamed endpoints → fix `app/api/client.py` + commands. New endpoints auto-become gated commands + flags + docs.
+After `docsupdate`: `catalog rebuild` runs automatically on success — it regenerates CODE_MAP, resource catalog, feature flags, field library, command docs, and API index. Then check `docs/scm-api/CHANGES.md`; removed/renamed endpoints → fix `app/api/client.py` + commands. New endpoints auto-become gated commands + flags + docs.
 
 ---
 
@@ -240,6 +242,7 @@ python app/scripts/smoke_test.py --file <path>   # auto-selects sections
 | 10 | theme + doc validity | `theme.json`, `docs/commands/` |
 | 11 | CODE_MAP freshness | any 300+ line file |
 | 12 | command visibility (builtin + feature states) | `settings/commands.py`, `settings/features.py`, `builtin-commands.json` |
+| 13 | configure/commit flow (offline) | `app/shell/configure.py`, `app/commands/operations.py`, `app/shell/navigation.py` |
 
 Pre-commit runs 1–3 + regenerates `CODE_MAP.md`. Version `0.1.<commit-count>` auto-bumped — never hand-edit.
 

@@ -1589,8 +1589,11 @@ class ConfigureMixin:
             return
 
         if rc == 0:
-            console.print("\n[green]✓ docs update complete.[/green]  "
-                         "[dim]Run [bold]catalog rebuild[/bold] to regenerate code artifacts.[/dim]\n")
+            console.print(
+                "\n[green]✓ docs update complete.[/green]  "
+                "[dim]Auto-running [bold]catalog rebuild[/bold] to regenerate code artifacts…[/dim]\n"
+            )
+            self._dev_catalog_rebuild()
         else:
             console.print(f"\n[yellow]docsupdate.py exited with code {rc}[/yellow]\n")
 
