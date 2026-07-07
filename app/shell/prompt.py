@@ -17,6 +17,9 @@ class PromptMixin:
         While a `commit confirmed` countdown is active, a [CONFIRM: Xm Ys]
         segment is appended before the arrow so the operator always knows the
         revert timer is running.
+
+        When SCM is not connected, a [no-scm] segment is shown so the operator
+        always knows the shell is running in degraded (read-only SSH) mode.
         """
         folder    = self._state.folder or "Shared"
         at_shared = folder.lower() == "shared"
@@ -40,6 +43,11 @@ class PromptMixin:
             secs = int(remaining) % 60
             confirm_seg = f"<sep> </sep><confirm>[CONFIRM: {mins}m {secs:02d}s]</confirm>"
 
+        # SCM degraded mode — shown when no SCM client was established at startup.
+        noscm_seg = ""
+        if not getattr(self, "_scm", None):
+            noscm_seg = "<sep> </sep><noscm>[no-scm]</noscm>"
+
         if self._state.device:
             name = device_display_name(self._state.device)
             if at_shared:
@@ -50,6 +58,7 @@ class PromptMixin:
                     f"<sep>:</sep><ctx>device</ctx>"
                     f"{dev_seg}"
                     f"{confirm_seg}"
+                    f"{noscm_seg}"
                     f"<arrow>{prompt_tail}</arrow>"
                 )
             # Device selected and in a specific folder — show both
@@ -59,6 +68,7 @@ class PromptMixin:
                 f"<sep>:</sep><folder>{folder}</folder>"
                 f"{dev_seg}"
                 f"{confirm_seg}"
+                f"{noscm_seg}"
                 f"<arrow>{prompt_tail}</arrow>"
             )
 
@@ -69,6 +79,7 @@ class PromptMixin:
                 f"<sep>:</sep><ctx>global</ctx>"
                 f"{dev_seg}"
                 f"{confirm_seg}"
+                f"{noscm_seg}"
                 f"<arrow>{prompt_tail}</arrow>"
             )
 
@@ -78,6 +89,7 @@ class PromptMixin:
             f"<sep>:</sep><folder>{folder}</folder>"
             f"{dev_seg}"
             f"{confirm_seg}"
+            f"{noscm_seg}"
             f"<arrow>{prompt_tail}</arrow>"
         )
 

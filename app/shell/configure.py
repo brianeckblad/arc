@@ -490,6 +490,7 @@ class ConfigureMixin:
         terminal                     show current settings and how to change them
         terminal length <n>          page long output after n lines (0 = never page)
         terminal width <n>           force render width in columns (0 = auto-detect)
+        terminal height <n>          force render height in rows (0 = auto-detect)
         terminal spinner on|off      toggle the "querying SCM…" spinner
         """
         p = self._prefs
@@ -498,6 +499,7 @@ class ConfigureMixin:
         if not args or args[0] in ("?", "help"):
             length_note = f"{p.terminal_length} lines" if p.terminal_length else "off  (no paging)"
             width_note  = f"{p.terminal_width} columns" if p.terminal_width else "auto-detect"
+            height_note = f"{p.terminal_height} rows" if p.terminal_height else "auto-detect"
             spinner_note = "on" if p.spinner else "off"
             w = 30
             console.print(
@@ -518,6 +520,11 @@ class ConfigureMixin:
                 f"[dim]terminal width <n>    (0 = auto-detect)[/dim]"
             )
             console.print(
+                f"  {self._styled(f'terminal height', t.command_name):<{w+10}} "
+                f"{height_note:<12} "
+                f"[dim]terminal height <n>   (0 = auto-detect)[/dim]"
+            )
+            console.print(
                 f"  {self._styled(f'terminal spinner', t.command_name):<{w+10}} "
                 f"{spinner_note:<12} "
                 f"[dim]terminal spinner on|off[/dim]"
@@ -528,6 +535,7 @@ class ConfigureMixin:
                 "    terminal length 40    → page after 40 lines (good for slow reading)\n"
                 "    terminal length 0     → disable paging entirely\n"
                 "    terminal width 120    → force 120-column output\n"
+                "    terminal height 40    → force 40-row height for rich tables\n"
                 "    terminal spinner off  → remove the spinner (e.g. for CI / scripting)[/dim]"
             )
             console.print()
@@ -567,6 +575,25 @@ class ConfigureMixin:
             console.width = value if value > 0 else None
             note = f"render width {value} columns" if value else "auto-detect width"
 
+        elif sub == "height":
+            if len(args) < 2:
+                console.print(
+                    "[yellow]Usage:[/yellow] terminal height <n>\n"
+                    "  [dim]0 = auto-detect from your terminal window\n"
+                    f"  Current: {p.terminal_height or 0}[/dim]"
+                )
+                return
+            if not args[1].isdigit():
+                console.print("[yellow]Usage:[/yellow] terminal height <n>  (whole number, 0 = auto)")
+                return
+            value = int(args[1])
+            p.terminal_height = value
+            if value > 0:
+                console.height = value
+            else:
+                console.height = None
+            note = f"render height {value} rows" if value else "auto-detect height"
+
         elif sub == "spinner":
             state = (args[1].lower() if len(args) > 1 else "").strip()
             if state not in ("on", "off"):
@@ -583,6 +610,7 @@ class ConfigureMixin:
                 f"[yellow]Unknown terminal setting:[/yellow] [bold]{sub}[/bold]\n\n"
                 "  terminal length <n>       page after n lines  [dim](0 = off)[/dim]\n"
                 "  terminal width <n>        force column width  [dim](0 = auto)[/dim]\n"
+                "  terminal height <n>       force row height    [dim](0 = auto)[/dim]\n"
                 "  terminal spinner on|off   show/hide spinner\n"
             )
             return

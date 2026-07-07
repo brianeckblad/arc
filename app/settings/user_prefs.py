@@ -37,6 +37,7 @@ PREFS_FILE: Path = CONFIG_DIR / "preferences.json"
 class UserPrefs:
     terminal_length: int = 0    # 0 = paging disabled
     terminal_width: int = 0     # 0 = auto-detect
+    terminal_height: int = 0    # 0 = auto-detect (terminal height for rich tables)
     spinner: bool = True
     aliases: dict[str, str] = field(default_factory=dict)
 

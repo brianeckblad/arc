@@ -14,13 +14,13 @@
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
-## `app/shell/configure.py`  (2196 lines)
+## `app/shell/configure.py`  (2224 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _prefs_file_label()                      10-16          Repo-relative path of the preferences file, for display.
 capture_write_ops()                      19-49          Run a write handler against a recording client and capture its mutatio
-class ConfigureMixin                     52-2125        
+class ConfigureMixin                     52-2153        
   ._cmd_configure()                      53-74          Enter configure mode (Cisco-style).
   ._stage_write()                        76-106         Validate a configure-mode write and stage it locally (no SCM change).
   ._cmd_show_pending()                   108-131        List the locally staged configure-mode changes (`show config`).
@@ -34,41 +34,41 @@ class ConfigureMixin                     52-2125
   ._commit_check()                       380-423        Re-validate every staged change against CURRENT SCM state (Junos-style
   ._watch_job()                          425-456        Poll a push job every few seconds until it finishes (or timeout).
   ._confirm_configure_exit()             458-485        Ask what to do with staged changes when leaving configure mode.
-  ._cmd_terminal()                       487-592        Per-user terminal preferences — persisted to config/<user>/preferences
-  ._cmd_cli()                            594-648        Read/write CLI theme settings (configure mode only).
-  ._cmd_feature()                        650-897        Show or change feature-flag states at runtime.
-  ._cs_tier()                            904-930        Return the tier label based on override flag in command-structure.json
-  ._format_spec()                        933-957        Format a command arg spec in PAN-OS style.
-  ._cs_list()                            959-1054       List enabled/disabled commands with PAN-OS-style field display and pag
-  ._cs_update()                          1057-1090      Stream app/scripts/commandupdate.py — same script the LLM 'commandupda
-  ._cs_clear()                           1093-1114      Remove all override:false (cli-generated) entries from command-structu
-  ._cmd_dev()                            1120-1158      Enter the dev shell (modal, like configure mode).
-  ._dev_shell_enter()                    1160-1190      Enter the dev shell — enable dev mode and show the dev menu.
-  ._dev_shell_exit()                     1192-1200      Leave the dev shell.
-  ._dispatch_dev_shell()                 1202-1281      Route dev-shell commands.
-  ._dev_inline_help()                    1283-1368      Show contextual help for a dev shell command or sub-command.
-  ._dev_shell_help()                     1370-1399      Print full dev shell command reference.
-  ._cs_tier_legend()                     1401-1437      Print the tier legend for command-structure list.
-  ._dev_status()                         1445-1540      Unified health dashboard for the dev shell.
-  ._dev_docs()                           1546-1557      Handle dev-shell 'docs' sub-commands.
-  ._dev_docs_update()                    1559-1603      Stream docsupdate.py to pull latest pan.dev specs and regenerate catal
-  ._dev_docs_status()                    1605-1653      Show doc/spec freshness with last pull date from MANIFEST.md.
-  ._dev_catalog()                        1659-1668      Handle dev-shell 'catalog' sub-commands.
-  ._dev_catalog_rebuild()                1670-1731      Run all generator scripts to rebuild code artifacts.
-  ._print_dev_status()                   1735-1749      Print current dev mode state (used by 'dev on/off' outside the shell).
-  ._cmd_setup()                          1752-1869      Interactive credential setup wizard.
-  ._cmd_arc()                            1875-1928      ARC application information and management.
-  ._arc_help()                           1930-1953      Print arc sub-command reference.
-  ._arc_row()                            1959-1965      Print one labelled row in the arc show style.
-  ._arc_show_version()                   1967-1990      arc show version — version, Python, platform.
-  ._arc_show_paths()                     1992-2005      arc show paths — app root, settings, config directories.
-  ._arc_show_scm()                       2007-2045      arc show scm — SCM API spec freshness and last change.
-  ._arc_show_commands()                  2047-2078      arc show commands — command counts and feature flag stats.
-  ._arc_show_settings()                  2080-2102      arc show settings — settings file inventory.
-  ._arc_show_session()                   2104-2121      arc show session — active profile, TSG, folder, device, modes.
-  ._arc_show()                           2123-2125      arc show (all) — kept for backward compat; calls _cmd_arc(['show']).
-_setup_bearer_instructions()             2132-2160      Print bearer-token setup commands for the detected OS.
-_setup_oauth_instructions()              2163-2195      Print OAuth client credential setup commands for the detected OS.
+  ._cmd_terminal()                       487-620        Per-user terminal preferences — persisted to config/<user>/preferences
+  ._cmd_cli()                            622-676        Read/write CLI theme settings (configure mode only).
+  ._cmd_feature()                        678-925        Show or change feature-flag states at runtime.
+  ._cs_tier()                            932-958        Return the tier label based on override flag in command-structure.json
+  ._format_spec()                        961-985        Format a command arg spec in PAN-OS style.
+  ._cs_list()                            987-1082       List enabled/disabled commands with PAN-OS-style field display and pag
+  ._cs_update()                          1085-1118      Stream app/scripts/commandupdate.py — same script the LLM 'commandupda
+  ._cs_clear()                           1121-1142      Remove all override:false (cli-generated) entries from command-structu
+  ._cmd_dev()                            1148-1186      Enter the dev shell (modal, like configure mode).
+  ._dev_shell_enter()                    1188-1218      Enter the dev shell — enable dev mode and show the dev menu.
+  ._dev_shell_exit()                     1220-1228      Leave the dev shell.
+  ._dispatch_dev_shell()                 1230-1309      Route dev-shell commands.
+  ._dev_inline_help()                    1311-1396      Show contextual help for a dev shell command or sub-command.
+  ._dev_shell_help()                     1398-1427      Print full dev shell command reference.
+  ._cs_tier_legend()                     1429-1465      Print the tier legend for command-structure list.
+  ._dev_status()                         1473-1568      Unified health dashboard for the dev shell.
+  ._dev_docs()                           1574-1585      Handle dev-shell 'docs' sub-commands.
+  ._dev_docs_update()                    1587-1631      Stream docsupdate.py to pull latest pan.dev specs and regenerate catal
+  ._dev_docs_status()                    1633-1681      Show doc/spec freshness with last pull date from MANIFEST.md.
+  ._dev_catalog()                        1687-1696      Handle dev-shell 'catalog' sub-commands.
+  ._dev_catalog_rebuild()                1698-1759      Run all generator scripts to rebuild code artifacts.
+  ._print_dev_status()                   1763-1777      Print current dev mode state (used by 'dev on/off' outside the shell).
+  ._cmd_setup()                          1780-1897      Interactive credential setup wizard.
+  ._cmd_arc()                            1903-1956      ARC application information and management.
+  ._arc_help()                           1958-1981      Print arc sub-command reference.
+  ._arc_row()                            1987-1993      Print one labelled row in the arc show style.
+  ._arc_show_version()                   1995-2018      arc show version — version, Python, platform.
+  ._arc_show_paths()                     2020-2033      arc show paths — app root, settings, config directories.
+  ._arc_show_scm()                       2035-2073      arc show scm — SCM API spec freshness and last change.
+  ._arc_show_commands()                  2075-2106      arc show commands — command counts and feature flag stats.
+  ._arc_show_settings()                  2108-2130      arc show settings — settings file inventory.
+  ._arc_show_session()                   2132-2149      arc show session — active profile, TSG, folder, device, modes.
+  ._arc_show()                           2151-2153      arc show (all) — kept for backward compat; calls _cmd_arc(['show']).
+_setup_bearer_instructions()             2160-2188      Print bearer-token setup commands for the detected OS.
+_setup_oauth_instructions()              2191-2223      Print OAuth client credential setup commands for the detected OS.
 
 ## `app/settings/field_catalog.py`  (1924 lines)
 
@@ -98,53 +98,12 @@ test_command_visibility()                1147-1333
 test_configure_flow()                    1340-1482      Section 13 — Configure/commit flow unit tests.
 main()                                   1503-1548      
 
-## `app/scripts/docsupdate.py`  (1289 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-load_sources()                           208-244        Return the source registry, seeding app/scripts/scm-sources.json if it
-save_sources()                           247-254        Persist the source registry back to app/scripts/scm-sources.json.
-_raw_base()                              257-258        
-_raw_url()                               261-263        Return a raw GitHub URL, escaping spaces and other path characters.
-_tree_api()                              266-267        
-_fetch_bytes()                           273-281        Download a URL and return its raw bytes, with an explicit timeout.
-fetch_tree()                             288-304        Return every file path in the pan.dev repo tree (cached, best-effort).
-list_remote_specs()                      307-313        Return every SCM OpenAPI spec path currently published on pan.dev.
-_slug_token()                            316-322        Normalize a source-path token into a stable registry key segment.
-_spec_key_for_path()                     325-357        Return a compact, stable key for a newly discovered OpenAPI spec path.
-_domain_for_spec_path()                  360-372        Return a discovery hint/domain label for a spec path.
-discover_all_specs()                     375-397        Add any remote SCM OpenAPI specs missing from the source registry.
-discover_path()                          403-438        Find the most likely current location of a moved file in *tree*.
-_record_relocation()                     441-445        Append a relocation record so history is auditable in scm-sources.json
-_fetch_with_discovery()                  448-492        Fetch *path*; on 404 try to discover its new location and retry.
-_load_yaml()                             498-502        Parse spec bytes into a dict.  Requires PyYAML (dev extra).
-_spec_base_url()                         505-510        Return ``servers[0].url`` — the gateway base URL for this spec.
-_endpoint_signatures()                   513-522        Return the set of ``METHOD /path`` signatures defined in a spec.
-_resolve_ref()                           525-532        Resolve a local ``#/components/...`` JSON pointer within *spec*.
-_deref()                                 535-539        Return *schema* with a single top-level ``$ref`` resolved (one hop).
-_branch_label()                          542-560        Best short label for one oneOf/anyOf leaf branch (the type-variant nam
-_collect_variants()                      563-591        Recursively collect oneOf/anyOf leaf-variant labels from a schema.
-_schema_variants()                       594-607        Return the oneOf/anyOf variant labels for a schema (the type choices).
-_operation_parameters()                  610-630        Return (container_scopes, other_query_params) for an operation.
-_request_body_summary()                  633-642        Return (required_fields, variant_labels, schema_name) for a request bo
-_render_markdown()                       645-722        Render a consolidated endpoint listing for one spec.
-_build_changes_markdown()                728-778        Build CHANGES.md content from per-category (added, removed) signature 
-_write_index()                           784-814        Write ``index.md`` listing every spec and guide with the pull date.
-_write_manifest()                        817-834        Write ``MANIFEST.md`` — source URL + base URL for every spec.
-_slug_for_guide()                        840-849        Turn a guide path into a stable file-name slug.
-discover_all_guides()                    852-866        Return {slug: path} for every guide doc not already covered.
-_capture_old_signatures()                872-886        Parse existing local specs to capture endpoint signatures before overw
-_download_guides()                       889-920        Download guide docs (curated + discovered).  Returns names pulled OK.
-update()                                 923-1055       Download specs + guides and regenerate the reference set.  Returns exi
-_self_test()                             1061-1143      Exercise discovery + diff logic offline so the engine stays trustworth
-main()                                   1149-1283      
-
-## `app/api/client.py`  (1284 lines)
+## `app/api/client.py`  (1300 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 class SCMError                           47-48          Raised when SCM authentication or API requests fail.
-class SCMClient                          51-1283        Strata Cloud Manager (SCM) REST API client.
+class SCMClient                          51-1299        Strata Cloud Manager (SCM) REST API client.
   .__init__()                            92-129         
   ._authenticate()                       131-148        Obtain an OAuth token via the client-credentials flow.
   ._headers()                            150-151        
@@ -254,53 +213,99 @@ class SCMClient                          51-1283        Strata Cloud Manager (SC
   .get_authentication_rules()            1033-1035      pan.dev: GET /config/identity/v1/authentication-rules
   .get_certificate_profiles()            1037-1039      pan.dev: GET /config/identity/v1/certificate-profiles
   .get_local_users()                     1041-1043      pan.dev: GET /config/identity/v1/local-users
-  .get_local_user_groups()               1045-1047      pan.dev: GET /config/identity/v1/local-user-groups
-  .get_radius_server_profiles()          1049-1051      pan.dev: GET /config/identity/v1/radius-server-profiles
-  .get_tls_service_profiles()            1053-1055      pan.dev: GET /config/identity/v1/tls-service-profiles
-  .get_mfa_servers()                     1057-1059      pan.dev: GET /config/identity/v1/mfa-servers
-  .get_interfaces()                      1067-1080      Return ethernet interfaces configured in the active folder.
-  .get_aggregate_interfaces()            1082-1094      Return aggregate (AE) interfaces configured in the active folder.
-  .get_loopback_interfaces()             1096-1108      Return loopback interfaces configured in the active folder.
-  .get_zones()                           1110-1123      Return security zones configured in the active folder.
-  .get_static_routes()                   1125-1138      Return static routes configured in the active folder.
-  .get_routing_profiles()                1140-1153      Return routing profiles / virtual routers in the active folder.
-  .get_ha_config()                       1155-1175      Return HA configuration in the active folder.
-  .push_config()                         1182-1202      Push the candidate configuration to managed devices.
-  .discard_candidate()                   1204-1212      Discard the TSG's candidate configuration (revert to running config).
-  .get_config_versions()                 1219-1224      List the tenant's configuration versions (newest history first).
-  .get_config_version()                  1226-1231      Return one configuration version record by id.
-  .get_running_config_version()          1233-1238      Return the running configuration version(s) for the tenant.
-  .load_config_version()                 1240-1250      Load *version* as the candidate configuration (rollback).
-  .ops_job_start()                       1256-1270      Start a live-device operations job; returns the job UUID.
-  .ops_job_status()                      1272-1280      Return a live-device operations job record.
-  .close()                               1282-1283      
+  .create_local_user()                   1045-1047      pan.dev: POST /config/identity/v1/local-users
+  .delete_local_user()                   1049-1051      pan.dev: DELETE /config/identity/v1/local-users/{id}
+  .get_local_user_groups()               1053-1055      pan.dev: GET /config/identity/v1/local-user-groups
+  .create_authentication_profile()       1057-1059      pan.dev: POST /config/identity/v1/authentication-profiles
+  .delete_authentication_profile()       1061-1063      pan.dev: DELETE /config/identity/v1/authentication-profiles/{id}
+  .get_radius_server_profiles()          1065-1067      pan.dev: GET /config/identity/v1/radius-server-profiles
+  .get_tls_service_profiles()            1069-1071      pan.dev: GET /config/identity/v1/tls-service-profiles
+  .get_mfa_servers()                     1073-1075      pan.dev: GET /config/identity/v1/mfa-servers
+  .get_interfaces()                      1083-1096      Return ethernet interfaces configured in the active folder.
+  .get_aggregate_interfaces()            1098-1110      Return aggregate (AE) interfaces configured in the active folder.
+  .get_loopback_interfaces()             1112-1124      Return loopback interfaces configured in the active folder.
+  .get_zones()                           1126-1139      Return security zones configured in the active folder.
+  .get_static_routes()                   1141-1154      Return static routes configured in the active folder.
+  .get_routing_profiles()                1156-1169      Return routing profiles / virtual routers in the active folder.
+  .get_ha_config()                       1171-1191      Return HA configuration in the active folder.
+  .push_config()                         1198-1218      Push the candidate configuration to managed devices.
+  .discard_candidate()                   1220-1228      Discard the TSG's candidate configuration (revert to running config).
+  .get_config_versions()                 1235-1240      List the tenant's configuration versions (newest history first).
+  .get_config_version()                  1242-1247      Return one configuration version record by id.
+  .get_running_config_version()          1249-1254      Return the running configuration version(s) for the tenant.
+  .load_config_version()                 1256-1266      Load *version* as the candidate configuration (rollback).
+  .ops_job_start()                       1272-1286      Start a live-device operations job; returns the job UUID.
+  .ops_job_status()                      1288-1296      Return a live-device operations job record.
+  .close()                               1298-1299      
 
-## `app/commands/objects.py`  (1219 lines)
+## `app/scripts/docsupdate.py`  (1289 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_show_address_search()                   24-64          Filter address objects by name pattern, tag, or description.
-_show_service_search()                   67-88          Filter service objects by name pattern.
-COMMANDS                                 98-179         command registry dict
-_EXTRA_COMMANDS                          182-255        command registry dict
-COMMANDS.update(…)                       257-257        merge additional commands into registry
-_set_address()                           289-356        Create an address object in the active SCM folder.
-_delete_address()                        359-370        Delete an address object.  Usage: delete address <name>
-_set_address_group()                     373-437        Create a static or dynamic address group in the active folder.
-_set_service()                           440-510        Create a TCP or UDP service object in the active folder.
-_set_service_group()                     513-559        Create a service group (named collection of service objects).
-_set_tag()                               562-613        Create a tag in the active folder.
-_set_external_dynamic_list()             616-695        Create an External Dynamic List (EDL) in the active folder.
-_WRITE_COMMANDS                          698-822        command registry dict
-COMMANDS.update(…)                       824-824        merge additional commands into registry
-_update_address()                        841-899        Update an existing address object (GET→merge→PUT).
-_update_address_group()                  902-958        Update an existing address group (GET→merge→PUT).
-_update_service()                        961-1011       Update an existing service object (GET→merge→PUT).
-_update_service_group()                  1014-1055      Update a service group's member list.
-_update_tag()                            1058-1097      Update an existing tag (color, comments).
-_update_external_dynamic_list()          1100-1157      Update an existing EDL (URL, description, or frequency).
-_UPDATE_COMMANDS                         1160-1215      command registry dict
-COMMANDS.update(…)                       1217-1217      merge additional commands into registry
+load_sources()                           208-244        Return the source registry, seeding app/scripts/scm-sources.json if it
+save_sources()                           247-254        Persist the source registry back to app/scripts/scm-sources.json.
+_raw_base()                              257-258        
+_raw_url()                               261-263        Return a raw GitHub URL, escaping spaces and other path characters.
+_tree_api()                              266-267        
+_fetch_bytes()                           273-281        Download a URL and return its raw bytes, with an explicit timeout.
+fetch_tree()                             288-304        Return every file path in the pan.dev repo tree (cached, best-effort).
+list_remote_specs()                      307-313        Return every SCM OpenAPI spec path currently published on pan.dev.
+_slug_token()                            316-322        Normalize a source-path token into a stable registry key segment.
+_spec_key_for_path()                     325-357        Return a compact, stable key for a newly discovered OpenAPI spec path.
+_domain_for_spec_path()                  360-372        Return a discovery hint/domain label for a spec path.
+discover_all_specs()                     375-397        Add any remote SCM OpenAPI specs missing from the source registry.
+discover_path()                          403-438        Find the most likely current location of a moved file in *tree*.
+_record_relocation()                     441-445        Append a relocation record so history is auditable in scm-sources.json
+_fetch_with_discovery()                  448-492        Fetch *path*; on 404 try to discover its new location and retry.
+_load_yaml()                             498-502        Parse spec bytes into a dict.  Requires PyYAML (dev extra).
+_spec_base_url()                         505-510        Return ``servers[0].url`` — the gateway base URL for this spec.
+_endpoint_signatures()                   513-522        Return the set of ``METHOD /path`` signatures defined in a spec.
+_resolve_ref()                           525-532        Resolve a local ``#/components/...`` JSON pointer within *spec*.
+_deref()                                 535-539        Return *schema* with a single top-level ``$ref`` resolved (one hop).
+_branch_label()                          542-560        Best short label for one oneOf/anyOf leaf branch (the type-variant nam
+_collect_variants()                      563-591        Recursively collect oneOf/anyOf leaf-variant labels from a schema.
+_schema_variants()                       594-607        Return the oneOf/anyOf variant labels for a schema (the type choices).
+_operation_parameters()                  610-630        Return (container_scopes, other_query_params) for an operation.
+_request_body_summary()                  633-642        Return (required_fields, variant_labels, schema_name) for a request bo
+_render_markdown()                       645-722        Render a consolidated endpoint listing for one spec.
+_build_changes_markdown()                728-778        Build CHANGES.md content from per-category (added, removed) signature 
+_write_index()                           784-814        Write ``index.md`` listing every spec and guide with the pull date.
+_write_manifest()                        817-834        Write ``MANIFEST.md`` — source URL + base URL for every spec.
+_slug_for_guide()                        840-849        Turn a guide path into a stable file-name slug.
+discover_all_guides()                    852-866        Return {slug: path} for every guide doc not already covered.
+_capture_old_signatures()                872-886        Parse existing local specs to capture endpoint signatures before overw
+_download_guides()                       889-920        Download guide docs (curated + discovered).  Returns names pulled OK.
+update()                                 923-1055       Download specs + guides and regenerate the reference set.  Returns exi
+_self_test()                             1061-1143      Exercise discovery + diff logic offline so the engine stays trustworth
+main()                                   1149-1283      
+
+## `app/commands/objects.py`  (1259 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+_check_concurrent_modification()         24-49          Warn if the object was modified between GET and PUT.
+_show_address_search()                   52-92          Filter address objects by name pattern, tag, or description.
+_show_service_search()                   95-116         Filter service objects by name pattern.
+COMMANDS                                 126-207        command registry dict
+_EXTRA_COMMANDS                          210-283        command registry dict
+COMMANDS.update(…)                       285-285        merge additional commands into registry
+_set_address()                           317-384        Create an address object in the active SCM folder.
+_delete_address()                        387-398        Delete an address object.  Usage: delete address <name>
+_set_address_group()                     401-465        Create a static or dynamic address group in the active folder.
+_set_service()                           468-538        Create a TCP or UDP service object in the active folder.
+_set_service_group()                     541-587        Create a service group (named collection of service objects).
+_set_tag()                               590-641        Create a tag in the active folder.
+_set_external_dynamic_list()             644-723        Create an External Dynamic List (EDL) in the active folder.
+_WRITE_COMMANDS                          726-850        command registry dict
+COMMANDS.update(…)                       852-852        merge additional commands into registry
+_update_address()                        869-929        Update an existing address object (GET→merge→PUT).
+_update_address_group()                  932-990        Update an existing address group (GET→merge→PUT).
+_update_service()                        993-1045       Update an existing service object (GET→merge→PUT).
+_update_service_group()                  1048-1091      Update a service group's member list.
+_update_tag()                            1094-1135      Update an existing tag (color, comments).
+_update_external_dynamic_list()          1138-1197      Update an existing EDL (URL, description, or frequency).
+_UPDATE_COMMANDS                         1200-1255      command registry dict
+COMMANDS.update(…)                       1257-1257      merge additional commands into registry
 
 ## `app/commands/resource_catalog.py`  (1068 lines)
 
@@ -536,6 +541,38 @@ save_config()                            447-518        Persist config: secrets 
 delete_profile()                         521-547        Remove a named profile from config.json and its keychain entries.
 clear_keychain()                         550-579        Remove ARC secrets from the OS keychain.
 
+## `app/commands/operations.py`  (573 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+_show_system_info()                      17-42          Show what SCM knows about the selected device.
+_show_jobs_id()                          45-54          Fetch a single SCM job by ID — TSG-wide, no folder scope.
+_commit()                                57-75          Push the candidate configuration to managed devices.
+_live_only()                             82-88          Return a clear message explaining why this command needs --remote.
+_clear_session_all()                     91-103         Clear all sessions on the device — use --remote.
+_clear_session_id()                      106-121        Clear a specific session by ID — use --remote.
+_ssh_clear_session_id()                  124-127        
+_pending_show_system_resources()         130-131        
+_pending_show_system_disk_space()        134-135        
+_pending_request_software_check()        138-139        
+_pending_ping()                          142-145        
+_get_sls()                               177-191        Return a cached SLSClient built from the active SCM credentials.
+_parse_log_window()                      194-203        Parse 'Nm' / 'Nh' / 'Nd' into minutes; raise ValueError on bad input.
+_parse_log_args()                        206-233        Parse `show log <type>` keyword pairs from the raw remainder tokens.
+_sls_value()                             236-244        First non-empty field among *names*; unwraps SLS {'value': …} records.
+_sls_time()                              247-255        Render time_generated (epoch seconds or ISO string) as readable UTC.
+_map_sls_row()                           258-288        Map SLS field names onto the columns fmt.format_logs renders.
+_show_log_sls()                          291-323        Build the api_handler for one SLS-backed `show log <type>` command.
+_show_log_detail()                       326-346        Show the FULL SLS record for row <n> of the last log query.
+_ssh_jobs_id()                           353-355        
+_ssh_ping()                              358-361        
+_ssh_commit()                            364-367        
+COMMANDS                                 374-494        command registry dict
+_request_system_reboot()                 501-513        Request a system reboot — use --remote.  Requires active device contex
+_request_system_shutdown()               516-525        Request a system shutdown — use --remote.  Requires active device cont
+_EXTRA_COMMANDS                          528-569        command registry dict
+COMMANDS.update(…)                       571-571        merge additional commands into registry
+
 ## `app/commands/config_view.py`  (565 lines)
 
 Symbol                                   Lines          Purpose
@@ -560,35 +597,6 @@ _show_config_versions()                  338-359        List SCM config versions
 _load_config_version()                   362-434        Rollback: load a config version as the tenant's candidate config.
 _show_diff()                             438-504        Show a version-to-version diff of SCM config metadata and staged chang
 COMMANDS                                 513-564        command registry dict
-
-## `app/commands/operations.py`  (514 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_show_system_info()                      17-42          Show what SCM knows about the selected device.
-_show_jobs_id()                          45-54          Fetch a single SCM job by ID — TSG-wide, no folder scope.
-_commit()                                57-75          Push the candidate configuration to managed devices.
-_live_only()                             82-88          Return a clear message explaining why this command needs --remote.
-_pending_show_system_resources()         91-92          
-_pending_show_system_disk_space()        95-96          
-_pending_request_software_check()        99-100         
-_pending_ping()                          103-106        
-_get_sls()                               138-152        Return a cached SLSClient built from the active SCM credentials.
-_parse_log_window()                      155-164        Parse 'Nm' / 'Nh' / 'Nd' into minutes; raise ValueError on bad input.
-_parse_log_args()                        167-194        Parse `show log <type>` keyword pairs from the raw remainder tokens.
-_sls_value()                             197-205        First non-empty field among *names*; unwraps SLS {'value': …} records.
-_sls_time()                              208-216        Render time_generated (epoch seconds or ISO string) as readable UTC.
-_map_sls_row()                           219-249        Map SLS field names onto the columns fmt.format_logs renders.
-_show_log_sls()                          252-284        Build the api_handler for one SLS-backed `show log <type>` command.
-_show_log_detail()                       287-307        Show the FULL SLS record for row <n> of the last log query.
-_ssh_jobs_id()                           314-316        
-_ssh_ping()                              319-322        
-_ssh_commit()                            325-328        
-COMMANDS                                 335-455        command registry dict
-_request_system_reboot()                 462-474        Request a system reboot — use --remote.  Requires active device contex
-_request_system_shutdown()               477-486        Request a system shutdown — use --remote.  Requires active device cont
-_EXTRA_COMMANDS                          489-510        command registry dict
-COMMANDS.update(…)                       512-512        merge additional commands into registry
 
 ## `app/scripts/generate_feature_flags.py`  (478 lines)
 
@@ -758,7 +766,7 @@ _build_catalog()                         241-297        Return generated operati
 _render()                                300-318        
 main()                                   321-343        
 
-## `app/shell/_base.py`  (344 lines)
+## `app/shell/_base.py`  (345 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -767,9 +775,9 @@ device_ssh_host()                        141-145        Address ARC should SSH t
 tsg_display()                            148-152        Return ``(tsg_id, display_name)`` for a tenant-service-group entry.
 active_tsg_label()                       155-157        The TSG identifier to show in user-facing messages.
 _expand_unambiguous_prefix()             160-192        Expand command-token prefixes when they resolve to exactly one phrase.
-tokenize()                               207-218        Split a command line into tokens, honouring single/double quotes.
-_make_key_bindings()                     221-274        Return key bindings for the ARC shell.
-class ShellState                         278-304        
+tokenize()                               208-219        Split a command line into tokens, honouring single/double quotes.
+_make_key_bindings()                     222-275        Return key bindings for the ARC shell.
+class ShellState                         279-305        
 
 ## `app/commands/setup.py`  (340 lines)
 

@@ -126,6 +126,28 @@ def _packet_tracer(ctx: ExecutionContext, args: dict) -> Any:
             "  At minimum, source and destination are required."
         )
 
+    # Client-side validation so operators get clear messages instead of device errors.
+    if packet["port"]:
+        try:
+            port_val = int(packet["port"])
+            if not (1 <= port_val <= 65535):
+                raise ValueError()
+        except (ValueError, TypeError):
+            raise ValueError(
+                f"Invalid destination-port: {packet['port']!r}  "
+                "(must be a number between 1 and 65535)"
+            )
+    if packet["protocol"]:
+        try:
+            proto_val = int(packet["protocol"])
+            if not (0 <= proto_val <= 255):
+                raise ValueError()
+        except (ValueError, TypeError):
+            raise ValueError(
+                f"Invalid protocol: {packet['protocol']!r}  "
+                "(must be a number between 0 and 255, e.g. 6=TCP, 17=UDP, 1=ICMP)"
+            )
+
     rules = scm.get_security_policy(folder=ctx.folder)
 
     # Build the ASA-style report.

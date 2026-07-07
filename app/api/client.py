@@ -1042,9 +1042,25 @@ class SCMClient:
         """pan.dev: GET /config/identity/v1/local-users"""
         return self._list(self.IDENTITY_URL, "/local-users", params={"folder": folder})
 
+    def create_local_user(self, payload: dict) -> dict:
+        """pan.dev: POST /config/identity/v1/local-users"""
+        return self._request("POST", self.IDENTITY_URL, "/local-users", json=payload)
+
+    def delete_local_user(self, user_id: str) -> dict:
+        """pan.dev: DELETE /config/identity/v1/local-users/{id}"""
+        return self._request("DELETE", self.IDENTITY_URL, f"/local-users/{user_id}")
+
     def get_local_user_groups(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/identity/v1/local-user-groups"""
         return self._list(self.IDENTITY_URL, "/local-user-groups", params={"folder": folder})
+
+    def create_authentication_profile(self, payload: dict) -> dict:
+        """pan.dev: POST /config/identity/v1/authentication-profiles"""
+        return self._request("POST", self.IDENTITY_URL, "/authentication-profiles", json=payload)
+
+    def delete_authentication_profile(self, profile_id: str) -> dict:
+        """pan.dev: DELETE /config/identity/v1/authentication-profiles/{id}"""
+        return self._request("DELETE", self.IDENTITY_URL, f"/authentication-profiles/{profile_id}")
 
     def get_radius_server_profiles(self, folder: str = "Shared") -> list[dict]:
         """pan.dev: GET /config/identity/v1/radius-server-profiles"""

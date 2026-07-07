@@ -88,6 +88,45 @@ def _live_only(command: str) -> Any:
     )
 
 
+def _clear_session_all(ctx: ExecutionContext, args: dict) -> str:
+    """Clear all sessions on the device — use --remote.
+
+    CAUTION: This terminates ALL active sessions on the target firewall.
+    Use with care in production environments.
+    """
+    device = require_device(ctx)
+    name = device.get("hostname") or device.get("name") or "device"
+    return (
+        "[yellow]⚠  clear session all terminates ALL active sessions on the device.[/yellow]\n"
+        f"  Run:  clear session all --remote  on [bold]{name}[/bold] to execute.\n"
+        "  [dim]To clear a specific session: clear session id <n> --remote[/dim]"
+    )
+
+
+def _clear_session_id(ctx: ExecutionContext, args: dict) -> str:
+    """Clear a specific session by ID — use --remote.
+
+    Usage: clear session id <session-id>
+    """
+    device = require_device(ctx)
+    name = device.get("hostname") or device.get("name") or "device"
+    session_id = (args.get("id") or args.get("_positional", [None])[0] or "").strip()
+    if not session_id:
+        raise ValueError(
+            "Usage: clear session id <session-id>  (use --remote)\n"
+            "  Find session IDs with: show session all --remote"
+        )
+    return (
+        f"  Run:  clear session id {session_id} --remote  on [bold]{name}[/bold] to execute."
+    )
+
+
+def _ssh_clear_session_id(args: dict) -> str:
+    import shlex as _shlex
+    session_id = shlex.quote(str(args.get("id") or (args.get("_positional") or [""])[0] or ""))
+    return f"clear session id {session_id}"
+
+
 def _pending_show_system_resources(ctx: ExecutionContext, args: dict) -> str:
     return _live_only("show system resources")
 
@@ -506,6 +545,26 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         render="raw",
         feature_flag="request_system_reboot",
         usage="request system shutdown",
+    ),
+    "clear session all": CommandDef(
+        description="Clear all active sessions on the device — use --remote  (CAUTION: terminates all sessions)",
+        category="operations",
+        scope="device",
+        api_handler=_clear_session_all,
+        ssh_command="clear session all",
+        render="raw",
+        feature_flag="show_session",
+        usage="clear session all",
+    ),
+    "clear session id": CommandDef(
+        description="Clear a specific session by ID — use --remote",
+        category="operations",
+        scope="device",
+        api_handler=_clear_session_id,
+        ssh_command=_ssh_clear_session_id,
+        render="raw",
+        feature_flag="show_session",
+        usage="clear session id <session-id>",
     ),
 }
 

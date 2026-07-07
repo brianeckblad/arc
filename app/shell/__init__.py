@@ -75,6 +75,8 @@ class ArcShell(
         set_page_length(self._prefs.terminal_length)
         if self._prefs.terminal_width > 0:
             console.width = self._prefs.terminal_width
+        if self._prefs.terminal_height > 0:
+            console.height = self._prefs.terminal_height
 
         # Print banner before init so the logo appears above the SCM connection line.
         self._print_banner()

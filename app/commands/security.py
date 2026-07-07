@@ -165,7 +165,7 @@ def _set_url_category(ctx: ExecutionContext, args: dict) -> Any:
         raise ValueError("At least one URL/category entry required after 'list'")
     payload = {"name": name, "folder": ctx.folder, "type": cat_type, "list": entries}
     result  = scm.create_url_category(payload)
-    return f"[green]✓[/green] URL category [bold]{name}[/bold] created  (id: {result.get('id', '?')})"
+    return f"[green]✓[/green] URL category [bold]{name}[/bold] created  (id: {(result or {}).get('id', '?')})"
 
 
 _WRITE_COMMANDS: dict[str, CommandDef] = {

@@ -201,6 +201,7 @@ PROMPT_STYLE = Style.from_dict({
     "arrow":   "bold ansicyan",
     "dev":     "bold ansimagenta",    # development-mode marker in the prompt
     "confirm": "bold ansired",        # commit confirmed countdown
+    "noscm":   "ansired dim",         # degraded mode: no SCM connection
 })
 
 

@@ -21,6 +21,34 @@ from app.commands.base import (
 )
 
 
+def _check_concurrent_modification(original: dict, fresh_item: dict | None, name: str) -> None:
+    """Warn if the object was modified between GET and PUT.
+
+    Compares the 'last_modified' / 'updated_at' / 'etag' field from the
+    original GET response against a fresh re-fetch.  If the value changed,
+    another admin updated the object between our GET and PUT — we print a
+    prominent warning so the operator knows their change overwrote concurrent work.
+
+    This is a best-effort check: not all SCM resources return a timestamp, and
+    eventual consistency means even a match is not a guarantee.
+    """
+    if fresh_item is None:
+        return
+    for ts_field in ("last_modified", "updated_at", "modified_time", "etag"):
+        orig_ts = original.get(ts_field)
+        new_ts  = fresh_item.get(ts_field)
+        if orig_ts and new_ts and orig_ts != new_ts:
+            from rich.console import Console as _C
+            _C().print(
+                f"[yellow]⚠  Concurrent modification detected for '{name}'[/yellow]\n"
+                f"  The object was modified by another admin between your GET and PUT.\n"
+                f"  Your change was applied on top of their version — verify the result.\n"
+                f"  Field [dim]{ts_field}[/dim] changed: {orig_ts!r} → {new_ts!r}\n"
+                "  [dim]Run [bold]show <resource> <name>[/bold] to review the merged state.[/dim]"
+            )
+            return
+
+
 def _show_address_search(ctx: ExecutionContext, args: dict) -> Any:
     """Filter address objects by name pattern, tag, or description.
 
@@ -352,7 +380,7 @@ def _set_address(ctx: ExecutionContext, args: dict) -> Any:
     result = scm.create_address(payload)
     return (
         f"[green]✓[/green] Address [bold]{name}[/bold] ({addr_type}: {addr_val}) created\n"
-        f"  folder: {ctx.folder}  id: {result.get('id', '?')}"
+        f"  folder: {ctx.folder}  id: {(result or {}).get('id', '?')}"
     )
 
 
@@ -433,7 +461,7 @@ def _set_address_group(ctx: ExecutionContext, args: dict) -> Any:
     result = scm.create_address_group(payload)
     return (
         f"[green]✓[/green] Address group [bold]{name}[/bold] ({mode}) created\n"
-        f"  folder: {ctx.folder}  id: {result.get('id', '?')}"
+        f"  folder: {ctx.folder}  id: {(result or {}).get('id', '?')}"
     )
 
 
@@ -506,7 +534,7 @@ def _set_service(ctx: ExecutionContext, args: dict) -> Any:
     src_info = f"  source-port: {proto_block['source_port']}" if "source_port" in proto_block else ""
     return (
         f"[green]✓[/green] Service [bold]{name}[/bold] ({proto}/{dst_port}{src_info}) created\n"
-        f"  folder: {ctx.folder}  id: {result.get('id', '?')}"
+        f"  folder: {ctx.folder}  id: {(result or {}).get('id', '?')}"
     )
 
 
@@ -555,7 +583,7 @@ def _set_service_group(ctx: ExecutionContext, args: dict) -> Any:
     result = scm.create_service_group(payload)
     return (
         f"[green]✓[/green] Service group [bold]{name}[/bold] ({len(members)} members: {', '.join(members)}) created\n"
-        f"  folder: {ctx.folder}  id: {result.get('id', '?')}"
+        f"  folder: {ctx.folder}  id: {(result or {}).get('id', '?')}"
     )
 
 
@@ -609,7 +637,7 @@ def _set_tag(ctx: ExecutionContext, args: dict) -> Any:
     color_info = f" color: {color}" if color else ""
     return (
         f"[green]✓[/green] Tag [bold]{name}[/bold] created{color_info}\n"
-        f"  folder: {ctx.folder}  id: {result.get('id', '?')}"
+        f"  folder: {ctx.folder}  id: {(result or {}).get('id', '?')}"
     )
 
 
@@ -691,7 +719,7 @@ def _set_external_dynamic_list(ctx: ExecutionContext, args: dict) -> Any:
     result = scm.create_external_dynamic_list(payload)
     return (
         f"[green]✓[/green] EDL [bold]{name}[/bold] (type: {edl_type}) created\n"
-        f"  url: {fetch_url}  folder: {ctx.folder}  id: {result.get('id', '?')}"
+        f"  url: {fetch_url}  folder: {ctx.folder}  id: {(result or {}).get('id', '?')}"
     )
 
 
@@ -893,7 +921,9 @@ def _update_address(ctx: ExecutionContext, args: dict) -> Any:
         # Only description/tag change
         merge_common_fields(obj, args, pos, 1)
 
-    # 3. PUT
+    # 3. PUT — re-fetch once to detect concurrent modifications before overwriting.
+    fresh_items = scm.get_addresses(folder=ctx.folder)
+    _check_concurrent_modification(obj, scm.find_by_name(fresh_items, name), name)
     scm.update_address(obj_id, obj)
     changed = field_key or "description/tag"
     return f"[green]✓[/green] Address [bold]{name}[/bold] updated ({changed})"
@@ -954,6 +984,8 @@ def _update_address_group(ctx: ExecutionContext, args: dict) -> Any:
     else:
         merge_common_fields(obj, args, pos, 1)
 
+    fresh_items = scm.get_address_groups(folder=ctx.folder)
+    _check_concurrent_modification(obj, scm.find_by_name(fresh_items, name), name)
     scm.update_address_group(obj_id, obj)
     return f"[green]✓[/green] Address group [bold]{name}[/bold] updated"
 
@@ -1007,6 +1039,8 @@ def _update_service(ctx: ExecutionContext, args: dict) -> Any:
         obj["protocol"] = {proto: proto_block}
     merge_common_fields(obj, args, pos, 1 if proto not in ("tcp", "udp") else 4)
 
+    fresh_items = scm.get_services(folder=ctx.folder)
+    _check_concurrent_modification(obj, scm.find_by_name(fresh_items, name), name)
     scm.update_service(obj_id, obj)
     return f"[green]✓[/green] Service [bold]{name}[/bold] updated"
 
@@ -1051,6 +1085,8 @@ def _update_service_group(ctx: ExecutionContext, args: dict) -> Any:
     else:
         merge_common_fields(obj, args, pos, 1)
 
+    fresh_items = scm.get_service_groups(folder=ctx.folder)
+    _check_concurrent_modification(obj, scm.find_by_name(fresh_items, name), name)
     scm.update_service_group(obj_id, obj)
     return f"[green]✓[/green] Service group [bold]{name}[/bold] updated"
 
@@ -1093,6 +1129,8 @@ def _update_tag(ctx: ExecutionContext, args: dict) -> Any:
     if comments:
         obj["comments"] = comments
 
+    fresh_items = scm.get_tags(folder=ctx.folder)
+    _check_concurrent_modification(obj, scm.find_by_name(fresh_items, name), name)
     scm.update_tag(obj_id, obj)
     return f"[green]✓[/green] Tag [bold]{name}[/bold] updated"
 
@@ -1153,6 +1191,8 @@ def _update_external_dynamic_list(ctx: ExecutionContext, args: dict) -> Any:
     if args.get("description") or kv.get("description"):
         obj["description"] = args.get("description") or kv["description"]
 
+    fresh_items = scm.get_external_dynamic_lists(folder=ctx.folder)
+    _check_concurrent_modification(obj, scm.find_by_name(fresh_items, name), name)
     scm.update_external_dynamic_list(obj_id, obj)
     return f"[green]✓[/green] EDL [bold]{name}[/bold] updated"
 
