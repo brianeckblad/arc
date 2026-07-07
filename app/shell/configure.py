@@ -1166,8 +1166,11 @@ class ConfigureMixin:
             return False
 
         if cmd in ("?", "help") and len(tokens) == 1:
-            self._dev_shell_help()
-            return False
+            # Fall through to normal ? / help dispatch so the full ARC command
+            # tree is shown (dev mode reveals all non-false commands).
+            # The dev shell menu is appended after by _print_shell_builtins
+            # via the dev shell section printed in _cmd_help_inline.
+            return None
 
         if cmd == "status":
             self._dev_status()
