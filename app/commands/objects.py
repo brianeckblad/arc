@@ -865,6 +865,86 @@ COMMANDS.update(_WRITE_COMMANDS)
 # ---------------------------------------------------------------------------
 
 
+def _bulk_update_address(ctx: ExecutionContext, args: dict) -> Any:
+    """Update the same field across multiple address objects in one command.
+
+    Usage:
+      update address bulk <name1> [<name2> ...] description <text>
+      update address bulk <name1> [<name2> ...] tag <tag-name>
+
+    The field and value must come AFTER all the object names. The separator
+    is the first token that matches a known field keyword (description or tag).
+
+    Examples:
+      update address bulk web1 web2 web3 description "Migrated to new DC"
+      update address bulk DMZ-Host API-Host DB-Host tag Decommissioned
+
+    pan.dev: PUT /config/objects/v1/addresses/{id}  (one call per object)
+    """
+    scm = require_scm(ctx)
+    pos = args.get("_positional", [])
+
+    # Split positional tokens into [names...] [field] [value...]
+    # The field is the first token that matches a known keyword.
+    _BULK_FIELDS = {"description", "tag", "ip-netmask", "ip-range", "fqdn", "ip-wildcard"}
+    split_at = None
+    for i, tok in enumerate(pos):
+        if tok.lower() in _BULK_FIELDS:
+            split_at = i
+            break
+
+    if split_at is None or split_at == 0:
+        raise ValueError(
+            "Usage: update address bulk <name1> [<name2> ...] description|tag|ip-netmask <value>\n"
+            "  e.g. update address bulk web1 web2 description 'New description'\n"
+            "       update address bulk DMZ-Host API-Host tag Decommissioned"
+        )
+
+    names = pos[:split_at]
+    field = pos[split_at].lower()
+    values = pos[split_at + 1:]
+    if not values:
+        raise ValueError(f"Missing value for '{field}'")
+
+    # Fetch all addresses once and apply to each name
+    all_items = scm.get_addresses(folder=ctx.folder)
+    results: list[str] = []
+    errors: list[str] = []
+
+    for name in names:
+        try:
+            obj = scm.find_by_name(all_items, name)
+            if not obj:
+                errors.append(f"  [red]✗[/red] '{name}' — not found in folder '{ctx.folder}'")
+                continue
+            obj = dict(obj)
+            obj_id = obj.pop("id")
+
+            if field in _ADDR_TYPE_MAP:
+                for f in _ADDR_TYPE_MAP.values():
+                    obj.pop(f, None)
+                obj[_ADDR_TYPE_MAP[field]] = values[0]
+            elif field == "description":
+                obj["description"] = " ".join(values)
+            elif field == "tag":
+                obj["tag"] = list(values)
+            else:
+                errors.append(f"  [red]✗[/red] '{name}' — unknown field '{field}'")
+                continue
+
+            scm.update_address(obj_id, obj)
+            results.append(f"  [green]✓[/green] [bold]{name}[/bold]")
+        except Exception as exc:
+            errors.append(f"  [red]✗[/red] '{name}' — {exc}")
+
+    summary = (
+        f"[bold]Bulk update:[/bold] {field} = {' '.join(values)}\n"
+        + "\n".join(results)
+        + ("\n" + "\n".join(errors) if errors else "")
+        + f"\n\n  [dim]{len(results)} updated, {len(errors)} failed[/dim]"
+    )
+    return summary
+
 
 def _update_address(ctx: ExecutionContext, args: dict) -> Any:
     """Update an existing address object (GET→merge→PUT).
@@ -1206,6 +1286,16 @@ _UPDATE_COMMANDS: dict[str, CommandDef] = {
         ssh_command=None,
         render="raw",
         feature_flag="update_objects",
+    ),
+    "update address bulk": CommandDef(
+        description="Bulk update multiple address objects in one command — update address bulk <n1> <n2>... <field> <value>",
+        category="objects",
+        scope="folder",
+        api_handler=_bulk_update_address,
+        ssh_command=None,
+        render="raw",
+        feature_flag="update_objects",
+        usage="update address bulk <name1> [<name2> ...] description|tag|ip-netmask <value>",
     ),
     "update address-group": CommandDef(
         description="Update address group — update address-group <name> static <m1>... | dynamic filter '<expr>'",

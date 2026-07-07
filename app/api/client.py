@@ -599,6 +599,20 @@ class SCMClient:
         except (httpx.HTTPError, ValueError, TypeError):
             return []
 
+    def create_snippet(self, payload: dict) -> dict:
+        """Create a new SCM snippet.
+
+        pan.dev: POST /config/setup/v1/snippets
+        """
+        return self._post_setup("/snippets", json=payload)
+
+    def delete_snippet(self, snippet_id: str) -> dict:
+        """Delete an SCM snippet.
+
+        pan.dev: DELETE /config/setup/v1/snippets/{id}
+        """
+        return self._request("DELETE", self.SETUP_URL, f"/snippets/{snippet_id}")
+
     def get_snippet_detail(self, snippet_id: str) -> dict:
         """Return full detail for one snippet including attached folders.
 

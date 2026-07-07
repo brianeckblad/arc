@@ -275,6 +275,91 @@ def _show_snippet_detail(ctx: ExecutionContext, args: dict) -> Any:
 
 
 # ---------------------------------------------------------------------------
+# Snippet write handlers
+# ---------------------------------------------------------------------------
+
+def _set_snippet(ctx: ExecutionContext, args: dict) -> Any:
+    """Create a new SCM snippet (named configuration container).
+
+    Snippets are reusable configuration packages that can be attached to
+    folders or devices to apply a standard config baseline.
+
+    Usage:
+      set snippet <name>                          Create an empty snippet
+      set snippet <name> description <text>       Create with description
+      set snippet <name> type predefined|custom   Set snippet type
+
+    Examples:
+      set snippet BaselineConfig description "Standard NGFW baseline"
+      set snippet VPN-Template type custom
+
+    pan.dev: POST /config/setup/v1/snippets
+    """
+    scm = require_scm(ctx)
+    pos = args.get("_positional", [])
+    name = pos[0] if pos else (args.get("name") or "")
+    if not name:
+        raise ValueError(
+            "Usage: set snippet <name>  [description <text>]  [type predefined|custom]\n"
+            "  e.g. set snippet BaselineConfig description 'Standard NGFW baseline'"
+        )
+    payload: dict = {"name": name}
+    pos_lower = [p.lower() for p in pos]
+    if "description" in pos_lower:
+        d_idx = pos_lower.index("description")
+        payload["description"] = " ".join(pos[d_idx + 1:]) or args.get("description", "")
+    elif args.get("description"):
+        payload["description"] = args["description"]
+    if "type" in pos_lower:
+        t_idx = pos_lower.index("type")
+        snip_type = pos[t_idx + 1] if t_idx + 1 < len(pos) else ""
+        if snip_type.lower() not in ("predefined", "custom"):
+            raise ValueError(f"Invalid snippet type: {snip_type!r}  (valid: predefined | custom)")
+        payload["type"] = snip_type.lower()
+
+    result = scm.create_snippet(payload)
+    return (
+        f"[green]✓[/green] Snippet [bold]{name}[/bold] created\n"
+        f"  id: {(result or {}).get('id', '?')}\n"
+        "  [dim]Use the SCM portal to attach configuration objects to this snippet.[/dim]"
+    )
+
+
+def _delete_snippet(ctx: ExecutionContext, args: dict) -> Any:
+    """Delete an SCM snippet.
+
+    Usage: delete snippet <name>
+
+    WARNING: Deleting a snippet removes it from all folders and devices it is
+    attached to. Configuration managed by the snippet will be removed from those
+    devices on the next commit.
+    """
+    scm = require_scm(ctx)
+    name = (args.get("name") or "").strip()
+    if not name:
+        raise ValueError(
+            "Usage: delete snippet <name>\n"
+            "  Run [bold]show snippets global[/bold] to see all snippets."
+        )
+    snippets = scm.get_snippets()
+    snip_id = scm.find_id_by_name(snippets, name)
+    if not snip_id:
+        raise ValueError(
+            f"Snippet '{name}' not found.\n"
+            "  Run [bold]show snippets global[/bold] to see all snippets."
+        )
+    # Confirm — snippet deletion can affect many devices
+    from rich.console import Console as _C
+    _C().print(
+        f"[yellow]⚠  Deleting snippet [bold]{name}[/bold] will remove it from all attached\n"
+        "   folders and devices. Config managed by this snippet will be withdrawn\n"
+        "   on the next commit.[/yellow]"
+    )
+    scm.delete_snippet(snip_id)
+    return f"[green]✓[/green] Snippet [bold]{name}[/bold] deleted."
+
+
+# ---------------------------------------------------------------------------
 # Command table — merged into COMMANDS by registry.py
 # ---------------------------------------------------------------------------
 
@@ -335,5 +420,25 @@ COMMANDS: dict[str, CommandDef] = {
         ssh_command=None,
         render="snippet_detail",
         feature_flag="show_snippets",
+    ),
+    "set snippet": CommandDef(
+        description="Create a new SCM snippet — set snippet <name> [description <text>]",
+        category="setup",
+        scope="global",
+        api_handler=_set_snippet,
+        ssh_command=None,
+        render="raw",
+        feature_flag="show_snippets",
+        usage="set snippet <name>  [description <text>]  [type predefined|custom]",
+    ),
+    "delete snippet": CommandDef(
+        description="Delete an SCM snippet — delete snippet <name>  (WARNING: removes from all attached devices)",
+        category="setup",
+        scope="global",
+        api_handler=_delete_snippet,
+        ssh_command=None,
+        render="raw",
+        feature_flag="show_snippets",
+        usage="delete snippet <name>",
     ),
 }

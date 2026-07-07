@@ -18,10 +18,104 @@ from typing import Any
 from app.commands.base import (
     CommandDef,
     ExecutionContext,
+    delete_handler,
     require_device,
     require_scm,
     show_handler,
 )
+from app.commands.objects import _check_concurrent_modification
+
+
+# ---------------------------------------------------------------------------
+# NAT rule update handler
+# ---------------------------------------------------------------------------
+
+def _update_nat_rule(ctx: ExecutionContext, args: dict) -> Any:
+    """Update an existing NAT rule (GET→merge→PUT).
+
+    Modifies one or more fields of a named NAT rule while preserving all other fields.
+
+    Syntax:
+      update nat-rule <name> source-translation-type static-ip|dynamic-ip-and-port|dynamic-ip|none
+      update nat-rule <name> destination-translation <ip>
+      update nat-rule <name> from <zone> [<zone2> ...]
+      update nat-rule <name> to <zone>
+      update nat-rule <name> source <addr> [<addr2> ...]
+      update nat-rule <name> destination <addr>
+      update nat-rule <name> service <svc>
+      update nat-rule <name> description <text>
+      update nat-rule <name> disabled true|false
+
+    Examples:
+      update nat-rule Outbound-PAT source 192.168.1.0/24
+      update nat-rule Outbound-PAT description "Updated for new subnet"
+      update nat-rule Outbound-PAT disabled false
+
+    pan.dev: PUT /config/network/v1/nat-rules/{id}
+    """
+    scm = require_scm(ctx)
+    pos = args.get("_positional", [])
+    name = pos[0] if pos else (args.get("name") or "")
+    if not name or len(pos) < 2:
+        raise ValueError(
+            "Usage: update nat-rule <name> <field> <value>\n"
+            "  Fields: from | to | source | destination | service | description | disabled\n"
+            "  e.g. update nat-rule Outbound-PAT source 192.168.1.0/24\n"
+            "       update nat-rule Outbound-PAT description 'Updated rule'"
+        )
+
+    # 1. GET current rule
+    items = scm.get_nat_rules(folder=ctx.folder)
+    obj = scm.find_by_name(items, name)
+    if not obj:
+        raise ValueError(
+            f"NAT rule '{name}' not found in folder '{ctx.folder}'.\n"
+            "  Run [bold]show nat-rules[/bold] to see available rules."
+        )
+    obj = dict(obj)  # shallow copy — prevent mutation of cached response on retry
+    rule_id = obj.pop("id")
+
+    # 2. Apply the requested field change
+    field = pos[1].lower()
+    values = pos[2:]
+
+    _LIST_FIELDS = {"from", "source", "tag"}
+
+    if field in _LIST_FIELDS:
+        if not values:
+            raise ValueError(f"Provide at least one value for '{field}'")
+        obj[field] = list(values)
+
+    elif field in ("to", "destination", "service"):
+        # These are single-value fields in NAT rules
+        val = values[0] if values else ""
+        if not val:
+            raise ValueError(f"Provide a value for '{field}'")
+        obj[field] = [val] if field in ("to", "destination") else val
+
+    elif field == "description":
+        obj["description"] = " ".join(values)
+
+    elif field == "disabled":
+        flag = (values[0].lower() if values else "true")
+        if flag not in ("true", "false", "yes", "no", "1", "0"):
+            raise ValueError(f"'disabled' expects true or false, got: {flag!r}")
+        obj["disabled"] = flag in ("true", "yes", "1")
+
+    else:
+        raise ValueError(
+            f"Unknown field: {field!r}\n"
+            "  Valid fields: from | to | source | destination | service | description | disabled"
+        )
+
+    # 3. PUT — re-fetch to detect concurrent modifications before overwriting.
+    fresh_items = scm.get_nat_rules(folder=ctx.folder)
+    _check_concurrent_modification(obj, scm.find_by_name(fresh_items, name), name)
+    scm.update_nat_rule(rule_id, obj)
+    return (
+        f"[green]✓[/green] NAT rule [bold]{name}[/bold] updated "
+        f"([bold]{field}[/bold] = {' '.join(str(v) for v in values) or '(cleared)'})"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -245,11 +339,11 @@ def _test_nat_policy_match(ctx: ExecutionContext, args: dict) -> Any:
 def _ssh_test_nat(args: dict) -> str:
     src   = shlex.quote(args.get("source", ""))
     dst   = shlex.quote(args.get("destination", ""))
-    dport = shlex.quote(args.get("destination-port", ""))
+    raw_dport = args.get("destination-port", "")
     proto = shlex.quote(args.get("protocol", "6"))
     cmd   = f"test nat-policy-match source {src} destination {dst} protocol {proto}"
-    if dport and dport != "''":
-        cmd += f" destination-port {dport}"
+    if raw_dport:
+        cmd += f" destination-port {shlex.quote(raw_dport)}"
     return cmd
 
 
@@ -280,6 +374,28 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         api_handler=show_handler("get_nat_rules"),
         ssh_command="show running nat-policy",
         render="list",
+        feature_flag="nat_rules",
+    ),
+    "update nat-rule": CommandDef(
+        description="Update a NAT rule — update nat-rule <name> <field> <value>",
+        category="network",
+        scope="folder",
+        api_handler=_update_nat_rule,
+        ssh_command=None,
+        render="raw",
+        feature_flag="nat_rules",
+        usage="update nat-rule <name> from|to|source|destination|service|description|disabled <value>",
+    ),
+    "delete nat-rule": CommandDef(
+        description="Delete a NAT rule — delete nat-rule <name>",
+        category="network",
+        scope="folder",
+        api_handler=delete_handler(
+            "NAT rule", "get_nat_rules", "delete_nat_rule",
+            usage="Usage: delete nat-rule <name>",
+        ),
+        ssh_command=None,
+        render="raw",
         feature_flag="nat_rules",
     ),
     "show pbf-rules": CommandDef(

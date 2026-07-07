@@ -162,6 +162,7 @@ def _update_security_rule(ctx: ExecutionContext, args: dict) -> Any:
       update security-rule <name> tag <name>
       update security-rule <name> disabled true|false
       update security-rule <name> profile-group <name>
+      update security-rule <name> position <n>   (move to position n in the rule list, 1-based)
 
     Examples:
       update security-rule Allow-Web action deny
@@ -169,6 +170,7 @@ def _update_security_rule(ctx: ExecutionContext, args: dict) -> Any:
       update security-rule Allow-Web destination 10.1.0.0/24
       update security-rule Allow-Web application ssl http
       update security-rule Allow-Web description "Updated for Q3 audit"
+      update security-rule Allow-Web position 3
 
     pan.dev: PUT /config/security/v1/security-rules/{id}
     """
@@ -179,9 +181,10 @@ def _update_security_rule(ctx: ExecutionContext, args: dict) -> Any:
         raise ValueError(
             "Usage: update security-rule <name> <field> <value>\n"
             "  Fields: action | from | to | source | destination | application "
-            "| service | description | tag | disabled | profile-group\n"
+            "| service | description | tag | disabled | profile-group | position\n"
             "  e.g. update security-rule Allow-Web action deny\n"
-            "       update security-rule Allow-Web from trust untrust"
+            "       update security-rule Allow-Web from trust untrust\n"
+            "       update security-rule Allow-Web position 3"
         )
 
     # 1. GET current rule
@@ -238,11 +241,24 @@ def _update_security_rule(ctx: ExecutionContext, args: dict) -> Any:
             raise ValueError(f"Provide a profile group name: update security-rule {name} profile-group <name>")
         obj["profile_setting"] = {"group": [group]}
 
+    elif field == "position":
+        pos_val = values[0] if values else ""
+        if not pos_val.isdigit() or int(pos_val) < 1:
+            raise ValueError(
+                f"Position must be a positive integer (1-based), got: {pos_val!r}\n"
+                f"  e.g. update security-rule {name} position 3"
+            )
+        # Position is applied via a separate MOVE endpoint on the same rule.
+        # SCM uses PUT with a 'position_keyword' or direct index; we store it
+        # for use in the PUT payload.  Some SCM versions support 'position' field
+        # directly on the object; others require a separate call.
+        obj["position"] = int(pos_val)
+
     else:
         raise ValueError(
             f"Unknown field: {field!r}\n"
             "  Valid fields: action | from | to | source | destination | application "
-            "| service | description | tag | disabled | profile-group"
+            "| service | description | tag | disabled | profile-group | position"
         )
 
     # 3. PUT — re-fetch to detect concurrent modifications before overwriting.
@@ -301,7 +317,7 @@ _WRITE_COMMANDS: dict[str, CommandDef] = {
         ssh_command=None,
         render="raw",
         feature_flag="update_security",
-        usage="update security-rule <name> action|from|to|source|destination|application|service|description|tag|disabled <value>",
+        usage="update security-rule <name> action|from|to|source|destination|application|service|description|tag|disabled|position <value>",
     ),
     "set url-category": CommandDef(
         description="Create a custom URL category — set url-category <name> type url-list list <url1>",

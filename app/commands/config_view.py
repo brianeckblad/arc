@@ -468,7 +468,9 @@ def _show_diff(ctx: ExecutionContext, args: dict) -> Any:
                             lines.append(f"  {field:<12} {val}")
                 lines.append("")
             lines.append(
-                "[dim]To diff config content: export each version with "
+                "[dim]Note: this compares version metadata (date, admin, description) only.\n"
+                "SCM does not provide a text diff of config content between versions.\n"
+                "To diff content: export each version with "
                 "[bold]show config format set | save <file>[/bold] after loading each version.[/dim]"
             )
             return "\n".join(lines)
@@ -486,21 +488,22 @@ def _show_diff(ctx: ExecutionContext, args: dict) -> Any:
                 lines.append(f"  [bold]{ver:<6}[/bold]  {date:<24}  {admin:<30}  {desc}")
             return "\n".join(lines)
 
-    # Default: show locally staged (uncommitted) changes
-    staged = getattr(ctx, "_staged_ops", None)
-    # Fall back to reading from the shell state via a sentinel attribute
-    # (staged_ops are on the shell, not in the execution context).
-    # We surface what we can from the args context.
+    # Default: show diff with no args — redirect to show config (staged changes)
+    # and explain what each sub-command does.
+    # We can't access shell staged_ops from here (they live on the shell, not
+    # in ExecutionContext), so we redirect the operator to the right command.
     return (
-        "[yellow]show diff[/yellow] shows locally staged changes.\n\n"
-        "  Run [bold]show config[/bold] to see the staged queue.\n"
-        "  Run [bold]show diff versions[/bold] to list config versions.\n"
-        "  Run [bold]show diff versions <a> <b>[/bold] to compare two version records.\n\n"
-        "[dim]For a full config content diff, export with:\n"
-        "  show config format set | save /tmp/before.sh\n"
-        "  load config version <other> confirm\n"
-        "  show config format set | save /tmp/after.sh\n"
-        "  diff /tmp/before.sh /tmp/after.sh[/dim]"
+        "[bold]show diff[/bold] — config change overview\n\n"
+        "  [cyan]show config[/cyan]                          Staged (uncommitted) changes in this session\n"
+        "  [cyan]show diff versions[/cyan]                   List all SCM config versions with dates\n"
+        "  [cyan]show diff versions <a> <b>[/cyan]           Compare metadata of two config versions\n"
+        "  [cyan]show config running[/cyan]                  The currently pushed running config\n\n"
+        "[dim]For a full content diff between versions:\n"
+        "  1. show config format set | save /tmp/current.sh\n"
+        "  2. load config version <older> confirm\n"
+        "  3. show config format set | save /tmp/older.sh\n"
+        "  4. diff /tmp/older.sh /tmp/current.sh\n"
+        "  (restore with: load config version <current> confirm → commit)[/dim]"
     )
 
 

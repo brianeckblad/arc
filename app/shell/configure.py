@@ -1751,8 +1751,13 @@ class ConfigureMixin:
                 from app.cli import _do_cliup
                 _do_cliup(silent=True, skip_vendor=True)
                 console.print("[dim]  docs/docs-bundle.js rebuilt (arc cliup)[/dim]")
-            except Exception:
-                pass  # cliup is best-effort — don't fail the whole rebuild over it
+            except Exception as exc:
+                # cliup is best-effort — a network failure downloading vendor JS
+                # should not block the catalog rebuild, but should be visible.
+                console.print(
+                    f"[yellow]  ⚠ docs bundle not rebuilt:[/yellow] {exc}\n"
+                    "  [dim]Run [bold]arc cliup[/bold] manually to update docs/index.html[/dim]"
+                )
         else:
             console.print(
                 "[yellow]catalog rebuild finished with errors — check output above.[/yellow]\n"
