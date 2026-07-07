@@ -36,8 +36,6 @@ def _update_nat_rule(ctx: ExecutionContext, args: dict) -> Any:
     Modifies one or more fields of a named NAT rule while preserving all other fields.
 
     Syntax:
-      update nat-rule <name> source-translation-type static-ip|dynamic-ip-and-port|dynamic-ip|none
-      update nat-rule <name> destination-translation <ip>
       update nat-rule <name> from <zone> [<zone2> ...]
       update nat-rule <name> to <zone>
       update nat-rule <name> source <addr> [<addr2> ...]
@@ -79,19 +77,23 @@ def _update_nat_rule(ctx: ExecutionContext, args: dict) -> Any:
     field = pos[1].lower()
     values = pos[2:]
 
+    # NAT rule list fields (can have multiple values)
     _LIST_FIELDS = {"from", "source", "tag"}
+    # NAT rule single-value zone/address fields
+    _SINGLE_FIELDS = {"to", "destination", "service"}
 
     if field in _LIST_FIELDS:
         if not values:
             raise ValueError(f"Provide at least one value for '{field}'")
         obj[field] = list(values)
 
-    elif field in ("to", "destination", "service"):
-        # These are single-value fields in NAT rules
+    elif field in _SINGLE_FIELDS:
         val = values[0] if values else ""
         if not val:
             raise ValueError(f"Provide a value for '{field}'")
-        obj[field] = [val] if field in ("to", "destination") else val
+        # NAT 'to' and 'destination' are stored as single strings in SCM NAT rules,
+        # not as lists (unlike security rules which use zone lists).
+        obj[field] = val
 
     elif field == "description":
         obj["description"] = " ".join(values)

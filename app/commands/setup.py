@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from typing import Any
 
+from rich.console import Console as _console_cls
+
 from app.commands.base import CommandDef, ExecutionContext, require_scm, show_handler
+
+_setup_console = _console_cls()
 
 
 # ---------------------------------------------------------------------------
@@ -349,8 +353,7 @@ def _delete_snippet(ctx: ExecutionContext, args: dict) -> Any:
             "  Run [bold]show snippets global[/bold] to see all snippets."
         )
     # Confirm — snippet deletion can affect many devices
-    from rich.console import Console as _C
-    _C().print(
+    _setup_console.print(
         f"[yellow]⚠  Deleting snippet [bold]{name}[/bold] will remove it from all attached\n"
         "   folders and devices. Config managed by this snippet will be withdrawn\n"
         "   on the next commit.[/yellow]"

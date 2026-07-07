@@ -243,16 +243,41 @@ def _update_security_rule(ctx: ExecutionContext, args: dict) -> Any:
 
     elif field == "position":
         pos_val = values[0] if values else ""
-        if not pos_val.isdigit() or int(pos_val) < 1:
-            raise ValueError(
-                f"Position must be a positive integer (1-based), got: {pos_val!r}\n"
-                f"  e.g. update security-rule {name} position 3"
+        # SCM uses a :move endpoint with destination keyword, not a position integer.
+        # Supported values: top, bottom, before <rule-name>, after <rule-name>
+        # We map integer 1 → top, and accept 'top'/'bottom'/'before'/'after' keywords.
+        valid_keywords = {"top", "bottom"}
+        two_arg_keywords = {"before", "after"}
+        if pos_val.lower() in valid_keywords:
+            # top / bottom — call move endpoint immediately, no PUT needed
+            scm.move_security_rule(rule_id, destination=pos_val.lower())
+            return (
+                f"[green]✓[/green] Security rule [bold]{name}[/bold] moved to "
+                f"[bold]{pos_val.lower()}[/bold] of the rulebase"
             )
-        # Position is applied via a separate MOVE endpoint on the same rule.
-        # SCM uses PUT with a 'position_keyword' or direct index; we store it
-        # for use in the PUT payload.  Some SCM versions support 'position' field
-        # directly on the object; others require a separate call.
-        obj["position"] = int(pos_val)
+        elif pos_val.lower() in two_arg_keywords:
+            anchor = values[1] if len(values) > 1 else ""
+            if not anchor:
+                raise ValueError(
+                    f"'{pos_val}' requires an anchor rule name:\n"
+                    f"  update security-rule {name} position {pos_val} <anchor-rule-name>"
+                )
+            scm.move_security_rule(rule_id, destination=f"{pos_val.lower()} {anchor}")
+            return (
+                f"[green]✓[/green] Security rule [bold]{name}[/bold] moved "
+                f"[bold]{pos_val.lower()}[/bold] [bold]{anchor}[/bold]"
+            )
+        elif pos_val == "1":
+            # Convenience: position 1 maps to top
+            scm.move_security_rule(rule_id, destination="top")
+            return f"[green]✓[/green] Security rule [bold]{name}[/bold] moved to top of rulebase"
+        else:
+            raise ValueError(
+                f"Invalid position value: {pos_val!r}\n"
+                "  Valid: top | bottom | before <rule-name> | after <rule-name>\n"
+                f"  e.g. update security-rule {name} position top\n"
+                f"       update security-rule {name} position before Other-Rule"
+            )
 
     else:
         raise ValueError(
@@ -317,7 +342,7 @@ _WRITE_COMMANDS: dict[str, CommandDef] = {
         ssh_command=None,
         render="raw",
         feature_flag="update_security",
-        usage="update security-rule <name> action|from|to|source|destination|application|service|description|tag|disabled|position <value>",
+        usage="update security-rule <name> action|from|to|source|destination|application|service|description|tag|disabled|position <value>  (position: top|bottom|before <rule>|after <rule>)",
     ),
     "set url-category": CommandDef(
         description="Create a custom URL category — set url-category <name> type url-list list <url1>",

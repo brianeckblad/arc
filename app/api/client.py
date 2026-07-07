@@ -872,6 +872,21 @@ class SCMClient:
         """PUT /config/security/v1/security-rules/{id}"""
         return self._put_security(f"/security-rules/{rule_id}", json=payload)
 
+    def move_security_rule(self, rule_id: str, destination: str, rulebase: str = "pre") -> dict:
+        """POST /config/security/v1/security-rules/{id}:move
+
+        Moves a rule to a named position: before|after|top|bottom.
+        *destination* is the position keyword or the name of the anchor rule.
+        *rulebase* is 'pre' (default) or 'post'.
+
+        pan.dev: POST /config/security/v1/security-rules/{id}:move
+        Body: {"destination": "<before|after|top|bottom>", "rulebase": "<pre|post>"}
+        """
+        return self._post_security(
+            f"/security-rules/{rule_id}:move",
+            json={"destination": destination, "rulebase": rulebase},
+        )
+
     def update_url_category(self, cat_id: str, payload: dict) -> dict:
         """PUT /config/security/v1/url-categories/{id}"""
         return self._put_security(f"/url-categories/{cat_id}", json=payload)

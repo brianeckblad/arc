@@ -439,7 +439,7 @@ def _show_diff(ctx: ExecutionContext, args: dict) -> Any:
     """Show a version-to-version diff of SCM config metadata and staged changes.
 
     Usage:
-      show diff                    — show locally staged (uncommitted) changes
+      show diff                    — show command reference for config comparison
       show diff versions           — list all versions with dates for comparison
       show diff versions <a> <b>   — compare metadata of two config versions
 
@@ -447,11 +447,12 @@ def _show_diff(ctx: ExecutionContext, args: dict) -> Any:
     For a content comparison, use:
       show config format set | save /tmp/v1.sh   (switch versions, then repeat)
     """
-    scm = require_scm(ctx)
     pos = args.get("_positional", [])
     sub = pos[0].lower() if pos else ""
 
     if sub == "versions":
+        # Version listing and comparison requires SCM access
+        scm = require_scm(ctx)
         if len(pos) >= 3:
             # Compare metadata of two specific version records
             v1_raw, v2_raw = pos[1], pos[2]
@@ -488,10 +489,7 @@ def _show_diff(ctx: ExecutionContext, args: dict) -> Any:
                 lines.append(f"  [bold]{ver:<6}[/bold]  {date:<24}  {admin:<30}  {desc}")
             return "\n".join(lines)
 
-    # Default: show diff with no args — redirect to show config (staged changes)
-    # and explain what each sub-command does.
-    # We can't access shell staged_ops from here (they live on the shell, not
-    # in ExecutionContext), so we redirect the operator to the right command.
+    # Default: show diff with no args — reference table (no SCM needed)
     return (
         "[bold]show diff[/bold] — config change overview\n\n"
         "  [cyan]show config[/cyan]                          Staged (uncommitted) changes in this session\n"
