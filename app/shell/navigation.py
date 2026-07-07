@@ -459,7 +459,8 @@ class NavigationMixin:
                 + (f"  [dim](id: {created_id})[/dim]" if created_id else "")
             )
         except Exception as exc:
-            console.print(f"[red]Failed to create folder:[/red] {exc}")
+            from app.shell.write_cmd import _explain_folder_error
+            _explain_folder_error(name, exc)
             return
 
         # Refresh folder cache so the new folder appears in completions immediately.

@@ -14,6 +14,7 @@
   "profile_groups": true,
   "_explicit_security": "Explicit: security",
   "delete_security": true,
+  "update_security": true,
   "_explicit_security_policy": "Explicit: security_policy",
   "show_security_policy": true,
   "_explicit_security_profiles": "Explicit: security_profiles",

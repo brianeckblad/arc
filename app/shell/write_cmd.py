@@ -4,6 +4,30 @@ from __future__ import annotations
 from app.shell._base import *  # noqa: F401,F403  (shared spine namespace)
 
 
+def _explain_folder_error(folder_name: str, exc: Exception) -> None:
+    """Print a clear, operator-friendly error for folder creation failures.
+
+    Detects duplicate-name (409 Conflict) and parent-not-found (404) errors
+    from SCM and surfaces them with actionable hints instead of raw JSON blobs.
+    """
+    msg = str(exc).lower()
+    # 409 Conflict / name already in use
+    if "409" in msg or "already exist" in msg or "duplicate" in msg or "conflict" in msg:
+        console.print(
+            f"[red]Folder '{folder_name}' already exists[/red] — "
+            "choose a different name or check with [bold]folder[/bold]."
+        )
+    # 404 Not Found — parent folder doesn't exist
+    elif "404" in msg or "not found" in msg or "parent" in msg:
+        console.print(
+            f"[red]Parent folder not found.[/red]  "
+            "Run [bold]folder[/bold] to list available folders and their hierarchy."
+        )
+    # Generic fallback — still better than raw JSON
+    else:
+        console.print(f"[red]Failed to create folder '{folder_name}':[/red] {exc}")
+
+
 class WriteMixin:
     def _cmd_set(self, args: list[str]) -> None:
         """Create or modify SCM configuration objects (configure mode only).
@@ -131,7 +155,7 @@ class WriteMixin:
                 )
                 self._refresh_folders(silent=True)
             except Exception as exc:
-                console.print(f"[red]Failed to create subfolder:[/red] {exc}")
+                _explain_folder_error(subfolder_name, exc)
             return
 
         # `set folder <name> parent <parent>` — explicit parent
@@ -148,7 +172,7 @@ class WriteMixin:
                 )
                 self._refresh_folders(silent=True)
             except Exception as exc:
-                console.print(f"[red]Failed to create folder:[/red] {exc}")
+                _explain_folder_error(folder_name, exc)
             return
 
         # `set folder <name>` — interactive parent selection

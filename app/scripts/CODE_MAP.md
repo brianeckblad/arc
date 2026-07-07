@@ -449,11 +449,11 @@ class ArcCompleter                       138-793        Context-aware tab comple
   ._all_commands()                       768-777        
   ._dev_gated_commands()                 779-793        Return command keys that are gated by a 'dev' feature flag.
 
-## `app/shell/navigation.py`  (718 lines)
+## `app/shell/navigation.py`  (719 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class NavigationMixin                    11-717         
+class NavigationMixin                    11-718         
   ._cache_stale()                        13-15          True when a navigation cache is old enough to warrant a re-fetch.
   ._cmd_cd()                             17-88          Change device or folder context (navigation only).
   ._cmd_cd_device()                      90-147         Switch the active SCM/API device context to *target*.
@@ -464,10 +464,10 @@ class NavigationMixin                    11-717
   ._cmd_pwd()                            219-263        Show current device context, active SCM folder, TSG, and SSH credentia
   ._switch_folder()                      265-293        Validate and apply a folder context change — called only by `cd folder
   ._cmd_folder()                         295-349        Manage SCM folders — list available folders or create a new one.
-  ._cmd_folder_create()                  351-471        Interactive folder creation: prompt for a parent, confirm, and POST to
-  ._reset_tenant_context()               473-487        Point shell state at *new_tsg* and rebuild the navigation caches.
-  ._cmd_tsg()                            489-589        Switch the active Tenant Services Group (TSG) context.
-  ._cmd_account()                        591-717        List or switch named credential profiles.
+  ._cmd_folder_create()                  351-472        Interactive folder creation: prompt for a parent, confirm, and POST to
+  ._reset_tenant_context()               474-488        Point shell state at *new_tsg* and rebuild the navigation caches.
+  ._cmd_tsg()                            490-590        Switch the active Tenant Services Group (TSG) context.
+  ._cmd_account()                        592-718        List or switch named credential profiles.
 
 ## `app/settings/command_structure.py`  (607 lines)
 
@@ -808,6 +808,18 @@ _diff_section()                          183-190
 build_changes_markdown()                 193-233        Render CHANGES.md from per-page pull results.
 update()                                 239-313        Pull every registered page and refresh mirrors.  Returns exit code.
 main()                                   319-331        
+
+## `app/commands/security.py`  (332 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+COMMANDS                                 34-53          command registry dict
+_EXTRA_COMMANDS                          56-138         command registry dict
+COMMANDS.update(…)                       140-140        merge additional commands into registry
+_update_security_rule()                  147-255        Update an existing security rule (GET→merge→PUT).
+_set_url_category()                      258-280        Create a custom URL category.
+_WRITE_COMMANDS                          283-327        command registry dict
+COMMANDS.update(…)                       329-329        merge additional commands into registry
 
 ## `app/scripts/test_sls.py`  (322 lines)
 

@@ -18,6 +18,7 @@ from app.commands.base import (
     require_scm,
     show_handler,
 )
+from app.commands.objects import _check_concurrent_modification
 
 
 # ---------------------------------------------------------------------------
@@ -143,6 +144,117 @@ COMMANDS.update(_EXTRA_COMMANDS)
 # Write handlers — security config (configure mode)
 # ---------------------------------------------------------------------------
 
+def _update_security_rule(ctx: ExecutionContext, args: dict) -> Any:
+    """Update an existing security rule (GET→merge→PUT).
+
+    Modifies one or more fields of a named security rule while preserving
+    all other fields. The same pattern as update address / update service.
+
+    Syntax:
+      update security-rule <name> action <allow|deny|drop|reset-client|reset-server|reset-both>
+      update security-rule <name> from <zone> [<zone2> ...]
+      update security-rule <name> to <zone> [<zone2> ...]
+      update security-rule <name> source <addr> [<addr2> ...]
+      update security-rule <name> destination <addr> [<addr2> ...]
+      update security-rule <name> application <app> [<app2> ...]
+      update security-rule <name> service <svc> [<svc2> ...]
+      update security-rule <name> description <text>
+      update security-rule <name> tag <name>
+      update security-rule <name> disabled true|false
+      update security-rule <name> profile-group <name>
+
+    Examples:
+      update security-rule Allow-Web action deny
+      update security-rule Allow-Web from trust untrust
+      update security-rule Allow-Web destination 10.1.0.0/24
+      update security-rule Allow-Web application ssl http
+      update security-rule Allow-Web description "Updated for Q3 audit"
+
+    pan.dev: PUT /config/security/v1/security-rules/{id}
+    """
+    scm = require_scm(ctx)
+    pos = args.get("_positional", [])
+    name = pos[0] if pos else (args.get("name") or "")
+    if not name or len(pos) < 2:
+        raise ValueError(
+            "Usage: update security-rule <name> <field> <value>\n"
+            "  Fields: action | from | to | source | destination | application "
+            "| service | description | tag | disabled | profile-group\n"
+            "  e.g. update security-rule Allow-Web action deny\n"
+            "       update security-rule Allow-Web from trust untrust"
+        )
+
+    # 1. GET current rule
+    items = scm.get_security_policy(folder=ctx.folder)
+    obj = scm.find_by_name(items, name)
+    if not obj:
+        raise ValueError(
+            f"Security rule '{name}' not found in folder '{ctx.folder}'.\n"
+            "  Run [bold]show security policy[/bold] to see available rules."
+        )
+    obj = dict(obj)  # shallow copy — prevent mutation of cached API response
+    rule_id = obj.pop("id")
+
+    # 2. Apply the requested field change
+    field = pos[1].lower()
+    values = pos[2:]  # remaining tokens are the new value(s)
+
+    _LIST_FIELDS = {"from", "to", "source", "destination", "application", "service", "tag"}
+    _VALID_ACTIONS = {
+        "allow", "deny", "drop",
+        "reset-client", "reset-server", "reset-both",
+    }
+
+    if field == "action":
+        action = values[0].lower() if values else ""
+        if action not in _VALID_ACTIONS:
+            raise ValueError(
+                f"Unknown action: {action!r}\n"
+                f"  Valid actions: {', '.join(sorted(_VALID_ACTIONS))}"
+            )
+        obj["action"] = action
+
+    elif field in _LIST_FIELDS:
+        if not values:
+            raise ValueError(
+                f"Provide at least one value for '{field}': "
+                f"update security-rule {name} {field} <value> [<value2> ...]"
+            )
+        # 'tag' is a list field but named 'tag' in the API (may be singular)
+        obj[field] = list(values)
+
+    elif field == "description":
+        obj["description"] = " ".join(values)
+
+    elif field == "disabled":
+        flag = (values[0].lower() if values else "true")
+        if flag not in ("true", "false", "yes", "no", "1", "0"):
+            raise ValueError(f"'disabled' expects true or false, got: {flag!r}")
+        obj["disabled"] = flag in ("true", "yes", "1")
+
+    elif field == "profile-group":
+        group = " ".join(values)
+        if not group:
+            raise ValueError(f"Provide a profile group name: update security-rule {name} profile-group <name>")
+        obj["profile_setting"] = {"group": [group]}
+
+    else:
+        raise ValueError(
+            f"Unknown field: {field!r}\n"
+            "  Valid fields: action | from | to | source | destination | application "
+            "| service | description | tag | disabled | profile-group"
+        )
+
+    # 3. PUT — re-fetch to detect concurrent modifications before overwriting.
+    fresh_items = scm.get_security_policy(folder=ctx.folder)
+    _check_concurrent_modification(obj, scm.find_by_name(fresh_items, name), name)
+    scm.update_security_rule(rule_id, obj)
+    return (
+        f"[green]✓[/green] Security rule [bold]{name}[/bold] updated "
+        f"([bold]{field}[/bold] = {' '.join(str(v) for v in values) or '(cleared)'})"
+    )
+
+
 def _set_url_category(ctx: ExecutionContext, args: dict) -> Any:
     """Create a custom URL category.
 
@@ -180,6 +292,16 @@ _WRITE_COMMANDS: dict[str, CommandDef] = {
         ssh_command=None,
         render="raw",
         feature_flag="delete_security",
+    ),
+    "update security-rule": CommandDef(
+        description="Update an existing security rule — update security-rule <name> <field> <value>",
+        category="security",
+        scope="folder",
+        api_handler=_update_security_rule,
+        ssh_command=None,
+        render="raw",
+        feature_flag="update_security",
+        usage="update security-rule <name> action|from|to|source|destination|application|service|description|tag|disabled <value>",
     ),
     "set url-category": CommandDef(
         description="Create a custom URL category — set url-category <name> type url-list list <url1>",
