@@ -243,6 +243,42 @@ class ArcCompleter(Completer):
                 )
             return
 
+        # ---- catalog → subcommand completion (dev mode only) ----
+        if first == "catalog" and has_arg_space:
+            if len(parts) <= 2 and "rebuild".startswith(partial_arg.lower()):
+                yield Completion("rebuild", start_position=-len(partial_arg),
+                                 display_meta="run all generators (no network)")
+            return
+
+        # ---- command-structure → subcommand completion (dev mode only) ----
+        if first == "command-structure" and has_arg_space:
+            second = parts[1].lower() if len(parts) > 1 else ""
+            if len(parts) <= 2:
+                for sub, meta in (("list", "show all enabled commands + tiers"),
+                                  ("update", "auto-generate help specs for missing commands"),
+                                  ("clear", "wipe auto-generated specs")):
+                    if sub.startswith(partial_arg.lower()):
+                        yield Completion(sub, start_position=-len(partial_arg), display_meta=meta)
+            elif second == "list" and len(parts) <= 3:
+                for opt in ("enabled", "disabled"):
+                    if opt.startswith(partial_arg.lower() if len(parts) > 2 else ""):
+                        p = parts[2] if len(parts) > 2 else ""
+                        yield Completion(opt, start_position=-len(p), display_meta="filter")
+            elif second == "update" and len(parts) <= 3:
+                # Complete command names for targeted update
+                from app.commands.registry import COMMANDS as _CMDS
+                from app.settings.features import is_enabled as _is_en
+                feats = getattr(self._shell, "_features", {})
+                dev_mode = getattr(self._shell, "_dev_mode", False)
+                p = parts[2] if len(parts) > 2 else ""
+                for key in sorted(_CMDS):
+                    cmd = _CMDS[key]
+                    if cmd.feature_flag and _is_en(feats, cmd.feature_flag, dev_mode):
+                        if key.startswith(p.lower()):
+                            yield Completion(key, start_position=-len(p),
+                                             display_meta=cmd.description[:50])
+            return
+
         # ---- feature → subcommand + flag name completion ----
         if first == "feature" and has_arg_space:
             second = parts[1].lower() if len(parts) > 1 else ""
@@ -459,19 +495,13 @@ class ArcCompleter(Completer):
     def _complete_dev_shell(self, parts: list[str], text: str):
         """Yield completions for dev shell commands.
 
-        Handles all dev-shell sub-commands: status, docs, catalog,
-        command-structure, exit, plus normal ARC commands that still work
-        from the dev shell.
+        Dev shell is normal mode + a few extra commands (status, catalog,
+        command-structure, docs sub-commands). Top-level names come from
+        _all_commands() (which includes the dev builtins via builtin-commands.json
+        when dev_mode=True).  Only the dev-command sub-trees need special handling
+        here; everything else falls through to _complete_normal.
         """
-        # Dev shell top-level commands
-        _DEV_TOP = {
-            "status":            "Health dashboard",
-            "docs":              "Manage pan.dev API documentation",
-            "catalog":           "Regenerate code artifacts",
-            "command-structure": "Manage contextual ? help specs",
-            "exit":              "Leave dev shell",
-        }
-        # Sub-command trees
+        # Sub-command trees for dev-shell-specific commands
         _DEV_SUBS = {
             "docs":              [("update", "Pull latest pan.dev specs + regenerate"),
                                   ("status", "Last pull date and spec ages")],
@@ -490,13 +520,10 @@ class ArcCompleter(Completer):
         partial = parts[-1] if not ends_with_space and len(parts) > 1 else ""
 
         if not parts or (len(parts) == 1 and not ends_with_space):
-            # Complete top-level dev commands
-            for name, meta in _DEV_TOP.items():
-                if name.startswith(first):
-                    yield Completion(name, start_position=-len(first), display_meta=meta)
-            # Also offer normal ARC commands (cd, show, feature, etc.)
+            # Top-level: all commands via normal pipeline (dev mode reveals
+            # status/catalog/command-structure/feature/etc. automatically).
             for name in sorted(self._all_commands(include_remote_suffix=False)):
-                if name.startswith(first) and name not in _DEV_TOP:
+                if name.startswith(first):
                     yield Completion(name, start_position=-len(first))
             return
 

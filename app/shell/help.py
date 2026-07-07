@@ -147,10 +147,6 @@ class HelpMixin:
 
         self._print_shell_builtins()
 
-        # In dev shell mode, append the dev-specific commands section.
-        if getattr(self._state, "dev_shell", False):
-            self._dev_shell_help()
-
         console.print()
         console.print(f"  {self._styled(_help_footer(), dd)}")
         console.print()

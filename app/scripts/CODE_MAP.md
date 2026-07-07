@@ -14,13 +14,13 @@
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
-## `app/shell/configure.py`  (2123 lines)
+## `app/shell/configure.py`  (2129 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _prefs_file_label()                      10-16          Repo-relative path of the preferences file, for display.
 capture_write_ops()                      19-49          Run a write handler against a recording client and capture its mutatio
-class ConfigureMixin                     52-2052        
+class ConfigureMixin                     52-2058        
   ._cmd_configure()                      53-74          Enter configure mode (Cisco-style).
   ._stage_write()                        76-103         Validate a configure-mode write and stage it locally (no SCM change).
   ._cmd_show_pending()                   105-126        List the locally staged configure-mode changes (`show config`).
@@ -44,30 +44,30 @@ class ConfigureMixin                     52-2052
   ._cmd_dev()                            1065-1103      Enter the dev shell (modal, like configure mode).
   ._dev_shell_enter()                    1105-1135      Enter the dev shell — enable dev mode and show the dev menu.
   ._dev_shell_exit()                     1137-1145      Leave the dev shell.
-  ._dispatch_dev_shell()                 1147-1220      Route dev-shell commands.
-  ._dev_inline_help()                    1222-1307      Show contextual help for a dev shell command or sub-command.
-  ._dev_shell_help()                     1309-1338      Print full dev shell command reference.
-  ._cs_tier_legend()                     1340-1376      Print the tier legend for command-structure list.
-  ._dev_status()                         1384-1479      Unified health dashboard for the dev shell.
-  ._dev_docs()                           1485-1496      Handle dev-shell 'docs' sub-commands.
-  ._dev_docs_update()                    1498-1538      Stream docsupdate.py to pull latest pan.dev specs and regenerate catal
-  ._dev_docs_status()                    1540-1588      Show doc/spec freshness with last pull date from MANIFEST.md.
-  ._dev_catalog()                        1594-1603      Handle dev-shell 'catalog' sub-commands.
-  ._dev_catalog_rebuild()                1605-1658      Run all generator scripts to rebuild code artifacts.
-  ._print_dev_status()                   1662-1676      Print current dev mode state (used by 'dev on/off' outside the shell).
-  ._cmd_setup()                          1679-1796      Interactive credential setup wizard.
-  ._cmd_arc()                            1802-1855      ARC application information and management.
-  ._arc_help()                           1857-1880      Print arc sub-command reference.
-  ._arc_row()                            1886-1892      Print one labelled row in the arc show style.
-  ._arc_show_version()                   1894-1917      arc show version — version, Python, platform.
-  ._arc_show_paths()                     1919-1932      arc show paths — app root, settings, config directories.
-  ._arc_show_scm()                       1934-1972      arc show scm — SCM API spec freshness and last change.
-  ._arc_show_commands()                  1974-2005      arc show commands — command counts and feature flag stats.
-  ._arc_show_settings()                  2007-2029      arc show settings — settings file inventory.
-  ._arc_show_session()                   2031-2048      arc show session — active profile, TSG, folder, device, modes.
-  ._arc_show()                           2050-2052      arc show (all) — kept for backward compat; calls _cmd_arc(['show']).
-_setup_bearer_instructions()             2059-2087      Print bearer-token setup commands for the detected OS.
-_setup_oauth_instructions()              2090-2122      Print OAuth client credential setup commands for the detected OS.
+  ._dispatch_dev_shell()                 1147-1226      Route dev-shell commands.
+  ._dev_inline_help()                    1228-1313      Show contextual help for a dev shell command or sub-command.
+  ._dev_shell_help()                     1315-1344      Print full dev shell command reference.
+  ._cs_tier_legend()                     1346-1382      Print the tier legend for command-structure list.
+  ._dev_status()                         1390-1485      Unified health dashboard for the dev shell.
+  ._dev_docs()                           1491-1502      Handle dev-shell 'docs' sub-commands.
+  ._dev_docs_update()                    1504-1544      Stream docsupdate.py to pull latest pan.dev specs and regenerate catal
+  ._dev_docs_status()                    1546-1594      Show doc/spec freshness with last pull date from MANIFEST.md.
+  ._dev_catalog()                        1600-1609      Handle dev-shell 'catalog' sub-commands.
+  ._dev_catalog_rebuild()                1611-1664      Run all generator scripts to rebuild code artifacts.
+  ._print_dev_status()                   1668-1682      Print current dev mode state (used by 'dev on/off' outside the shell).
+  ._cmd_setup()                          1685-1802      Interactive credential setup wizard.
+  ._cmd_arc()                            1808-1861      ARC application information and management.
+  ._arc_help()                           1863-1886      Print arc sub-command reference.
+  ._arc_row()                            1892-1898      Print one labelled row in the arc show style.
+  ._arc_show_version()                   1900-1923      arc show version — version, Python, platform.
+  ._arc_show_paths()                     1925-1938      arc show paths — app root, settings, config directories.
+  ._arc_show_scm()                       1940-1978      arc show scm — SCM API spec freshness and last change.
+  ._arc_show_commands()                  1980-2011      arc show commands — command counts and feature flag stats.
+  ._arc_show_settings()                  2013-2035      arc show settings — settings file inventory.
+  ._arc_show_session()                   2037-2054      arc show session — active profile, TSG, folder, device, modes.
+  ._arc_show()                           2056-2058      arc show (all) — kept for backward compat; calls _cmd_arc(['show']).
+_setup_bearer_instructions()             2065-2093      Print bearer-token setup commands for the detected OS.
+_setup_oauth_instructions()              2096-2128      Print OAuth client credential setup commands for the detected OS.
 
 ## `app/settings/field_catalog.py`  (1924 lines)
 
@@ -416,25 +416,25 @@ class DispatchMixin                      107-835
   ._show_command_not_found()             374-445        Show a helpful message when a command is not recognized.
   ._dispatch()                           447-835        Process one input line.  Returns True when the user wants to exit ARC.
 
-## `app/shell/completer.py`  (727 lines)
+## `app/shell/completer.py`  (754 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _parse_usage()                           26-62          Parse a usage string into (required_slots, optional_keywords).
 _usage_options()                         65-99          Return (token, display_meta) completions for the slot after *typed* ar
 _tokenize_partial()                      102-135        Split *text* for completion, honouring quotes, tracking the in-progres
-class ArcCompleter                       138-726        Context-aware tab completer.
+class ArcCompleter                       138-753        Context-aware tab completer.
   .__init__()                            147-148        
   ._command_visible()                    150-159        Return True when a registered command is visible in this shell mode.
   .get_completions()                     161-182        
-  ._complete_normal()                    184-457        Yield completions for non-dev-shell commands.
-  ._complete_dev_shell()                 459-532        Yield completions for dev shell commands.
-  ._match_complete_command()             534-549        Return the longest complete command key the user has fully entered.
-  ._complete_arguments()                 551-603        Yield completions for the argument region of a complete command.
-  ._object_names()                       628-667        Existing object names in the active folder, cached for a minute.
-  ._dynamic_name_options()               669-695        Live object names for name-completion slots.
-  ._arg_options()                        697-714        Resolve next-slot argument options: structure file first, usage fallba
-  ._all_commands()                       717-726        
+  ._complete_normal()                    184-493        Yield completions for non-dev-shell commands.
+  ._complete_dev_shell()                 495-559        Yield completions for dev shell commands.
+  ._match_complete_command()             561-576        Return the longest complete command key the user has fully entered.
+  ._complete_arguments()                 578-630        Yield completions for the argument region of a complete command.
+  ._object_names()                       655-694        Existing object names in the active folder, cached for a minute.
+  ._dynamic_name_options()               696-722        Live object names for name-completion slots.
+  ._arg_options()                        724-741        Resolve next-slot argument options: structure file first, usage fallba
+  ._all_commands()                       744-753        
 
 ## `app/shell/navigation.py`  (705 lines)
 
@@ -456,32 +456,6 @@ class NavigationMixin                    11-704
   ._cmd_tsg()                            476-576        Switch the active Tenant Services Group (TSG) context.
   ._cmd_account()                        578-704        List or switch named credential profiles.
 
-## `app/shell/help.py`  (608 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class HelpMixin                          8-607          
-  ._match_structured()                   9-25           Find the longest command key (with a structure spec) inside *prefix_to
-  ._print_context_help()                 27-44          Print Cisco-style context-sensitive help for a structured command.
-  ._render_context_help()                46-63          Render the next-option rows: ``  token   description`` (token column a
-  ._cmd_help_inline()                    65-156         Cisco-style compact inline help — one line per command, no panels.
-  ._cmd_help_docs()                      158-199        Show the full documentation page for a command or topic.
-  ._cmd_help_full()                      201-247        Print the full command reference regardless of context.
-  ._cmd_show_write_help()                249-272        Show available set/delete/update commands in configure mode.
-  ._print_shell_builtins()               274-287        Print the shell built-in commands section (shared by inline and full h
-  ._is_command_visible()                 289-299        Single source of truth: does this command appear in ``?`` for this ope
-  ._cmd_find()                           302-376        PAN-OS style command search: ``find command <text>``.
-  ._visible_command_keys()               378-389        Cached list of visible registry keys — the per-keystroke hot path.
-  ._invalidate_visible_keys()            391-392        
-  ._is_command_available()               394-410        _is_command_visible plus the current-context gates.
-  ._is_config_command()                  413-417        Return True when a command should appear in configure-mode `?` help.
-  ._root_verb_options()                  419-457        Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
-  ._collapsed_prefix_help_options()      459-514        Return collapsed next-token help options for a command prefix.
-  ._collapsed_tier_help_options()        516-551        Return collapsed bare-tier help options for one scope.
-  ._context_annotation()                 553-574        Return a short inline context note for commands whose output depends o
-  ._print_context_hint_for()             576-580        Print a one-line context note below an exact-match docs result.
-  ._print_inline_usage()                 582-607        Print the description + usage syntax for a complete command in `?` hel
-
 ## `app/settings/command_structure.py`  (607 lines)
 
 Symbol                                   Lines          Purpose
@@ -501,6 +475,32 @@ _walk()                                  439-525        Consume *tokens* against
 parse()                                  528-542        Parse *remainder* tokens into an args dict using the command structure
 help_options()                           545-574        Return Cisco-style ``?`` help rows for the next token after *typed*.
 completion_options()                     577-605        Return ``{text, display, meta}`` options for the next token after *typ
+
+## `app/shell/help.py`  (604 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+class HelpMixin                          8-603          
+  ._match_structured()                   9-25           Find the longest command key (with a structure spec) inside *prefix_to
+  ._print_context_help()                 27-44          Print Cisco-style context-sensitive help for a structured command.
+  ._render_context_help()                46-63          Render the next-option rows: ``  token   description`` (token column a
+  ._cmd_help_inline()                    65-152         Cisco-style compact inline help — one line per command, no panels.
+  ._cmd_help_docs()                      154-195        Show the full documentation page for a command or topic.
+  ._cmd_help_full()                      197-243        Print the full command reference regardless of context.
+  ._cmd_show_write_help()                245-268        Show available set/delete/update commands in configure mode.
+  ._print_shell_builtins()               270-283        Print the shell built-in commands section (shared by inline and full h
+  ._is_command_visible()                 285-295        Single source of truth: does this command appear in ``?`` for this ope
+  ._cmd_find()                           298-372        PAN-OS style command search: ``find command <text>``.
+  ._visible_command_keys()               374-385        Cached list of visible registry keys — the per-keystroke hot path.
+  ._invalidate_visible_keys()            387-388        
+  ._is_command_available()               390-406        _is_command_visible plus the current-context gates.
+  ._is_config_command()                  409-413        Return True when a command should appear in configure-mode `?` help.
+  ._root_verb_options()                  415-453        Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
+  ._collapsed_prefix_help_options()      455-510        Return collapsed next-token help options for a command prefix.
+  ._collapsed_tier_help_options()        512-547        Return collapsed bare-tier help options for one scope.
+  ._context_annotation()                 549-570        Return a short inline context note for commands whose output depends o
+  ._print_context_hint_for()             572-576        Print a one-line context note below an exact-match docs result.
+  ._print_inline_usage()                 578-603        Print the description + usage syntax for a complete command in `?` hel
 
 ## `app/config.py`  (580 lines)
 

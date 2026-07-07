@@ -1156,10 +1156,16 @@ class ConfigureMixin:
             return None
         cmd = tokens[0].lower()
 
-        # Inline ? on a dev sub-command → show that command's help
+        # Inline ? on a dev-shell-specific command → show that command's help.
+        # For all other commands (feature, show, cd, etc.) return None so the
+        # normal dispatch handles ? — that way feature ?, show ?, etc. work
+        # identically in dev shell mode and normal mode.
+        _DEV_SHELL_CMDS = {"status", "docs", "catalog", "command-structure"}
         if len(tokens) >= 2 and tokens[-1] == "?":
-            self._dev_inline_help(tokens[:-1])
-            return False
+            if cmd in _DEV_SHELL_CMDS:
+                self._dev_inline_help(tokens[:-1])
+                return False
+            return None  # let normal dispatch handle ? for non-dev commands
 
         if cmd in ("exit", "quit"):
             self._dev_shell_exit()

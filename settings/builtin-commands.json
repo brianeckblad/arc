@@ -45,6 +45,15 @@
     "onlogin": true,
     "startup_hint": "Application info  (arc show | arc ?)"
   },
+  "catalog": {
+    "visible": "dev",
+    "display": "catalog <subcommand>",
+    "help": "Regenerate code artifacts  (catalog rebuild)",
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
   "cd": {
     "visible": true,
     "display": "cd <device|folder>",
@@ -68,6 +77,15 @@
     "display": "cli <subcommand>",
     "help": "CLI theme operations  (show | color | reset)",
     "configure_only": true,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
+  "command-structure": {
+    "visible": "dev",
+    "display": "command-structure <subcommand>",
+    "help": "Manage contextual ? help specs  (list | update | clear)",
+    "configure_only": false,
     "hide_in_configure": false,
     "onlogin": false,
     "startup_hint": ""
@@ -193,6 +211,15 @@
     "visible": true,
     "display": "setup",
     "help": "Guided credential setup wizard  (auto-detects OS, two questions)",
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
+  "status": {
+    "visible": "dev",
+    "display": "status",
+    "help": "Dev health dashboard  (docs age, feature counts, help coverage, git)",
     "configure_only": false,
     "hide_in_configure": false,
     "onlogin": false,
