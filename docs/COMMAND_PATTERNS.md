@@ -185,8 +185,38 @@ COMMANDS: dict[str, CommandDef] = {
 
 ---
 
+## Adding a Shell Builtin
+
+Shell builtins are registered in `settings/builtin-commands.json`. Every entry must have all 7 fields:
+
+```json
+"mycommand": {
+  "visible": true,
+  "display": "mycommand <arg>",
+  "help": "One-line description shown in ? SHELL section",
+  "configure_only": false,
+  "hide_in_configure": false,
+  "onlogin": false,
+  "startup_hint": ""
+}
+```
+
+| Field | Values | Effect |
+|---|---|---|
+| `visible` | `true` / `"dev"` / `"hidden"` / `false` | `true`=always, `"dev"`=dev mode only, `"hidden"`=executable/not shown (dev reveals), `false`=never |
+| `configure_only` | `true` / `false` | Only show in configure-mode `?` |
+| `hide_in_configure` | `true` / `false` | Hide when already in configure mode (e.g. `configure` itself) |
+| `onlogin` | `true` / `false` | Include in startup banner |
+| `startup_hint` | string | Text shown on startup (requires `onlogin: true`) |
+
+Dispatch: add an `elif cmd == "mycommand":` branch in `app/shell/dispatch.py`. Tab completion: add a block in `app/shell/completer.py`.
+
+---
+
 **See also:**
 - `docs/RENDER_CATALOG.md` — available render= keys
 - `app/commands/base.py` — CommandDef field reference
 - `app/scripts/API_INDEX.md` — find endpoints for your resource
+- `settings/builtin-commands.json` — all builtin registrations
+- `settings/cli-structure.yaml` — verb group visibility (`visible:` field)
 

@@ -61,13 +61,19 @@ def _first_doc_line(node: ast.AST) -> str:
 
 
 def _map_one_file(path: Path) -> list[str]:
-    """Return markdown lines mapping one file's classes/methods/functions."""
+    """Return markdown lines mapping one file's classes/methods/functions/key dicts."""
     rel = path.relative_to(ROOT)
     src = path.read_text(encoding="utf-8")
     total = src.count("\n") + 1
     tree = ast.parse(src)
 
     rows: list[tuple[str, int, int, str]] = []  # (qualified_name, start, end, doc)
+
+    # Track module-level dicts/assignments agents commonly need to locate
+    # (COMMANDS, _WRITE_COMMANDS, _UPDATE_COMMANDS, _EXTRA_COMMANDS, etc.)
+    _DICT_PATTERNS = ("COMMANDS", "_WRITE_COMMANDS", "_UPDATE_COMMANDS",
+                      "_READ_COMMANDS", "_EXTRA_COMMANDS", "_FORMAT_SET_SPECS",
+                      "_DEFAULT_VERB_GROUPS")
 
     for node in tree.body:
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -80,6 +86,26 @@ def _map_one_file(path: Path) -> list[str]:
                 if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
                     mstart, mend = _node_span(child)
                     rows.append((f"  .{child.name}()", mstart, mend, _first_doc_line(child)))
+        elif isinstance(node, (ast.Assign, ast.AnnAssign)):
+            # Capture key module-level dict/constant assignments by name
+            targets = []
+            if isinstance(node, ast.Assign):
+                targets = [t for t in node.targets if isinstance(t, ast.Name)]
+            elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+                targets = [node.target]
+            for t in targets:
+                if t.id in _DICT_PATTERNS:
+                    start, end = _node_span(node)
+                    rows.append((f"{t.id}", start, end, "command registry dict"))
+        elif isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
+            # Capture COMMANDS.update(...) calls so agents know where dicts are merged
+            call = node.value
+            if (isinstance(call.func, ast.Attribute) and
+                    call.func.attr == "update" and
+                    isinstance(call.func.value, ast.Name) and
+                    call.func.value.id == "COMMANDS"):
+                start, end = _node_span(node)
+                rows.append(("COMMANDS.update(…)", start, end, "merge additional commands into registry"))
 
     out: list[str] = []
     out.append(f"## `{rel}`  ({total} lines)")

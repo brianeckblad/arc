@@ -277,6 +277,9 @@ class SCMClient                          51-1240        Strata Cloud Manager (SC
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
+COMMANDS                                 30-81          command registry dict
+_EXTRA_COMMANDS                          84-157         command registry dict
+COMMANDS.update(…)                       159-159        merge additional commands into registry
 _set_address()                           191-258        Create an address object in the active SCM folder.
 _delete_address()                        261-272        Delete an address object.  Usage: delete address <name>
 _set_address_group()                     275-339        Create a static or dynamic address group in the active folder.
@@ -284,12 +287,16 @@ _set_service()                           342-412        Create a TCP or UDP serv
 _set_service_group()                     415-461        Create a service group (named collection of service objects).
 _set_tag()                               464-515        Create a tag in the active folder.
 _set_external_dynamic_list()             518-597        Create an External Dynamic List (EDL) in the active folder.
+_WRITE_COMMANDS                          600-724        command registry dict
+COMMANDS.update(…)                       726-726        merge additional commands into registry
 _update_address()                        743-800        Update an existing address object (GET→merge→PUT).
 _update_address_group()                  803-858        Update an existing address group (GET→merge→PUT).
 _update_service()                        861-910        Update an existing service object (GET→merge→PUT).
 _update_service_group()                  913-953        Update a service group's member list.
 _update_tag()                            956-994        Update an existing tag (color, comments).
 _update_external_dynamic_list()          997-1053       Update an existing EDL (URL, description, or frequency).
+_UPDATE_COMMANDS                         1056-1111      command registry dict
+COMMANDS.update(…)                       1113-1113      merge additional commands into registry
 
 ## `app/commands/resource_catalog.py`  (1068 lines)
 
@@ -543,8 +550,11 @@ _show_log_detail()                       280-297        Show the FULL SLS record
 _ssh_jobs_id()                           304-305        
 _ssh_ping()                              308-311        
 _ssh_commit()                            314-316        
+COMMANDS                                 323-443        command registry dict
 _request_system_reboot()                 450-462        Request a system reboot — use --remote.  Requires active device contex
 _request_system_shutdown()               465-474        Request a system shutdown — use --remote.  Requires active device cont
+_EXTRA_COMMANDS                          477-498        command registry dict
+COMMANDS.update(…)                       500-500        merge additional commands into registry
 
 ## `app/scripts/generate_feature_flags.py`  (478 lines)
 
@@ -584,6 +594,7 @@ _service_tokens()                        124-136        protocol.tcp/udp {port, 
 _service_group_tokens()                  139-144        members list → `members svc1 svc2 …`.
 _tag_tokens()                            147-149        Tags carry no positional value — color/comments are keyword fields.
 _edl_tokens()                            152-167        type.{ip|domain|url|imsi|imei} {url, recurring} → `type <t> url <u> [f
+_FORMAT_SET_SPECS                        180-217        command registry dict
 _resolve_resource()                      229-238        Map a user-typed resource word onto a spec-table key (or raise usage).
 format_set_lines()                       241-264        Render *objects* of *resource* as replayable `set <resource> …` lines.
 _defined_in_folder()                     267-276        True when the object is defined in *folder* itself.
@@ -592,6 +603,7 @@ _show_config_format_set()                297-312        Dump the active folder's
 _show_config_running()                   315-335        Show the running config version — or one resource as set commands.
 _show_config_versions()                  338-359        List SCM config versions, or show one version's full record.
 _load_config_version()                   362-411        Rollback: load a config version as the tenant's candidate config.
+COMMANDS                                 420-461        command registry dict
 
 ## `app/scripts/generate_field_library.py`  (461 lines)
 
@@ -645,6 +657,7 @@ _show_interface_all()                    30-52          List all interfaces (eth
 _show_interface()                        55-81          Show a specific interface by name.
 _show_ha_state()                         84-93          Show HA state summary — first HA entry as a key/value panel.
 _ssh_interface()                         100-102        
+COMMANDS                                 109-173        command registry dict
 _show_arp()                              180-184        Live ARP table from device — use --remote.  Not stored in SCM.
 _show_sessions()                         187-191        Live session table from device — use --remote.  Not stored in SCM.
 _show_vpn_tunnel()                       194-199        Live VPN tunnel state — use --remote.  Tunnel config is in SCM; live s
@@ -656,6 +669,8 @@ _test_nat_policy_match()                 233-241        Test NAT policy match �
 _ssh_test_nat()                          244-252        
 _test_url()                              255-262        Test URL categorization — use --remote.  PAN-OS: test url <url>
 _ssh_test_url()                          265-267        
+_EXTRA_COMMANDS                          274-420        command registry dict
+COMMANDS.update(…)                       422-422        merge additional commands into registry
 
 ## `app/api/sls.py`  (381 lines)
 
@@ -750,6 +765,7 @@ _show_device_snippets()                  87-138         Show snippets attached t
 _show_snippets()                         141-210        List snippets scoped to the current context.
 _show_snippets_global()                  213-225        List ALL snippets regardless of device or folder context.
 _show_snippet_detail()                   228-267        Show detail for a named snippet.
+COMMANDS                                 274-332        command registry dict
 
 ## `app/scripts/test_sls.py`  (322 lines)
 
