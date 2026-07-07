@@ -1,33 +1,38 @@
-PROPRIETARY SOURCE-AVAILABLE INTERNAL USE LICENSE
+PROPRIETARY, CONFIDENTIAL, AND TRADE-SECRET SOFTWARE
+INTERNAL USE ONLY — EMPLOYEES ONLY
 Version 1.0
 
-Copyright © 2026 Brian Eckblad. All Rights Reserved.
+Copyright © 2026 Viasat, Inc. All Rights Reserved.
 
-This software is proprietary source-available software. It is not open source, free software, public domain software, shareware, or freeware.
+CONFIDENTIAL AND PROPRIETARY. This software constitutes the confidential information and trade secrets of Viasat, Inc. It is not open source, free software, public domain software, shareware, or freeware. Access is restricted to authorized employees of the Company on a need-to-know basis. Unauthorized access, use, copying, disclosure, or distribution is strictly prohibited and may violate copyright, trade-secret, and other laws.
 
 No rights are granted except those expressly stated in this License or granted separately in writing by the Licensor.
 
 1. Definitions
 
-“Author” means the individual named in the copyright notice above.
+“Company” means Viasat, Inc., together with its lawful successors and assigns.
 
-“Licensor” means the Author, as the original author and copyright holder of the Software, and any lawful successor, assignee, estate, trustee, executor, administrator, beneficiary, heir, legal representative, or other party legally authorized to control the Software.
+“Licensor” means the Company, as the owner and copyright holder of the Software, and any lawful successor, assignee, or other party legally authorized to control the Software.
 
-“Software” means this software project and all related source code, scripts, modules, libraries, APIs, SDKs, schemas, configuration files, documentation, examples, workflows, conversion logic, migration logic, policy models, object models, interfaces, command-line tools, build files, test files, and other associated materials authored or owned by the Licensor. The Software does not include Third-Party Materials, which remain governed by their own respective licenses.
+“Software” means this software project and all related source code, scripts, modules, libraries, APIs, SDKs, schemas, configuration files, documentation, examples, workflows, conversion logic, migration logic, policy models, object models, interfaces, command-line tools, build files, test files, and other associated materials owned by the Licensor. The Software does not include Third-Party Materials, which remain governed by their own respective licenses.
 
-“Authorized Entity” means any individual, team, company, organization, or legal entity that has received written permission from the Licensor to use the Software.
+“Employee” means a natural person who is directly and currently employed by the Company as a common-law employee. “Employee” expressly excludes independent contractors, consultants, temporary or agency workers, secondees, interns, vendors, suppliers, partners, agents, and any personnel of any affiliate, subsidiary, parent, customer, or other organization, unless such person is separately and expressly authorized in writing by the Licensor.
 
-“Internal Use” means use solely for an Authorized Entity’s own internal technical operations, including firewall configuration, firewall migration, firewall automation, source-of-truth management, policy management, SCM programming, Palo Alto Networks integration, network security administration, and related internal infrastructure work.
+“Authorized Entity” means the Company and, solely to the extent expressly authorized by this License, its Employees.
+
+“Internal Use” means use by Employees, solely for the Company’s own internal technical operations, including firewall configuration, firewall migration, firewall automation, source-of-truth management, policy management, SCM programming, Palo Alto Networks integration, network security administration, and related internal infrastructure work. Internal Use does not include any use for, on behalf of, or for the benefit of any person or organization other than the Company.
 
 “Restricted Provider” means any person or organization that provides, sells, licenses, develops, supports, manages, consults on, integrates, migrates, automates, commercializes, or provides services related to firewalls, network security, managed security, managed networking, security operations, firewall policy management, firewall migration, firewall automation, or substantially similar products or services.
 
-“You” and “Your” mean any individual, entity, or organization that accesses, receives, possesses, downloads, uses, copies, modifies, executes, or otherwise interacts with the Software in any form, including any Authorized Entity and its employees, contractors, and agents. The obligations and restrictions imposed on You apply regardless of whether You are an Authorized Entity.
+“You” and “Your” mean any individual, entity, or organization that accesses, receives, possesses, downloads, uses, copies, modifies, executes, or otherwise interacts with the Software in any form, including the Company and its Employees. The obligations and restrictions imposed on You apply regardless of whether You are an Authorized Entity or Employee.
 
 “Third-Party Materials” means any software, libraries, components, packages, dependencies, or other materials that are included in, depended upon by, linked to, or distributed alongside the Software but are owned by parties other than the Licensor and licensed under their own separate license terms.
 
 2. Limited Internal Use Permission
 
-The Software is licensed, not sold. Subject to this License, the Licensor grants each Authorized Entity a limited, revocable, non-exclusive, non-transferable permission to use, copy, and modify the Software solely for Internal Use.
+The Software is licensed, not sold. Subject to this License, the Licensor grants the Company a limited, revocable, non-exclusive, non-transferable permission to use, copy, and modify the Software solely for Internal Use, and only through its Employees acting within the scope of their employment and on a need-to-know basis.
+
+No permission is granted to any independent contractor, consultant, temporary worker, vendor, agent, affiliate, subsidiary, parent company, customer, or other third party, and no such person or entity may access or use the Software unless separately and expressly authorized in writing by the Licensor.
 
 This permission does not include any right to distribute, sublicense, sell, host, provide, transfer, publish, repackage, or make the Software available to any third party.
 
@@ -85,15 +90,13 @@ You may not copy, adapt, translate, incorporate, extract, or create derivative w
 
 You may not use the Software, or any portion of the Software, to build, improve, support, or operate a competing or substantially similar product, service, library, migration platform, orchestration engine, automation system, source-of-truth system, firewall automation tool, network security automation product, or hosted platform without prior written permission from the Licensor.
 
-11. Company or Organization Use
+11. Affiliates and Other Entities
 
-If a company or organization is an Authorized Entity, that authorization grants only a limited, non-exclusive, non-transferable, revocable right of Internal Use.
+Authorization under this License extends only to the Company (Viasat, Inc.) and its Employees. It does not extend to any affiliate, subsidiary, parent company, joint venture, or other related or separate legal entity, or to their respective personnel, even if under common ownership or control with the Company.
 
-The company or organization does not receive ownership of the Software.
+No such entity may access, use, receive, retain, host, modify, or obtain a copy of the Software unless separately and expressly authorized in writing by the Licensor.
 
-The company or organization may not transfer the Software to another entity, including affiliates, subsidiaries, parent companies, contractors, vendors, customers, clients, partners, or managed-service customers, unless expressly authorized in writing by the Licensor.
-
-The company or organization may not continue using, retaining, distributing, hosting, or modifying the Software outside the scope of written authorization from the Licensor.
+The Software may not be transferred, disclosed, or made available to any affiliate, subsidiary, parent company, contractor, vendor, customer, client, partner, or other organization, except as expressly authorized in writing by the Licensor.
 
 12. Contributions
 
@@ -211,15 +214,15 @@ A waiver must be written and signed by the Licensor.
 
 You may not assign, transfer, delegate, sublicense, or otherwise convey any rights or obligations under this License without prior written permission from the Licensor.
 
-The Licensor may assign, transfer, delegate, sublicense, sell, convey, inherit, bequeath, or otherwise transfer rights in the Software to any successor, assignee, estate, trust, beneficiary, heir, legal representative, company, or other party.
+The Licensor may assign, transfer, delegate, sublicense, sell, or otherwise convey its rights in the Software to any successor, assignee, acquirer, affiliate, or other party, in whole or in part, at its sole discretion.
 
 28. Governing Law and Venue
 
 This License shall be governed by and construed in accordance with the laws of the United States of America and the State of [INSERT U.S. STATE], without regard to its conflict-of-law rules. Matters of copyright, patent, and other federal intellectual property rights shall be governed by applicable United States federal law.
 
-If no state is designated above, this License shall be governed by the laws of the State in which the Licensor maintains a primary residence or principal place of business, together with applicable United States federal law, without regard to conflict-of-law rules.
+If no state is designated above, this License shall be governed by the laws of the State in which the Company maintains its principal place of business, together with applicable United States federal law, without regard to conflict-of-law rules.
 
-The state and federal courts located in the Licensor’s designated jurisdiction shall have exclusive jurisdiction and venue over any dispute arising from or relating to this License, and You consent to the personal jurisdiction of those courts.
+The state and federal courts located in the Company’s designated jurisdiction shall have exclusive jurisdiction and venue over any dispute arising from or relating to this License, and You consent to the personal jurisdiction of those courts.
 
 To the maximum extent permitted by law, each party waives any right to a trial by jury in any proceeding arising from or relating to this License.
 
@@ -257,7 +260,9 @@ Every copy of the Software, and every permitted modified version, that You make 
 
 34. Personnel and Need-to-Know Access
 
-Access to the Software within an Authorized Entity must be limited to those employees and individual contractors who require access for authorized Internal Use and who are bound by written obligations of confidentiality and use at least as protective of the Software as this License.
+Access to the Software must be limited to Employees who require access for authorized Internal Use, on a need-to-know basis, and who are bound by written obligations of confidentiality and invention assignment at least as protective of the Software as this License.
+
+Independent contractors, consultants, temporary or agency workers, vendors, agents, and personnel of any affiliate, subsidiary, parent, customer, or other organization may not access or use the Software unless separately and expressly authorized in writing by the Licensor.
 
 You are fully responsible and liable for any act or omission relating to the Software by any person, entity, or system to whom You provide, expose, or make the Software available, as if such act or omission were Your own.
 
@@ -275,11 +280,11 @@ Upon reasonable written notice, the Licensor may require You to certify in writi
 
 The Licensor, or an independent representative bound by confidentiality, may audit or inspect Your use of the Software to verify compliance with this License and to confirm the deletion or return of copies following termination or revocation. You must reasonably cooperate with any such audit.
 
-37. Change of Control and No Transfer by Operation of Law
+37. No Transfer; Personal to the Company and Its Employees
 
-Any authorization granted to an Authorized Entity is personal to that Authorized Entity and may not be assigned, transferred, delegated, or conveyed, in whole or in part, by agreement, merger, acquisition, reorganization, sale of assets, change of control, operation of law, or otherwise, without the Licensor’s prior written permission. Any attempted transfer in violation of this Section is void and of no effect.
+The permissions granted under this License are personal to the Company and its authorized Employees and may not be assigned, transferred, delegated, sublicensed, or conveyed to any third party, in whole or in part, by agreement, merger, acquisition, reorganization, sale of assets, spin-off, divestiture, change of control, operation of law, or otherwise, except to a successor to all or substantially all of the Company’s business that expressly assumes this License and the ownership of the Software in writing. Any attempted transfer in violation of this Section is void and of no effect.
 
-Unless the Licensor consents in writing, all rights and permissions granted to an Authorized Entity terminate automatically upon (a) a change of control of the Authorized Entity, (b) a merger, acquisition, or reorganization in which the Authorized Entity is not the surviving controlling party, or (c) the Authorized Entity’s insolvency, bankruptcy, dissolution, assignment for the benefit of creditors, or the appointment of a receiver, trustee, or similar officer.
+An Employee’s authorization to access and use the Software is personal to that Employee, is limited to the period of the Employee’s employment with the Company, and terminates automatically upon the Employee’s separation from the Company, change of role, or ceasing to have a need-to-know. Upon such termination, the Employee must cease all use of the Software and must not retain, copy, or remove any portion of the Software.
 
 38. Notices
 
@@ -317,6 +322,6 @@ Except to the extent this restriction is prohibited by applicable law, You may n
 
 43. Survival
 
-All provisions concerning ownership, restrictions, confidentiality, access control, notices and marking, personnel and need-to-know access, security incident notification, audit and verification, change of control and no transfer, copyright and unauthorized use, anti-circumvention, no reverse engineering, contributions, no commercial services, no third-party use, no Restricted Provider use, no SaaS use, no derivative or competing use, no redistribution, no implied rights, third-party materials, warranty disclaimers, limitation of liability, indemnification, equitable relief and remedies, governing law, enforcement, and remedies survive termination, revocation, deletion, separation, death, incapacity, assignment, or expiration of any authorization.
+All provisions concerning ownership, restrictions, confidentiality, access control, notices and marking, personnel and need-to-know access, security incident notification, audit and verification, no transfer, copyright and unauthorized use, anti-circumvention, no reverse engineering, contributions, no commercial services, no third-party use, no Restricted Provider use, no SaaS use, no derivative or competing use, no redistribution, no implied rights, third-party materials, warranty disclaimers, limitation of liability, indemnification, equitable relief and remedies, governing law, enforcement, and remedies survive termination, revocation, deletion, separation, dissolution, assignment, or expiration of any authorization.
 
 END OF LICENSE
