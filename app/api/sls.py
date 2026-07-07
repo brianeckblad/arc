@@ -328,8 +328,13 @@ class SLSClient:
             pass  # cancel is a courtesy on timeout — never mask the real error
 
     def wait(self, job_id: str, *, timeout_s: float = 60.0, interval_s: float = 1.0) -> dict:
-        """Poll until the job reaches a terminal state; return the final record."""
+        """Poll until the job reaches a terminal state; return the final record.
+
+        Uses exponential backoff (capped at 10s) so long-running queries
+        don't hammer the API with a request every second for a full minute.
+        """
         deadline = time.monotonic() + timeout_s
+        current_interval = interval_s
         while True:
             job = self.query_poll(job_id)
             state = str(job.get("state", "")).upper()
@@ -349,7 +354,9 @@ class SLSClient:
                     f"(last state: {state or 'unknown'}). Narrow the time window "
                     "('last 15m') or add filters (src/dst/app) and retry."
                 )
-            time.sleep(interval_s)
+            time.sleep(current_interval)
+            # Exponential backoff: double each poll, cap at 10s.
+            current_interval = min(current_interval * 2, 10.0)
 
     # -- High-level entry point ------------------------------------------------
 

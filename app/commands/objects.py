@@ -7,6 +7,7 @@ See docs/commands/ and docs/scm-api/specs/ngfw-objects.yaml for full API referen
 
 from __future__ import annotations
 
+import re as _re
 from typing import Any
 
 from app.commands.base import (
@@ -18,6 +19,73 @@ from app.commands.base import (
     require_scm,
     show_handler,
 )
+
+
+def _show_address_search(ctx: ExecutionContext, args: dict) -> Any:
+    """Filter address objects by name pattern, tag, or description.
+
+    Usage:
+      show address search <pattern>   — case-insensitive name/description substring match
+      show address tag <name>         — filter by tag name
+
+    Examples:
+      show address search web          → all addresses with 'web' in the name
+      show address tag Production      → all addresses tagged 'Production'
+    """
+    scm = require_scm(ctx)
+    pos = args.get("_positional", [])
+    mode = pos[0].lower() if pos else ""
+    query = pos[1] if len(pos) > 1 else ""
+
+    items = scm.get_addresses(folder=ctx.folder)
+
+    if mode == "tag" and query:
+        filtered = [a for a in items if isinstance(a, dict) and query.lower() in
+                    [t.lower() for t in (a.get("tag") or [])]]
+        if not filtered:
+            return f"No addresses tagged '{query}' in folder '{ctx.folder}'."
+        return filtered
+
+    if mode == "search" and query:
+        pat = query.lower()
+        filtered = [a for a in items if isinstance(a, dict) and (
+            pat in (a.get("name") or "").lower()
+            or pat in (a.get("description") or "").lower()
+            or pat in (a.get("ip-netmask") or a.get("ip_netmask") or a.get("ip-range") or a.get("fqdn") or "").lower()
+        )]
+        if not filtered:
+            return f"No addresses matching '{query}' in folder '{ctx.folder}'."
+        return filtered
+
+    raise ValueError(
+        "Usage:\n"
+        "  show address search <pattern>   — filter by name/description/value\n"
+        "  show address tag <name>         — filter by tag"
+    )
+
+
+def _show_service_search(ctx: ExecutionContext, args: dict) -> Any:
+    """Filter service objects by name pattern.
+
+    Usage: show service search <pattern>
+    """
+    scm = require_scm(ctx)
+    pos = args.get("_positional", [])
+    mode = pos[0].lower() if pos else ""
+    query = pos[1] if len(pos) > 1 else ""
+
+    if mode != "search" or not query:
+        raise ValueError("Usage: show service search <pattern>")
+
+    items = scm.get_services(folder=ctx.folder)
+    pat = query.lower()
+    filtered = [s for s in items if isinstance(s, dict) and (
+        pat in (s.get("name") or "").lower()
+        or pat in (s.get("description") or "").lower()
+    )]
+    if not filtered:
+        return f"No services matching '{query}' in folder '{ctx.folder}'."
+    return filtered
 
 
 # ---------------------------------------------------------------------------
@@ -38,6 +106,26 @@ COMMANDS: dict[str, CommandDef] = {
         feature_flag="show_address",
         usage="show address [<name>]",
     ),
+    "show address search": CommandDef(
+        description="Filter address objects by name, description, or value",
+        category="objects",
+        scope="folder",
+        api_handler=_show_address_search,
+        ssh_command=None,
+        render="address_objects",
+        feature_flag="show_address",
+        usage="show address search <pattern>",
+    ),
+    "show address tag": CommandDef(
+        description="Show address objects with a specific tag",
+        category="objects",
+        scope="folder",
+        api_handler=_show_address_search,
+        ssh_command=None,
+        render="address_objects",
+        feature_flag="show_address",
+        usage="show address tag <tag-name>",
+    ),
     "show address-group": CommandDef(
         description="Show address groups in the active folder",
         category="objects",
@@ -57,6 +145,16 @@ COMMANDS: dict[str, CommandDef] = {
         render="services",
         feature_flag="show_service",
         usage="show service [<name>]",
+    ),
+    "show service search": CommandDef(
+        description="Filter service objects by name or description",
+        category="objects",
+        scope="folder",
+        api_handler=_show_service_search,
+        ssh_command=None,
+        render="services",
+        feature_flag="show_service",
+        usage="show service search <pattern>",
     ),
     "show tag": CommandDef(
         description="Show tags in the active folder",
@@ -777,6 +875,7 @@ def _update_address(ctx: ExecutionContext, args: dict) -> Any:
     obj = scm._find_by_name(items, name)
     if not obj:
         raise ValueError(f"Address '{name}' not found in folder '{ctx.folder}'.  Run 'show address' to see available addresses.")
+    obj = dict(obj)  # shallow copy so mutations do not corrupt the cached API response on retry
     obj_id = obj.pop("id")
 
     # 2. Apply address-type change if specified
@@ -827,6 +926,7 @@ def _update_address_group(ctx: ExecutionContext, args: dict) -> Any:
     obj = scm._find_by_name(items, name)
     if not obj:
         raise ValueError(f"Address group '{name}' not found in folder '{ctx.folder}'.")
+    obj = dict(obj)  # shallow copy so mutations do not corrupt the cached API response on retry
     obj_id = obj.pop("id")
 
     mode = pos[1].lower() if len(pos) > 1 else ""
@@ -883,6 +983,7 @@ def _update_service(ctx: ExecutionContext, args: dict) -> Any:
     obj = scm._find_by_name(items, name)
     if not obj:
         raise ValueError(f"Service '{name}' not found in folder '{ctx.folder}'.")
+    obj = dict(obj)  # shallow copy so mutations do not corrupt the cached API response on retry
     obj_id = obj.pop("id")
 
     proto = pos[1].lower() if len(pos) > 1 else ""
@@ -932,6 +1033,7 @@ def _update_service_group(ctx: ExecutionContext, args: dict) -> Any:
     obj = scm._find_by_name(items, name)
     if not obj:
         raise ValueError(f"Service group '{name}' not found in folder '{ctx.folder}'.")
+    obj = dict(obj)  # shallow copy so mutations do not corrupt the cached API response on retry
     obj_id = obj.pop("id")
 
     pos_lower = [p.lower() for p in pos]
@@ -977,6 +1079,7 @@ def _update_tag(ctx: ExecutionContext, args: dict) -> Any:
     obj = scm._find_by_name(items, name)
     if not obj:
         raise ValueError(f"Tag '{name}' not found in folder '{ctx.folder}'.")
+    obj = dict(obj)  # shallow copy so mutations do not corrupt the cached API response on retry
     obj_id = obj.pop("id")
 
     kv = parse_kv_tail(pos, 1)
@@ -1019,6 +1122,7 @@ def _update_external_dynamic_list(ctx: ExecutionContext, args: dict) -> Any:
     obj = scm._find_by_name(items, name)
     if not obj:
         raise ValueError(f"EDL '{name}' not found in folder '{ctx.folder}'.")
+    obj = dict(obj)  # shallow copy so mutations do not corrupt the cached API response on retry
     obj_id = obj.pop("id")
 
     pos_lower = [p.lower() for p in pos]

@@ -12,6 +12,7 @@ PAN-OS CLI hierarchy: https://docs.paloaltonetworks.com/ngfw/pan-os-cli-quick-st
 
 from __future__ import annotations
 
+import shlex
 from typing import Any
 
 from app.commands.base import (
@@ -99,7 +100,7 @@ def _show_ha_state(ctx: ExecutionContext, args: dict) -> Any:
 
 def _ssh_interface(args: dict) -> str:
     name = args.get("name", "")
-    return f"show interface {name}" if name else "show interface all"
+    return f"show interface {shlex.quote(name)}" if name else "show interface all"
 
 
 # ---------------------------------------------------------------------------
@@ -226,7 +227,7 @@ def _show_traceroute(ctx: ExecutionContext, args: dict) -> Any:
 
 
 def _ssh_traceroute(args: dict) -> str:
-    host = args.get("host", "8.8.8.8")
+    host = shlex.quote(args.get("host", "8.8.8.8"))
     return f"traceroute host {host}"
 
 
@@ -242,12 +243,12 @@ def _test_nat_policy_match(ctx: ExecutionContext, args: dict) -> Any:
 
 
 def _ssh_test_nat(args: dict) -> str:
-    src   = args.get("source", "")
-    dst   = args.get("destination", "")
-    dport = args.get("destination-port", "")
-    proto = args.get("protocol", "6")
+    src   = shlex.quote(args.get("source", ""))
+    dst   = shlex.quote(args.get("destination", ""))
+    dport = shlex.quote(args.get("destination-port", ""))
+    proto = shlex.quote(args.get("protocol", "6"))
     cmd   = f"test nat-policy-match source {src} destination {dst} protocol {proto}"
-    if dport:
+    if dport and dport != "''":
         cmd += f" destination-port {dport}"
     return cmd
 
@@ -263,8 +264,8 @@ def _test_url(ctx: ExecutionContext, args: dict) -> Any:
 
 
 def _ssh_test_url(args: dict) -> str:
-    url = args.get("_positional", ["https://example.com"])[0] if args.get("_positional") else "https://example.com"
-    return f"test url {url}"
+    raw_url = args.get("_positional", ["https://example.com"])[0] if args.get("_positional") else "https://example.com"
+    return f"test url {shlex.quote(raw_url)}"
 
 
 # ---------------------------------------------------------------------------

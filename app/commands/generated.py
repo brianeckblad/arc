@@ -25,11 +25,19 @@ from app.commands.base import CommandDef, ExecutionContext, require_scm
 try:
     from app.commands.resource_catalog import CATALOG
 except ImportError:
+    logger.warning(
+        "app/commands/resource_catalog.py not found — auto-generated commands are unavailable. "
+        "Run: python app/scripts/generate_resource_catalog.py  (or 'catalog rebuild' in the dev shell)"
+    )
     CATALOG = []
 
 try:
     from app.settings.field_catalog import FIELD_CATALOG
 except ImportError:
+    logger.warning(
+        "app/settings/field_catalog.py not found — field validation is unavailable. "
+        "Run: python app/scripts/generate_field_library.py  (or 'catalog rebuild' in the dev shell)"
+    )
     FIELD_CATALOG = {}
 
 logger = logging.getLogger(__name__)
@@ -54,8 +62,13 @@ def _validate_constraints(command: str, cli_name: str, text: str, meta: dict) ->
         try:
             matched = re.search(pattern, text) is not None
         except re.error as exc:
-            logger.debug("%s: skipping invalid spec pattern for %s (%s): %r",
-                         command, cli_name, exc, pattern)
+            # The spec has a malformed regex — warn loudly so it gets fixed,
+            # but do NOT silently accept input (that would be a security bypass).
+            logger.warning(
+                "%s: OpenAPI spec has invalid regex for field %s (%s): %r — "
+                "validation skipped; any value is accepted until the spec is corrected.",
+                command, cli_name, exc, pattern,
+            )
             return
         if not matched:
             # Escape the regex so its [character classes] survive Rich markup.

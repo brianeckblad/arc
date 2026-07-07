@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shlex
 import threading
 from datetime import datetime, timezone
 from typing import Any
@@ -311,18 +312,20 @@ def _show_log_detail(ctx: ExecutionContext, args: dict) -> Any:
 # ---------------------------------------------------------------------------
 
 def _ssh_jobs_id(args: dict) -> str:
-    return f"show jobs id {args.get('id', '')}"
+    job_id = shlex.quote(str(args.get("id", "")))
+    return f"show jobs id {job_id}"
 
 
 def _ssh_ping(args: dict) -> str:
-    host  = args.get("host", "")
-    count = args.get("count", "5")
+    host  = shlex.quote(args.get("host", ""))
+    count = shlex.quote(str(args.get("count", "5")))
     return f"ping host {host} count {count}"
 
 
 def _ssh_commit(args: dict) -> str:
     desc = args.get("description", "")
-    return f'commit description "{desc}"' if desc else "commit"
+    # Quote the description to prevent injection via special characters.
+    return f"commit description {shlex.quote(desc)}" if desc else "commit"
 
 
 # ---------------------------------------------------------------------------

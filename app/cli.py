@@ -642,6 +642,27 @@ def auth_test(
 
     client.close()
 
+    # ── SLS (Strata Logging Service) region info ──────────────────────────────
+    import os as _os
+    sls_region = _os.environ.get("ARC_SLS_REGION", "us")
+    console.print(f"\n[bold cyan]6. SLS (Strata Logging Service)[/bold cyan]")
+    console.print(
+        f"  Region: [bold]{sls_region}[/bold]"
+        + (" [dim](default)[/dim]" if sls_region == "us" else "")
+    )
+    if sls_region == "us":
+        console.print(
+            "  [dim]If your tenant is in a different region, set:\n"
+            "    export ARC_SLS_REGION=nl    # Netherlands\n"
+            "    export ARC_SLS_REGION=uk    # United Kingdom\n"
+            "    export ARC_SLS_REGION=de    # Germany\n"
+            "    export ARC_SLS_REGION=sg    # Singapore\n"
+            "    export ARC_SLS_REGION=au    # Australia\n"
+            "  Wrong region → 404 on 'show log' commands.[/dim]"
+        )
+    else:
+        console.print(f"  [green]✓[/green] Custom region configured via ARC_SLS_REGION")
+
     # ── Summary ──────────────────────────────────────────────────────────────
     console.print()
     if not any_ok:

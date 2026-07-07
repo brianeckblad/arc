@@ -803,19 +803,23 @@ class SCMClient:
         return self._delete_network(f"/nat-rules/{rule_id}")
 
     # Helper: find an object by name in a list response, return its id
-    def _find_id_by_name(self, items: list[dict], name: str) -> Optional[str]:
+    def find_id_by_name(self, items: list[dict], name: str) -> Optional[str]:
         """Return the id of the first item whose 'name' field matches *name*.  None if not found."""
         for item in items:
             if item.get("name", "").lower() == name.lower():
                 return item.get("id")
         return None
 
-    def _find_by_name(self, items: list[dict], name: str) -> Optional[dict]:
+    def find_by_name(self, items: list[dict], name: str) -> Optional[dict]:
         """Return the full dict of the first item matching *name*.  None if not found."""
         for item in items:
             if item.get("name", "").lower() == name.lower():
                 return item
         return None
+
+    # Backward-compatible private aliases (callers migrated to public names above).
+    _find_id_by_name = find_id_by_name
+    _find_by_name = find_by_name
 
     # ------------------------------------------------------------------
     # Objects — UPDATE (PUT)

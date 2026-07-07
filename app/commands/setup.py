@@ -80,7 +80,11 @@ def _show_device_detail(ctx: ExecutionContext, args: dict) -> Any:
         None,
     )
     if not match:
-        raise RuntimeError(f"Device not found: {target!r}")
+        raise RuntimeError(
+            f"Device {target!r} not found in SCM.\n"
+            "  Run [bold]show devices[/bold] to see all managed devices, "
+            "or [bold]tsg <id>[/bold] to check a different tenant."
+        )
     return {"_render": "device_detail", "device": match}
 
 
@@ -109,7 +113,10 @@ def _show_device_snippets(ctx: ExecutionContext, args: dict) -> Any:
         None,
     )
     if not device:
-        raise RuntimeError(f"Device not found: {target!r}")
+        raise RuntimeError(
+            f"Device {target!r} not found in SCM.\n"
+            "  Run [bold]show devices[/bold] to see all managed devices."
+        )
 
     snippet_names: list[str] = device.get("snippets") or []
     if not snippet_names:

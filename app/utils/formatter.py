@@ -63,15 +63,21 @@ def _simple_table(
 
     ``columns`` is a list of ``(key, header, column-kwargs)`` tuples.
     ``value_fn(row, key)`` overrides the default cell value ``row.get(key, "")``.
+    Non-dict rows are coerced to strings and placed in the first column.
     """
     t = Table(box=box.ROUNDED, title=title, header_style="bold cyan")
     for _key, header, kwargs in columns:
         t.add_column(header, **kwargs)
     for row in rows:
+        if not isinstance(row, dict):
+            # Graceful fallback: put the coerced string in col 0, blanks elsewhere
+            cells = [str(row)] + [""] * (len(columns) - 1)
+            t.add_row(*cells)
+            continue
         if value_fn is not None:
             t.add_row(*[value_fn(row, key) for key, _h, _kw in columns])
         else:
-            t.add_row(*[row.get(key, "") for key, _h, _kw in columns])
+            t.add_row(*[str(row.get(key, "") or "") for key, _h, _kw in columns])
     return t
 
 
@@ -417,11 +423,13 @@ def format_logs(logs: list[dict], log_type: str = "system") -> Table:
 
 def format_address_objects(addresses: list[dict]) -> Table:
     def _cell(a: dict, key: str) -> str:
+        if not isinstance(a, dict):
+            return str(a) if key == "name" else ""
         if key == "value":
             return a.get("ip-netmask") or a.get("ip_netmask") or a.get("ip-range") or a.get("fqdn") or ""
         if key == "_source":
             return _inheritance_note(a)
-        return a.get(key, "")
+        return str(a.get(key, "") or "")
 
     return _simple_table(addresses, "Address Objects", [
         ("name",        "Name",        {"style": "bold"}),
@@ -433,6 +441,8 @@ def format_address_objects(addresses: list[dict]) -> Table:
 
 def format_address_groups(groups: list[dict]) -> Table:
     def _cell(g: dict, key: str) -> str:
+        if not isinstance(g, dict):
+            return str(g) if key == "name" else ""
         if key == "members":
             members = g.get("members", [])
             return ", ".join(members) if isinstance(members, list) else str(members)
@@ -440,7 +450,7 @@ def format_address_groups(groups: list[dict]) -> Table:
             return g.get("dynamic") or g.get("filter") or ""
         if key == "_source":
             return _inheritance_note(g)
-        return g.get(key, "")
+        return str(g.get(key, "") or "")
 
     return _simple_table(groups, "Address Groups", [
         ("name",        "Name",           {"style": "bold"}),

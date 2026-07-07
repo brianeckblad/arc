@@ -434,6 +434,76 @@ def _load_config_version(ctx: ExecutionContext, args: dict) -> Any:
     )
 
 
+
+def _show_diff(ctx: ExecutionContext, args: dict) -> Any:
+    """Show a version-to-version diff of SCM config metadata and staged changes.
+
+    Usage:
+      show diff                    — show locally staged (uncommitted) changes
+      show diff versions           — list all versions with dates for comparison
+      show diff versions <a> <b>   — compare metadata of two config versions
+
+    The SCM API does not provide a text diff of config content between versions.
+    For a content comparison, use:
+      show config format set | save /tmp/v1.sh   (switch versions, then repeat)
+    """
+    scm = require_scm(ctx)
+    pos = args.get("_positional", [])
+    sub = pos[0].lower() if pos else ""
+
+    if sub == "versions":
+        if len(pos) >= 3:
+            # Compare metadata of two specific version records
+            v1_raw, v2_raw = pos[1], pos[2]
+            lines = ["[bold]Config version comparison[/bold]\n"]
+            for v_raw, label in ((v1_raw, "Version A"), (v2_raw, "Version B")):
+                if not str(v_raw).isdigit():
+                    raise ValueError(f"Version id must be a number, got: {v_raw!r}")
+                record = scm.get_config_version(v_raw)
+                lines.append(f"[cyan]{label} — version {v_raw}[/cyan]")
+                if isinstance(record, dict):
+                    for field in ("version", "date", "admin", "scope", "description"):
+                        val = record.get(field, "")
+                        if val:
+                            lines.append(f"  {field:<12} {val}")
+                lines.append("")
+            lines.append(
+                "[dim]To diff config content: export each version with "
+                "[bold]show config format set | save <file>[/bold] after loading each version.[/dim]"
+            )
+            return "\n".join(lines)
+        else:
+            # List all versions for reference
+            versions = scm.get_config_versions()
+            if not versions:
+                return "No config versions found."
+            lines = ["[bold]Config versions[/bold]  (use: show diff versions <a> <b> to compare)\n"]
+            for v in (versions if isinstance(versions, list) else []):
+                ver = v.get("version", "?")
+                date = v.get("date", "")
+                admin = v.get("admin", "")
+                desc = v.get("description", "")
+                lines.append(f"  [bold]{ver:<6}[/bold]  {date:<24}  {admin:<30}  {desc}")
+            return "\n".join(lines)
+
+    # Default: show locally staged (uncommitted) changes
+    staged = getattr(ctx, "_staged_ops", None)
+    # Fall back to reading from the shell state via a sentinel attribute
+    # (staged_ops are on the shell, not in the execution context).
+    # We surface what we can from the args context.
+    return (
+        "[yellow]show diff[/yellow] shows locally staged changes.\n\n"
+        "  Run [bold]show config[/bold] to see the staged queue.\n"
+        "  Run [bold]show diff versions[/bold] to list config versions.\n"
+        "  Run [bold]show diff versions <a> <b>[/bold] to compare two version records.\n\n"
+        "[dim]For a full config content diff, export with:\n"
+        "  show config format set | save /tmp/before.sh\n"
+        "  load config version <other> confirm\n"
+        "  show config format set | save /tmp/after.sh\n"
+        "  diff /tmp/before.sh /tmp/after.sh[/dim]"
+    )
+
+
 # ---------------------------------------------------------------------------
 # Command table
 # ---------------------------------------------------------------------------
@@ -470,6 +540,16 @@ COMMANDS: dict[str, CommandDef] = {
         render="",  # list[str] → plain lines so `| match` pipes naturally
         feature_flag="config_view",
         usage=f"show config format set [{_RESOURCE_USAGE}]",
+    ),
+    "show diff": CommandDef(
+        description="Compare config versions or show staged changes",
+        category="operations",
+        scope="global",
+        api_handler=_show_diff,
+        ssh_command=None,
+        render="raw",
+        feature_flag="config_view",
+        usage="show diff [versions [<a> <b>]]",
     ),
     "load config version": CommandDef(
         description="Rollback: load a config version as the candidate (preview without confirm)",

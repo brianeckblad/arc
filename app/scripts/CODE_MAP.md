@@ -139,12 +139,12 @@ update()                                 923-1055       Download specs + guides 
 _self_test()                             1061-1143      Exercise discovery + diff logic offline so the engine stays trustworth
 main()                                   1149-1283      
 
-## `app/api/client.py`  (1280 lines)
+## `app/api/client.py`  (1284 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 class SCMError                           47-48          Raised when SCM authentication or API requests fail.
-class SCMClient                          51-1279        Strata Cloud Manager (SCM) REST API client.
+class SCMClient                          51-1283        Strata Cloud Manager (SCM) REST API client.
   .__init__()                            92-129         
   ._authenticate()                       131-148        Obtain an OAuth token via the client-credentials flow.
   ._headers()                            150-151        
@@ -206,145 +206,168 @@ class SCMClient                          51-1279        Strata Cloud Manager (SC
   .delete_url_category()                 793-795        DELETE /config/security/v1/url-categories/{id}
   .create_nat_rule()                     797-799        POST /config/network/v1/nat-rules
   .delete_nat_rule()                     801-803        DELETE /config/network/v1/nat-rules/{id}
-  ._find_id_by_name()                    806-811        Return the id of the first item whose 'name' field matches *name*.  No
-  ._find_by_name()                       813-818        Return the full dict of the first item matching *name*.  None if not f
-  .update_address()                      825-827        PUT /config/objects/v1/addresses/{id}
-  .update_address_group()                829-831        PUT /config/objects/v1/address-groups/{id}
-  .update_service()                      833-835        PUT /config/objects/v1/services/{id}
-  .update_service_group()                837-839        PUT /config/objects/v1/service-groups/{id}
-  .update_tag()                          841-843        PUT /config/objects/v1/tags/{id}
-  .update_external_dynamic_list()        845-847        PUT /config/objects/v1/external-dynamic-lists/{id}
-  .update_security_rule()                853-855        PUT /config/security/v1/security-rules/{id}
-  .update_url_category()                 857-859        PUT /config/security/v1/url-categories/{id}
-  .update_nat_rule()                     865-867        PUT /config/network/v1/nat-rules/{id}
-  .update_zone()                         869-871        PUT /config/network/v1/zones/{id}
-  .get_security_policy()                 879-885        pan.dev: GET /config/security/v1/security-rules
-  .get_url_categories()                  887-889        pan.dev: GET /config/security/v1/url-categories
-  .get_dns_security_profiles()           891-893        pan.dev: GET /config/security/v1/dns-security-profiles
-  .get_decryption_rules()                896-898        pan.dev: GET /config/security/v1/decryption-rules
-  .get_dos_protection_rules()            900-902        pan.dev: GET /config/security/v1/dos-protection-rules
-  .get_dos_protection_profiles()         904-906        pan.dev: GET /config/security/v1/dos-protection-profiles
-  .get_app_override_rules()              908-910        pan.dev: GET /config/security/v1/app-override-rules
-  .get_decryption_profiles()             912-914        pan.dev: GET /config/security/v1/decryption-profiles
-  .get_profile_groups()                  916-918        pan.dev: GET /config/security/v1/profile-groups
-  .get_anti_spyware_profiles()           920-922        pan.dev: GET /config/security/v1/anti-spyware-profiles
-  .get_vulnerability_protection_profiles() 924-926        pan.dev: GET /config/security/v1/vulnerability-protection-profiles
-  .get_wildfire_profiles()               928-930        pan.dev: GET /config/security/v1/wildfire-anti-virus-profiles
-  .get_url_admin_override()              932-934        pan.dev: GET /config/security/v1/url-admin-override
-  .get_service_groups()                  940-942        pan.dev: GET /config/objects/v1/service-groups
-  .get_application_groups()              944-946        pan.dev: GET /config/objects/v1/application-groups
-  .get_application_filters()             948-950        pan.dev: GET /config/objects/v1/application-filters
-  .get_schedules()                       952-954        pan.dev: GET /config/objects/v1/schedules
-  .get_regions()                         956-958        pan.dev: GET /config/objects/v1/regions  (global — no folder filter)
-  .get_hip_objects()                     960-962        pan.dev: GET /config/objects/v1/hip-objects
-  .get_hip_profiles()                    964-966        pan.dev: GET /config/objects/v1/hip-profiles
-  .get_log_forwarding_profiles()         968-970        pan.dev: GET /config/objects/v1/log-forwarding-profiles
-  .get_nat_rules()                       976-978        pan.dev: GET /config/network/v1/nat-rules
-  .get_pbf_rules()                       980-982        pan.dev: GET /config/network/v1/pbf-rules
-  .get_ike_gateways()                    984-986        pan.dev: GET /config/network/v1/ike-gateways
-  .get_ipsec_tunnels()                   988-990        pan.dev: GET /config/network/v1/ipsec-tunnels
-  .get_bgp_routing_profiles()            992-994        pan.dev: GET /config/network/v1/bgp-address-family-profiles
-  .get_dns_proxies()                     996-998        pan.dev: GET /config/network/v1/dns-proxies
-  .get_qos_profiles()                    1000-1002      pan.dev: GET /config/network/v1/qos-profiles
-  .get_sdwan_rules()                     1004-1006      pan.dev: GET /config/network/v1/sdwan-rules
-  .get_tunnel_interfaces()               1008-1010      pan.dev: GET /config/network/v1/tunnel-interfaces
-  .get_vlan_interfaces()                 1012-1014      pan.dev: GET /config/network/v1/vlan-interfaces
-  ._get_identity()                       1021-1023      GET from api.strata.paloaltonetworks.com/config/identity/v1.
-  .get_authentication_profiles()         1025-1027      pan.dev: GET /config/identity/v1/authentication-profiles
-  .get_authentication_rules()            1029-1031      pan.dev: GET /config/identity/v1/authentication-rules
-  .get_certificate_profiles()            1033-1035      pan.dev: GET /config/identity/v1/certificate-profiles
-  .get_local_users()                     1037-1039      pan.dev: GET /config/identity/v1/local-users
-  .get_local_user_groups()               1041-1043      pan.dev: GET /config/identity/v1/local-user-groups
-  .get_radius_server_profiles()          1045-1047      pan.dev: GET /config/identity/v1/radius-server-profiles
-  .get_tls_service_profiles()            1049-1051      pan.dev: GET /config/identity/v1/tls-service-profiles
-  .get_mfa_servers()                     1053-1055      pan.dev: GET /config/identity/v1/mfa-servers
-  .get_interfaces()                      1063-1076      Return ethernet interfaces configured in the active folder.
-  .get_aggregate_interfaces()            1078-1090      Return aggregate (AE) interfaces configured in the active folder.
-  .get_loopback_interfaces()             1092-1104      Return loopback interfaces configured in the active folder.
-  .get_zones()                           1106-1119      Return security zones configured in the active folder.
-  .get_static_routes()                   1121-1134      Return static routes configured in the active folder.
-  .get_routing_profiles()                1136-1149      Return routing profiles / virtual routers in the active folder.
-  .get_ha_config()                       1151-1171      Return HA configuration in the active folder.
-  .push_config()                         1178-1198      Push the candidate configuration to managed devices.
-  .discard_candidate()                   1200-1208      Discard the TSG's candidate configuration (revert to running config).
-  .get_config_versions()                 1215-1220      List the tenant's configuration versions (newest history first).
-  .get_config_version()                  1222-1227      Return one configuration version record by id.
-  .get_running_config_version()          1229-1234      Return the running configuration version(s) for the tenant.
-  .load_config_version()                 1236-1246      Load *version* as the candidate configuration (rollback).
-  .ops_job_start()                       1252-1266      Start a live-device operations job; returns the job UUID.
-  .ops_job_status()                      1268-1276      Return a live-device operations job record.
-  .close()                               1278-1279      
+  .find_id_by_name()                     806-811        Return the id of the first item whose 'name' field matches *name*.  No
+  .find_by_name()                        813-818        Return the full dict of the first item matching *name*.  None if not f
+  .update_address()                      829-831        PUT /config/objects/v1/addresses/{id}
+  .update_address_group()                833-835        PUT /config/objects/v1/address-groups/{id}
+  .update_service()                      837-839        PUT /config/objects/v1/services/{id}
+  .update_service_group()                841-843        PUT /config/objects/v1/service-groups/{id}
+  .update_tag()                          845-847        PUT /config/objects/v1/tags/{id}
+  .update_external_dynamic_list()        849-851        PUT /config/objects/v1/external-dynamic-lists/{id}
+  .update_security_rule()                857-859        PUT /config/security/v1/security-rules/{id}
+  .update_url_category()                 861-863        PUT /config/security/v1/url-categories/{id}
+  .update_nat_rule()                     869-871        PUT /config/network/v1/nat-rules/{id}
+  .update_zone()                         873-875        PUT /config/network/v1/zones/{id}
+  .get_security_policy()                 883-889        pan.dev: GET /config/security/v1/security-rules
+  .get_url_categories()                  891-893        pan.dev: GET /config/security/v1/url-categories
+  .get_dns_security_profiles()           895-897        pan.dev: GET /config/security/v1/dns-security-profiles
+  .get_decryption_rules()                900-902        pan.dev: GET /config/security/v1/decryption-rules
+  .get_dos_protection_rules()            904-906        pan.dev: GET /config/security/v1/dos-protection-rules
+  .get_dos_protection_profiles()         908-910        pan.dev: GET /config/security/v1/dos-protection-profiles
+  .get_app_override_rules()              912-914        pan.dev: GET /config/security/v1/app-override-rules
+  .get_decryption_profiles()             916-918        pan.dev: GET /config/security/v1/decryption-profiles
+  .get_profile_groups()                  920-922        pan.dev: GET /config/security/v1/profile-groups
+  .get_anti_spyware_profiles()           924-926        pan.dev: GET /config/security/v1/anti-spyware-profiles
+  .get_vulnerability_protection_profiles() 928-930        pan.dev: GET /config/security/v1/vulnerability-protection-profiles
+  .get_wildfire_profiles()               932-934        pan.dev: GET /config/security/v1/wildfire-anti-virus-profiles
+  .get_url_admin_override()              936-938        pan.dev: GET /config/security/v1/url-admin-override
+  .get_service_groups()                  944-946        pan.dev: GET /config/objects/v1/service-groups
+  .get_application_groups()              948-950        pan.dev: GET /config/objects/v1/application-groups
+  .get_application_filters()             952-954        pan.dev: GET /config/objects/v1/application-filters
+  .get_schedules()                       956-958        pan.dev: GET /config/objects/v1/schedules
+  .get_regions()                         960-962        pan.dev: GET /config/objects/v1/regions  (global — no folder filter)
+  .get_hip_objects()                     964-966        pan.dev: GET /config/objects/v1/hip-objects
+  .get_hip_profiles()                    968-970        pan.dev: GET /config/objects/v1/hip-profiles
+  .get_log_forwarding_profiles()         972-974        pan.dev: GET /config/objects/v1/log-forwarding-profiles
+  .get_nat_rules()                       980-982        pan.dev: GET /config/network/v1/nat-rules
+  .get_pbf_rules()                       984-986        pan.dev: GET /config/network/v1/pbf-rules
+  .get_ike_gateways()                    988-990        pan.dev: GET /config/network/v1/ike-gateways
+  .get_ipsec_tunnels()                   992-994        pan.dev: GET /config/network/v1/ipsec-tunnels
+  .get_bgp_routing_profiles()            996-998        pan.dev: GET /config/network/v1/bgp-address-family-profiles
+  .get_dns_proxies()                     1000-1002      pan.dev: GET /config/network/v1/dns-proxies
+  .get_qos_profiles()                    1004-1006      pan.dev: GET /config/network/v1/qos-profiles
+  .get_sdwan_rules()                     1008-1010      pan.dev: GET /config/network/v1/sdwan-rules
+  .get_tunnel_interfaces()               1012-1014      pan.dev: GET /config/network/v1/tunnel-interfaces
+  .get_vlan_interfaces()                 1016-1018      pan.dev: GET /config/network/v1/vlan-interfaces
+  ._get_identity()                       1025-1027      GET from api.strata.paloaltonetworks.com/config/identity/v1.
+  .get_authentication_profiles()         1029-1031      pan.dev: GET /config/identity/v1/authentication-profiles
+  .get_authentication_rules()            1033-1035      pan.dev: GET /config/identity/v1/authentication-rules
+  .get_certificate_profiles()            1037-1039      pan.dev: GET /config/identity/v1/certificate-profiles
+  .get_local_users()                     1041-1043      pan.dev: GET /config/identity/v1/local-users
+  .get_local_user_groups()               1045-1047      pan.dev: GET /config/identity/v1/local-user-groups
+  .get_radius_server_profiles()          1049-1051      pan.dev: GET /config/identity/v1/radius-server-profiles
+  .get_tls_service_profiles()            1053-1055      pan.dev: GET /config/identity/v1/tls-service-profiles
+  .get_mfa_servers()                     1057-1059      pan.dev: GET /config/identity/v1/mfa-servers
+  .get_interfaces()                      1067-1080      Return ethernet interfaces configured in the active folder.
+  .get_aggregate_interfaces()            1082-1094      Return aggregate (AE) interfaces configured in the active folder.
+  .get_loopback_interfaces()             1096-1108      Return loopback interfaces configured in the active folder.
+  .get_zones()                           1110-1123      Return security zones configured in the active folder.
+  .get_static_routes()                   1125-1138      Return static routes configured in the active folder.
+  .get_routing_profiles()                1140-1153      Return routing profiles / virtual routers in the active folder.
+  .get_ha_config()                       1155-1175      Return HA configuration in the active folder.
+  .push_config()                         1182-1202      Push the candidate configuration to managed devices.
+  .discard_candidate()                   1204-1212      Discard the TSG's candidate configuration (revert to running config).
+  .get_config_versions()                 1219-1224      List the tenant's configuration versions (newest history first).
+  .get_config_version()                  1226-1231      Return one configuration version record by id.
+  .get_running_config_version()          1233-1238      Return the running configuration version(s) for the tenant.
+  .load_config_version()                 1240-1250      Load *version* as the candidate configuration (rollback).
+  .ops_job_start()                       1256-1270      Start a live-device operations job; returns the job UUID.
+  .ops_job_status()                      1272-1280      Return a live-device operations job record.
+  .close()                               1282-1283      
 
-## `app/commands/objects.py`  (1115 lines)
+## `app/commands/objects.py`  (1219 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-COMMANDS                                 30-81          command registry dict
-_EXTRA_COMMANDS                          84-157         command registry dict
-COMMANDS.update(…)                       159-159        merge additional commands into registry
-_set_address()                           191-258        Create an address object in the active SCM folder.
-_delete_address()                        261-272        Delete an address object.  Usage: delete address <name>
-_set_address_group()                     275-339        Create a static or dynamic address group in the active folder.
-_set_service()                           342-412        Create a TCP or UDP service object in the active folder.
-_set_service_group()                     415-461        Create a service group (named collection of service objects).
-_set_tag()                               464-515        Create a tag in the active folder.
-_set_external_dynamic_list()             518-597        Create an External Dynamic List (EDL) in the active folder.
-_WRITE_COMMANDS                          600-724        command registry dict
-COMMANDS.update(…)                       726-726        merge additional commands into registry
-_update_address()                        743-800        Update an existing address object (GET→merge→PUT).
-_update_address_group()                  803-858        Update an existing address group (GET→merge→PUT).
-_update_service()                        861-910        Update an existing service object (GET→merge→PUT).
-_update_service_group()                  913-953        Update a service group's member list.
-_update_tag()                            956-994        Update an existing tag (color, comments).
-_update_external_dynamic_list()          997-1053       Update an existing EDL (URL, description, or frequency).
-_UPDATE_COMMANDS                         1056-1111      command registry dict
-COMMANDS.update(…)                       1113-1113      merge additional commands into registry
+_show_address_search()                   24-64          Filter address objects by name pattern, tag, or description.
+_show_service_search()                   67-88          Filter service objects by name pattern.
+COMMANDS                                 98-179         command registry dict
+_EXTRA_COMMANDS                          182-255        command registry dict
+COMMANDS.update(…)                       257-257        merge additional commands into registry
+_set_address()                           289-356        Create an address object in the active SCM folder.
+_delete_address()                        359-370        Delete an address object.  Usage: delete address <name>
+_set_address_group()                     373-437        Create a static or dynamic address group in the active folder.
+_set_service()                           440-510        Create a TCP or UDP service object in the active folder.
+_set_service_group()                     513-559        Create a service group (named collection of service objects).
+_set_tag()                               562-613        Create a tag in the active folder.
+_set_external_dynamic_list()             616-695        Create an External Dynamic List (EDL) in the active folder.
+_WRITE_COMMANDS                          698-822        command registry dict
+COMMANDS.update(…)                       824-824        merge additional commands into registry
+_update_address()                        841-899        Update an existing address object (GET→merge→PUT).
+_update_address_group()                  902-958        Update an existing address group (GET→merge→PUT).
+_update_service()                        961-1011       Update an existing service object (GET→merge→PUT).
+_update_service_group()                  1014-1055      Update a service group's member list.
+_update_tag()                            1058-1097      Update an existing tag (color, comments).
+_update_external_dynamic_list()          1100-1157      Update an existing EDL (URL, description, or frequency).
+_UPDATE_COMMANDS                         1160-1215      command registry dict
+COMMANDS.update(…)                       1217-1217      merge additional commands into registry
 
 ## `app/commands/resource_catalog.py`  (1068 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
-## `app/utils/formatter.py`  (975 lines)
+## `app/utils/formatter.py`  (985 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _inheritance_note()                      22-32          Return a dim 'inherited from X' note when obj lives in a parent folder
 _kv_table()                              35-41          
 _list_table()                            44-53          
-_simple_table()                          56-75          Build a fixed-column ROUNDED table from a list of dicts.
-_style_action()                          78-88          Colour a rule action: green for allow, red for deny.
-format_system_info()                     95-106         
-format_devices()                         109-181        Render the SCM device list, scoped to ``folder``.
-format_folder_tree()                     184-274        Render the SCM folder hierarchy as a tree, with devices shown in their
-_folder_flat_list()                      277-315        Return a depth-ordered flat list of (depth, name, path) tuples.
-format_interfaces()                      318-347        Render a list of interfaces from SCM or SSH.
-format_routes()                          350-358        
-format_security_policy()                 361-377        
-format_jobs()                            380-398        
-format_logs()                            401-415        
-format_address_objects()                 418-431        
-format_address_groups()                  434-451        
-format_services()                        454-478        
-format_tags()                            481-491        
-format_edl_list()                        494-529        Render external dynamic lists.
-format_zones()                           532-543        
-format_ha()                              546-571        Render HA configuration as a flat key/value table.
-format_snippets()                        574-596        Render a list of SCM snippets.
-format_snippets_scoped()                 599-641        Render a context-scoped snippet list with a scope header and hint foot
-format_snippet_detail()                  644-692        Render metadata + variables for a single snippet.
-format_snippet_detail_full()             695-770        Render full snippet detail: metadata + variables + all configured obje
-_append_variables()                      777-794        Append a variables table to renderables if any variables exist.
-_snippet_addresses_table()               797-816        
-_snippet_address_groups_table()          819-839        
-_snippet_services_table()                842-867        
-_snippet_security_rules_table()          870-891        
-_snippet_tags_table()                    894-902        
-_generic_objects_table()                 905-915        Fallback renderer for object types without a dedicated renderer.
-format_device_detail()                   918-944        Render full detail for a single device (key-value pairs).
-format_raw()                             947-948        
-format_dict()                            951-952        
-_flatten()                               959-974        Recursively flatten a nested dict into dot-separated key/value pairs.
+_simple_table()                          56-81          Build a fixed-column ROUNDED table from a list of dicts.
+_style_action()                          84-94          Colour a rule action: green for allow, red for deny.
+format_system_info()                     101-112        
+format_devices()                         115-187        Render the SCM device list, scoped to ``folder``.
+format_folder_tree()                     190-280        Render the SCM folder hierarchy as a tree, with devices shown in their
+_folder_flat_list()                      283-321        Return a depth-ordered flat list of (depth, name, path) tuples.
+format_interfaces()                      324-353        Render a list of interfaces from SCM or SSH.
+format_routes()                          356-364        
+format_security_policy()                 367-383        
+format_jobs()                            386-404        
+format_logs()                            407-421        
+format_address_objects()                 424-439        
+format_address_groups()                  442-461        
+format_services()                        464-488        
+format_tags()                            491-501        
+format_edl_list()                        504-539        Render external dynamic lists.
+format_zones()                           542-553        
+format_ha()                              556-581        Render HA configuration as a flat key/value table.
+format_snippets()                        584-606        Render a list of SCM snippets.
+format_snippets_scoped()                 609-651        Render a context-scoped snippet list with a scope header and hint foot
+format_snippet_detail()                  654-702        Render metadata + variables for a single snippet.
+format_snippet_detail_full()             705-780        Render full snippet detail: metadata + variables + all configured obje
+_append_variables()                      787-804        Append a variables table to renderables if any variables exist.
+_snippet_addresses_table()               807-826        
+_snippet_address_groups_table()          829-849        
+_snippet_services_table()                852-877        
+_snippet_security_rules_table()          880-901        
+_snippet_tags_table()                    904-912        
+_generic_objects_table()                 915-925        Fallback renderer for object types without a dedicated renderer.
+format_device_detail()                   928-954        Render full detail for a single device (key-value pairs).
+format_raw()                             957-958        
+format_dict()                            961-962        
+_flatten()                               969-984        Recursively flatten a nested dict into dot-separated key/value pairs.
+
+## `app/cli.py`  (911 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+main()                                   49-65          Launch the ARC interactive shell.
+open_docs()                              69-74          Open ARC documentation in the default browser (fully offline, no serve
+auth_configure()                         86-241         Interactively configure ARC credentials.
+auth_show()                              245-310        Display current configuration (credentials masked).
+auth_clear()                             314-334        Remove ARC secrets from the OS keychain.
+_short_err()                             337-339        Return the first line of an error string — avoids huge httpx traceback
+auth_migrate()                           343-416        Migrate old keychain entries to the new arc.* naming scheme.
+auth_delete_profile()                    420-445        Delete a named credential profile from config.json and the OS keychain
+auth_test()                              449-677        Test connectivity using stored credentials.
+config_generate()                        719-754        Generate a starter config.json with annotated placeholders and mode 06
+_ensure_vendor_files()                   772-792        Download vendor JS/CSS to docs/vendor/ if not already present.
+_build_docs_bundle()                     795-829        Embed all docs/*.md files into docs/docs-bundle.js.
+_do_cliup()                              832-851        Core cliup logic — rebuild the offline browser docs bundle.
+cliup()                                  855-874        Rebuild the offline browser docs bundle.
+scm_get()                                886-898        Perform a raw GET request against the SCM API.
+run()                                    905-906        
 
 ## `app/shell/dispatch.py`  (891 lines)
 
@@ -364,27 +387,6 @@ class DispatchMixin                      108-890
   ._cmd_alias()                          341-412        User-defined aliases (`alias` / `alias <name> <expansion…>` /
   ._show_command_not_found()             414-485        Show a helpful message when a command is not recognized.
   ._dispatch()                           487-890        Process one input line.  Returns True when the user wants to exit ARC.
-
-## `app/cli.py`  (890 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-main()                                   49-65          Launch the ARC interactive shell.
-open_docs()                              69-74          Open ARC documentation in the default browser (fully offline, no serve
-auth_configure()                         86-241         Interactively configure ARC credentials.
-auth_show()                              245-310        Display current configuration (credentials masked).
-auth_clear()                             314-334        Remove ARC secrets from the OS keychain.
-_short_err()                             337-339        Return the first line of an error string — avoids huge httpx traceback
-auth_migrate()                           343-416        Migrate old keychain entries to the new arc.* naming scheme.
-auth_delete_profile()                    420-445        Delete a named credential profile from config.json and the OS keychain
-auth_test()                              449-656        Test connectivity using stored credentials.
-config_generate()                        698-733        Generate a starter config.json with annotated placeholders and mode 06
-_ensure_vendor_files()                   751-771        Download vendor JS/CSS to docs/vendor/ if not already present.
-_build_docs_bundle()                     774-808        Embed all docs/*.md files into docs/docs-bundle.js.
-_do_cliup()                              811-830        Core cliup logic — rebuild the offline browser docs bundle.
-cliup()                                  834-853        Rebuild the offline browser docs bundle.
-scm_get()                                865-877        Perform a raw GET request against the SCM API.
-run()                                    884-885        
 
 ## `app/scripts/generate_panos_catalog.py`  (852 lines)
 
@@ -534,36 +536,7 @@ save_config()                            447-518        Persist config: secrets 
 delete_profile()                         521-547        Remove a named profile from config.json and its keychain entries.
 clear_keychain()                         550-579        Remove ARC secrets from the OS keychain.
 
-## `app/commands/operations.py`  (511 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_show_system_info()                      16-41          Show what SCM knows about the selected device.
-_show_jobs_id()                          44-53          Fetch a single SCM job by ID — TSG-wide, no folder scope.
-_commit()                                56-74          Push the candidate configuration to managed devices.
-_live_only()                             81-87          Return a clear message explaining why this command needs --remote.
-_pending_show_system_resources()         90-91          
-_pending_show_system_disk_space()        94-95          
-_pending_request_software_check()        98-99          
-_pending_ping()                          102-105        
-_get_sls()                               137-151        Return a cached SLSClient built from the active SCM credentials.
-_parse_log_window()                      154-163        Parse 'Nm' / 'Nh' / 'Nd' into minutes; raise ValueError on bad input.
-_parse_log_args()                        166-193        Parse `show log <type>` keyword pairs from the raw remainder tokens.
-_sls_value()                             196-204        First non-empty field among *names*; unwraps SLS {'value': …} records.
-_sls_time()                              207-215        Render time_generated (epoch seconds or ISO string) as readable UTC.
-_map_sls_row()                           218-248        Map SLS field names onto the columns fmt.format_logs renders.
-_show_log_sls()                          251-283        Build the api_handler for one SLS-backed `show log <type>` command.
-_show_log_detail()                       286-306        Show the FULL SLS record for row <n> of the last log query.
-_ssh_jobs_id()                           313-314        
-_ssh_ping()                              317-320        
-_ssh_commit()                            323-325        
-COMMANDS                                 332-452        command registry dict
-_request_system_reboot()                 459-471        Request a system reboot — use --remote.  Requires active device contex
-_request_system_shutdown()               474-483        Request a system shutdown — use --remote.  Requires active device cont
-_EXTRA_COMMANDS                          486-507        command registry dict
-COMMANDS.update(…)                       509-509        merge additional commands into registry
-
-## `app/commands/config_view.py`  (485 lines)
+## `app/commands/config_view.py`  (565 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -585,7 +558,37 @@ _show_config_format_set()                297-312        Dump the active folder's
 _show_config_running()                   315-335        Show the running config version — or one resource as set commands.
 _show_config_versions()                  338-359        List SCM config versions, or show one version's full record.
 _load_config_version()                   362-434        Rollback: load a config version as the tenant's candidate config.
-COMMANDS                                 443-484        command registry dict
+_show_diff()                             438-504        Show a version-to-version diff of SCM config metadata and staged chang
+COMMANDS                                 513-564        command registry dict
+
+## `app/commands/operations.py`  (514 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+_show_system_info()                      17-42          Show what SCM knows about the selected device.
+_show_jobs_id()                          45-54          Fetch a single SCM job by ID — TSG-wide, no folder scope.
+_commit()                                57-75          Push the candidate configuration to managed devices.
+_live_only()                             82-88          Return a clear message explaining why this command needs --remote.
+_pending_show_system_resources()         91-92          
+_pending_show_system_disk_space()        95-96          
+_pending_request_software_check()        99-100         
+_pending_ping()                          103-106        
+_get_sls()                               138-152        Return a cached SLSClient built from the active SCM credentials.
+_parse_log_window()                      155-164        Parse 'Nm' / 'Nh' / 'Nd' into minutes; raise ValueError on bad input.
+_parse_log_args()                        167-194        Parse `show log <type>` keyword pairs from the raw remainder tokens.
+_sls_value()                             197-205        First non-empty field among *names*; unwraps SLS {'value': …} records.
+_sls_time()                              208-216        Render time_generated (epoch seconds or ISO string) as readable UTC.
+_map_sls_row()                           219-249        Map SLS field names onto the columns fmt.format_logs renders.
+_show_log_sls()                          252-284        Build the api_handler for one SLS-backed `show log <type>` command.
+_show_log_detail()                       287-307        Show the FULL SLS record for row <n> of the last log query.
+_ssh_jobs_id()                           314-316        
+_ssh_ping()                              319-322        
+_ssh_commit()                            325-328        
+COMMANDS                                 335-455        command registry dict
+_request_system_reboot()                 462-474        Request a system reboot — use --remote.  Requires active device contex
+_request_system_shutdown()               477-486        Request a system shutdown — use --remote.  Requires active device cont
+_EXTRA_COMMANDS                          489-510        command registry dict
+COMMANDS.update(…)                       512-512        merge additional commands into registry
 
 ## `app/scripts/generate_feature_flags.py`  (478 lines)
 
@@ -656,28 +659,47 @@ regenerate_api_reference()               370-393        Rewrite docs/commands/ap
 _invalid_docs()                          396-413        Existing command docs that are malformed or point at unknown commands.
 main()                                   416-444        
 
-## `app/commands/network.py`  (424 lines)
+## `app/commands/network.py`  (425 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_show_interface_all()                    30-52          List all interfaces (ethernet, aggregate, loopback) in the active fold
-_show_interface()                        55-81          Show a specific interface by name.
-_show_ha_state()                         84-93          Show HA state summary — first HA entry as a key/value panel.
-_ssh_interface()                         100-102        
-COMMANDS                                 109-173        command registry dict
-_show_arp()                              180-184        Live ARP table from device — use --remote.  Not stored in SCM.
-_show_sessions()                         187-191        Live session table from device — use --remote.  Not stored in SCM.
-_show_vpn_tunnel()                       194-199        Live VPN tunnel state — use --remote.  Tunnel config is in SCM; live s
-_show_vpn_ike_sa()                       202-207        Live IKE security association state — use --remote.
-_show_routing_bgp()                      210-215        Live BGP routing state — use --remote.  BGP profiles (config) are in S
-_show_traceroute()                       218-225        Traceroute from device — use --remote.
-_ssh_traceroute()                        228-230        
-_test_nat_policy_match()                 233-241        Test NAT policy match — use --remote.  PAN-OS: test nat-policy-match
-_ssh_test_nat()                          244-252        
-_test_url()                              255-262        Test URL categorization — use --remote.  PAN-OS: test url <url>
-_ssh_test_url()                          265-267        
-_EXTRA_COMMANDS                          274-420        command registry dict
-COMMANDS.update(…)                       422-422        merge additional commands into registry
+_show_interface_all()                    31-53          List all interfaces (ethernet, aggregate, loopback) in the active fold
+_show_interface()                        56-82          Show a specific interface by name.
+_show_ha_state()                         85-94          Show HA state summary — first HA entry as a key/value panel.
+_ssh_interface()                         101-103        
+COMMANDS                                 110-174        command registry dict
+_show_arp()                              181-185        Live ARP table from device — use --remote.  Not stored in SCM.
+_show_sessions()                         188-192        Live session table from device — use --remote.  Not stored in SCM.
+_show_vpn_tunnel()                       195-200        Live VPN tunnel state — use --remote.  Tunnel config is in SCM; live s
+_show_vpn_ike_sa()                       203-208        Live IKE security association state — use --remote.
+_show_routing_bgp()                      211-216        Live BGP routing state — use --remote.  BGP profiles (config) are in S
+_show_traceroute()                       219-226        Traceroute from device — use --remote.
+_ssh_traceroute()                        229-231        
+_test_nat_policy_match()                 234-242        Test NAT policy match — use --remote.  PAN-OS: test nat-policy-match
+_ssh_test_nat()                          245-253        
+_test_url()                              256-263        Test URL categorization — use --remote.  PAN-OS: test url <url>
+_ssh_test_url()                          266-268        
+_EXTRA_COMMANDS                          275-421        command registry dict
+COMMANDS.update(…)                       423-423        merge additional commands into registry
+
+## `app/api/sls.py`  (388 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+class SLSError                           53-54          Raised when SLS authentication, query submission, or polling fails.
+_sql_quote()                             88-90          Return *value* as a single-quoted SQL string literal ('' escaping).
+build_query()                            93-143         Build the SLS SQL statement for a log query.
+class SLSClient                          150-387        Strata Logging Service Query Service v2 client.
+  .__init__()                            167-191        
+  ._authenticate()                       195-207        OAuth client-credentials flow — shared with SCMClient (app/api/_auth.p
+  ._headers()                            209-210        
+  ._request()                            214-269        Send one Query Service request; translate failures into SLSError.
+  .query_start()                         273-286        POST /query/v2/jobs — submit a SQL string (or a raw params dict).
+  .query_poll()                          288-291        GET /query/v2/jobs/{jobId} — return the job record (incl. 'state').
+  .query_results()                       293-321        GET /query/v2/jobResults/{jobId} — collect result rows (paged).
+  .query_cancel()                        323-328        DELETE /query/v2/jobs/{jobId} — best-effort cancel.
+  .wait()                                330-359        Poll until the job reaches a terminal state; return the final record.
+  .query_logs()                          363-387        Run one fleet-wide log query end to end and return the rows.
 
 ## `app/ssh/manager.py`  (382 lines)
 
@@ -696,25 +718,6 @@ class SSHManager                         108-381        Manages a pool of SSH co
   .close_all()                           252-258        
   ._get_or_connect()                     264-315        Return a live SSH client for *host*, connecting if needed.
   ._authenticate()                       317-381        Work through the auth method sequence.  Returns True if authenticated.
-
-## `app/api/sls.py`  (381 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class SLSError                           53-54          Raised when SLS authentication, query submission, or polling fails.
-_sql_quote()                             88-90          Return *value* as a single-quoted SQL string literal ('' escaping).
-build_query()                            93-143         Build the SLS SQL statement for a log query.
-class SLSClient                          150-380        Strata Logging Service Query Service v2 client.
-  .__init__()                            167-191        
-  ._authenticate()                       195-207        OAuth client-credentials flow — shared with SCMClient (app/api/_auth.p
-  ._headers()                            209-210        
-  ._request()                            214-269        Send one Query Service request; translate failures into SLSError.
-  .query_start()                         273-286        POST /query/v2/jobs — submit a SQL string (or a raw params dict).
-  .query_poll()                          288-291        GET /query/v2/jobs/{jobId} — return the job record (incl. 'state').
-  .query_results()                       293-321        GET /query/v2/jobResults/{jobId} — collect result rows (paged).
-  .query_cancel()                        323-328        DELETE /query/v2/jobs/{jobId} — best-effort cancel.
-  .wait()                                330-352        Poll until the job reaches a terminal state; return the final record.
-  .query_logs()                          356-380        Run one fleet-wide log query end to end and return the rows.
 
 ## `app/scripts/generate_api_index.py`  (378 lines)
 
@@ -768,6 +771,18 @@ tokenize()                               207-218        Split a command line int
 _make_key_bindings()                     221-274        Return key bindings for the ARC shell.
 class ShellState                         278-304        
 
+## `app/commands/setup.py`  (340 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+_snippet_names_for_folder()              14-40          Return the set of snippet names attached to *folder_name*.
+_show_device_detail()                    47-88          Show detail for a named device — show device <hostname|serial>.
+_show_device_snippets()                  91-145         Show snippets attached to a named device — show device <name> snippets
+_show_snippets()                         148-217        List snippets scoped to the current context.
+_show_snippets_global()                  220-232        List ALL snippets regardless of device or folder context.
+_show_snippet_detail()                   235-274        Show detail for a named snippet.
+COMMANDS                                 281-339        command registry dict
+
 ## `app/scripts/panosupdate.py`  (336 lines)
 
 Symbol                                   Lines          Purpose
@@ -785,18 +800,6 @@ _diff_section()                          183-190
 build_changes_markdown()                 193-233        Render CHANGES.md from per-page pull results.
 update()                                 239-313        Pull every registered page and refresh mirrors.  Returns exit code.
 main()                                   319-331        
-
-## `app/commands/setup.py`  (333 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_snippet_names_for_folder()              14-40          Return the set of snippet names attached to *folder_name*.
-_show_device_detail()                    47-84          Show detail for a named device — show device <hostname|serial>.
-_show_device_snippets()                  87-138         Show snippets attached to a named device — show device <name> snippets
-_show_snippets()                         141-210        List snippets scoped to the current context.
-_show_snippets_global()                  213-225        List ALL snippets regardless of device or folder context.
-_show_snippet_detail()                   228-267        Show detail for a named snippet.
-COMMANDS                                 274-332        command registry dict
 
 ## `app/scripts/test_sls.py`  (322 lines)
 
