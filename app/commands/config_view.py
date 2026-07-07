@@ -362,26 +362,49 @@ def _show_config_versions(ctx: ExecutionContext, args: dict) -> Any:
 def _load_config_version(ctx: ExecutionContext, args: dict) -> Any:
     """Rollback: load a config version as the tenant's candidate config.
 
-    Usage: load config version <id> [confirm]
+    Usage: load config version <id|latest> [confirm]
 
     Without the trailing `confirm` token this only PREVIEWS the rollback
     (fetching the version's metadata). With `confirm` it POSTs
     /config-versions:load — which executes in SCM immediately (load is not a
     staged write) — and reminds the operator to `commit` to push to devices.
+
+    Use `latest` instead of a numeric id to roll back to the most recently
+    committed version.
     """
     scm = require_scm(ctx)
     positional = args.get("_positional", [])
-    version = positional[0] if positional else ""
-    if not version.isdigit():
+    version_raw = positional[0] if positional else ""
+
+    # Support `load config version latest` as an alias for the highest version id.
+    if version_raw.lower() == "latest":
+        versions = scm.get_config_versions()
+        if not versions:
+            raise ValueError("No config versions found — check your SCM connection.")
+        # Versions list is typically ordered newest-first; pick the highest id.
+        latest = max(
+            (v for v in versions if isinstance(v.get("version"), int)),
+            key=lambda v: v["version"],
+            default=None,
+        )
+        if latest is None:
+            raise ValueError("Could not determine the latest config version id.")
+        version_raw = str(latest["version"])
+        date_hint = f" (committed {latest.get('date', '')})" if latest.get("date") else ""
+        from rich.console import Console as _Console
+        _Console().print(f"[dim]Latest version: [bold]{version_raw}[/bold]{date_hint}[/dim]")
+
+    if not version_raw.isdigit():
         raise ValueError(
-            "Usage: load config version <id> [confirm]\n"
-            "  Find version ids with: show config versions"
+            "Usage: load config version <id|latest> [confirm]\n"
+            "  Find version ids and dates with: show config versions\n"
+            "  Or use 'latest' to load the most recently committed version."
         )
     confirmed = len(positional) > 1 and positional[1].lower() == "confirm"
 
     # Fetch the version record first — validates the id (404 → friendly
     # error upstream) and lets the operator see what they are loading.
-    record = scm.get_config_version(version)
+    record = scm.get_config_version(version_raw)
     detail_lines = []
     if isinstance(record, dict):
         for field in ("version", "date", "admin", "scope", "description"):
@@ -391,19 +414,19 @@ def _load_config_version(ctx: ExecutionContext, args: dict) -> Any:
 
     if not confirmed:
         return (
-            f"ROLLBACK PREVIEW — config version {version}\n"
+            f"ROLLBACK PREVIEW — config version {version_raw}\n"
             f"{detail}\n\n"
-            f"This will load version {version} as the tenant's CANDIDATE configuration,\n"
+            f"This will load version {version_raw} as the tenant's CANDIDATE configuration,\n"
             "replacing any uncommitted changes (including ones made in the SCM UI).\n"
             "The load runs in SCM immediately — it is NOT staged — but nothing\n"
             "reaches devices until you commit.\n\n"
-            f"To proceed:  load config version {version} confirm\n"
+            f"To proceed:  load config version {version_raw} confirm\n"
             "Then:        commit"
         )
 
-    scm.load_config_version(int(version))
+    scm.load_config_version(int(version_raw))
     return (
-        f"✓ Config version {version} loaded as the candidate configuration.\n"
+        f"✓ Config version {version_raw} loaded as the candidate configuration.\n"
         f"{detail}\n\n"
         "The candidate now matches this version (executed in SCM — not staged).\n"
         "Review:  show config versions   |   show config running\n"
@@ -456,6 +479,6 @@ COMMANDS: dict[str, CommandDef] = {
         ssh_command=None,
         render="raw",
         feature_flag="config_rollback",
-        usage="load config version <id> [confirm]",
+        usage="load config version <id|latest> [confirm]",
     ),
 }

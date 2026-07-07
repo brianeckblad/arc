@@ -143,15 +143,17 @@ class NavigationMixin:
             self._state.device = {
                 "name": target, "hostname": target,
                 "ip_address": target, "serial_number": "",
+                "_is_stub": True,
             }
 
     def _find_device(self, query: str) -> Optional[dict]:
         """Find a device in the cache by hostname, serial, name, or IP.
 
         Checks all field-name variants the SCM API may return.
+        Iterates over a snapshot of the cache to be safe against concurrent refresh.
         """
         q = query.lower()
-        for d in self._state.devices_cache:
+        for d in list(self._state.devices_cache):  # snapshot guards against mutation during iteration
             if (
                 (d.get("hostname") or "").lower() == q
                 or (d.get("display_name") or "").lower() == q
@@ -262,21 +264,22 @@ class NavigationMixin:
 
     def _switch_folder(self, new_folder: str) -> None:
         """Validate and apply a folder context change — called only by `cd folder <name>`."""
-        cache_meaningful = (
-            bool(self._state.folders_cache)
-            and self._state.folders_cache != ["Shared", "Global"]
-        )
-        if cache_meaningful and new_folder not in self._state.folders_cache:
-            if self._cache_stale(self._state.folders_loaded_at):
-                self._refresh_folders(silent=True)
-        if cache_meaningful and new_folder not in self._state.folders_cache:
-            active_tsg = active_tsg_label(self._state, self._config)
-            console.print(
-                f"[red]Folder '{new_folder}' not found in TSG {active_tsg}.[/red]\n"
-                f"  [dim]Available folders: {', '.join(sorted(self._state.folders_cache))}\n"
-                "  Tab after 'cd folder ' to complete, or 'folder' to list folders.[/dim]"
-            )
-            return
+        # Always attempt validation when cache is populated.  The previous
+        # logic skipped validation when cache == ["Shared", "Global"] (the
+        # TSG default), which allowed silently switching to non-existent folders.
+        # If the cache looks stale, refresh it once before checking.
+        if self._state.folders_cache:
+            if new_folder not in self._state.folders_cache:
+                if self._cache_stale(self._state.folders_loaded_at):
+                    self._refresh_folders(silent=True)
+            if new_folder not in self._state.folders_cache:
+                active_tsg = active_tsg_label(self._state, self._config)
+                console.print(
+                    f"[red]Folder '{new_folder}' not found in TSG {active_tsg}.[/red]\n"
+                    f"  [dim]Available folders: {', '.join(sorted(self._state.folders_cache))}\n"
+                    "  Tab after 'cd folder ' to complete, or 'folder' to list folders.[/dim]"
+                )
+                return
 
         self._state.folder = new_folder
         if self._state.device:

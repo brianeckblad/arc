@@ -133,7 +133,15 @@ class ExecutionMixin:
                     sanitized,
                     flags=_re.IGNORECASE,
                 )
-                detail = " ".join(sanitized.split())[:200]
+                # Collapse whitespace and truncate at a word boundary so we
+                # never chop a useful error message mid-word.  400 chars gives
+                # enough context for most SCM error bodies.
+                collapsed = " ".join(sanitized.split())
+                if len(collapsed) > 400:
+                    trunc = collapsed[:400]
+                    last_space = trunc.rfind(" ")
+                    collapsed = (trunc[:last_space] if last_space > 300 else trunc) + " …"
+                detail = collapsed
                 console.print(
                     f"[red]API error ({status}).[/red] {detail}"
                     if detail else f"[red]API error ({status}).[/red]"
@@ -162,6 +170,17 @@ class ExecutionMixin:
             )
             return
 
+        # Warn when the active device is a stub (created from a direct name/IP
+        # when the SCM device cache was empty).  SSH may still work if the host
+        # is directly reachable, but SCM fields like serial and model are absent.
+        if device.get("_is_stub"):
+            console.print(
+                f"[yellow]⚠  Device '{device.get('name')}' is a direct-entry stub "
+                "(not verified against SCM).[/yellow]\n"
+                "  [dim]Use [bold]show devices[/bold] + [bold]cd device <name>[/bold] "
+                "for a fully verified device context.[/dim]"
+            )
+
         host = device_ssh_host(device)
         if not host:
             console.print(
@@ -178,6 +197,26 @@ class ExecutionMixin:
         ssh_key_path = str(cfg_ssh.key_path)
         ssh_password = str(cfg_ssh.password)
         ssh_port = int(cfg_ssh.port)
+
+        # Pre-flight: validate SSH config before attempting the connection so
+        # the operator gets an actionable message immediately rather than a
+        # cryptic paramiko/auth error after a TCP handshake.
+        if not ssh_user:
+            console.print(
+                "[red]SSH username is not configured.[/red]\n"
+                "  Run [bold]arc auth configure[/bold] and set the SSH Username field.\n"
+                "  Or set env var [bold]ARC_SSH_USER=admin[/bold] for this session."
+            )
+            return
+        import os as _os
+        if ssh_key_path and not _os.path.exists(_os.path.expanduser(ssh_key_path)):
+            console.print(
+                f"[red]SSH key file not found:[/red] {ssh_key_path}\n"
+                "  Update the path with [bold]arc auth configure[/bold] or remove it to use "
+                "SSH agent / password auth."
+            )
+            return
+
         console.print(
             f"[dim]SSH → {ssh_user}@{host}:{ssh_port}  cmd: {ssh_cmd}[/dim]"
         )
@@ -308,6 +347,18 @@ class ExecutionMixin:
             console.print(fmt.format_dict(data, title=key))
         else:
             console.print(fmt.format_raw(str(data), title=key))
+
+        # Pager hint: if a terminal length is configured and output is large,
+        # tell the operator how to page through results so they don't lose the
+        # top of a thousand-row table.
+        if isinstance(data, list) and not getattr(self, "_piping", False):
+            pg = page_length()
+            if pg > 0 and len(data) > pg:
+                console.print(
+                    f"[dim]  {len(data)} rows — showing all. "
+                    "Use [bold]| match <pattern>[/bold] to filter, "
+                    "or [bold]terminal length 0[/bold] to disable this hint.[/dim]"
+                )
 
     def _make_context(self) -> ExecutionContext:
         return ExecutionContext(

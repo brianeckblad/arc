@@ -235,6 +235,43 @@ class DispatchMixin:
             console.file.flush()
         return should_exit
 
+    def _cmd_show_connections(self) -> None:
+        """List active SSH connections in the pool (`show connections`)."""
+        pool = getattr(self._ssh, "_pool", {})
+        if not pool:
+            console.print("[dim]No active SSH connections.[/dim]")
+            return
+        rows = []
+        for host, client in list(pool.items()):
+            transport = client.get_transport()
+            alive = transport and transport.is_active()
+            rows.append({
+                "host": host,
+                "status": "[green]active[/green]" if alive else "[red]stale[/red]",
+            })
+        console.print(fmt._list_table(rows, title=f"SSH connection pool ({len(rows)} connection(s))"))
+        console.print("[dim]  close connection <host>  — drop a specific connection[/dim]")
+
+    def _cmd_close_connection(self, args: list[str]) -> None:
+        """Close a specific pooled SSH connection (`close connection <host>`)."""
+        if not args:
+            console.print("[yellow]Usage:[/yellow] close connection <host>")
+            return
+        host = args[0]
+        pool = getattr(self._ssh, "_pool", {})
+        if host not in pool:
+            alive_hosts = list(pool.keys())
+            if alive_hosts:
+                console.print(
+                    f"[yellow]'{host}' not in the SSH pool.[/yellow]  "
+                    f"Active connections: {', '.join(alive_hosts)}"
+                )
+            else:
+                console.print("[dim]No active SSH connections to close.[/dim]")
+            return
+        self._ssh.close(host)
+        console.print(f"[green]✓[/green] Closed SSH connection to [bold]{host}[/bold].")
+
     def _save_pipe_output(self, lines: list[str], target: str) -> None:
         """Write piped output *lines* to *target* as plain UTF-8 text.
 
@@ -610,6 +647,16 @@ class DispatchMixin:
                 console.print("[cyan]Exited configure mode.[/cyan]")
                 return False
             return True
+
+        # ---- show connections — list active SSH pool connections ----
+        if cmd == "show" and len(tokens) > 1 and tokens[1].lower() == "connections":
+            self._cmd_show_connections()
+            return False
+
+        # ---- close connection <device> — drop a pooled SSH connection ----
+        if cmd == "close" and len(tokens) > 1 and tokens[1].lower() == "connection":
+            self._cmd_close_connection(tokens[2:])
+            return False
 
         # ---- abandon (configure mode): discard locally staged changes ----
         if cmd == "abandon":

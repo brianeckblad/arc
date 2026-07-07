@@ -138,9 +138,15 @@ def _parse_args(tokens: list[str]) -> dict:
 
     if positional:
         result["_positional"] = positional
+        # Convenience shortcuts so handlers can use whichever key is most
+        # semantically appropriate without knowing the exact positional index.
+        # Only set when the key was NOT already parsed as a keyword param
+        # (setdefault never overwrites an existing value).
+        # NOTE: "id", "name", "host" are also in KEYWORD_PARAMS so they are
+        # parsed as keyword→value when followed by a non-flag token.  These
+        # setdefaults only apply when the token appears bare in positional[0].
         result.setdefault("id",   positional[0])
         result.setdefault("name", positional[0])
-        result.setdefault("host", positional[0])
     return result
 
 

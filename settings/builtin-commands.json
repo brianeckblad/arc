@@ -72,6 +72,15 @@
     "onlogin": false,
     "startup_hint": ""
   },
+  "close connection": {
+    "visible": true,
+    "display": "close connection <host>",
+    "help": "Drop a specific SSH connection from the pool  (see show connections)",
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
   "cli": {
     "visible": true,
     "display": "cli <subcommand>",
@@ -230,6 +239,15 @@
     "display": "show config",
     "help": "List staged changes pending commit  (local — not yet in SCM)",
     "configure_only": true,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
+  },
+  "show connections": {
+    "visible": true,
+    "display": "show connections",
+    "help": "List active SSH connections in the pool  (close connection <host> to drop one)",
+    "configure_only": false,
     "hide_in_configure": false,
     "onlogin": false,
     "startup_hint": ""

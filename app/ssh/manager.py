@@ -212,10 +212,19 @@ class SSHManager:
                         text = "".join(chunks).rstrip()
                         last_line = text.splitlines()[-1].strip() if text else ""
                         if last_line.endswith((">", "#")):
-                            break
+                            return "".join(chunks)
                     else:
                         _time.sleep(0.1)
-                return "".join(chunks)
+                # Deadline expired without seeing a prompt — raise so the caller
+                # knows output is incomplete rather than silently returning partial data.
+                partial = "".join(chunks)
+                last = partial.splitlines()[-1].strip() if partial.strip() else "(no output)"
+                raise SSHError(
+                    f"Timed out waiting for device prompt on {host} "
+                    f"(last line: {last!r}). "
+                    f"Increase timeout_s (current: {timeout_s}s) or check device health."
+                )
+                return "".join(chunks)  # unreachable; satisfies type checker
 
             deadline = _time.monotonic() + timeout_s
             _read_until_prompt(deadline)                      # banner + first prompt

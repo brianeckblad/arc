@@ -219,8 +219,22 @@ def auth_configure(
     if profile != "default":
         console.print(
             f"Switch to this profile in ARC with: [bold]account {profile}[/bold]\n"
-            "Run [bold]arc auth test[/bold] to verify your credentials work end-to-end."
         )
+
+    # Auto-verify credentials immediately so the operator knows right away
+    # if something was entered incorrectly, without needing a separate command.
+    if cfg.scm.is_configured:
+        console.print("[dim]Verifying credentials…[/dim]")
+        try:
+            from app.api.client import SCMClient
+            SCMClient(cfg.scm)
+            console.print("[green]✓[/green] SCM credentials verified — token obtained successfully.\n")
+        except Exception as exc:
+            console.print(
+                f"[yellow]⚠  Credential check failed:[/yellow] {exc}\n"
+                "  Credentials were saved. Run [bold]arc auth test[/bold] for a full diagnostic,\n"
+                "  or re-run [bold]arc auth configure[/bold] to correct the values.\n"
+            )
     else:
         console.print(
             "Run [bold]arc auth test[/bold] to verify your credentials work end-to-end."

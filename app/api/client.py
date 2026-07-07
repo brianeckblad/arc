@@ -107,6 +107,22 @@ class SCMClient:
         elif cfg.bearer_token.strip():
             self._token = cfg.bearer_token.strip()
         else:
+            # Produce a specific message identifying which field is missing so
+            # the operator knows exactly what to fix rather than a generic error.
+            missing: list[str] = []
+            if not cfg.client_id:
+                missing.append("client_id")
+            if not cfg.client_secret:
+                missing.append("client_secret")
+            if not cfg.tsg_id:
+                missing.append("tsg_id")
+            if missing and not cfg.bearer_token:
+                raise SCMError(
+                    f"SCM is not configured — missing: {', '.join(missing)}. "
+                    "Run [bold]arc auth configure[/bold] to set up credentials, "
+                    "or provide them via environment variables "
+                    "(SCM_CLIENT_ID / SCM_CLIENT_SECRET / SCM_TSG_ID)."
+                )
             raise SCMError(
                 "SCM is not configured. Provide client_id + client_secret + tsg_id "
                 "(recommended), or a pre-issued SCM_BEARER_TOKEN."

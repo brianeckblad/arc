@@ -96,10 +96,13 @@ class ConfigureMixin:
             {"command": key, "detail": detail, "folder": ctx.folder, "args": args, "ops": ops}
         )
         shown = f"{key} {detail}".strip()
+        n = len(self._state.staged_ops)
+        review_hint = "show config to review" if n > 1 else "show config to review"
+        unstage_hint = f"  unstage {n} to remove this one  |  " if n > 1 else "  "
         console.print(
             f"[green]✓[/green] Validated and staged: [bold]{shown}[/bold]  "
-            f"[dim]({len(self._state.staged_ops)} pending — "
-            "show config to review, commit to apply)[/dim]"
+            f"[dim]({n} pending —{unstage_hint}"
+            f"{review_hint}  |  commit to apply)[/dim]"
         )
 
     def _cmd_show_pending(self) -> None:
@@ -122,7 +125,9 @@ class ConfigureMixin:
         console.print(fmt._list_table(rows, title=f"Staged changes ({len(staged)}) — local, not yet in SCM"))
         console.print(
             "[dim]Staged changes are not visible in show output until commit.  "
-            "commit → apply all  |  abandon → discard all[/dim]"
+            "commit → apply all  |  unstage <n> → remove one  |  abandon → discard all\n"
+            "  Tip: [bold]show config format set[/bold] shows the running config as replayable set commands.  "
+            "Pipe to save a backup: [bold]show config format set | save /tmp/backup.sh[/bold][/dim]"
         )
 
     def _cmd_abandon(self, args: list[str]) -> None:

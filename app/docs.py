@@ -117,7 +117,13 @@ def synthesize_command_help(key: str) -> str:
     already carries everything the operator needs.  Write a real
     ``docs/commands/<slug>.md`` page only when there is more to say; it then
     takes precedence over this synthesized text.
+
+    Results are cached per session — the registry never changes at runtime so
+    re-generating the same page on every help request is wasteful.
     """
+    cached = _synthesis_cache.get(key)
+    if cached is not None:
+        return cached
     cmd = COMMANDS[key]
     lines = [f"# {key}", "", cmd.description or "(no description)", ""]
     if cmd.usage:
@@ -129,7 +135,14 @@ def synthesize_command_help(key: str) -> str:
     if cmd.ssh_command is not None:
         lines.append("- **Remote:** supports `--remote <device>` (SSH)")
     lines += ["", "_Synthesized from the command registry — no hand-written page exists for this command._"]
-    return "\n".join(lines)
+    result = "\n".join(lines)
+    _synthesis_cache[key] = result
+    return result
+
+
+# Per-session cache for synthesized command help pages.  The registry is
+# immutable at runtime so we never need to invalidate this.
+_synthesis_cache: dict[str, str] = {}
 
 
 # Pager behavior — set once at shell startup from the user's preferences file
