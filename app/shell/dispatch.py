@@ -464,10 +464,32 @@ class DispatchMixin:
             if len(prefix_matches) > 15:
                 console.print(f"  [dim]… and {len(prefix_matches) - 15} more — type more letters[/dim]")
             return
-        
-        # Get fuzzy matches
-        matches = difflib.get_close_matches(first_word, visible_commands, n=5, cutoff=0.5)
-        
+
+        # If exactly one prefix match that IS the typed command → it's in the
+        # registry but the feature is off or the command is blocked.
+        if len(prefix_matches) == 1 and prefix_matches[0].lower() == cmd_text.lower():
+            only = prefix_matches[0]
+            cmd_def_hint = COMMANDS.get(only)
+            if cmd_def_hint and cmd_def_hint.feature_flag:
+                flag = cmd_def_hint.feature_flag
+                console.print(
+                    f"\n[yellow]Command disabled:[/yellow] [bold]{cmd_text}[/bold]\n"
+                    f"  Feature [bold]{flag}[/bold] is off.\n"
+                    f"  Enable with: [cyan]feature enable {flag}[/cyan]\n"
+                )
+            else:
+                console.print(
+                    f"\n[yellow]Command unavailable:[/yellow] [bold]{cmd_text}[/bold]\n"
+                    "  Type [bold]?[/bold] for available commands.\n"
+                )
+            return
+
+        # Fuzzy "Did you mean?" — compare the full typed text against full
+        # command names, then prefer same-verb suggestions to avoid cross-verb noise.
+        same_verb_cmds = [c for c in visible_commands if c.split()[0].lower() == first_word] if first_word else []
+        candidate_pool = same_verb_cmds if same_verb_cmds else visible_commands
+        matches = difflib.get_close_matches(cmd_text, candidate_pool, n=5, cutoff=0.5)
+
         if matches:
             console.print(
                 f"\n[yellow]Unknown command:[/yellow] [bold]{cmd_text}[/bold]\n\n"

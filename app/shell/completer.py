@@ -507,33 +507,69 @@ class ArcCompleter(Completer):
             yield from self._complete_arguments(matched_key, qparts, at_boundary, qpartial)
             return
 
-        # ---- Default: command-name prefix completion (still typing the command) ----
+        # ---- Default: Cisco/PAN-OS-style word-by-word command-name completion ----
+        # Each Tab press completes only the NEXT word, not the full remaining phrase.
+        #   "request <tab>"        → "system"
+        #   "request system <tab>" → "reboot" / "shutdown" / "software"
+        ends_with_space = text.endswith(" ")
         text_trim = text.rstrip(" ")
         include_remote_suffix = " --" in text
-        full_is_command = text_trim in COMMANDS and self._command_visible(text_trim)
-        for name in sorted(self._all_commands(include_remote_suffix=include_remote_suffix)):
-            if name == text_trim:
-                continue
-            if full_is_command:
-                # The typed text is already a complete command — only offer true
-                # sub-commands (`K <more>`), never prefix-siblings.
-                if not name.startswith(text_trim + " "):
-                    continue
-            elif not name.startswith(text_trim):
-                continue
-            yield Completion(name, start_position=-len(text))
 
-        # Also surface dev-gated commands with a hint so operators can discover them.
+        if ends_with_space:
+            prefix_str = text_trim   # all completed words, e.g. "request"
+            partial    = ""
+        else:
+            idx = text_trim.rfind(" ")
+            prefix_str = text_trim[:idx] if idx >= 0 else ""
+            partial    = text_trim[idx+1:] if idx >= 0 else text_trim
+
+        prefix_for_filter = (prefix_str + " ") if prefix_str else ""
+
+        seen_words: set[str] = set()
+        for name in sorted(self._all_commands(include_remote_suffix=include_remote_suffix)):
+            if not self._command_visible(name):
+                continue
+            lname = name.lower()
+            if prefix_for_filter and not lname.startswith(prefix_for_filter.lower()):
+                continue
+            if not prefix_for_filter and partial and not lname.startswith(partial.lower()):
+                continue
+            remaining = name[len(prefix_for_filter):]
+            if not remaining:
+                continue
+            next_word = remaining.split()[0]
+            if partial and not next_word.lower().startswith(partial.lower()):
+                continue
+            if next_word.lower() in seen_words:
+                continue
+            seen_words.add(next_word.lower())
+            # Show the description when this next word completes a known command.
+            meta = ""
+            full_key = (prefix_str + " " + next_word).strip().lower()
+            if full_key in COMMANDS:
+                meta = (COMMANDS[full_key].description or "")[:60]
+            yield Completion(next_word, start_position=-len(partial), display_meta=meta)
+
+        # Surface dev-gated commands as discoverable hints (next word only).
+        full_is_command = text_trim.lower() in COMMANDS and self._command_visible(text_trim)
         if not full_is_command:
             for name in sorted(self._dev_gated_commands()):
-                if not name.startswith(text_trim):
+                lname = name.lower()
+                if prefix_for_filter and not lname.startswith(prefix_for_filter.lower()):
                     continue
-                if name == text_trim:
+                if not prefix_for_filter and partial and not lname.startswith(partial.lower()):
                     continue
-                yield Completion(
-                    name, start_position=-len(text),
-                    display_meta="[dim][dev mode][/dim]",
-                )
+                remaining = name[len(prefix_for_filter):]
+                if not remaining:
+                    continue
+                next_word = remaining.split()[0]
+                if partial and not next_word.lower().startswith(partial.lower()):
+                    continue
+                if next_word.lower() in seen_words:
+                    continue
+                seen_words.add(next_word.lower())
+                yield Completion(next_word, start_position=-len(partial),
+                                 display_meta="[dev mode]")
 
         # When the typed text is itself a complete command but has no trailing
         # space yet, also surface its first argument slot (with a leading space)

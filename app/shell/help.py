@@ -109,6 +109,20 @@ class HelpMixin:
                 if footer_parts:
                     console.print()
                     console.print(f"  {self._styled('  |  '.join(footer_parts), t.description_dim)}")
+            elif exact_cmd is not None:
+                # Command exists in the registry but isn't available right now
+                # (wrong context — no device, not in configure mode, etc.).
+                # Show the description and a context hint rather than "Unknown command".
+                console.print()
+                self._print_inline_usage(exact_key, exact_cmd)
+                if exact_cmd.scope == "device" and not self._state.device:
+                    console.print(
+                        f"  [dim]Requires device context — "
+                        f"[bold]cd <device>[/bold] first, or "
+                        f"[bold]{exact_key} --remote <device>[/bold][/dim]"
+                    )
+                console.print(f"  [dim]{exact_key} help[/dim]  → full docs & examples")
+                console.print()
             else:
                 prefix = " ".join(prefix_tokens).lower()
                 _builtin_names = {
@@ -125,8 +139,8 @@ class HelpMixin:
                             f"Type [bold]{prefix} help[/bold] for full docs.\n"
                         )
                 else:
-                    # No match — use the intelligent suggestion system from dispatch
-                    self._show_command_not_found([prefix])
+                    # No match — show next-word options from the prefix
+                    self._cmd_help_inline(prefix_tokens)
             return
 
         # --- Bare ? or help — Cisco/Palo-style root prompt listing ---
