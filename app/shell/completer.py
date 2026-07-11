@@ -508,9 +508,14 @@ class ArcCompleter(Completer):
             return
 
         # ---- Default: Cisco/PAN-OS-style word-by-word command-name completion ----
-        # Each Tab press completes only the NEXT word, not the full remaining phrase.
-        #   "request <tab>"        → "system"
-        #   "request system <tab>" → "reboot" / "shutdown" / "software"
+        # Each Tab completes exactly the NEXT word and advances with a trailing
+        # space so the following Tab immediately reveals the next level:
+        #   "req<tab>"             → "request "   (auto-fill, advances to space)
+        #   "request<tab>"         → "request "   (confirms word, advances)
+        #   "request <tab>"        → "system "
+        #   "request system<tab>"  → "system "    (confirms word)
+        #   "request system <tab>" → "reboot " / "shutdown " / "software "
+        #   "request system reboot <tab>" → <cr>  Execute command
         ends_with_space = text.endswith(" ")
         text_trim = text.rstrip(" ")
         include_remote_suffix = " --" in text
@@ -548,7 +553,10 @@ class ArcCompleter(Completer):
             full_key = (prefix_str + " " + next_word).strip().lower()
             if full_key in COMMANDS:
                 meta = (COMMANDS[full_key].description or "")[:60]
-            yield Completion(next_word, start_position=-len(partial), display_meta=meta)
+            # Always append a trailing space so the next Tab immediately shows
+            # the following level — display without space, insert with space.
+            yield Completion(next_word + " ", start_position=-len(partial),
+                             display=next_word, display_meta=meta)
 
         # Surface dev-gated commands as discoverable hints (next word only).
         full_is_command = text_trim.lower() in COMMANDS and self._command_visible(text_trim)
@@ -568,14 +576,20 @@ class ArcCompleter(Completer):
                 if next_word.lower() in seen_words:
                     continue
                 seen_words.add(next_word.lower())
-                yield Completion(next_word, start_position=-len(partial),
-                                 display_meta="[dev mode]")
+                yield Completion(next_word + " ", start_position=-len(partial),
+                                 display=next_word, display_meta="[dev mode]")
 
-        # When the typed text is itself a complete command but has no trailing
-        # space yet, also surface its first argument slot (with a leading space)
-        # so `set address` + Tab reveals what comes next instead of nothing.
-        # Sub-command continuations are already offered by the prefix loop above,
-        # so here we emit only the argument options.
+        # Leaf node: the typed text is a complete command with no sub-commands
+        # remaining — the only valid next action is Enter.
+        if not seen_words and ends_with_space and prefix_str.lower() in COMMANDS and \
+                self._command_visible(prefix_str):
+            yield Completion("", start_position=0,
+                             display="<cr>", display_meta="Execute command")
+
+        # When the typed text is a complete command without a trailing space,
+        # also surface its first argument slot so `set address` + Tab shows
+        # what comes next.  Sub-command continuations are handled by the loop
+        # above, so here we emit only structured argument options.
         if full_is_command and not text.endswith(" "):
             for opt in self._arg_options(text_trim, []):
                 text_ins = opt["text"]

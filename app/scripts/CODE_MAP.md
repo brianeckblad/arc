@@ -397,27 +397,27 @@ cliup()                                  855-874        Rebuild the offline brow
 scm_get()                                886-898        Perform a raw GET request against the SCM API.
 run()                                    905-906        
 
-## `app/shell/completer.py`  (865 lines)
+## `app/shell/completer.py`  (879 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _parse_usage()                           26-62          Parse a usage string into (required_slots, optional_keywords).
 _usage_options()                         65-99          Return (token, display_meta) completions for the slot after *typed* ar
 _tokenize_partial()                      102-135        Split *text* for completion, honouring quotes, tracking the in-progres
-class ArcCompleter                       138-864        Context-aware tab completer.
+class ArcCompleter                       138-878        Context-aware tab completer.
   .__init__()                            147-148        
   ._command_visible()                    150-159        Return True when a registered command is visible in this shell mode.
   ._command_is_dev_gated()               161-171        Return True when the command exists but is gated behind dev mode.
   .get_completions()                     173-194        
-  ._complete_normal()                    196-588        Yield completions for non-dev-shell commands.
-  ._complete_dev_shell()                 590-654        Yield completions for dev shell commands.
-  ._match_complete_command()             656-671        Return the longest complete command key the user has fully entered.
-  ._complete_arguments()                 673-725        Yield completions for the argument region of a complete command.
-  ._object_names()                       750-789        Existing object names in the active folder, cached for a minute.
-  ._dynamic_name_options()               791-817        Live object names for name-completion slots.
-  ._arg_options()                        819-836        Resolve next-slot argument options: structure file first, usage fallba
-  ._all_commands()                       839-848        
-  ._dev_gated_commands()                 850-864        Return command keys that are gated by a 'dev' feature flag.
+  ._complete_normal()                    196-602        Yield completions for non-dev-shell commands.
+  ._complete_dev_shell()                 604-668        Yield completions for dev shell commands.
+  ._match_complete_command()             670-685        Return the longest complete command key the user has fully entered.
+  ._complete_arguments()                 687-739        Yield completions for the argument region of a complete command.
+  ._object_names()                       764-803        Existing object names in the active folder, cached for a minute.
+  ._dynamic_name_options()               805-831        Live object names for name-completion slots.
+  ._arg_options()                        833-850        Resolve next-slot argument options: structure file first, usage fallba
+  ._all_commands()                       853-862        
+  ._dev_gated_commands()                 864-878        Return command keys that are gated by a 'dev' feature flag.
 
 ## `app/scripts/generate_panos_catalog.py`  (852 lines)
 
