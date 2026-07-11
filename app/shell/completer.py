@@ -344,6 +344,41 @@ class ArcCompleter(Completer):
                     yield Completion(sub, start_position=-len(partial_arg))
             return
 
+        # ---- terminal → subcommand + value completion ----
+        if first == "terminal" and has_arg_space:
+            second = parts[1].lower() if len(parts) > 1 else ""
+            _sub_meta = {
+                "length":  "lines per page  (0 = off)",
+                "width":   "render width    (0 = auto)",
+                "height":  "render height   (0 = auto)",
+                "spinner": "show/hide spinner",
+            }
+            if len(parts) <= 2:
+                for sub, meta in _sub_meta.items():
+                    if sub.startswith(partial_arg.lower()):
+                        yield Completion(sub, start_position=-len(partial_arg), display_meta=meta)
+            elif second == "spinner" and len(parts) <= 3:
+                partial_val = parts[2] if len(parts) > 2 else ""
+                for val in ("on", "off"):
+                    if val.startswith(partial_val.lower()):
+                        yield Completion(val, start_position=-len(partial_val))
+            elif second in ("length", "width", "height") and len(parts) <= 3:
+                partial_val = parts[2] if len(parts) > 2 else ""
+                p = self._shell._prefs
+                current = {"length": p.terminal_length, "width": p.terminal_width, "height": p.terminal_height}.get(second, 0)
+                hint = str(current) if current else "0"
+                if hint.startswith(partial_val):
+                    yield Completion(hint, start_position=-len(partial_val),
+                                     display_meta=f"current value")
+            return
+
+        # ---- show terminal (builtin — inject alongside registry show-commands) ----
+        if first == "show" and has_arg_space and len(parts) <= 2:
+            if "terminal".startswith(partial_arg.lower()):
+                yield Completion("terminal", start_position=-len(partial_arg),
+                                 display_meta="display terminal settings")
+            # No return — falls through to registry-based show <command> completion
+
         # ---- cli → theme operations in configure mode ----
         if first == "cli" and has_arg_space:
             second = parts[1].lower() if len(parts) > 1 else ""

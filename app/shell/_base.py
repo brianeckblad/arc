@@ -82,8 +82,11 @@ from app.settings.cli_structure import (
 )
 from app.docs import (
     available_help_topics,
+    cisco_pager,
     open_docs_in_browser,
     page_length,
+    paging_stdout,
+    _PAGING_EXEMPT,
     render_help_topic,
     set_page_length,
 )
@@ -254,15 +257,25 @@ def _make_key_bindings(shell=None) -> KeyBindings:
 
     @kb.add("tab")
     def _handle_tab(event) -> None:
-        # First Tab shows the completion menu (so value hints like "<name>"
-        # are always visible, even when a slot has a single, non-inserting
-        # hint); subsequent Tabs cycle through the entries.  This is the
-        # vendor-CLI / bash behaviour and avoids silently auto-filling.
         buf = event.current_buffer
         if buf.complete_state:
             buf.complete_next()
-        else:
-            buf.start_completion(select_first=False)
+            return
+
+        # Peek at available completions: auto-fill if exactly one match,
+        # otherwise show the dropdown menu.
+        session = getattr(shell, "_session", None) if shell is not None else None
+        completer = getattr(session, "completer", None) if session is not None else None
+        if completer is not None:
+            from prompt_toolkit.completion import CompleteEvent
+            completions = list(completer.get_completions(
+                buf.document, CompleteEvent(completion_requested=True)
+            ))
+            if len(completions) == 1:
+                buf.apply_completion(completions[0])
+                return
+
+        buf.start_completion(select_first=False)
 
     @kb.add("s-tab")
     def _handle_back_tab(event) -> None:
@@ -323,8 +336,8 @@ __all__ = [
     "ArcConfig", "list_profiles", "load_config", "set_active_profile",
     "_cd_hint", "_configure_banner", "_help_footer", "_section_label",
     "_verb_description", "_verb_visible",
-    "available_help_topics", "open_docs_in_browser", "page_length",
-    "render_help_topic", "set_page_length",
+    "available_help_topics", "cisco_pager", "open_docs_in_browser", "page_length",
+    "paging_stdout", "_PAGING_EXEMPT", "render_help_topic", "set_page_length",
     "UserPrefs", "load_prefs", "save_prefs",
     "dev_mode_from_env", "feature_state", "is_enabled", "is_feature_visible", "load_features",
     "load_command_visibility", "is_command_visible", "is_command_executable", "load_builtin_aliases",

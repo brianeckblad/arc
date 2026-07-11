@@ -13,7 +13,9 @@ server required.
 from __future__ import annotations
 
 import re
+import sys
 import webbrowser
+from contextlib import contextmanager
 from pathlib import Path
 
 from rich.console import Console
@@ -160,6 +162,192 @@ def set_page_length(lines: int) -> None:
 def page_length() -> int:
     """Current pager threshold in lines (0 = paging disabled)."""
     return _PAGE_LENGTH
+
+
+class _PagingFile:
+    """A sys.stdout wrapper that pauses output every *page_size* lines.
+
+    Preserves ANSI escape codes (isatty() returns True so Rich keeps colours).
+    Used by paging_stdout() to make *all* shell output — builtins, API results,
+    help text — respect ``terminal length``.
+    """
+
+    def __init__(self, real_file, page_size: int) -> None:
+        self._real = real_file
+        self._page_size = page_size
+        self._lines = 0
+        self._stopped = False
+        try:
+            import termios as _t  # noqa: F401
+            import tty as _tty    # noqa: F401
+            self._has_termios = True
+        except ImportError:
+            self._has_termios = False
+
+    # Rich checks isatty() to decide whether to emit ANSI codes.
+    def isatty(self) -> bool:       # noqa: D102
+        return True
+
+    def fileno(self) -> int:        # noqa: D102
+        return self._real.fileno()
+
+    def write(self, data: str) -> int:  # noqa: D102
+        if self._stopped or not data:
+            return len(data)
+
+        # Split on newlines; each separator means one completed visible line.
+        parts = data.split("\n")
+        for i, chunk in enumerate(parts):
+            last = i == len(parts) - 1
+            self._real.write(chunk)
+            if not last:
+                self._real.write("\n")
+                self._real.flush()
+                self._lines += 1
+                if self._lines >= self._page_size:
+                    if not self._show_more():
+                        self._stopped = True
+                        return len(data)
+                    # _show_more resets _lines for space/enter
+        return len(data)
+
+    def flush(self) -> None:        # noqa: D102
+        self._real.flush()
+
+    def _getch(self) -> str:
+        if not self._has_termios:
+            return sys.stdin.readline()[:1]
+        import termios, tty
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            ch = sys.stdin.buffer.read(1)
+            return ch.decode("utf-8", errors="replace")
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)
+
+    def _show_more(self) -> bool:
+        """Print --More-- prompt; return False if user quits."""
+        prompt = " --More-- "
+        self._real.write(f"\033[7m{prompt}\033[m")
+        self._real.flush()
+        key = self._getch()
+        self._real.write(f"\r{' ' * len(prompt)}\r")
+        self._real.flush()
+        if key in ("q", "Q", "\x03", "\x04"):
+            self._real.write("[output truncated]\n")
+            self._real.flush()
+            return False
+        elif key in ("\r", "\n"):
+            # Enter: show one more line then pause again
+            self._lines = self._page_size - 1
+        else:
+            # Space or anything else: next full page
+            self._lines = 0
+        return True
+
+
+# Commands that take over the terminal (interactive PTY, screen redraws, etc.)
+# — paging must not be installed for these.
+_PAGING_EXEMPT = frozenset({
+    "connect", "configure", "conf", "setup", "watch", "clear", "docs",
+})
+
+
+@contextmanager
+def paging_stdout(page_size: int):
+    """Context manager: wrap sys.stdout with line-based paging.
+
+    Installs a *_PagingFile* as sys.stdout so that ALL output — Rich console
+    prints, plain print() calls, direct writes — is paged through --More--.
+    Because _PagingFile.isatty() returns True, Rich preserves ANSI colours.
+    """
+    if page_size <= 0:
+        yield
+        return
+    pager = _PagingFile(sys.stdout, page_size)
+    old = sys.stdout
+    sys.stdout = pager
+    try:
+        yield
+    finally:
+        sys.stdout = old
+
+
+def cisco_pager(lines: list, page_size: int) -> None:
+    """Cisco IOS-style --More-- interactive pager.
+
+    Prints *lines* one page at a time (page_size lines per page).
+    At each pause the operator presses:
+      space / any key  — next full page
+      enter            — one more line
+      q / Q / Ctrl-C   — quit (truncate)
+
+    When stdout is not a TTY (piped/redirected), all lines are printed
+    without pausing.
+    """
+    import sys
+
+    if not lines:
+        return
+
+    if not sys.stdout.isatty():
+        sys.stdout.write("\n".join(lines) + "\n")
+        sys.stdout.flush()
+        return
+
+    try:
+        import termios
+        import tty
+        _has_termios = True
+    except ImportError:
+        _has_termios = False
+
+    def _getch() -> str:
+        if not _has_termios:
+            return sys.stdin.readline()[:1]
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            ch = sys.stdin.buffer.read(1)
+            return ch.decode("utf-8", errors="replace")
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)
+
+    total = len(lines)
+    idx = 0
+    lines_on_screen = 0
+
+    while idx < total:
+        sys.stdout.write(lines[idx] + "\n")
+        sys.stdout.flush()
+        idx += 1
+        lines_on_screen += 1
+
+        if lines_on_screen >= page_size and idx < total:
+            remaining = total - idx
+            prompt = f" --More-- ({idx}/{total} lines, {remaining} remaining) "
+            sys.stdout.write(f"\033[7m{prompt}\033[m")
+            sys.stdout.flush()
+
+            key = _getch()
+
+            # Erase the prompt line
+            sys.stdout.write(f"\r{' ' * len(prompt)}\r")
+            sys.stdout.flush()
+
+            if key in ("q", "Q", "\x03", "\x04"):
+                sys.stdout.write("[output truncated]\n")
+                sys.stdout.flush()
+                return
+            elif key in ("\r", "\n"):
+                # Enter: show one more line then pause again
+                lines_on_screen = page_size - 1
+            else:
+                # Space or anything else: next full page
+                lines_on_screen = 0
 
 
 def render_help_topic(console: Console, topic: str, use_pager: bool = True) -> bool:

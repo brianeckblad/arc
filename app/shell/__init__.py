@@ -199,7 +199,13 @@ class ArcShell(
             if not line:
                 continue
             try:
-                should_exit = self._dispatch(line)
+                # Install the sys.stdout pager for this command if terminal length
+                # is set, unless the command owns the terminal itself (PTY, watch, etc.)
+                pg = page_length()
+                first_token = line.split()[0].lower() if line.strip() else ""
+                use_pager = pg > 0 and first_token not in _PAGING_EXEMPT
+                with paging_stdout(pg if use_pager else 0):
+                    should_exit = self._dispatch(line)
                 if should_exit:
                     if self._guard_pending_confirm_on_exit():
                         continue

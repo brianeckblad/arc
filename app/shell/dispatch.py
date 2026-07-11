@@ -653,6 +653,11 @@ class DispatchMixin:
             self._cmd_show_connections()
             return False
 
+        # ---- show terminal — display current terminal settings ----
+        if cmd == "show" and len(tokens) > 1 and tokens[1].lower() == "terminal":
+            self._cmd_terminal([])
+            return False
+
         # ---- close connection <device> — drop a pooled SSH connection ----
         if cmd == "close" and len(tokens) > 1 and tokens[1].lower() == "connection":
             self._cmd_close_connection(tokens[2:])

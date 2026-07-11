@@ -378,7 +378,7 @@ cliup()                                  855-874        Rebuild the offline brow
 scm_get()                                886-898        Perform a raw GET request against the SCM API.
 run()                                    905-906        
 
-## `app/shell/dispatch.py`  (891 lines)
+## `app/shell/dispatch.py`  (896 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -386,7 +386,7 @@ split_pipe_line()                        23-38          Split *line* at the firs
 parse_output_filters()                   41-83          Parse a pipe filter chain into ``[(op, pattern), …]``.
 _bare_line()                             90-96          Strip ANSI + box-drawing from *line*; return None if nothing remains.
 _line_matches()                          99-105         Regex match (case-insensitive) with plain-substring fallback.
-class DispatchMixin                      108-890        
+class DispatchMixin                      108-895        
   ._cmd_watch()                          109-153        Re-run *rest* every N seconds until Ctrl-C (`watch [N] <command>`).
   ._dispatch_piped()                     155-236        Run *head*, filter its captured output through the pipe *spec*.
   ._cmd_show_connections()               238-253        List active SSH connections in the pool (`show connections`).
@@ -395,7 +395,7 @@ class DispatchMixin                      108-890
   ._cmd_history()                        294-339        Print the last N commands from the prompt history (`history [n]`).
   ._cmd_alias()                          341-412        User-defined aliases (`alias` / `alias <name> <expansion…>` /
   ._show_command_not_found()             414-485        Show a helpful message when a command is not recognized.
-  ._dispatch()                           487-890        Process one input line.  Returns True when the user wants to exit ARC.
+  ._dispatch()                           487-895        Process one input line.  Returns True when the user wants to exit ARC.
 
 ## `app/scripts/generate_panos_catalog.py`  (852 lines)
 
@@ -431,27 +431,27 @@ print_report()                           718-796
 render()                                 802-824        
 main()                                   830-847        
 
-## `app/shell/completer.py`  (794 lines)
+## `app/shell/completer.py`  (829 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _parse_usage()                           26-62          Parse a usage string into (required_slots, optional_keywords).
 _usage_options()                         65-99          Return (token, display_meta) completions for the slot after *typed* ar
 _tokenize_partial()                      102-135        Split *text* for completion, honouring quotes, tracking the in-progres
-class ArcCompleter                       138-793        Context-aware tab completer.
+class ArcCompleter                       138-828        Context-aware tab completer.
   .__init__()                            147-148        
   ._command_visible()                    150-159        Return True when a registered command is visible in this shell mode.
   ._command_is_dev_gated()               161-171        Return True when the command exists but is gated behind dev mode.
   .get_completions()                     173-194        
-  ._complete_normal()                    196-517        Yield completions for non-dev-shell commands.
-  ._complete_dev_shell()                 519-583        Yield completions for dev shell commands.
-  ._match_complete_command()             585-600        Return the longest complete command key the user has fully entered.
-  ._complete_arguments()                 602-654        Yield completions for the argument region of a complete command.
-  ._object_names()                       679-718        Existing object names in the active folder, cached for a minute.
-  ._dynamic_name_options()               720-746        Live object names for name-completion slots.
-  ._arg_options()                        748-765        Resolve next-slot argument options: structure file first, usage fallba
-  ._all_commands()                       768-777        
-  ._dev_gated_commands()                 779-793        Return command keys that are gated by a 'dev' feature flag.
+  ._complete_normal()                    196-552        Yield completions for non-dev-shell commands.
+  ._complete_dev_shell()                 554-618        Yield completions for dev shell commands.
+  ._match_complete_command()             620-635        Return the longest complete command key the user has fully entered.
+  ._complete_arguments()                 637-689        Yield completions for the argument region of a complete command.
+  ._object_names()                       714-753        Existing object names in the active folder, cached for a minute.
+  ._dynamic_name_options()               755-781        Live object names for name-completion slots.
+  ._arg_options()                        783-800        Resolve next-slot argument options: structure file first, usage fallba
+  ._all_commands()                       803-812        
+  ._dev_gated_commands()                 814-828        Return command keys that are gated by a 'dev' feature flag.
 
 ## `app/shell/navigation.py`  (719 lines)
 
@@ -709,6 +709,30 @@ _set_snippet()                           285-329        Create a new SCM snippet
 _delete_snippet()                        332-362        Delete an SCM snippet.
 COMMANDS                                 369-447        command registry dict
 
+## `app/docs.py`  (445 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+slugify()                                73-77          Return the docs filename slug for a shell command or topic.
+available_help_topics()                  80-85          Return topics that can be completed after ``help ``.
+doc_path_for_topic()                     88-112         Return the Markdown path for a help topic, if one exists.
+synthesize_command_help()                115-142        Build a Markdown help page for a command straight from the registry.
+set_page_length()                        156-159        Set the pager threshold (0 disables paging). Called from shell startup
+page_length()                            162-164        Current pager threshold in lines (0 = paging disabled).
+class _PagingFile                        167-248        A sys.stdout wrapper that pauses output every *page_size* lines.
+  .__init__()                            175-185        
+  .isatty()                              188-189        
+  .fileno()                              191-192        
+  .write()                               194-212        
+  .flush()                               214-215        
+  ._getch()                              217-228        
+  ._show_more()                          230-248        Print --More-- prompt; return False if user quits.
+paging_stdout()                          259-275        Context manager: wrap sys.stdout with line-based paging.
+cisco_pager()                            278-350        Cisco IOS-style --More-- interactive pager.
+render_help_topic()                      353-396        Render a Markdown help topic inside the ARC shell.
+topic_to_page_path()                     403-423        Convert a help topic string to a relative docs page path.
+open_docs_in_browser()                   426-444        Open docs/index.html in the default browser using a file:// URL.
+
 ## `app/api/sls.py`  (388 lines)
 
 Symbol                                   Lines          Purpose
@@ -770,16 +794,30 @@ _set_url_category()                      299-321        Create a custom URL cate
 _WRITE_COMMANDS                          324-368        command registry dict
 COMMANDS.update(…)                       370-370        merge additional commands into registry
 
-## `app/shell/execution.py`  (372 lines)
+## `app/shell/execution.py`  (364 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class ExecutionMixin                     7-371          
+class ExecutionMixin                     7-363          
   ._execute_api()                        8-154          
   ._execute_remote()                     156-250        
   ._resolve_ssh_command()                252-259        Return the concrete SSH command string for a registered command.
-  ._render()                             261-361        
-  ._make_context()                       363-371        
+  ._render()                             261-276        
+  ._do_render()                          278-353        Render *data* to *con* (a Rich Console). Called by _render.
+  ._make_context()                       355-363        
+
+## `app/shell/_base.py`  (358 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+device_display_name()                    126-141        Best human-readable name for a device inventory entry.
+device_ssh_host()                        144-148        Address ARC should SSH to for a device entry (IP wins over hostname).
+tsg_display()                            151-155        Return ``(tsg_id, display_name)`` for a tenant-service-group entry.
+active_tsg_label()                       158-160        The TSG identifier to show in user-facing messages.
+_expand_unambiguous_prefix()             163-195        Expand command-token prefixes when they resolve to exactly one phrase.
+tokenize()                               211-222        Split a command line into tokens, honouring single/double quotes.
+_make_key_bindings()                     225-288        Return key bindings for the ARC shell.
+class ShellState                         292-318        
 
 ## `app/scripts/generate_resource_catalog.py`  (348 lines)
 
@@ -796,19 +834,6 @@ _covered_default_signatures()            205-238        Method/path signatures a
 _build_catalog()                         241-297        Return generated operation entries from every pulled OpenAPI spec.
 _render()                                300-318        
 main()                                   321-343        
-
-## `app/shell/_base.py`  (345 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-device_display_name()                    123-138        Best human-readable name for a device inventory entry.
-device_ssh_host()                        141-145        Address ARC should SSH to for a device entry (IP wins over hostname).
-tsg_display()                            148-152        Return ``(tsg_id, display_name)`` for a tenant-service-group entry.
-active_tsg_label()                       155-157        The TSG identifier to show in user-facing messages.
-_expand_unambiguous_prefix()             160-192        Expand command-token prefixes when they resolve to exactly one phrase.
-tokenize()                               208-219        Split a command line into tokens, honouring single/double quotes.
-_make_key_bindings()                     222-275        Return key bindings for the ARC shell.
-class ShellState                         279-305        
 
 ## `app/scripts/panosupdate.py`  (336 lines)
 

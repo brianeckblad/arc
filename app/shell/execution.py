@@ -271,25 +271,31 @@ class ExecutionMixin:
             console.print(text, markup=False, highlight=False)
             return
 
+        # Paging is handled globally in the run loop (paging_stdout context manager),
+        # so _render just writes to console unconditionally.
+        self._do_render(key, cmd_def, data, console)
+
+    def _do_render(self, key: str, cmd_def: CommandDef, data, con) -> None:  # noqa: C901
+        """Render *data* to *con* (a Rich Console). Called by _render."""
         render_hint = cmd_def.render
 
         # Unwrap log tuple
         if render_hint == "logs" and isinstance(data, tuple):
             log_type, rows = data
             if isinstance(rows, list):
-                console.print(fmt.format_logs(rows, log_type=log_type))
+                con.print(fmt.format_logs(rows, log_type=log_type))
             else:
-                console.print(fmt.format_raw(str(rows), title=key))
+                con.print(fmt.format_raw(str(rows), title=key))
             return
 
         # XML element fallback — ET is imported at module level
         if isinstance(data, ET.Element):
             raw = ET.tostring(data, encoding="unicode")
-            console.print(fmt.format_raw(raw, title=key))
+            con.print(fmt.format_raw(raw, title=key))
             return
 
         if isinstance(data, str):
-            console.print(fmt.format_raw(data, title=key))
+            con.print(fmt.format_raw(data, title=key))
             return
 
         # If the handler embedded a _render override key (e.g. snippet_detail_full
@@ -297,8 +303,6 @@ class ExecutionMixin:
         # the dispatch table — otherwise cmd_def.render would call the wrong formatter.
         if isinstance(data, dict) and "_render" in data:
             render_hint = data["_render"]
-        else:
-            render_hint = cmd_def.render
 
         dispatch = {
             "system_info":     lambda d: fmt.format_system_info(d),
@@ -334,31 +338,19 @@ class ExecutionMixin:
             # format_snippet_detail returns a list of renderables; others return one.
             if isinstance(result, list):
                 for renderable in result:
-                    console.print(renderable)
+                    con.print(renderable)
             else:
-                console.print(result)
+                con.print(result)
         elif isinstance(data, list):
             if data and isinstance(data[0], dict):
-                console.print(fmt._list_table(data, title=key))
+                con.print(fmt._list_table(data, title=key))
             else:
                 for item in data:
-                    console.print(item)
+                    con.print(item)
         elif isinstance(data, dict):
-            console.print(fmt.format_dict(data, title=key))
+            con.print(fmt.format_dict(data, title=key))
         else:
-            console.print(fmt.format_raw(str(data), title=key))
-
-        # Pager hint: if a terminal length is configured and output is large,
-        # tell the operator how to page through results so they don't lose the
-        # top of a thousand-row table.
-        if isinstance(data, list) and not getattr(self, "_piping", False):
-            pg = page_length()
-            if pg > 0 and len(data) > pg:
-                console.print(
-                    f"[dim]  {len(data)} rows — showing all. "
-                    "Use [bold]| match <pattern>[/bold] to filter, "
-                    "or [bold]terminal length 0[/bold] to disable this hint.[/dim]"
-                )
+            con.print(fmt.format_raw(str(data), title=key))
 
     def _make_context(self) -> ExecutionContext:
         return ExecutionContext(
