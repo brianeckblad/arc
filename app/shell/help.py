@@ -139,8 +139,32 @@ class HelpMixin:
                             f"Type [bold]{prefix} help[/bold] for full docs.\n"
                         )
                 else:
-                    # No match — show next-word options from the prefix
-                    self._cmd_help_inline(prefix_tokens)
+                    # Prefix-only input (not an exact command) — show which next
+                    # words exist in the registry, regardless of current context.
+                    pfx = " ".join(prefix_tokens).lower()
+                    next_words: dict[str, str] = {}
+                    for key, cmd_def in COMMANDS.items():
+                        if not self._is_command_visible(key, cmd_def):
+                            continue
+                        if not key.lower().startswith(pfx + " "):
+                            continue
+                        nw = key[len(pfx)+1:].split()[0]
+                        if nw not in next_words:
+                            desc = cmd_def.description if len(key.split()) == len(prefix_tokens) + 1 else ""
+                            next_words[nw] = desc
+                    if next_words:
+                        console.print()
+                        w = max(len(k) for k in next_words)
+                        for nw in sorted(next_words):
+                            token_cell = self._help_cell(nw, width=max(w, 12))
+                            desc = next_words[nw]
+                            if desc:
+                                console.print(f"  {token_cell}  {desc}")
+                            else:
+                                console.print(f"  {token_cell}")
+                        console.print()
+                    else:
+                        self._show_command_not_found(prefix_tokens)
             return
 
         # --- Bare ? or help — Cisco/Palo-style root prompt listing ---
