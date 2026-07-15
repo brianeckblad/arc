@@ -55,7 +55,7 @@ from collections import defaultdict
 from pathlib import Path
 
 DEV_DIR = Path(__file__).resolve().parent
-REPO_ROOT = DEV_DIR.parent
+REPO_ROOT = DEV_DIR.parent.parent  # app/scripts -> app -> repo root
 sys.path.insert(0, str(REPO_ROOT))
 
 MIRROR_DIR = REPO_ROOT / "docs" / "panos-cli"

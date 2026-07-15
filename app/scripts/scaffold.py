@@ -13,7 +13,7 @@ Arguments:
                setup | objects | security | network | operations
 
 Options:
-    --scope    folder | device | global  (default: folder)
+    --scope    folder | device | remote | global  (default: folder)
     --render   Render key for ArcShell._render()  (default: list)
     --ssh      SSH command string  (default: same as command)
     --dry-run  Print output without writing files
@@ -56,7 +56,7 @@ _MODULE_SPEC_FILE = {
 }
 
 _VALID_MODULES = list(_MODULE_BASE_URL.keys())
-_VALID_SCOPES  = ("folder", "device", "global")
+_VALID_SCOPES  = ("folder", "device", "remote", "global")
 _VALID_RENDERS = ("list", "raw", "panel", "table", "tree")
 
 
@@ -93,8 +93,8 @@ def _handler_code(command: str, module: str, scope: str, render: str) -> str:
     spec_file = _MODULE_SPEC_FILE[module]
 
     folder_param = "folder=ctx.folder" if scope == "folder" else ""
-    device_guard = "    require_device(ctx)\n" if scope == "device" else ""
-    if scope != "device":
+    device_guard = "    require_device(ctx)\n" if scope in ("device", "remote") else ""
+    if scope not in ("device", "remote"):
         scm_lines = (
             f"    scm = require_scm(ctx)\n"
             f"    # TODO: verify endpoint in app/scripts/API_INDEX.md first; deep-dive {spec_file} if needed.\n"

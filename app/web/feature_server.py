@@ -48,6 +48,142 @@ class _QuietThreadingHTTPServer(ThreadingHTTPServer):
             return  # client went away — nothing to report
         super().handle_error(request, client_address)
 
+
+# ---------------------------------------------------------------------------
+# Feature-editor themes.  These style the browser GUI only (never the terminal
+# shell, which uses settings/theme.json).  The user's choice + per-token tweaks
+# live in config/<user>/preferences.json under `feature_gui_theme`.
+# ---------------------------------------------------------------------------
+
+# The color CSS variables the GUI uses (layout tokens like --radius are fixed).
+GUI_THEME_TOKENS = [
+    "--bg", "--bg-sidebar", "--bg-card", "--bg-hover", "--bg-active", "--bg-code",
+    "--border", "--text", "--text-2", "--text-3",
+    "--brand", "--brand-hover", "--green", "--yellow", "--red", "--purple", "--teal",
+    "--header-bg", "--overlay",
+]
+
+# Built-in palettes, macOS-Terminal inspired.  Each provides all color tokens so
+# switching is clean.  "Default" mirrors the shipped dark theme.
+_GUI_THEMES: dict[str, dict[str, str]] = {
+    "Default": {
+        "--bg": "#0B0E1A", "--bg-sidebar": "#111525", "--bg-card": "#171B2E",
+        "--bg-hover": "#1E2340", "--bg-active": "rgba(0,112,209,.15)", "--bg-code": "#0D1020",
+        "--border": "#1E2340", "--text": "#D8DCF0", "--text-2": "#8896B8", "--text-3": "#6B7A9C",
+        "--brand": "#0070D1", "--brand-hover": "#3395E8", "--green": "#22C55E",
+        "--yellow": "#F59E0B", "--red": "#EF4444", "--purple": "#A78BFA", "--teal": "#009CA6",
+        "--header-bg": "rgba(11,14,26,.95)", "--overlay": "rgba(6,8,16,.7)",
+    },
+    "Dark": {
+        "--bg": "#1E1E1E", "--bg-sidebar": "#252526", "--bg-card": "#2D2D2D",
+        "--bg-hover": "#37373D", "--bg-active": "rgba(120,120,120,.2)", "--bg-code": "#181818",
+        "--border": "#3C3C3C", "--text": "#E4E4E4", "--text-2": "#A0A0A0", "--text-3": "#6E6E6E",
+        "--brand": "#4EA1FF", "--brand-hover": "#6FB4FF", "--green": "#4EC94E",
+        "--yellow": "#E5C07B", "--red": "#E06C75", "--purple": "#C678DD", "--teal": "#56B6C2",
+        "--header-bg": "rgba(30,30,30,.95)", "--overlay": "rgba(0,0,0,.7)",
+    },
+    "Light": {
+        "--bg": "#FFFFFF", "--bg-sidebar": "#F3F3F3", "--bg-card": "#FAFAFA",
+        "--bg-hover": "#ECECEC", "--bg-active": "rgba(0,112,209,.1)", "--bg-code": "#F0F0F0",
+        "--border": "#D6D6D6", "--text": "#1A1A1A", "--text-2": "#555555", "--text-3": "#888888",
+        "--brand": "#0066CC", "--brand-hover": "#0052A3", "--green": "#1A9E3F",
+        "--yellow": "#B8860B", "--red": "#CC3333", "--purple": "#8A4FBE", "--teal": "#0A8A93",
+        "--header-bg": "rgba(255,255,255,.95)", "--overlay": "rgba(20,24,40,.35)",
+    },
+    "Clear Dark": {
+        "--bg": "#05070C", "--bg-sidebar": "#0A0D15", "--bg-card": "#0E1220",
+        "--bg-hover": "#161C30", "--bg-active": "rgba(120,160,255,.14)", "--bg-code": "#070910",
+        "--border": "#1A2033", "--text": "#E8ECF8", "--text-2": "#98A4C0", "--text-3": "#5C6885",
+        "--brand": "#5B8DEF", "--brand-hover": "#7BA5F5", "--green": "#3DD68C",
+        "--yellow": "#F2C55C", "--red": "#F26D6D", "--purple": "#B499F0", "--teal": "#3EC8D8",
+        "--header-bg": "rgba(5,7,12,.9)", "--overlay": "rgba(0,0,0,.72)",
+    },
+    "Clear Light": {
+        "--bg": "#FCFCFD", "--bg-sidebar": "#F5F6FA", "--bg-card": "#FFFFFF",
+        "--bg-hover": "#EEF0F6", "--bg-active": "rgba(0,112,209,.09)", "--bg-code": "#F2F4F9",
+        "--border": "#E1E4EE", "--text": "#232733", "--text-2": "#5B6478", "--text-3": "#98A0B2",
+        "--brand": "#2B7DE0", "--brand-hover": "#1E63BE", "--green": "#1FA855",
+        "--yellow": "#C08A18", "--red": "#D6493F", "--purple": "#8C57C7", "--teal": "#128A97",
+        "--header-bg": "rgba(252,252,253,.92)", "--overlay": "rgba(20,24,40,.3)",
+    },
+    "Grass": {
+        "--bg": "#13290A", "--bg-sidebar": "#183310", "--bg-card": "#1E3D15",
+        "--bg-hover": "#274D1C", "--bg-active": "rgba(140,220,90,.18)", "--bg-code": "#0F2208",
+        "--border": "#2C5220", "--text": "#E8F5D8", "--text-2": "#A7C48C", "--text-3": "#6E8A57",
+        "--brand": "#8FD14F", "--brand-hover": "#A6E066", "--green": "#7FD858",
+        "--yellow": "#E5D25C", "--red": "#E88A5A", "--purple": "#C8A0E0", "--teal": "#5FC79B",
+        "--header-bg": "rgba(19,41,10,.94)", "--overlay": "rgba(5,15,3,.72)",
+    },
+    "Homebrew": {
+        "--bg": "#000000", "--bg-sidebar": "#050805", "--bg-card": "#0A0F0A",
+        "--bg-hover": "#12200F", "--bg-active": "rgba(40,220,40,.16)", "--bg-code": "#020402",
+        "--border": "#1A3315", "--text": "#28C828", "--text-2": "#1F9E1F", "--text-3": "#166616",
+        "--brand": "#33D633", "--brand-hover": "#5CE85C", "--green": "#28C828",
+        "--yellow": "#C8C828", "--red": "#E05050", "--purple": "#28C8C8", "--teal": "#28C8A0",
+        "--header-bg": "rgba(0,0,0,.95)", "--overlay": "rgba(0,0,0,.8)",
+    },
+    "Man Page": {
+        "--bg": "#FEF9E7", "--bg-sidebar": "#F5EFD5", "--bg-card": "#FFFDF2",
+        "--bg-hover": "#EDE6C8", "--bg-active": "rgba(0,90,160,.1)", "--bg-code": "#F0EAD0",
+        "--border": "#D8CFA8", "--text": "#1A1A1A", "--text-2": "#5A5440", "--text-3": "#8A8468",
+        "--brand": "#1560A8", "--brand-hover": "#0F4A85", "--green": "#2C8A2C",
+        "--yellow": "#A8801A", "--red": "#B83232", "--purple": "#7A4FB0", "--teal": "#0F7A85",
+        "--header-bg": "rgba(254,249,231,.94)", "--overlay": "rgba(40,36,20,.3)",
+    },
+    "Novel": {
+        "--bg": "#DFDBC3", "--bg-sidebar": "#D5D0B5", "--bg-card": "#E7E3CD",
+        "--bg-hover": "#CDC7A8", "--bg-active": "rgba(140,80,40,.14)", "--bg-code": "#D0CAAE",
+        "--border": "#BDB593", "--text": "#3B2822", "--text-2": "#6B5548", "--text-3": "#94836F",
+        "--brand": "#8A4B2E", "--brand-hover": "#6E3A22", "--green": "#5C7A2E",
+        "--yellow": "#A07818", "--red": "#B04326", "--purple": "#7A4F6E", "--teal": "#3E7A6E",
+        "--header-bg": "rgba(223,219,195,.94)", "--overlay": "rgba(59,40,34,.3)",
+    },
+    "Ocean": {
+        "--bg": "#0A2A4A", "--bg-sidebar": "#0D3358", "--bg-card": "#124066",
+        "--bg-hover": "#1A4E78", "--bg-active": "rgba(120,200,255,.18)", "--bg-code": "#082138",
+        "--border": "#1E5688", "--text": "#DCEBFA", "--text-2": "#94B4D4", "--text-3": "#5E82A6",
+        "--brand": "#4FB0F0", "--brand-hover": "#6FC2F5", "--green": "#4FD0A8",
+        "--yellow": "#F0CE6C", "--red": "#F07A7A", "--purple": "#A0A8F0", "--teal": "#4FC8D8",
+        "--header-bg": "rgba(10,42,74,.94)", "--overlay": "rgba(4,20,38,.72)",
+    },
+    "Pro": {
+        "--bg": "#000000", "--bg-sidebar": "#0A0A0A", "--bg-card": "#141414",
+        "--bg-hover": "#1F1F1F", "--bg-active": "rgba(255,255,255,.12)", "--bg-code": "#050505",
+        "--border": "#2A2A2A", "--text": "#F2F2F2", "--text-2": "#A8A8A8", "--text-3": "#6A6A6A",
+        "--brand": "#4A9EFF", "--brand-hover": "#6BB1FF", "--green": "#4CD964",
+        "--yellow": "#FFCC00", "--red": "#FF453A", "--purple": "#BF5AF2", "--teal": "#5AC8D8",
+        "--header-bg": "rgba(0,0,0,.95)", "--overlay": "rgba(0,0,0,.75)",
+    },
+}
+
+
+def build_theme(shell) -> dict:
+    """Return the built-in palettes + the user's active selection."""
+    prefs = getattr(shell, "_prefs", None)
+    active = getattr(prefs, "feature_gui_theme", None) or {}
+    base = active.get("base") if isinstance(active, dict) else None
+    overrides = active.get("overrides") if isinstance(active, dict) else {}
+    if base not in _GUI_THEMES:
+        base = "Default"
+    if not isinstance(overrides, dict):
+        overrides = {}
+    return {
+        "tokens": GUI_THEME_TOKENS,
+        "themes": [{"name": name, "colors": colors} for name, colors in _GUI_THEMES.items()],
+        "active": {"base": base, "overrides": overrides},
+    }
+
+
+def _valid_color(val: str) -> bool:
+    """Accept hex (#rgb/#rrggbb/#rrggbbaa) or rgb()/rgba() strings."""
+    import re
+    v = str(val).strip()
+    if re.fullmatch(r"#[0-9a-fA-F]{3,8}", v):
+        return True
+    if re.fullmatch(r"rgba?\([0-9.,\s]+\)", v):
+        return True
+    return False
+
 # Max commands listed per flag in the API payload — some flags (e.g. panos-ops
 # families) gate thousands of commands; showing them all bloats the response.
 _MAX_CMDS_PER_FLAG = 25
@@ -314,6 +450,11 @@ def _builtin_group_of(name: str) -> str:
 # the items for the selected group.
 # ---------------------------------------------------------------------------
 
+# Cached flag->file / file->categories maps.  The registry and catalog are
+# static at runtime, so this is computed once per process.
+_FILE_CATEGORIES_CACHE: dict[str, set] | None = None
+
+
 def _file_categories(shell) -> dict[str, set]:
     """Map each settings/features file stem -> set of command categories it gates.
 
@@ -321,7 +462,16 @@ def _file_categories(shell) -> dict[str, set]:
     mapping is structural and covers flags that are OFF (and therefore absent
     from their domain file).  Also folds in the live registry for non-catalog
     (explicit / PAN-OS) flags via their owning file.
+
+    Cached: the previous version called ``feature_file_for`` per command (~4855
+    times), each re-reading all 34 feature files from disk (~5s).  Now the
+    flag->file map is read ONCE via ``load_features_with_sources`` and the whole
+    result is memoized.
     """
+    global _FILE_CATEGORIES_CACHE
+    if _FILE_CATEGORIES_CACHE is not None:
+        return _FILE_CATEGORIES_CACHE
+
     result: dict[str, set] = {}
     try:
         from app.commands.resource_catalog import CATALOG
@@ -334,19 +484,20 @@ def _file_categories(shell) -> dict[str, set]:
         pass
     try:
         from app.commands.registry import COMMANDS
-        from app.settings.features import feature_file_for
+        from app.settings.features import load_features_with_sources
+        # Single disk read: flag -> owning file path.
+        _flags, sources = load_features_with_sources()
         for cmd_def in COMMANDS.values():
             flag = cmd_def.feature_flag
             if not flag:
                 continue
-            try:
-                stem = feature_file_for(flag).stem
-            except Exception:
-                stem = "local"
+            src = sources.get(flag)
+            stem = src.stem if src is not None else "local"
             if stem != "local":
                 result.setdefault(stem, set()).add(cmd_def.category or "explicit")
     except Exception:
         pass
+    _FILE_CATEGORIES_CACHE = result
     return result
 
 
@@ -518,12 +669,14 @@ _SECTION_HELP = {
         "command word.</p>"
     ),
     "files": (
-        "<h3>Advanced · Files</h3><p>Each card is a "
-        "<code>settings/features/</code> file. <strong>Default state</strong> "
-        "applies to commands not explicitly listed in that file. "
-        "<strong>Keep my edits</strong> stops the regenerator from overwriting "
-        "your on/dev values when specs are refreshed. Most users never need "
-        "these.</p>"
+        "<h3>Advanced · Files</h3><p>These are <strong>regeneration settings, "
+        "not on/off switches</strong>. To turn features on or off use "
+        "<strong>Features</strong>; to disable a whole area use "
+        "<strong>Areas</strong>. Each card is a <code>settings/features/</code> "
+        "file. <strong>Default state</strong> applies to commands not explicitly "
+        "listed in that file. <strong>Keep my edits</strong> stops the "
+        "regenerator from overwriting your on/dev values when the API specs are "
+        "refreshed. Most users never need these.</p>"
     ),
     "builtins": (
         "<h3>Built-in Commands</h3><p>The shell's own commands (cd, configure, "
@@ -533,6 +686,14 @@ _SECTION_HELP = {
         "<code>Disabled</code> (blocked). You can also edit the display name, "
         "help text, and whether it only appears in configure mode. Changes save "
         "to <code>settings/builtin-commands.json</code> and apply live.</p>"
+    ),
+    "settings": (
+        "<h3>Settings · Theme</h3><p>Personalize the editor's colors. Pick a base "
+        "theme (macOS-Terminal inspired) then tweak individual colors — changes "
+        "preview live. <strong>Save</strong> writes to your "
+        "<code>config/&lt;user&gt;/preferences.json</code> and styles this "
+        "browser editor only (never the ARC terminal, which uses "
+        "<code>settings/theme.json</code>).</p>"
     ),
 }
 
@@ -703,6 +864,24 @@ class FeatureGuiServer:
             meta = load_builtins_full().get(name, {})
         return {"name": name, **meta}
 
+    def _apply_theme(self, base: str, overrides: dict) -> dict:
+        """Persist the feature-GUI theme to the user's preferences (thread-safe)."""
+        from app.settings.user_prefs import save_prefs
+
+        if base not in _GUI_THEMES:
+            raise ValueError(f"unknown theme: {base!r}")
+        clean: dict[str, str] = {}
+        for token, val in (overrides or {}).items():
+            if token in GUI_THEME_TOKENS and _valid_color(val):
+                clean[token] = str(val).strip()
+        prefs = getattr(self._shell, "_prefs", None)
+        if prefs is None:
+            raise RuntimeError("preferences unavailable (no prefs)")
+        with self._lock:
+            prefs.feature_gui_theme = {"base": base, "overrides": clean}
+            save_prefs(prefs)
+        return {"base": base, "overrides": clean}
+
     def _apply_scope(self, command: str, scope: str | None) -> dict:
         """Set/clear a per-command scope override; update live shell (thread-safe)."""
         from app.commands.registry import COMMANDS
@@ -771,6 +950,8 @@ class FeatureGuiServer:
             if name == "structure":
                 command = (query.get("command") or [""])[0]
                 return build_structure(self._shell, command)
+            if name == "theme":
+                return build_theme(self._shell)
         return {"error": f"unknown section: {name}"}
 
     def _help(self, query: dict) -> dict:
@@ -853,6 +1034,7 @@ class FeatureGuiServer:
                     "/api/structure/area": "structure-area",
                     "/api/structure/item": "structure",
                     "/api/structure": "structure",
+                    "/api/theme": "theme",
                 }
                 if path in _sections:
                     try:
@@ -872,6 +1054,7 @@ class FeatureGuiServer:
                 mutation_paths = (
                     "/api/feature", "/api/scope", "/api/meta",
                     "/api/area", "/api/alias", "/api/structure", "/api/builtin",
+                    "/api/theme",
                 )
                 if path in mutation_paths:
                     try:
@@ -931,6 +1114,12 @@ class FeatureGuiServer:
                                 self._send_json({"error": "missing name/field"}, 400)
                                 return
                             result = server._apply_builtin(name, field, value)
+                        elif path == "/api/theme":
+                            base = str(data.get("base", "")).strip()
+                            overrides = data.get("overrides") or {}
+                            if not isinstance(overrides, dict):
+                                overrides = {}
+                            result = server._apply_theme(base, overrides)
                         else:  # /api/structure
                             command = str(data.get("command", "")).strip()
                             fields = data.get("fields") or []
@@ -960,7 +1149,11 @@ class FeatureGuiServer:
         thread = threading.Thread(target=self._httpd.serve_forever, daemon=True)
         thread.start()
 
-        url = f"http://{self._host}:{self._port}/"
+        # Cache-bust the URL per launch so the browser opens a FRESH page (and
+        # re-fetches saved prefs/theme) instead of re-focusing a stale tab from a
+        # previous `feature gui` in the same session.
+        import time as _time
+        url = f"http://{self._host}:{self._port}/?v={int(_time.time())}"
         try:
             webbrowser.open(url)
         except Exception:  # pragma: no cover - headless safety net

@@ -914,7 +914,16 @@ class DispatchMixin:
             self._show_command_not_found(tokens)
             return False
 
-        if remote:
+        # Auto-route to SSH when the command can only run on the device: an
+        # explicit --remote, or a `remote`-scoped command with a device set
+        # (it has no SCM path, so SSH is the only way).  When attached, 2FA is
+        # already done and the warm pooled session is reused.
+        eff_scope = self.resolve_scope(key, cmd_def)
+        route_remote = remote or (
+            eff_scope == "remote" and self._state.device is not None
+            and cmd_def.ssh_command is not None
+        )
+        if route_remote:
             self._execute_remote(key, cmd_def, args)
         else:
             self._execute_api(key, cmd_def, args)

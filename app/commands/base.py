@@ -40,20 +40,30 @@ class ExecutionContext:
         return self.device.get("ip_address") or self.device.get("hostname") or None
 
 
-# Command scope — controls what context is required and what gets injected.
+# Command scope — controls what context is required AND the execution plane.
 #
 #   "folder"  — scoped to the active SCM folder (ctx.folder).  These are
 #               config/policy commands; the active folder is always passed
 #               as the ?folder= query parameter.  Default for most commands.
+#               Runs via the SCM API (bearer token, no device auth).
 #
-#   "device"  — requires an active device context (cd <device>).  These are
-#               operational commands that must run on a specific device.
-#               ARC enforces the requirement before calling the handler.
+#   "device"  — requires an active device context (cd <device>).  Operational
+#               commands that TARGET a device but run via the SCM ops-job proxy
+#               (over the device's management tunnel — no SSH, no 2FA).
+#
+#   "remote"  — requires an active device context AND can only run by SSHing to
+#               the device (no SCM path).  Expect the device's auth (TACACS+/2FA).
+#               This is the explicit 2FA surface; expanding the SCM proxy moves
+#               commands from "remote" to "device".
 #
 #   "global"  — no context filtering.  The command always sees everything
 #               regardless of active folder or device (e.g. show snippets global,
-#               show devices).
-CommandScope = Literal["folder", "device", "global"]
+#               show devices).  Runs via the SCM API.
+#
+# Both "device" and "remote" require `cd <device>`; they differ only in the
+# execution plane (SCM ops-job proxy vs SSH).  The generators derive scope
+# automatically (see app/commands/generated.py + panos_generated.py).
+CommandScope = Literal["folder", "device", "remote", "global"]
 
 
 @dataclass

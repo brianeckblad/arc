@@ -241,13 +241,42 @@ def test_registry() -> None:
     for key, cmd in COMMANDS.items():
         if not cmd.description:
             bad_fields.append(f"{key!r}: missing description")
-        if cmd.scope not in ("folder", "device", "global"):
+        if cmd.scope not in ("folder", "device", "remote", "global"):
             bad_fields.append(f"{key!r}: invalid scope {cmd.scope!r}")
     if bad_fields:
         for b in bad_fields:
             fail(b)
     else:
         ok("All CommandDef entries have description + valid scope")
+
+    # 3c-scope — Device/remote scope classification invariant.  This keeps the
+    # rule durable across every update tool (docsupdate/commandupdate/cliup/
+    # catalog rebuild): a command that can only run by SSHing to the device
+    # (SSH-only, no SCM execution path) MUST be `remote`; a command that targets
+    # a device via an SCM query param MUST require a device context (device or
+    # remote — never global/folder).
+    try:
+        from app.commands.resource_catalog import CATALOG as _CAT
+        _device_param_cmds = {
+            e["command"] for e in _CAT if "device" in (e.get("query_params") or [])
+        }
+    except Exception:
+        _device_param_cmds = set()
+    scope_bad: list[str] = []
+    for key, cmd in COMMANDS.items():
+        # SCM command with a device query param must need a device context.
+        if key in _device_param_cmds and cmd.scope not in ("device", "remote"):
+            scope_bad.append(f"{key!r}: has a device query param but scope={cmd.scope!r} (expected device/remote)")
+        # remote scope must be reachable via SSH (it's the SSH plane).
+        if cmd.scope == "remote" and cmd.ssh_command is None:
+            scope_bad.append(f"{key!r}: scope=remote but no ssh_command (remote = SSH plane)")
+    if scope_bad:
+        for b in scope_bad[:20]:
+            fail(b)
+    else:
+        _remote = sum(1 for c in COMMANDS.values() if c.scope == "remote")
+        _device = sum(1 for c in COMMANDS.values() if c.scope == "device")
+        ok(f"Scope classification invariant holds ({_remote} remote/SSH, {_device} device/SCM-proxy)")
 
     # 3d — No inline lambdas as ssh_command (lambdas cannot be pickled / inspected)
     lambda_cmds: list[str] = []

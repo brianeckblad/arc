@@ -115,7 +115,7 @@ class HelpMixin:
                 # Show the description and a context hint rather than "Unknown command".
                 console.print()
                 self._print_inline_usage(exact_key, exact_cmd)
-                if self.resolve_scope(exact_key, exact_cmd) == "device" and not self._state.device:
+                if self.resolve_scope(exact_key, exact_cmd) in ("device", "remote") and not self._state.device:
                     console.print(
                         f"  [dim]Requires device context — "
                         f"[bold]cd <device>[/bold] first, or "
@@ -265,6 +265,7 @@ class HelpMixin:
                     scope_tag = (
                         "  [dim][global][/dim]" if eff_scope == "global"
                         else "  [dim][device][/dim]" if eff_scope == "device"
+                        else "  [yellow][remote][/yellow]" if eff_scope == "remote"
                         else ""
                     )
                     ssh_note = " [dim](SSH)[/dim]" if cmd.ssh_command else ""
@@ -451,7 +452,7 @@ class HelpMixin:
         """
         if not self._is_command_visible(key, cmd_def):
             return False
-        if self.resolve_scope(key, cmd_def) == "device" and not self._state.device:
+        if self.resolve_scope(key, cmd_def) in ("device", "remote") and not self._state.device:
             return False
         _configure_only = key == "commit" or key.startswith(
             ("set ", "delete ", "update ", "load ")
@@ -619,9 +620,10 @@ class HelpMixin:
         if eff_scope == "folder":
             return f"  [dim]→ folder: {folder}[/dim]"
 
-        if eff_scope == "device" and device:
+        if eff_scope in ("device", "remote") and device:
             device_name = device_display_name(device)
-            return f"  [dim]→ device: {device_name}[/dim]"
+            plane = "SSH" if eff_scope == "remote" else "SCM"
+            return f"  [dim]→ device: {device_name} ({plane})[/dim]"
 
         return ""
 

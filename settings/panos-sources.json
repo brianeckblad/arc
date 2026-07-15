@@ -1,5 +1,6 @@
 {
-  "_comment": "Registry of PAN-OS CLI docs pages for app/scripts/panosupdate.py. Add new version pages here; docsupdate pulls them.",
+  "_comment": "Registry of PAN-OS CLI docs pages for app/scripts/panosupdate.py. Add new version pages here; docsupdate pulls them. NOTE: this file is PAN-OS CLI ONLY (source: docs.paloaltonetworks.com). SCM / Strata Cloud Manager (pan.dev) API links live in the sibling registry settings/scm-sources.json.",
+  "_site": "https://docs.paloaltonetworks.com/ngfw/pan-os-cli-quick-start",
   "pages": [
     {"key": "ops-11.2",          "url": "https://docs.paloaltonetworks.com/ngfw/pan-os-cli-quick-start/cli-command-hierarchy/pan-os-11-2-cli-ops-command-hierarchy",       "kind": "ops-hierarchy",    "version": "11.2"},
     {"key": "config-11.2",       "url": "https://docs.paloaltonetworks.com/ngfw/pan-os-cli-quick-start/cli-command-hierarchy/pan-os-11-2-configure-cli-command-hierarchy", "kind": "config-hierarchy", "version": "11.2"},

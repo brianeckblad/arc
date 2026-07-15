@@ -9,7 +9,7 @@
   files. Files under app/ with >= 300 lines are mapped.
 -->
 
-## `app/commands/panos_catalog.py`  (4570 lines)
+## `app/commands/panos_catalog.py`  (4569 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -80,7 +80,7 @@ _setup_oauth_instructions()              2551-2583      Print OAuth client crede
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
-## `app/scripts/smoke_test.py`  (1576 lines)
+## `app/scripts/smoke_test.py`  (1605 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -90,18 +90,18 @@ section()                                84-86
 _parse_cli_args()                        93-158         Return (sections_to_run, quiet_mode).
 test_syntax()                            165-174        
 test_imports()                           181-213        
-test_registry()                          220-312        
-test_arg_parser()                        319-545        
-test_token_optimizations()               552-564        
-test_config()                            571-719        
-test_formatter()                         726-763        
-test_banner_alignment()                  778-802        
-test_inline_help_alignment()             818-1012       
-test_theme()                             1020-1122      
-test_code_map()                          1132-1167      
-test_command_visibility()                1170-1356      
-test_configure_flow()                    1363-1505      Section 13 — Configure/commit flow unit tests.
-main()                                   1526-1571      
+test_registry()                          220-341        
+test_arg_parser()                        348-574        
+test_token_optimizations()               581-593        
+test_config()                            600-748        
+test_formatter()                         755-792        
+test_banner_alignment()                  807-831        
+test_inline_help_alignment()             847-1041       
+test_theme()                             1049-1151      
+test_code_map()                          1161-1196      
+test_command_visibility()                1199-1385      
+test_configure_flow()                    1392-1534      Section 13 — Configure/commit flow unit tests.
+main()                                   1555-1600      
 
 ## `app/commands/objects.py`  (1349 lines)
 
@@ -275,93 +275,96 @@ class SCMClient                          51-1328        Strata Cloud Manager (SC
   .ops_job_status()                      1317-1325      Return a live-device operations job record.
   .close()                               1327-1328      
 
-## `app/scripts/docsupdate.py`  (1289 lines)
+## `app/scripts/docsupdate.py`  (1292 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-load_sources()                           208-244        Return the source registry, seeding app/scripts/scm-sources.json if it
-save_sources()                           247-254        Persist the source registry back to app/scripts/scm-sources.json.
-_raw_base()                              257-258        
-_raw_url()                               261-263        Return a raw GitHub URL, escaping spaces and other path characters.
-_tree_api()                              266-267        
-_fetch_bytes()                           273-281        Download a URL and return its raw bytes, with an explicit timeout.
-fetch_tree()                             288-304        Return every file path in the pan.dev repo tree (cached, best-effort).
-list_remote_specs()                      307-313        Return every SCM OpenAPI spec path currently published on pan.dev.
-_slug_token()                            316-322        Normalize a source-path token into a stable registry key segment.
-_spec_key_for_path()                     325-357        Return a compact, stable key for a newly discovered OpenAPI spec path.
-_domain_for_spec_path()                  360-372        Return a discovery hint/domain label for a spec path.
-discover_all_specs()                     375-397        Add any remote SCM OpenAPI specs missing from the source registry.
-discover_path()                          403-438        Find the most likely current location of a moved file in *tree*.
-_record_relocation()                     441-445        Append a relocation record so history is auditable in scm-sources.json
-_fetch_with_discovery()                  448-492        Fetch *path*; on 404 try to discover its new location and retry.
-_load_yaml()                             498-502        Parse spec bytes into a dict.  Requires PyYAML (dev extra).
-_spec_base_url()                         505-510        Return ``servers[0].url`` — the gateway base URL for this spec.
-_endpoint_signatures()                   513-522        Return the set of ``METHOD /path`` signatures defined in a spec.
-_resolve_ref()                           525-532        Resolve a local ``#/components/...`` JSON pointer within *spec*.
-_deref()                                 535-539        Return *schema* with a single top-level ``$ref`` resolved (one hop).
-_branch_label()                          542-560        Best short label for one oneOf/anyOf leaf branch (the type-variant nam
-_collect_variants()                      563-591        Recursively collect oneOf/anyOf leaf-variant labels from a schema.
-_schema_variants()                       594-607        Return the oneOf/anyOf variant labels for a schema (the type choices).
-_operation_parameters()                  610-630        Return (container_scopes, other_query_params) for an operation.
-_request_body_summary()                  633-642        Return (required_fields, variant_labels, schema_name) for a request bo
-_render_markdown()                       645-722        Render a consolidated endpoint listing for one spec.
-_build_changes_markdown()                728-778        Build CHANGES.md content from per-category (added, removed) signature 
-_write_index()                           784-814        Write ``index.md`` listing every spec and guide with the pull date.
-_write_manifest()                        817-834        Write ``MANIFEST.md`` — source URL + base URL for every spec.
-_slug_for_guide()                        840-849        Turn a guide path into a stable file-name slug.
-discover_all_guides()                    852-866        Return {slug: path} for every guide doc not already covered.
-_capture_old_signatures()                872-886        Parse existing local specs to capture endpoint signatures before overw
-_download_guides()                       889-920        Download guide docs (curated + discovered).  Returns names pulled OK.
-update()                                 923-1055       Download specs + guides and regenerate the reference set.  Returns exi
-_self_test()                             1061-1143      Exercise discovery + diff logic offline so the engine stays trustworth
-main()                                   1149-1283      
+load_sources()                           211-247        Return the source registry, seeding settings/scm-sources.json if it is
+save_sources()                           250-257        Persist the source registry back to settings/scm-sources.json.
+_raw_base()                              260-261        
+_raw_url()                               264-266        Return a raw GitHub URL, escaping spaces and other path characters.
+_tree_api()                              269-270        
+_fetch_bytes()                           276-284        Download a URL and return its raw bytes, with an explicit timeout.
+fetch_tree()                             291-307        Return every file path in the pan.dev repo tree (cached, best-effort).
+list_remote_specs()                      310-316        Return every SCM OpenAPI spec path currently published on pan.dev.
+_slug_token()                            319-325        Normalize a source-path token into a stable registry key segment.
+_spec_key_for_path()                     328-360        Return a compact, stable key for a newly discovered OpenAPI spec path.
+_domain_for_spec_path()                  363-375        Return a discovery hint/domain label for a spec path.
+discover_all_specs()                     378-400        Add any remote SCM OpenAPI specs missing from the source registry.
+discover_path()                          406-441        Find the most likely current location of a moved file in *tree*.
+_record_relocation()                     444-448        Append a relocation record so history is auditable in scm-sources.json
+_fetch_with_discovery()                  451-495        Fetch *path*; on 404 try to discover its new location and retry.
+_load_yaml()                             501-505        Parse spec bytes into a dict.  Requires PyYAML (dev extra).
+_spec_base_url()                         508-513        Return ``servers[0].url`` — the gateway base URL for this spec.
+_endpoint_signatures()                   516-525        Return the set of ``METHOD /path`` signatures defined in a spec.
+_resolve_ref()                           528-535        Resolve a local ``#/components/...`` JSON pointer within *spec*.
+_deref()                                 538-542        Return *schema* with a single top-level ``$ref`` resolved (one hop).
+_branch_label()                          545-563        Best short label for one oneOf/anyOf leaf branch (the type-variant nam
+_collect_variants()                      566-594        Recursively collect oneOf/anyOf leaf-variant labels from a schema.
+_schema_variants()                       597-610        Return the oneOf/anyOf variant labels for a schema (the type choices).
+_operation_parameters()                  613-633        Return (container_scopes, other_query_params) for an operation.
+_request_body_summary()                  636-645        Return (required_fields, variant_labels, schema_name) for a request bo
+_render_markdown()                       648-725        Render a consolidated endpoint listing for one spec.
+_build_changes_markdown()                731-781        Build CHANGES.md content from per-category (added, removed) signature 
+_write_index()                           787-817        Write ``index.md`` listing every spec and guide with the pull date.
+_write_manifest()                        820-837        Write ``MANIFEST.md`` — source URL + base URL for every spec.
+_slug_for_guide()                        843-852        Turn a guide path into a stable file-name slug.
+discover_all_guides()                    855-869        Return {slug: path} for every guide doc not already covered.
+_capture_old_signatures()                875-889        Parse existing local specs to capture endpoint signatures before overw
+_download_guides()                       892-923        Download guide docs (curated + discovered).  Returns names pulled OK.
+update()                                 926-1058       Download specs + guides and regenerate the reference set.  Returns exi
+_self_test()                             1064-1146      Exercise discovery + diff logic offline so the engine stays trustworth
+main()                                   1152-1286      
 
-## `app/commands/resource_catalog.py`  (1068 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-
-## `app/web/feature_server.py`  (991 lines)
+## `app/web/feature_server.py`  (1184 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 class _QuietThreadingHTTPServer          34-49          ThreadingHTTPServer that ignores client-disconnect errors.
   .handle_error()                        44-49          
-_flag_to_commands()                      56-66          Build flag_name -> sorted list of command keys it gates.
-_flag_category()                         69-78          Map each flag to a display category (from the gated command's category
-_flag_universe()                         81-83          All known flag names (registry + settings), minus internal sentinels.
-_state_of()                              86-89          
-build_areas()                            97-120         Dedicated Areas section: every area with a real enabled/disabled switc
-build_features()                         123-191        Features for one area (excludes disabled areas).
-build_domains()                          194-217        Advanced / Files view: per-file _default and _carry with human names.
-build_aliases()                          220-227        System + personal aliases for the Aliases section.
-build_structure_list()                   230-254        List of set/update/delete commands that can carry a structure, by area
-build_structure()                        257-281        Editable field spec for one command.
-_domain_label()                          284-287        Human name for a feature-file stem — delegates to the shared naming la
-_builtin_group_of()                      304-308        
-_file_categories()                       317-350        Map each settings/features file stem -> set of command categories it g
-build_nav()                              353-429        Return the left-sidebar groups for a section: {groups:[{key,label,coun
-build_features_header()                  432-446        Area-level controls shown atop the Features main pane.
-build_structure_area()                   449-471        All editable set/update/delete commands in an area (Command Structure)
-build_builtins()                         474-483        Builtins in a functional group, for the Built-ins editor.
-_command_help_html()                     540-564        Render synthesized command help to a small HTML fragment for the modal
-_flag_help_html()                        567-583        Human help for a feature flag: title + what it does + gated commands.
-class FeatureGuiServer                   586-990        A blocking, on-demand HTTP server for the feature-flag editor.
-  .__init__()                            595-602        
-  ._load_html()                          607-615        
-  ._apply_change()                       617-627        Persist a flag change and update live shell state (thread-safe).
-  ._apply_area()                         629-638        Enable/disable a whole area (real OFF gate); update live shell (thread
-  ._apply_alias()                        640-678        Create/update/delete a system or personal alias (thread-safe).
-  ._apply_structure()                    680-689        Persist an override structure entry for a command (thread-safe).
-  ._apply_builtin()                      691-704        Edit a builtin field; refresh live shell visibility (thread-safe).
-  ._apply_scope()                        706-728        Set/clear a per-command scope override; update live shell (thread-safe
-  ._apply_meta()                         730-739        Set a domain file's _default / _carry (thread-safe).
-  ._payload()                            741-744        Legacy combined payload (kept for back-compat).
-  ._section()                            746-774        Build a section payload under the lock.
-  ._help()                               776-790        Return help HTML for a command, flag, or static section topic.
-  .serve()                               795-976        Start the server, open the browser, and BLOCK until the editor
-  .stop()                                978-986        
-  .url()                                 989-990        
+build_theme()                            160-174        Return the built-in palettes + the user's active selection.
+_valid_color()                           177-185        Accept hex (#rgb/#rrggbb/#rrggbbaa) or rgb()/rgba() strings.
+_flag_to_commands()                      192-202        Build flag_name -> sorted list of command keys it gates.
+_flag_category()                         205-214        Map each flag to a display category (from the gated command's category
+_flag_universe()                         217-219        All known flag names (registry + settings), minus internal sentinels.
+_state_of()                              222-225        
+build_areas()                            233-256        Dedicated Areas section: every area with a real enabled/disabled switc
+build_features()                         259-327        Features for one area (excludes disabled areas).
+build_domains()                          330-353        Advanced / Files view: per-file _default and _carry with human names.
+build_aliases()                          356-363        System + personal aliases for the Aliases section.
+build_structure_list()                   366-390        List of set/update/delete commands that can carry a structure, by area
+build_structure()                        393-417        Editable field spec for one command.
+_domain_label()                          420-423        Human name for a feature-file stem — delegates to the shared naming la
+_builtin_group_of()                      440-444        
+_file_categories()                       458-501        Map each settings/features file stem -> set of command categories it g
+build_nav()                              504-580        Return the left-sidebar groups for a section: {groups:[{key,label,coun
+build_features_header()                  583-597        Area-level controls shown atop the Features main pane.
+build_structure_area()                   600-622        All editable set/update/delete commands in an area (Command Structure)
+build_builtins()                         625-634        Builtins in a functional group, for the Built-ins editor.
+_command_help_html()                     701-725        Render synthesized command help to a small HTML fragment for the modal
+_flag_help_html()                        728-744        Human help for a feature flag: title + what it does + gated commands.
+class FeatureGuiServer                   747-1183       A blocking, on-demand HTTP server for the feature-flag editor.
+  .__init__()                            756-763        
+  ._load_html()                          768-776        
+  ._apply_change()                       778-788        Persist a flag change and update live shell state (thread-safe).
+  ._apply_area()                         790-799        Enable/disable a whole area (real OFF gate); update live shell (thread
+  ._apply_alias()                        801-839        Create/update/delete a system or personal alias (thread-safe).
+  ._apply_structure()                    841-850        Persist an override structure entry for a command (thread-safe).
+  ._apply_builtin()                      852-865        Edit a builtin field; refresh live shell visibility (thread-safe).
+  ._apply_theme()                        867-883        Persist the feature-GUI theme to the user's preferences (thread-safe).
+  ._apply_scope()                        885-907        Set/clear a per-command scope override; update live shell (thread-safe
+  ._apply_meta()                         909-918        Set a domain file's _default / _carry (thread-safe).
+  ._payload()                            920-923        Legacy combined payload (kept for back-compat).
+  ._section()                            925-955        Build a section payload under the lock.
+  ._help()                               957-971        Return help HTML for a command, flag, or static section topic.
+  .serve()                               976-1169       Start the server, open the browser, and BLOCK until the editor
+  .stop()                                1171-1179      
+  .url()                                 1182-1183      
+
+## `app/commands/resource_catalog.py`  (1068 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
 ## `app/utils/formatter.py`  (985 lines)
 
@@ -404,7 +407,7 @@ format_raw()                             957-958
 format_dict()                            961-962        
 _flatten()                               969-984        Recursively flatten a nested dict into dot-separated key/value pairs.
 
-## `app/shell/dispatch.py`  (923 lines)
+## `app/shell/dispatch.py`  (932 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -412,7 +415,7 @@ split_pipe_line()                        23-38          Split *line* at the firs
 parse_output_filters()                   41-83          Parse a pipe filter chain into ``[(op, pattern), …]``.
 _bare_line()                             90-96          Strip ANSI + box-drawing from *line*; return None if nothing remains.
 _line_matches()                          99-105         Regex match (case-insensitive) with plain-substring fallback.
-class DispatchMixin                      108-922        
+class DispatchMixin                      108-931        
   ._cmd_watch()                          109-153        Re-run *rest* every N seconds until Ctrl-C (`watch [N] <command>`).
   ._dispatch_piped()                     155-236        Run *head*, filter its captured output through the pipe *spec*.
   ._cmd_show_connections()               238-253        List active SSH connections in the pool (`show connections`).
@@ -421,7 +424,7 @@ class DispatchMixin                      108-922
   ._cmd_history()                        294-339        Print the last N commands from the prompt history (`history [n]`).
   ._cmd_alias()                          341-412        User-defined aliases (`alias` / `alias <name> <expansion…>` /
   ._show_command_not_found()             414-507        Show a helpful message when a command is not recognized.
-  ._dispatch()                           509-922        Process one input line.  Returns True when the user wants to exit ARC.
+  ._dispatch()                           509-931        Process one input line.  Returns True when the user wants to exit ARC.
 
 ## `app/cli.py`  (911 lines)
 
@@ -500,25 +503,25 @@ print_report()                           718-796
 render()                                 802-824        
 main()                                   830-847        
 
-## `app/shell/navigation.py`  (719 lines)
+## `app/shell/navigation.py`  (724 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class NavigationMixin                    11-718         
+class NavigationMixin                    11-723         
   ._cache_stale()                        13-15          True when a navigation cache is old enough to warrant a re-fetch.
-  ._cmd_cd()                             17-88          Change device or folder context (navigation only).
-  ._cmd_cd_device()                      90-147         Switch the active SCM/API device context to *target*.
-  ._find_device()                        149-166        Find a device in the cache by hostname, serial, name, or IP.
-  ._refresh_devices()                    168-187        Fetch managed devices and populate the cache used by tab completion an
-  ._refresh_folders()                    189-200        Fetch SCM folder names and populate the cache used by 'folder' tab com
-  ._refresh_tsgs()                       202-217        Fetch TSG entries from SCM IAM and populate the cache used by 'tsg' ta
-  ._cmd_pwd()                            219-263        Show current device context, active SCM folder, TSG, and SSH credentia
-  ._switch_folder()                      265-293        Validate and apply a folder context change — called only by `cd folder
-  ._cmd_folder()                         295-349        Manage SCM folders — list available folders or create a new one.
-  ._cmd_folder_create()                  351-472        Interactive folder creation: prompt for a parent, confirm, and POST to
-  ._reset_tenant_context()               474-488        Point shell state at *new_tsg* and rebuild the navigation caches.
-  ._cmd_tsg()                            490-590        Switch the active Tenant Services Group (TSG) context.
-  ._cmd_account()                        592-718        List or switch named credential profiles.
+  ._cmd_cd()                             17-89          Change device or folder context (navigation only).
+  ._cmd_cd_device()                      91-150         Switch the active SCM/API device context to *target*.
+  ._find_device()                        152-169        Find a device in the cache by hostname, serial, name, or IP.
+  ._refresh_devices()                    171-190        Fetch managed devices and populate the cache used by tab completion an
+  ._refresh_folders()                    192-203        Fetch SCM folder names and populate the cache used by 'folder' tab com
+  ._refresh_tsgs()                       205-220        Fetch TSG entries from SCM IAM and populate the cache used by 'tsg' ta
+  ._cmd_pwd()                            222-266        Show current device context, active SCM folder, TSG, and SSH credentia
+  ._switch_folder()                      268-297        Validate and apply a folder context change — called only by `cd folder
+  ._cmd_folder()                         299-353        Manage SCM folders — list available folders or create a new one.
+  ._cmd_folder_create()                  355-476        Interactive folder creation: prompt for a parent, confirm, and POST to
+  ._reset_tenant_context()               478-493        Point shell state at *new_tsg* and rebuild the navigation caches.
+  ._cmd_tsg()                            495-595        Switch the active Tenant Services Group (TSG) context.
+  ._cmd_account()                        597-723        List or switch named credential profiles.
 
 ## `app/settings/command_structure.py`  (680 lines)
 
@@ -542,32 +545,32 @@ parse()                                  601-615        Parse *remainder* tokens
 help_options()                           618-647        Return Cisco-style ``?`` help rows for the next token after *typed*.
 completion_options()                     650-678        Return ``{text, display, meta}`` options for the next token after *typ
 
-## `app/shell/help.py`  (660 lines)
+## `app/shell/help.py`  (662 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class HelpMixin                          8-659          
+class HelpMixin                          8-661          
   ._match_structured()                   9-25           Find the longest command key (with a structure spec) inside *prefix_to
   ._print_context_help()                 27-44          Print Cisco-style context-sensitive help for a structured command.
   ._render_context_help()                46-63          Render the next-option rows: ``  token   description`` (token column a
   ._cmd_help_inline()                    65-190         Cisco-style compact inline help — one line per command, no panels.
   ._cmd_help_docs()                      192-233        Show the full documentation page for a command or topic.
-  ._cmd_help_full()                      235-282        Print the full command reference regardless of context.
-  ._cmd_show_write_help()                284-307        Show available set/delete/update commands in configure mode.
-  ._print_shell_builtins()               309-322        Print the shell built-in commands section (shared by inline and full h
-  ._is_command_visible()                 324-338        Single source of truth: does this command appear in ``?`` for this ope
-  ._cmd_find()                           341-415        PAN-OS style command search: ``find command <text>``.
-  ._visible_command_keys()               417-428        Cached list of visible registry keys — the per-keystroke hot path.
-  ._invalidate_visible_keys()            430-431        
-  .resolve_scope()                       433-443        Return the effective run scope for a command.
-  ._is_command_available()               445-461        _is_command_visible plus the current-context gates.
-  ._is_config_command()                  464-468        Return True when a command should appear in configure-mode `?` help.
-  ._root_verb_options()                  470-508        Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
-  ._collapsed_prefix_help_options()      510-565        Return collapsed next-token help options for a command prefix.
-  ._collapsed_tier_help_options()        567-602        Return collapsed bare-tier help options for one scope.
-  ._context_annotation()                 604-626        Return a short inline context note for commands whose output depends o
-  ._print_context_hint_for()             628-632        Print a one-line context note below an exact-match docs result.
-  ._print_inline_usage()                 634-659        Print the description + usage syntax for a complete command in `?` hel
+  ._cmd_help_full()                      235-283        Print the full command reference regardless of context.
+  ._cmd_show_write_help()                285-308        Show available set/delete/update commands in configure mode.
+  ._print_shell_builtins()               310-323        Print the shell built-in commands section (shared by inline and full h
+  ._is_command_visible()                 325-339        Single source of truth: does this command appear in ``?`` for this ope
+  ._cmd_find()                           342-416        PAN-OS style command search: ``find command <text>``.
+  ._visible_command_keys()               418-429        Cached list of visible registry keys — the per-keystroke hot path.
+  ._invalidate_visible_keys()            431-432        
+  .resolve_scope()                       434-444        Return the effective run scope for a command.
+  ._is_command_available()               446-462        _is_command_visible plus the current-context gates.
+  ._is_config_command()                  465-469        Return True when a command should appear in configure-mode `?` help.
+  ._root_verb_options()                  471-509        Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
+  ._collapsed_prefix_help_options()      511-566        Return collapsed next-token help options for a command prefix.
+  ._collapsed_tier_help_options()        568-603        Return collapsed bare-tier help options for one scope.
+  ._context_annotation()                 605-628        Return a short inline context note for commands whose output depends o
+  ._print_context_hint_for()             630-634        Print a one-line context note below an exact-match docs result.
+  ._print_inline_usage()                 636-661        Print the description + usage syntax for a complete command in `?` hel
 
 ## `app/config.py`  (607 lines)
 
@@ -703,29 +706,29 @@ _ssh_test_url()                          362-364
 _EXTRA_COMMANDS                          371-539        command registry dict
 COMMANDS.update(…)                       541-541        merge additional commands into registry
 
-## `app/settings/features.py`  (500 lines)
+## `app/settings/features.py`  (504 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_coerce_state()                          91-109         Normalize a raw features.json value into "on" | "dev" | "hidden" | "of
-coerce_scope()                           112-115        Normalize a scope token to one of VALID_SCOPES, or None if unrecognize
-_feature_files()                         119-128        All flag files, in load order: legacy single file first, then the
-load_features_with_sources()             131-176        Read every feature file; return (flag→state, flag→owning file).
-load_features()                          179-186        Read all feature files + ARC_FEATURE_<NAME> env overrides.
-feature_file_for()                       189-196        The file a flag change should persist to.
-set_feature_state()                      199-239        Persist one flag *state* ("on" | "dev" | "off") to its owning file.
-load_scope_overrides()                   251-272        Return {command_key -> scope} merged from every feature file.
-set_scope_override()                     275-315        Set or clear a per-command scope override in ``local.json``.
-effective_scope()                        318-320        Return the run scope for *command_key* — override if set, else code sc
-load_disabled_areas()                    333-346        Return the set of area/category keys that are fully disabled.
-set_area_disabled()                      349-379        Add/remove *category* from local.json ``_disabled_areas``. Returns the
-is_area_enabled()                        382-384        Return True unless *category* is in the disabled set.
-set_file_meta()                          391-423        Set ``_default`` and/or ``_carry`` on a specific domain feature file.
-load_file_meta()                         426-446        Return {domain_stem -> {default, carry, readme}} for every feature fil
-feature_state()                          449-457        Return the raw state of *flag_name* — "on", "dev", or "off".
-is_enabled()                             460-475        Return True when *flag_name* is executable in the current mode.
-is_feature_visible()                     478-494        Return True when a command should appear in ``?`` / tab completion.
-dev_mode_from_env()                      497-499        Return True when ARC_DEV_MODE is set to a truthy value (CI/CD hook).
+_coerce_state()                          95-113         Normalize a raw features.json value into "on" | "dev" | "hidden" | "of
+coerce_scope()                           116-119        Normalize a scope token to one of VALID_SCOPES, or None if unrecognize
+_feature_files()                         123-132        All flag files, in load order: legacy single file first, then the
+load_features_with_sources()             135-180        Read every feature file; return (flag→state, flag→owning file).
+load_features()                          183-190        Read all feature files + ARC_FEATURE_<NAME> env overrides.
+feature_file_for()                       193-200        The file a flag change should persist to.
+set_feature_state()                      203-243        Persist one flag *state* ("on" | "dev" | "off") to its owning file.
+load_scope_overrides()                   255-276        Return {command_key -> scope} merged from every feature file.
+set_scope_override()                     279-319        Set or clear a per-command scope override in ``local.json``.
+effective_scope()                        322-324        Return the run scope for *command_key* — override if set, else code sc
+load_disabled_areas()                    337-350        Return the set of area/category keys that are fully disabled.
+set_area_disabled()                      353-383        Add/remove *category* from local.json ``_disabled_areas``. Returns the
+is_area_enabled()                        386-388        Return True unless *category* is in the disabled set.
+set_file_meta()                          395-427        Set ``_default`` and/or ``_carry`` on a specific domain feature file.
+load_file_meta()                         430-450        Return {domain_stem -> {default, carry, readme}} for every feature fil
+feature_state()                          453-461        Return the raw state of *flag_name* — "on", "dev", or "off".
+is_enabled()                             464-479        Return True when *flag_name* is executable in the current mode.
+is_feature_visible()                     482-498        Return True when a command should appear in ``?`` / tab completion.
+dev_mode_from_env()                      501-503        Return True when ARC_DEV_MODE is set to a truthy value (CI/CD hook).
 
 ## `app/scripts/generate_field_library.py`  (461 lines)
 
@@ -751,7 +754,7 @@ _build_catalog()                         373-386        Return (catalog, skipped
 _render()                                393-417        
 main()                                   420-456        
 
-## `app/scripts/generate_command_docs.py`  (449 lines)
+## `app/scripts/generate_command_docs.py`  (453 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -759,17 +762,41 @@ _seed_help()                             56-86          Return {command: (descri
 _generated_api_map()                     187-201        Return API notes for commands created from the generated endpoint cata
 _generated_commands()                    204-210        Return command keys created from the generated endpoint catalog.
 _generated_usage_map()                   213-247        Return command → usage for generated endpoint commands.
-_api_for()                               250-262        Return a human-readable API note for a command.
-_front_matter()                          265-283        Build the YAML front-matter block for a command from the live registry
-_dq()                                    286-288        Double-quote a YAML scalar, escaping backslashes and quotes.
-_doc_path()                              291-292        
-_is_trivial_body()                       295-305        True when a doc body carries no hand-written content.
-ensure_front_matter()                    308-333        Refresh front-matter on EXISTING command docs; never create stub files
-prune_generated_stubs()                  336-353        Delete generated-command docs whose body is boilerplate (heading only)
-regenerate_index()                       356-367        Rewrite docs/commands/index.md (the catalog) from the live registry.
-regenerate_api_reference()               370-393        Rewrite docs/commands/api-reference.md from front-matter + the registr
-_invalid_docs()                          396-413        Existing command docs that are malformed or point at unknown commands.
-main()                                   416-444        
+_api_for()                               250-266        Return a human-readable API note for a command.
+_front_matter()                          269-287        Build the YAML front-matter block for a command from the live registry
+_dq()                                    290-292        Double-quote a YAML scalar, escaping backslashes and quotes.
+_doc_path()                              295-296        
+_is_trivial_body()                       299-309        True when a doc body carries no hand-written content.
+ensure_front_matter()                    312-337        Refresh front-matter on EXISTING command docs; never create stub files
+prune_generated_stubs()                  340-357        Delete generated-command docs whose body is boilerplate (heading only)
+regenerate_index()                       360-371        Rewrite docs/commands/index.md (the catalog) from the live registry.
+regenerate_api_reference()               374-397        Rewrite docs/commands/api-reference.md from front-matter + the registr
+_invalid_docs()                          400-417        Existing command docs that are malformed or point at unknown commands.
+main()                                   420-448        
+
+## `app/docs.py`  (451 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+slugify()                                79-83          Return the docs filename slug for a shell command or topic.
+available_help_topics()                  86-91          Return topics that can be completed after ``help ``.
+doc_path_for_topic()                     94-118         Return the Markdown path for a help topic, if one exists.
+synthesize_command_help()                121-148        Build a Markdown help page for a command straight from the registry.
+set_page_length()                        162-165        Set the pager threshold (0 disables paging). Called from shell startup
+page_length()                            168-170        Current pager threshold in lines (0 = paging disabled).
+class _PagingFile                        173-254        A sys.stdout wrapper that pauses output every *page_size* lines.
+  .__init__()                            181-191        
+  .isatty()                              194-195        
+  .fileno()                              197-198        
+  .write()                               200-218        
+  .flush()                               220-221        
+  ._getch()                              223-234        
+  ._show_more()                          236-254        Print --More-- prompt; return False if user quits.
+paging_stdout()                          265-281        Context manager: wrap sys.stdout with line-based paging.
+cisco_pager()                            284-356        Cisco IOS-style --More-- interactive pager.
+render_help_topic()                      359-402        Render a Markdown help topic inside the ARC shell.
+topic_to_page_path()                     409-429        Convert a help topic string to a relative docs page path.
+open_docs_in_browser()                   432-450        Open docs/index.html in the default browser using a file:// URL.
 
 ## `app/commands/setup.py`  (448 lines)
 
@@ -784,30 +811,6 @@ _show_snippet_detail()                   239-278        Show detail for a named 
 _set_snippet()                           285-329        Create a new SCM snippet (named configuration container).
 _delete_snippet()                        332-362        Delete an SCM snippet.
 COMMANDS                                 369-447        command registry dict
-
-## `app/docs.py`  (445 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-slugify()                                73-77          Return the docs filename slug for a shell command or topic.
-available_help_topics()                  80-85          Return topics that can be completed after ``help ``.
-doc_path_for_topic()                     88-112         Return the Markdown path for a help topic, if one exists.
-synthesize_command_help()                115-142        Build a Markdown help page for a command straight from the registry.
-set_page_length()                        156-159        Set the pager threshold (0 disables paging). Called from shell startup
-page_length()                            162-164        Current pager threshold in lines (0 = paging disabled).
-class _PagingFile                        167-248        A sys.stdout wrapper that pauses output every *page_size* lines.
-  .__init__()                            175-185        
-  .isatty()                              188-189        
-  .fileno()                              191-192        
-  .write()                               194-212        
-  .flush()                               214-215        
-  ._getch()                              217-228        
-  ._show_more()                          230-248        Print --More-- prompt; return False if user quits.
-paging_stdout()                          259-275        Context manager: wrap sys.stdout with line-based paging.
-cisco_pager()                            278-350        Cisco IOS-style --More-- interactive pager.
-render_help_topic()                      353-396        Render a Markdown help topic inside the ARC shell.
-topic_to_page_path()                     403-423        Convert a help topic string to a relative docs page path.
-open_docs_in_browser()                   426-444        Open docs/index.html in the default browser using a file:// URL.
 
 ## `app/api/sls.py`  (388 lines)
 
@@ -858,6 +861,18 @@ _parse_spec()                            169-214        Parse one YAML spec and 
 _build_index()                           217-335        Build the compact markdown index.
 main()                                   338-373        
 
+## `app/shell/execution.py`  (374 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+class ExecutionMixin                     7-373          
+  ._execute_api()                        8-160          
+  ._execute_remote()                     162-260        
+  ._resolve_ssh_command()                262-269        Return the concrete SSH command string for a registered command.
+  ._render()                             271-286        
+  ._do_render()                          288-363        Render *data* to *con* (a Rich Console). Called by _render.
+  ._make_context()                       365-373        
+
 ## `app/commands/security.py`  (373 lines)
 
 Symbol                                   Lines          Purpose
@@ -870,19 +885,7 @@ _set_url_category()                      299-321        Create a custom URL cate
 _WRITE_COMMANDS                          324-368        command registry dict
 COMMANDS.update(…)                       370-370        merge additional commands into registry
 
-## `app/shell/execution.py`  (364 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class ExecutionMixin                     7-363          
-  ._execute_api()                        8-154          
-  ._execute_remote()                     156-250        
-  ._resolve_ssh_command()                252-259        Return the concrete SSH command string for a registered command.
-  ._render()                             261-276        
-  ._do_render()                          278-353        Render *data* to *con* (a Rich Console). Called by _render.
-  ._make_context()                       355-363        
-
-## `app/shell/_base.py`  (359 lines)
+## `app/shell/_base.py`  (363 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -891,9 +894,9 @@ device_ssh_host()                        144-148        Address ARC should SSH t
 tsg_display()                            151-155        Return ``(tsg_id, display_name)`` for a tenant-service-group entry.
 active_tsg_label()                       158-160        The TSG identifier to show in user-facing messages.
 _expand_unambiguous_prefix()             163-195        Expand command-token prefixes when they resolve to exactly one phrase.
-tokenize()                               211-222        Split a command line into tokens, honouring single/double quotes.
-_make_key_bindings()                     225-288        Return key bindings for the ARC shell.
-class ShellState                         292-318        
+tokenize()                               212-223        Split a command line into tokens, honouring single/double quotes.
+_make_key_bindings()                     226-289        Return key bindings for the ARC shell.
+class ShellState                         293-322        
 
 ## `app/scripts/generate_resource_catalog.py`  (348 lines)
 

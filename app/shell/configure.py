@@ -711,7 +711,7 @@ class ConfigureMixin:
             console.print(f"  [cyan]feature disable <flag>[/cyan] Set a flag OFF and save")
             console.print(f"  [cyan]feature dev <flag>[/cyan]     Mark a flag DEV and save")
             console.print(f"  [cyan]feature hidden <flag>[/cyan]  Mark a flag HIDDEN (runs, not shown in ?)")
-            console.print(f"  [cyan]feature scope <cmd> <global|folder|device|reset>[/cyan]  Override where a command runs")
+            console.print(f"  [cyan]feature scope <cmd> <global|folder|device|remote|reset>[/cyan]  Override where a command runs")
             console.print(f"  [cyan]feature default <domain> <on|dev|off>[/cyan]  Set a domain's default state")
             console.print(f"  [cyan]feature carry <domain> <on|off>[/cyan]        Keep manual edits on regenerate")
             console.print(f"  [cyan]feature help[/cyan]           Open full feature flag documentation")
@@ -986,7 +986,7 @@ class ConfigureMixin:
             f"[yellow]Unknown feature subcommand:[/yellow] {sub!r}\n"
             "  Usage: feature show [on|off|dev|hidden|<name>] | feature gui | feature info <flag> |\n"
             "         feature enable|disable|dev|hidden <flag> | feature area [<name> show|hide] |\n"
-            "         feature scope <cmd> <global|folder|device|reset> |\n"
+            "         feature scope <cmd> <global|folder|device|remote|reset> |\n"
             "         feature default <domain> <on|dev|off> | feature carry <domain> <on|off>"
         )
 
@@ -1047,7 +1047,7 @@ class ConfigureMixin:
             if cmd_def.description:
                 console.print(f"        [dim]{cmd_def.description}[/dim]")
         console.print(
-            "\n  [dim]feature scope <command> <global|folder|device|reset> to override where a command runs.[/dim]\n"
+            "\n  [dim]feature scope <command> <global|folder|device|remote|reset> to override where a command runs.[/dim]\n"
         )
 
     def _cmd_feature_area(self, args: list[str]) -> None:
@@ -1122,7 +1122,7 @@ class ConfigureMixin:
     def _cmd_feature_scope(self, args: list[str]) -> None:
         """Set or clear a per-command run-scope override.
 
-        Usage: feature scope <command> <global|folder|device|reset>
+        Usage: feature scope <command> <global|folder|device|remote|reset>
         The command is matched against the registry; 'reset' clears the override.
         """
         from app.settings.features import (VALID_SCOPES, coerce_scope,
@@ -1132,7 +1132,7 @@ class ConfigureMixin:
             args = args[:-1]
         if len(args) < 2:
             console.print(
-                "[yellow]Usage:[/yellow] feature scope <command> <global|folder|device|reset>\n"
+                "[yellow]Usage:[/yellow] feature scope <command> <global|folder|device|remote|reset>\n"
                 "  [dim]e.g. feature scope 'ping host' device   |   feature scope 'show bgp' reset[/dim]"
             )
             return
@@ -1182,10 +1182,10 @@ class ConfigureMixin:
         warn = ""
         if norm != cmd_def.scope:
             warn = f"  [dim](code default: {cmd_def.scope})[/dim]"
-        if norm == "device" and cmd_def.ssh_command is None:
-            warn += "\n  [yellow]Note:[/yellow] this command has no SSH handler — device scope may block it at runtime."
-        elif norm != "device" and cmd_def.api_handler is None:
-            warn += "\n  [yellow]Note:[/yellow] this command has no SCM API handler — it may only work via --remote."
+        if norm == "remote":
+            warn += "\n  [yellow]Note:[/yellow] remote = runs via SSH to the device — expect the device login/2FA."
+        elif norm == "device":
+            warn += "\n  [dim]device = runs via the SCM device tunnel (no SSH/2FA); needs [bold]cd <device>[/bold].[/dim]"
         console.print(
             f"  [bold]{cmd_key}[/bold]  →  scope [cyan]{norm}[/cyan]{warn}  "
             f"[dim](saved to local.json)[/dim]"

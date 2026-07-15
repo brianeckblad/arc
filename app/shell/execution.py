@@ -43,7 +43,8 @@ class ExecutionMixin:
         ctx = self._make_context()
 
         # Enforce scope (with per-command override) before calling the handler.
-        if self.resolve_scope(key, cmd_def) == "device" and not ctx.device:
+        _eff_scope = self.resolve_scope(key, cmd_def)
+        if _eff_scope in ("device", "remote") and not ctx.device:
             device_hint = (
                 "Use [bold]cd <device>[/bold] to select a device first, "
                 "then run this command again.\n"
@@ -51,9 +52,14 @@ class ExecutionMixin:
                 "device directly without changing context.\n"
                 "Tab after 'cd ' or '--remote ' to see available devices."
             )
+            plane = (
+                "must SSH to the device — expect its login/2FA"
+                if _eff_scope == "remote"
+                else "runs via the SCM device tunnel — no SSH/2FA"
+            )
             console.print(
                 f"[yellow]'{key}'[/yellow] requires a device context  "
-                f"[dim](scope: device)[/dim]\n  {device_hint}"
+                f"[dim](scope: {_eff_scope} — {plane})[/dim]\n  {device_hint}"
             )
             return
 
@@ -248,6 +254,10 @@ class ExecutionMixin:
                 port=ssh_port,
             )
         console.print(fmt.format_raw(output, title=f"SSH: {key}"))
+        # A successful SSH run means the pooled session is warm and 2FA is
+        # done — mark the device attached so the prompt shows [ssh] and the
+        # operator knows subsequent remote commands reuse it without re-auth.
+        self._state.attached = True
 
     def _resolve_ssh_command(self, cmd_def: CommandDef, args: dict) -> str:
         """Return the concrete SSH command string for a registered command."""

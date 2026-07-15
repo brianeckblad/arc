@@ -40,6 +40,9 @@ class UserPrefs:
     terminal_height: int = 0    # 0 = auto-detect (terminal height for rich tables)
     spinner: bool = True
     aliases: dict[str, str] = field(default_factory=dict)
+    # Feature-editor (browser GUI) theme: {"base": <name>, "overrides": {"--token": "#hex"}}.
+    # Per-user only; never affects the terminal shell theme (settings/theme.json).
+    feature_gui_theme: dict = field(default_factory=dict)
 
 
 def load_prefs() -> UserPrefs:
@@ -62,7 +65,22 @@ def load_prefs() -> UserPrefs:
                 setattr(prefs, key, max(0, int(value)))
             elif isinstance(getattr(prefs, key), dict):
                 if isinstance(value, dict):
-                    setattr(prefs, key, {str(k): str(v) for k, v in value.items()})
+                    if key == "feature_gui_theme":
+                        # Nested structure: {"base": str, "overrides": {str: str}}.
+                        # An empty object stays empty (matches the default) so a
+                        # never-customized theme round-trips cleanly.
+                        if not value:
+                            setattr(prefs, key, {})
+                        else:
+                            base = str(value.get("base", ""))
+                            ov = value.get("overrides", {})
+                            overrides = (
+                                {str(k): str(v) for k, v in ov.items()}
+                                if isinstance(ov, dict) else {}
+                            )
+                            setattr(prefs, key, {"base": base, "overrides": overrides})
+                    else:
+                        setattr(prefs, key, {str(k): str(v) for k, v in value.items()})
                 else:
                     logger.debug("preferences.json: %s must be an object, got %r", key, value)
             else:

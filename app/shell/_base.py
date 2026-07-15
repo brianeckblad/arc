@@ -205,6 +205,7 @@ PROMPT_STYLE = Style.from_dict({
     "dev":     "bold ansimagenta",    # development-mode marker in the prompt
     "confirm": "bold ansired",        # commit confirmed countdown
     "noscm":   "ansired dim",         # degraded mode: no SCM connection
+    "ssh":     "bold ansigreen",      # attached: warm SSH session (2FA done)
 })
 
 
@@ -316,6 +317,9 @@ class ShellState:
     # Dev shell mode — entered via `dev` command, exited with `exit`.
     # While active: dev-flagged commands visible, dev sub-commands available.
     dev_shell: bool = False
+    # While active: the active device has a warm SSH session (2FA already done);
+    # `remote`-scoped commands auto-route over it without typing --remote.
+    attached: bool = False
 
 
 # Explicit re-export list for `from app.shell._base import *`.

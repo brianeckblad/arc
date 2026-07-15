@@ -257,7 +257,11 @@ def _api_for(key: str) -> str:
     if key in ("packet-tracer", "test security-policy-match"):
         return "(client-side simulation of the folder rule base)"
     cmd = COMMANDS[key]
-    if cmd.scope == "device" or (cmd.ssh_command is not None and key not in _API):
+    if cmd.scope == "remote" or (cmd.ssh_command is not None and cmd.scope == "remote"):
+        return "(live device state — SSH via --remote; expect device 2FA)"
+    if cmd.scope == "device":
+        return "(live device state — via the SCM device tunnel; no SSH/2FA)"
+    if cmd.ssh_command is not None and key not in _API:
         return "(live device state — SSH via --remote)"
     return ""
 

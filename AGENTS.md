@@ -27,7 +27,7 @@
 | `argspec` (greedy `set` parsing, slot completion) | `settings/command-structure.json` (hand-curated), `app/settings/field_catalog.py` (AUTO-GENERATED), `app/settings/command_structure.py` | hand file or `python app/scripts/generate_field_library.py` | `--only 4` |
 | `auth` | `app/config.py`, `app/cli.py` (auth group) | same | `--file app/config.py` |
 | `scm-api` / `endpoint` | `app/scripts/API_INDEX.md`; `docs/scm-api/specs/<cat>.md` | `app/api/client.py` | full suite |
-| `docsupdate` | `app/scripts/DOCS_AGENT.md` | `python app/scripts/docsupdate.py` | `--self-test` |
+| `docsupdate` / `scm-sources` | `app/scripts/DOCS_AGENT.md`, `settings/scm-sources.json` | `settings/scm-sources.json` or `python app/scripts/docsupdate.py` | `--self-test` |
 | `commandupdate` | — | `python app/scripts/commandupdate.py` | `--only 1,2,4` |
 | `panos` (PAN-OS CLI) | `settings/panos-sources.json`, `app/scripts/panos-curation.json` | curation file, or `python app/scripts/panosupdate.py && python app/scripts/generate_panos_catalog.py` | full suite |
 | `logs` (SLS fleet queries) | `app/api/sls.py`, log handlers in `app/commands/operations.py` | same | `python app/scripts/test_sls.py` + `--only 1,2,3` |
@@ -59,7 +59,10 @@ arc/
 │   │                                onlogin/startup_hint)
 │   ├── cli-structure.yaml         ← verb group descriptions + visible: field
 │   ├── command-structure.json     ← hand-curated set/update/delete arg specs
-│   ├── theme.json, banner.txt, goodbye.txt, panos-sources.json
+│   ├── theme.json, banner.txt, goodbye.txt
+│   ├── panos-sources.json         ← PAN-OS CLI docs pages (docs.paloaltonetworks.com)
+│   ├── scm-sources.json           ← SCM / pan.dev OpenAPI spec + guide registry
+│   ├── feature-labels.json        ← human names for the feature editor (GUI + CLI)
 ├── config/<os_username>/          ← gitignored: config.json + preferences.json
 ├── docs/                          ← user-facing Markdown (help <topic>)
 │   ├── commands/                  ← hand-written pages only (no generated stubs)
@@ -159,7 +162,7 @@ The feature editor (browser `feature gui`) and the `feature`/`alias` CLI are **s
 'show bgp-peers': CommandDef(
     description='Show BGP peer summary',
     category='network',
-    scope='folder',               # REQUIRED: 'folder' | 'device' | 'global'
+    scope='folder',               # REQUIRED: 'folder' | 'device' | 'remote' | 'global'
     api_handler=show_handler('get_bgp_peers'),
     ssh_command='show routing protocol bgp peer',
     render='list',                # see docs/RENDER_CATALOG.md
@@ -174,7 +177,22 @@ The feature editor (browser `feature gui`) and the `feature`/`alias` CLI are **s
 5. New `render=` key → add formatter + `_render()` case + smoke section-7 call.
 6. Run `python app/scripts/smoke_test.py --only 1,2,3` before commit.
 
-**Scope rules:** SCM config → `"folder"`; TSG-wide → `"global"`; live device state → `"device"` (requires `cd <device>`). Never mark network *config* as `"device"`.
+**Scope rules (4 values — context + execution plane):**
+- `global` — runs anywhere via SCM API (no context). TSG-wide reads.
+- `folder` — SCM config in the active folder (`?folder=`). Default for config.
+- `device` — targets a device but runs via the **SCM ops-job proxy** (device's
+  management tunnel — **no SSH, no 2FA**). Requires `cd <device>`.
+- `remote` — can only run by **SSHing to the device** (no SCM path) → expect
+  **TACACS/2FA**. Requires `cd <device>`. This is the explicit 2FA surface.
+
+Both `device` and `remote` require a device context; they differ only in
+transport. **Generator-derived (do not hand-set for generated commands):**
+`app/commands/generated.py` = `folder` (folder param) / `device` (device param)
+/ `global`; `app/commands/panos_generated.py` = `device` when the op has an
+`scm` ops-job mapping, else `remote`. Adding an `scm_map` entry migrates an op
+`remote → device` (removes a 2FA SSH round-trip). Smoke section 3 enforces the
+invariant (device-param ⇒ device/remote; `remote` ⇒ has an ssh_command), so every
+update tool keeps it correct. Never mark network *config* as `device`/`remote`.
 
 **Handler rules:** named module-level functions only (no lambdas); `require_scm(ctx)` / `require_device(ctx)` guards; `raise ValueError("Usage: …")` for bad args.
 
@@ -218,7 +236,7 @@ Type `dev` to enter (modal, prompt `:dev`). `exit` to leave. `dev on`/`dev off` 
 
 ## SCM REST API
 
-**Never guess an endpoint** — look it up in `app/scripts/API_INDEX.md`. Source of truth: https://pan.dev/scm/api/ — mirrored by `python app/scripts/docsupdate.py` (`app/scripts/scm-sources.json`; writes `CHANGES.md` + `MANIFEST.md`).
+**Never guess an endpoint** — look it up in `app/scripts/API_INDEX.md`. Source of truth: https://pan.dev/scm/api/ — mirrored by `python app/scripts/docsupdate.py` (`settings/scm-sources.json`; writes `CHANGES.md` + `MANIFEST.md`). Two doc-source registries, both in `settings/`: `scm-sources.json` = SCM / pan.dev API specs+guides (docsupdate.py); `panos-sources.json` = PAN-OS CLI hierarchy pages from docs.paloaltonetworks.com (panosupdate.py). `scm-sources.json` auto-mirrors ALL specs (`mirror_all_specs` + tree discovery) so new features are auto-included.
 
 Gateways: objects/security/setup/network/identity/device at `api.strata.paloaltonetworks.com/config/<domain>/v1`; IAM at `api.sase.paloaltonetworks.com`; token at `auth.apps.paloaltonetworks.com/auth/v1/oauth2/access_token`.
 
@@ -280,7 +298,7 @@ Pre-commit runs 1–3 + regenerates `CODE_MAP.md`. Version `0.1.<commit-count>` 
 
 `settings/` is user-editable. Before committing any `settings/` change, confirm whether to include it or roll back (`git checkout HEAD -- settings/`). Pre-commit hook warns on `settings/` changes.
 
-**Tracked settings files:** `builtin-commands.json` · `cli-structure.yaml` · `command-structure.json` · `theme.json` · `banner.txt` · `goodbye.txt` · `command-aliases.json` · `app-variables.json` · `features/*.json`
+**Tracked settings files:** `builtin-commands.json` · `cli-structure.yaml` · `command-structure.json` · `theme.json` · `banner.txt` · `goodbye.txt` · `command-aliases.json` · `app-variables.json` · `features/*.json` · `feature-labels.json` · `panos-sources.json` · `scm-sources.json`
 
 ---
 

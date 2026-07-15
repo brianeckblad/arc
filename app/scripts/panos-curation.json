@@ -14,7 +14,10 @@
   "scm_map": {
     "show advanced-routing route": {"job": "route-table"},
     "show advanced-routing fib":   {"job": "fib-table", "advanced": true},
+    "show routing route":          {"job": "route-table"},
     "show routing fib":            {"job": "fib-table"},
-    "show dns-proxy statistics":   {"job": "dns-proxy"}
+    "show dns-proxy statistics":   {"job": "dns-proxy"},
+    "show logging-status":         {"job": "logging-service-forwarding-status"},
+    "show running security-policy": {"job": "device-rules"}
   }
 }

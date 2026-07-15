@@ -150,10 +150,16 @@ def _build() -> dict[str, CommandDef]:
             continue  # tombstoned in the PAN-OS version we target
         family = str(entry.get("family") or "misc")
         is_config = family.startswith("config")
+        # Scope by execution plane: an op with an SCM ops-job mapping runs via the
+        # SCM proxy (no SSH/2FA) -> "device"; everything else can only be reached
+        # by SSHing to the box (TACACS/2FA) -> "remote".  Break-glass config is
+        # device-local and applied over SSH -> "remote".
+        has_scm = bool(entry.get("scm") or {})
+        scope = "device" if (has_scm and not is_config) else "remote"
         commands[entry["key"]] = CommandDef(
             description=_description(entry),
             category="panos-config" if is_config else "panos-ops",
-            scope="device",
+            scope=scope,
             api_handler=_make_config_api_handler(entry) if is_config else _make_op_api_handler(entry),
             ssh_command=_make_ssh_command(entry),
             render="raw" if not (entry.get("scm") or {}) else "",

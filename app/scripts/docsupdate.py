@@ -17,7 +17,7 @@ Everything pan.dev documents at https://pan.app/scripts/scm/docs/home/ is mirror
 
 Resilience (pan.dev renames files often):
 
-* The list of source paths lives in an editable registry, **app/scripts/scm-sources.json**,
+* The list of source paths lives in an editable registry, **settings/scm-sources.json**,
   not hard-coded here.  Edit that file when you know a new path.
 * When a path 404s, the tool searches the live pan.dev GitHub tree for the most
   likely replacement (by domain + filename similarity), updates the registry
@@ -68,7 +68,10 @@ from typing import Any, Optional, cast
 
 DEV_DIR = Path(__file__).resolve().parent
 ROOT = DEV_DIR.parent
-SOURCES_FILE = DEV_DIR / "scm-sources.json"
+# The SCM source registry is an operator-editable file — it lives in settings/
+# alongside its PAN-OS sibling (settings/panos-sources.json), not in app/.
+SETTINGS_DIR = ROOT.parent / "settings"
+SOURCES_FILE = SETTINGS_DIR / "scm-sources.json"
 
 HTTP_TIMEOUT = 30  # seconds — every network call is bounded
 HTTP_METHODS = ("get", "post", "put", "patch", "delete", "head", "options")
@@ -80,7 +83,7 @@ SPECS_DIR = OUTPUT_DIR / "specs"
 GUIDES_DIR = OUTPUT_DIR / "guides"
 CHANGES_FILE = OUTPUT_DIR / "CHANGES.md"
 
-# Built-in defaults used to seed app/scripts/scm-sources.json on first run if it is
+# Built-in defaults used to seed settings/scm-sources.json on first run if it is
 # missing.  After that, the JSON file is the source of truth (and is auto-updated
 # when pan.dev relocates a file).
 DEFAULT_SOURCES: dict[str, Any] = {
@@ -202,11 +205,11 @@ DEFAULT_SOURCES: dict[str, Any] = {
 }
 
 
-# ── Source registry (app/scripts/scm-sources.json) ───────────────────────────────────
+# ── Source registry (settings/scm-sources.json) ───────────────────────────────────
 
 
 def load_sources() -> dict[str, Any]:
-    """Return the source registry, seeding app/scripts/scm-sources.json if it is missing.
+    """Return the source registry, seeding settings/scm-sources.json if it is missing.
 
     The JSON file is the editable, auto-updated source of truth.  Any keys it
     omits fall back to DEFAULT_SOURCES so an older/partial file still works.
@@ -245,7 +248,7 @@ def load_sources() -> dict[str, Any]:
 
 
 def save_sources(sources: dict[str, Any]) -> None:
-    """Persist the source registry back to app/scripts/scm-sources.json."""
+    """Persist the source registry back to settings/scm-sources.json."""
     sources.setdefault(
         "_comment",
         "Editable registry of SCM doc sources for app/scripts/docsupdate.py. "

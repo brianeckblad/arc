@@ -48,6 +48,12 @@ class PromptMixin:
         if not getattr(self, "_scm", None):
             noscm_seg = "<sep> </sep><noscm>[no-scm]</noscm>"
 
+        # Attached marker — a warm SSH session to the active device exists
+        # (2FA already completed); remote commands reuse it with no re-auth.
+        attach_seg = ""
+        if self._state.device and getattr(self._state, "attached", False):
+            attach_seg = "<sep> </sep><ssh>[ssh]</ssh>"
+
         if self._state.device:
             name = device_display_name(self._state.device)
             if at_shared:
@@ -58,6 +64,7 @@ class PromptMixin:
                     f"<sep>:</sep><ctx>device</ctx>"
                     f"{dev_seg}"
                     f"{confirm_seg}"
+                    f"{attach_seg}"
                     f"{noscm_seg}"
                     f"<arrow>{prompt_tail}</arrow>"
                 )
@@ -68,6 +75,7 @@ class PromptMixin:
                 f"<sep>:</sep><folder>{folder}</folder>"
                 f"{dev_seg}"
                 f"{confirm_seg}"
+                f"{attach_seg}"
                 f"{noscm_seg}"
                 f"<arrow>{prompt_tail}</arrow>"
             )

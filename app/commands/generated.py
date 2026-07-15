@@ -250,7 +250,11 @@ def _build() -> dict[str, CommandDef]:
         commands[command] = CommandDef(
             description=entry.get("summary") or _humanize(command),
             category=entry["category"],
-            scope="folder" if "folder" in (entry.get("query_params") or []) else "global",
+            scope=(
+                "folder" if "folder" in (entry.get("query_params") or [])
+                else "device" if "device" in (entry.get("query_params") or [])
+                else "global"
+            ),
             api_handler=_make_handler(entry),
             ssh_command=None,
             render="",          # generic list-table fallback in _render()

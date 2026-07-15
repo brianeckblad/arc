@@ -102,6 +102,9 @@ class SessionsMixin:
             return
 
         self._run_interactive_shell(channel, name)
+        # The interactive session authenticated (2FA done) and left the
+        # pooled transport warm — mark attached so remote commands reuse it.
+        self._state.attached = True
 
     def _run_interactive_shell(self, channel, device_name: str) -> None:
         """Hand the terminal over to *channel* for a fully interactive SSH session.

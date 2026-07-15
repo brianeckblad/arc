@@ -53,6 +53,7 @@ class NavigationMixin:
         if args[0] in ("..", "/"):
             if self._state.device:
                 self._state.device = None
+                self._state.attached = False
                 console.print(_cd_hint("clear"))
             elif self._state.folder and self._state.folder.lower() != "shared":
                 self._state.folder = "Shared"
@@ -104,6 +105,7 @@ class NavigationMixin:
             match = self._find_device(target)
         if match:
             self._state.device = match
+            self._state.attached = False  # new device: any warm SSH session is stale
             name    = device_display_name(match, target)
             serial  = match.get("serial_number") or match.get("serial") or match.get("name") or "n/a"
             ip_raw  = match.get("ip_address") or match.get("ip-address") or ""
@@ -145,6 +147,7 @@ class NavigationMixin:
                 "ip_address": target, "serial_number": "",
                 "_is_stub": True,
             }
+            self._state.attached = False
 
     def _find_device(self, query: str) -> Optional[dict]:
         """Find a device in the cache by hostname, serial, name, or IP.
@@ -285,6 +288,7 @@ class NavigationMixin:
         if self._state.device:
             device_name = device_display_name(self._state.device)
             self._state.device = None
+            self._state.attached = False
             console.print(
                 f"[cyan]SCM folder set to:[/cyan] [bold]{new_folder}[/bold]  "
                 f"[dim](device context {device_name} cleared — use cd to re-enter)[/dim]"
@@ -479,6 +483,7 @@ class NavigationMixin:
         """
         self._state.tsg_id = new_tsg
         self._state.device = None
+        self._state.attached = False
         self._state.folder = self._config.default_folder
         self._state.devices_cache = []
         self._state.folders_cache = ["Shared", "Global"]

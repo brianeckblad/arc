@@ -78,7 +78,11 @@ _HIDDEN_WORDS = {"hidden", "invisible", "stealth"}
 SCOPE_GLOBAL = "global"
 SCOPE_FOLDER = "folder"
 SCOPE_DEVICE = "device"
-VALID_SCOPES = (SCOPE_GLOBAL, SCOPE_FOLDER, SCOPE_DEVICE)
+SCOPE_REMOTE = "remote"
+VALID_SCOPES = (SCOPE_GLOBAL, SCOPE_FOLDER, SCOPE_DEVICE, SCOPE_REMOTE)
+
+# Scopes that require an active device context (`cd <device>`).
+DEVICE_SCOPES = (SCOPE_DEVICE, SCOPE_REMOTE)
 
 # Key under which per-command scope overrides live inside a feature file.
 _SCOPE_OVERRIDES_KEY = "_scope_overrides"

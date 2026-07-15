@@ -41,6 +41,10 @@ FEATURES_FILE = SETTINGS_DIR / "features.json"
 # registry: add new "commands added/deleted in X" pages here.
 PANOS_SOURCES_FILE = SETTINGS_DIR / "panos-sources.json"
 
+# SCM (Strata Cloud Manager / pan.dev) OpenAPI spec + guide registry pulled by
+# app/scripts/docsupdate.py — user-editable; docsupdate self-heals renamed paths.
+SCM_SOURCES_FILE = SETTINGS_DIR / "scm-sources.json"
+
 # Per-command argument structure that drives Tab completion and `?` help.
 # Hand-editable; the JSON holds only the ORDER of each command's fields
 # ({"object": ["field", "field", ...]}), with all field metadata resolved from

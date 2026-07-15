@@ -67,6 +67,12 @@ GENERAL_TOPICS = {
     # Guided credential setup — also reachable via the `setup` shell builtin
     "setup":            "setup.md",
     "getting-started":  "setup.md",
+    # Device access & auth planes (SCM API vs SCM proxy vs SSH/2FA)
+    "device-access":    "device-access.md",
+    "device access":    "device-access.md",
+    "device-auth":      "device-access.md",
+    "remote-access":    "device-access.md",
+    "2fa":              "device-access.md",
 }
 
 

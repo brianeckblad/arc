@@ -53,11 +53,11 @@ Curated explicit commands still win over generated commands when they share a ke
 use curated handlers for high-priority commands that need friendly arguments,
 custom rendering, or endpoint-specific request-body builders.
 
-- Source paths live in `app/scripts/scm-sources.json` (editable registry).
+- Source paths live in `settings/scm-sources.json` (editable registry).
 - If a file 404s, the tool searches the live pan.dev tree and **auto-updates**
   the registry with the new path (recorded under `relocations`). You do not
   hand-edit paths unless discovery cannot find a match.
-- If discovery fails for an item, open `app/scripts/scm-sources.json` and fix that one
+- If discovery fails for an item, open `settings/scm-sources.json` and fix that one
   path; re-run. Use `python app/scripts/docsupdate.py --list-remote` to see live
   spec paths.
 - Every doc under `products/scm/docs/` is mirrored (curated names + any new
@@ -101,6 +101,10 @@ Only the **Removed** and **changed** endpoints require code action. Workflow:
    and any handler in `app/commands/<module>.py`.
 3. For **Added** endpoints the user wants exposed, use the normal add-command
    flow (`app/scripts/scaffold.py`, see `AGENTS.md` → Add a Command) — that is a feature, not a docs fix.
+   Command **scope** is auto-derived (generated SCM: `device` if the endpoint
+   takes a `device` query param, else `folder`/`global`; PAN-OS ops: `device`
+   if SCM-proxied via `scm_map`, else `remote`). Do NOT hand-set scope for
+   generated commands — the smoke section-3 invariant enforces it.
 4. **Update the command's help in ONE place** — its `docs/commands/<slug>.md`
    front-matter (`description`, `usage`, `api`) and body. That single file feeds
    both the inline `?` help and the full `help <command>` page. Then run
@@ -125,12 +129,12 @@ and the API→command map all update from those.
 
 ## Guardrails
 
-- Do not commit `app/scripts/scm-sources.json` relocation churn without reading
+- Do not commit `settings/scm-sources.json` relocation churn without reading
   `CHANGES.md` first — a relocation means an upstream rename you should
   understand.
 - Never invent endpoint paths. The only sources of truth are the pulled specs
   under `docs/scm-api/specs/` and `app/scripts/API_INDEX.md`.
-- Keep docs-mode edits scoped to: `app/scripts/scm-sources.json`, `app/api/client.py`,
+- Keep docs-mode edits scoped to: `settings/scm-sources.json`, `app/api/client.py`,
   the affected `app/commands/<module>.py`, and the matching `docs/commands/*.md`.
 - Secrets never appear in docs or specs — do not paste tokens into examples.
 
@@ -145,7 +149,7 @@ and the API→command map all update from those.
 | Dry-run report | `python app/scripts/docsupdate.py --check` |
 | List live spec paths | `python app/scripts/docsupdate.py --list-remote` |
 | Validate engine offline | `python app/scripts/docsupdate.py --self-test` |
-| Editable source paths | `app/scripts/scm-sources.json` |
+| Editable source paths | `settings/scm-sources.json` |
 | Compact endpoint table | `app/scripts/API_INDEX.md` |
 | Refresh command-doc front-matter + index/api-ref | `python app/scripts/generate_command_docs.py` |
 | One domain's endpoints | `docs/scm-api/specs/<category>.md` |

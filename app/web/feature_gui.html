@@ -14,7 +14,7 @@
     }
     [data-theme="dark"]{--bg:#0B0E1A;--bg-sidebar:#111525;--bg-card:#171B2E;--bg-hover:#1E2340;
       --bg-active:rgba(0,112,209,.15);--bg-code:#0D1020;--border:#1E2340;--text:#D8DCF0;
-      --text-2:#8896B8;--text-3:#505A75;--header-bg:rgba(11,14,26,.95);--overlay:rgba(6,8,16,.7);}
+      --text-2:#8896B8;--text-3:#6B7A9C;--header-bg:rgba(11,14,26,.95);--overlay:rgba(6,8,16,.7);}
     [data-theme="light"]{--bg:#FFF;--bg-sidebar:#F4F6FB;--bg-card:#F9FAFD;--bg-hover:#EBEEf8;
       --bg-active:rgba(0,112,209,.08);--bg-code:#EEF1F8;--border:#DEE2F0;--text:#1A1D2E;
       --text-2:#4A5272;--text-3:#8896B8;--header-bg:rgba(255,255,255,.95);--overlay:rgba(20,24,40,.4);}
@@ -110,6 +110,7 @@
     .seg button.sel[data-v="off"],.seg button.sel[data-v="false"]{background:var(--red);color:#2a0808;}
     .seg button.sel[data-v="hidden"]{background:var(--yellow);color:#2a1c04;}
     .seg.scope button.sel{background:var(--brand);color:#fff;}
+    .seg.scope button.sel[data-v="remote"]{background:var(--yellow);color:#2a1c04;}
 
     .detail{display:none;border-top:1px solid var(--border);padding:.7rem .85rem;background:var(--bg-code);}
     .card.open .detail{display:block;}
@@ -188,8 +189,9 @@ const SECTIONS=[
   {key:"aliases",label:"Aliases"},
   {key:"builtins",label:"Built-ins"},
   {key:"advanced",label:"Advanced"},
+  {key:"settings",label:"Settings"},
 ];
-const HELP_TOPIC={areas:"areas",features:"features",structure:"structure",aliases:"aliases",builtins:"builtins",advanced:"files"};
+const HELP_TOPIC={areas:"areas",features:"features",structure:"structure",aliases:"aliases",builtins:"builtins",advanced:"files",settings:"settings"};
 let cur={section:"features",group:null};
 let filter="";
 
@@ -231,6 +233,11 @@ async function loadSidebar(){
       <div class="muted" style="padding:.6rem .5rem;font-size:12px">Enable or disable whole capability areas. Disabling turns every command in an area off.</div>`;
     return;
   }
+  if(cur.section==="settings"){
+    side.innerHTML=`<div class="stitle">Settings</div><div class="g-item active">Theme</div>
+      <div class="muted" style="padding:.6rem .5rem;font-size:12px">Personalize the editor's colors. Saved to your preferences.json.</div>`;
+    return;
+  }
   const nav=await api("/api/nav?section="+cur.section);
   const groups=nav.groups||[];
   if(!cur.group && groups.length)cur.group=groups[0].key;
@@ -262,6 +269,7 @@ async function loadMain(){
   if(cur.section==="aliases")return mainAliases(main);
   if(cur.section==="builtins")return mainBuiltins(main);
   if(cur.section==="advanced")return mainAdvanced(main);
+  if(cur.section==="settings")return mainSettings(main);
 }
 
 // ---- AREAS (enable/disable whole capability areas) ----
@@ -344,10 +352,11 @@ function featureCard(f){
     const rs=cr.querySelector(".rst");if(rs)rs.onclick=()=>setScope(f,cmd,cr,"reset");});
   return card;
 }
-function scopeRow(c){const S=["global","folder","device"];
+function scopeRow(c){const S=["global","folder","device","remote"];
+  const tip={global:"runs anywhere via SCM",folder:"SCM config in the active folder",device:"targets a device via SCM tunnel (no 2FA)",remote:"SSH to the device (2FA)"};
   return `<div class="crow" data-cmd="${escA(c.command)}"><span class="cname" title="${escA(c.description||c.command)}">${esc(c.command)}${c.ssh?' <span class="ssh">SSH</span>':''}</span>
-    <span class="seg scope">${S.map(s=>`<button data-v="${s}" class="${c.effective_scope===s?'sel':''}">${s[0].toUpperCase()+s.slice(1)}</button>`).join("")}</span>
-    <button class="rst" title="Reset to code default (${c.code_scope})">${c.overridden?"reset":"&nbsp;"}</button></div>`;}
+  <span class="seg scope">${S.map(s=>`<button data-v="${s}" title="${tip[s]}" class="${c.effective_scope===s?'sel':''}">${s[0].toUpperCase()+s.slice(1)}</button>`).join("")}</span>
+  <button class="rst" title="Reset to code default (${c.code_scope})">${c.overridden?"reset":"&nbsp;"}</button></div>`;}
 async function setFState(f,card,v){if(f.state===v)return;
   try{await post("/api/feature",{flag:f.flag,state:v});f.state=v;
     card.querySelectorAll(".seg.st button").forEach(b=>b.classList.toggle("sel",b.dataset.v===v));flash(card);
@@ -485,6 +494,9 @@ async function mainAdvanced(main){
   const d=(data.domains||[]).find(x=>x.stem===cur.group)||data.domains[0];
   if(!d){main.appendChild(pageHead(main,"Advanced"));main.appendChild(el("div","empty","No files."));return;}
   main.appendChild(pageHead(main,d.label));
+  const note=el("div");note.style.cssText="color:var(--text-2);font-size:13px;margin:-.4rem 0 1rem;max-width:80ch";
+  note.innerHTML="<b>Advanced regeneration settings</b> \u2014 not an on/off switch. To turn features on or off use <b>Features</b>; to disable a whole area use <b>Areas</b>. These control what happens when the file is <i>regenerated</i> from the API specs.";
+  main.appendChild(note);
   const card=el("div","card");card.style.padding="1rem";
   card.innerHTML=`<div class="rtitle">${esc(d.label)} <span class="rtech">${d.stem}.json</span></div>
     <div class="muted" style="margin:.4rem 0 .9rem">${esc((d.readme||"").slice(0,260))}</div>
@@ -503,11 +515,114 @@ async function setFile(d,card,field,value,tog){
     toast(`${d.label}: ${field} updated`);}catch(e){toast("Error: "+e.message,true);}
 }
 
+// ---- SETTINGS / THEME ----
+let themeData=null;         // {tokens, themes:[{name,colors}], active:{base,overrides}}
+let themeWork={base:"Default",overrides:{}};
+const TOKEN_LABELS={
+  "--bg":"Page background","--bg-sidebar":"Sidebar background","--bg-card":"Card / row background",
+  "--bg-hover":"Hover background","--bg-active":"Active / selected background","--bg-code":"Code / inset background",
+  "--header-bg":"Header background","--overlay":"Modal overlay",
+  "--text":"Primary text (titles)","--text-2":"Secondary text (subtitles)","--text-3":"Dim text & links (e.g. \u25b8 scope)",
+  "--border":"Borders / dividers",
+  "--brand":"Accent / primary buttons","--brand-hover":"Accent hover",
+  "--green":"ON / success","--yellow":"HIDDEN / warning / remote","--red":"OFF / danger",
+  "--purple":"DEV","--teal":"SSH / info links",
+};
+const TOKEN_GROUPS=[
+  ["Backgrounds",["--bg","--bg-sidebar","--bg-card","--bg-hover","--bg-active","--bg-code","--header-bg","--overlay"]],
+  ["Text, links & borders",["--text","--text-2","--text-3","--border"]],
+  ["Accents & status",["--brand","--brand-hover","--green","--yellow","--red","--purple","--teal"]],
+];
+function themeColors(base){const t=(themeData.themes||[]).find(t=>t.name===base);return t?t.colors:{};}
+function effColor(token){return themeWork.overrides[token]||themeColors(themeWork.base)[token]||"";}
+function applyWorking(){const root=document.documentElement;
+  (themeData.tokens||[]).forEach(tk=>{const v=effColor(tk);if(v)root.style.setProperty(tk,v);});}
+async function loadTheme(){themeData=await api("/api/theme");
+  themeWork={base:themeData.active.base||"Default",overrides:Object.assign({},themeData.active.overrides||{})};
+  applyWorking();}
+function isHex(v){return /^#[0-9a-fA-F]{3,8}$/.test(String(v).trim());}
+async function mainSettings(main){
+  main.innerHTML="";   // re-render clean (theme picker calls this directly)
+  if(!themeData)await loadTheme();
+  const ph=el("div","phead");ph.appendChild(el("h1",null,"Theme"));ph.appendChild(qmark("topic=settings"));main.appendChild(ph);
+  const intro=el("div");intro.style.cssText="color:var(--text-2);font-size:13.5px;margin:-.5rem 0 1.1rem;max-width:80ch";
+  intro.textContent="Pick a base theme, then tweak individual colors. Changes preview live and save to your preferences.json (this editor only — not the ARC terminal).";
+  main.appendChild(intro);
+
+  // Live sample — mirrors a real feature row so you can see every color's effect.
+  const sample=el("div","section-block");
+  sample.innerHTML=`<h2>Live preview</h2>
+    <div class="card"><div class="rmain">
+      <span class="qmark">?</span>
+      <div class="rinfo"><div class="rtitle">Bad Domains<span class="rtech">adnsr_bad_domains_read</span></div>
+        <div class="rsub">List misconfigured domains</div>
+        <div class="rmeta"><span class="badge">global</span><span class="muted">2 commands</span><button class="expand">\u25b8 scope</button></div></div>
+      <div class="seg st"><button class="sel" data-v="on">ON</button><button data-v="dev">DEV</button><button data-v="off">OFF</button><button data-v="hidden">HIDDEN</button></div>
+    </div></div>
+    <div style="display:flex;gap:.5rem;margin-top:.4rem"><button class="btn primary">Primary button</button><button class="btn sm">Secondary</button>
+      <span class="badge override">override</span> <span class="ssh">SSH</span></div>`;
+  main.appendChild(sample);
+
+  // Theme picker
+  const pickWrap=el("div","section-block");pickWrap.appendChild(el("h2",null,"Base theme"));
+  const grid=el("div");grid.style.cssText="display:flex;flex-wrap:wrap;gap:.6rem";
+  (themeData.themes||[]).forEach(t=>{
+    const c=t.colors;const sel=themeWork.base===t.name;
+    const card=el("div");card.style.cssText=`cursor:pointer;border:2px solid ${sel?'var(--brand)':'var(--border)'};border-radius:10px;overflow:hidden;width:150px;background:${c["--bg"]}`;
+    card.innerHTML=`<div style="padding:.5rem .6rem">
+      <div style="font-size:12.5px;font-weight:700;color:${c["--text"]}">${esc(t.name)}</div>
+      <div style="display:flex;gap:4px;margin-top:.4rem">
+        ${["--brand","--green","--yellow","--red","--purple","--teal"].map(k=>`<span style="width:16px;height:16px;border-radius:4px;background:${c[k]};border:1px solid ${c["--border"]}"></span>`).join("")}
+      </div>
+      <div style="font-size:10.5px;color:${c["--text-2"]};margin-top:.4rem;font-family:var(--mono)">Aa bg text</div></div>`;
+    card.onclick=()=>{themeWork.base=t.name;themeWork.overrides={};applyWorking();mainSettings(main);};
+    grid.appendChild(card);
+  });
+  pickWrap.appendChild(grid);main.appendChild(pickWrap);
+
+  // Color editors
+  const editWrap=el("div","section-block");
+  const head=el("h2",null,"Customize colors");editWrap.appendChild(head);
+  TOKEN_GROUPS.forEach(([label,tokens])=>{
+    editWrap.appendChild(el("div","muted",label)).style.cssText="margin:.6rem 0 .4rem;font-weight:700;color:var(--text-2)";
+    tokens.forEach(tk=>{
+      const cur=effColor(tk);const overridden=tk in themeWork.overrides;
+      const row=el("div","frow");row.style.alignItems="center";
+      const hex=isHex(cur);
+      row.innerHTML=`<span style="width:230px;font-size:12.5px;color:var(--text)">${TOKEN_LABELS[tk]||tk}<span class="mono" style="display:block;font-size:10px;color:var(--text-3)">${tk}</span></span>
+        ${hex?`<input type="color" class="ci" value="${cur}" style="width:42px;height:28px;padding:0;border-radius:5px;cursor:pointer">`:""}
+        <input type="text" class="ct" value="${escA(cur)}" style="flex:1;min-width:120px" placeholder="#hex or rgba(...)"/>
+        <span class="swatch" style="width:26px;height:26px;border-radius:5px;border:1px solid var(--border);background:${escA(cur)}"></span>
+        <button class="rst" title="Reset this color">${overridden?"reset":"&nbsp;"}</button>`;
+      const ct=row.querySelector(".ct"),ci=row.querySelector(".ci"),sw=row.querySelector(".swatch"),rst=row.querySelector(".rst");
+      function setVal(v){themeWork.overrides[tk]=v;sw.style.background=v;if(ci&&isHex(v))ci.value=v;applyWorking();rst.innerHTML="reset";}
+      ct.oninput=e=>setVal(e.target.value.trim());
+      if(ci)ci.oninput=e=>{ct.value=e.target.value;setVal(e.target.value);};
+      rst.onclick=()=>{delete themeWork.overrides[tk];const base=themeColors(themeWork.base)[tk]||"";ct.value=base;if(ci&&isHex(base))ci.value=base;sw.style.background=base;applyWorking();rst.innerHTML="&nbsp;";};
+      editWrap.appendChild(row);
+    });
+  });
+  main.appendChild(editWrap);
+
+  // Actions
+  const actions=el("div");actions.style.cssText="display:flex;gap:.6rem;margin-top:.5rem";
+  const save=el("button","btn primary","Save theme");save.onclick=saveTheme;
+  const reset=el("button","btn sm","Reset all to base");reset.onclick=()=>{themeWork.overrides={};applyWorking();mainSettings(main);};
+  actions.appendChild(save);actions.appendChild(reset);main.appendChild(actions);
+}
+async function saveTheme(){
+  try{const r=await post("/api/theme",{base:themeWork.base,overrides:themeWork.overrides});
+    themeData.active={base:r.base,overrides:r.overrides};themeWork={base:r.base,overrides:Object.assign({},r.overrides)};
+    applyWorking();toast("Theme saved to your preferences");
+  }catch(e){toast("Error: "+e.message,true);}
+}
+
 // ---- shell ----
 function buildTabs(){const t=document.getElementById("tabs");
   SECTIONS.forEach(s=>{const b=el("div","tab","");b.dataset.k=s.key;b.textContent=s.label;b.onclick=()=>go(s.key,null);t.appendChild(b);});}
 document.getElementById("search").addEventListener("input",e=>{filter=e.target.value.trim();loadMain();});
-document.getElementById("theme").onclick=()=>{const h=document.documentElement;h.dataset.theme=h.dataset.theme==="dark"?"light":"dark";};
+document.getElementById("theme").onclick=()=>go("settings",null);
+document.getElementById("theme").title="Theme & settings";
 document.getElementById("mclose").onclick=()=>document.getElementById("modal").classList.remove("show");
 document.getElementById("modal").onclick=e=>{if(e.target.id==="modal")e.currentTarget.classList.remove("show");};
 async function closeEditor(){try{await fetch("/api/close",{method:"POST"});}catch(e){}document.getElementById("closedv").classList.add("show");}
@@ -515,7 +630,8 @@ document.getElementById("done").onclick=closeEditor;
 window.addEventListener("keydown",e=>{if(e.key==="Escape"){const m=document.getElementById("modal");if(m.classList.contains("show"))m.classList.remove("show");else closeEditor();}});
 buildTabs();
 if(!location.hash)location.hash="features";
-route();
+// Apply the user's saved theme before first render so the GUI opens in it.
+loadTheme().catch(()=>{}).finally(route);
 </script>
 </body>
 </html>
