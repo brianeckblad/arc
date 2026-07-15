@@ -700,19 +700,55 @@ class ConfigureMixin:
             console.print()
             console.print(f"  [bold yellow]feature[/bold yellow]  [dim]— feature flag management[/dim]")
             console.print()
-            console.print(f"  [cyan]feature show[/cyan]           List all flags grouped ON / DEV / OFF")
-            console.print(f"  [cyan]feature show on[/cyan]        List only enabled flags")
-            console.print(f"  [cyan]feature show off[/cyan]       List only disabled flags")
-            console.print(f"  [cyan]feature show dev[/cyan]       List only development flags")
+            console.print(f"  [cyan]feature show[/cyan]           List all flags grouped ON / DEV / OFF / HIDDEN")
+            console.print(f"  [cyan]feature show on|off|dev|hidden[/cyan]  List only flags in one state")
             console.print(f"  [cyan]feature show <name>[/cyan]    Show matching feature flag(s)")
+            console.print(f"  [cyan]feature gui[/cyan]            Open the browser feature editor")
+            console.print(f"  [cyan]feature area[/cyan]           List areas + which are enabled/disabled")
+            console.print(f"  [cyan]feature area <name> enable|disable[/cyan]  Turn a whole area on/off")
+            console.print(f"  [cyan]feature info <flag>[/cyan]    Show what a flag does + its gated commands")
             console.print(f"  [cyan]feature enable <flag>[/cyan]  Set a flag ON and save")
             console.print(f"  [cyan]feature disable <flag>[/cyan] Set a flag OFF and save")
             console.print(f"  [cyan]feature dev <flag>[/cyan]     Mark a flag DEV and save")
+            console.print(f"  [cyan]feature hidden <flag>[/cyan]  Mark a flag HIDDEN (runs, not shown in ?)")
+            console.print(f"  [cyan]feature scope <cmd> <global|folder|device|reset>[/cyan]  Override where a command runs")
+            console.print(f"  [cyan]feature default <domain> <on|dev|off>[/cyan]  Set a domain's default state")
+            console.print(f"  [cyan]feature carry <domain> <on|off>[/cyan]        Keep manual edits on regenerate")
             console.print(f"  [cyan]feature help[/cyan]           Open full feature flag documentation")
             console.print()
             console.print(f"  [dim]DEV flags appear only after you type [bold]dev[/bold] to enter development mode.[/dim]")
             console.print(f"  [dim]feature enable ?  → flags not yet ON   |   feature disable ?  → flags not yet OFF[/dim]")
             console.print()
+            return
+
+        # ── gui — launch the browser feature editor (blocks until closed) ─────
+        if sub == "gui":
+            self._cmd_feature_gui()
+            return
+
+        # ── info — describe a flag and the commands it gates ──────────────────
+        if sub == "info":
+            self._cmd_feature_info(args[1:])
+            return
+
+        # ── scope — set/clear a per-command run-scope override ────────────────
+        if sub == "scope":
+            self._cmd_feature_scope(args[1:])
+            return
+
+        # ── area — list areas / hide/show a whole area in the editor ──────────
+        if sub in ("area", "areas"):
+            self._cmd_feature_area(args[1:])
+            return
+
+        # ── default / carry — per-domain file meta ────────────────────────────
+        if sub in ("default", "carry"):
+            self._cmd_feature_meta(sub, args[1:])
+            return
+
+        # ── feature <flag> ? — info for a specific flag ──────────────────────
+        if len(args) == 2 and args[1] == "?":
+            self._cmd_feature_info([args[0]])
             return
 
         # Helper: build flag→commands reverse map (used by show and enable/disable ?)
@@ -725,51 +761,49 @@ class ConfigureMixin:
 
         # The universe of known flags = those in settings/features/ plus any
         # referenced by a command in the registry (so newly-added flags appear).
+        # Filter out internal sentinel keys (_domain_default_*, etc.) — these
+        # are loader implementation details, not user-facing flags.
         def _all_flags() -> list[str]:
-            names = set(self._features) | set(_flag_to_cmds())
+            names = (
+                {k for k in self._features if not k.startswith("_")}
+                | set(_flag_to_cmds())
+            )
             return sorted(names)
 
         def _persist_feature_state(flag_name: str, state: str) -> None:
-            """Write one flag state to its owning settings/features/ file."""
-            import json  # Deferred: used only when changing a feature flag.
+            """Write one flag state to its owning settings/features/ file and
+            update the live shell (flag map + visible-keys cache)."""
+            from app.settings.features import set_feature_state
 
-            from app.settings.features import feature_file_for
-
-            target = feature_file_for(flag_name)
-            try:
-                raw = json.loads(target.read_text(encoding="utf-8")) if target.exists() else {}
-            except (json.JSONDecodeError, OSError) as exc:
-                raise RuntimeError(f"Could not read {target.name}: {exc}") from exc
-            if not isinstance(raw, dict):
-                raise RuntimeError(f"{target.name} must contain a JSON object")
-
-            raw_value: bool | str
-            if state == "on":
-                raw_value = True
-            elif state == "dev":
-                raw_value = "dev"
-            else:
-                raw_value = False
-
-            raw[flag_name] = raw_value
-            try:
-                target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_text(json.dumps(raw, indent=2) + "\n", encoding="utf-8")
-            except OSError as exc:
-                raise RuntimeError(f"Could not write {target.name}: {exc}") from exc
+            set_feature_state(flag_name, state)
             self._features[flag_name] = state
             self._invalidate_visible_keys()
 
         def _print_feature_rows(title: str, flags: list[str], colour: str, flag_cmds: dict[str, list[str]]) -> None:
-            """Print a compact flag list with command mappings."""
+            """Print a compact flag list with human titles + command mappings."""
+            from app.settings.feature_labels import flag_label, load_labels
+            labels = load_labels()
             console.print(f"\n  [bold {colour}]{title}[/bold {colour}]  [dim]({len(flags)})[/dim]")
             if not flags:
                 console.print("    [dim]No matching flags.[/dim]")
                 return
             for flag in flags:
                 state = feature_state(self._features, flag)
-                cmds = ", ".join(sorted(flag_cmds.get(flag, []))) or "—"
-                console.print(f"    {flag:<35} [{colour}]{state}[/{colour}]  [dim]{cmds}[/dim]")
+                gated = sorted(flag_cmds.get(flag, []))
+                # Effective-scope summary across the flag's gated commands.
+                scopes = {
+                    self.resolve_scope(c, COMMANDS[c])
+                    for c in gated if c in COMMANDS
+                }
+                scope_tag = ""
+                if scopes:
+                    label = next(iter(scopes)) if len(scopes) == 1 else "mixed"
+                    scope_tag = f"  [dim]<{label}>[/dim]"
+                human = flag_label(flag, flag_cmds, commands=COMMANDS, labels=labels)["title"]
+                console.print(
+                    f"    [white]{human:<26}[/white] [{colour}]{state:<7}[/{colour}]{scope_tag}"
+                    f"  [dim]{flag}[/dim]"
+                )
 
         if sub in ("enable", "disable", "dev") and len(args) >= 2 and args[1] == "?":
             flag_cmds = _flag_to_cmds()
@@ -805,6 +839,8 @@ class ConfigureMixin:
             # Flag-centric search: `feature find address` matches flag names AND
             # the commands they gate; shows the owning glossary file so the
             # operator knows exactly what to edit. Composable with | match.
+            # Uses word-boundary matching so "ping" won't match "mapping".
+            import re as _re
             pattern = " ".join(args[1:]).strip().lower()
             if not pattern:
                 console.print(
@@ -815,10 +851,13 @@ class ConfigureMixin:
             from app.settings.features import load_features_with_sources
             _states, sources = load_features_with_sources()
             flag_cmds = _flag_to_cmds()
+            pat = _re.compile(r'(?<![a-z])' + _re.escape(pattern) + r'(?![a-z])')
             hits = []
             for flag in _all_flags():
                 gated = flag_cmds.get(flag, [])
-                if pattern in flag.lower() or any(pattern in c.lower() for c in gated):
+                if pat.search(flag.replace("_", " ").lower()) or any(
+                    pat.search(c.replace("-", " ").lower()) for c in gated
+                ):
                     hits.append((flag, gated))
             if not hits:
                 console.print(f"[yellow]No flags or gated commands match:[/yellow] [bold]{pattern}[/bold]")
@@ -840,11 +879,14 @@ class ConfigureMixin:
             return
 
         if sub == "show":
+            import re as _re
+
             flag_cmds = _flag_to_cmds()
             names = _all_flags()
             on  = [f for f in names if feature_state(self._features, f) == "on"]
             dev = [f for f in names if feature_state(self._features, f) == "dev"]
             off = [f for f in names if feature_state(self._features, f) == "off"]
+            hid = [f for f in names if feature_state(self._features, f) == "hidden"]
             filter_token = args[1].lower() if len(args) >= 2 else ""
 
             mode = (
@@ -866,32 +908,51 @@ class ConfigureMixin:
                 _print_feature_rows("OFF — hidden for everyone", off, "red", flag_cmds)
                 console.print()
                 return
+            if filter_token in ("hidden", "stealth"):
+                _print_feature_rows("HIDDEN — works but not shown in ?", hid, "yellow", flag_cmds)
+                console.print()
+                return
             if filter_token in ("dev", "development"):
                 dev_hint = "shown now" if self._dev_mode else "hidden — type 'dev' to reveal"
                 _print_feature_rows(f"DEV — {dev_hint}", dev, "magenta", flag_cmds)
                 console.print()
                 return
             if filter_token:
+                # Use word-boundary matching so "ping" doesn't match "mapping".
+                # Flag name matches use substring (underscores = word separators).
+                pat = _re.compile(r'(?<![a-z])' + _re.escape(filter_token) + r'(?![a-z])')
                 matches = [
                     flag for flag in names
-                    if filter_token in flag.lower()
-                    or any(filter_token in cmd.lower() for cmd in flag_cmds.get(flag, []))
+                    if pat.search(flag.replace("_", " ").lower())
+                    or any(pat.search(cmd.replace("-", " ").lower()) for cmd in flag_cmds.get(flag, []))
                 ]
                 _print_feature_rows(f"MATCHES — {filter_token}", matches, "cyan", flag_cmds)
                 console.print()
                 return
 
+            # Default show: ON and DEV in full; OFF collapsed to a summary line
+            # (the OFF list can be thousands of catalog-generated flags — showing
+            # them all creates unreadable noise; use 'show feature off' to list them).
             _print_feature_rows("ON — visible to everyone", on, "green", flag_cmds)
             dev_hint = "shown now" if self._dev_mode else "hidden — type 'dev' to reveal"
             _print_feature_rows(f"DEV — {dev_hint}", dev, "magenta", flag_cmds)
-            _print_feature_rows("OFF — hidden for everyone", off, "red", flag_cmds)
+            if hid:
+                _print_feature_rows("HIDDEN — works but not shown in ?", hid, "yellow", flag_cmds)
+            if off:
+                console.print(
+                    f"\n  [bold red]OFF — hidden for everyone[/bold red]  "
+                    f"[dim]({len(off)})[/dim]"
+                )
+                console.print(
+                    f"    [dim]Run [bold]feature show off[/bold] to list all disabled flags.[/dim]"
+                )
 
             console.print()
-            console.print("  [dim]  feature show on|off|dev|<name>  |  feature enable <flag>  |  feature disable <flag>  |  feature dev <flag>[/dim]")
+            console.print("  [dim]  feature show on|off|dev|hidden|<name>  |  feature enable|disable|dev|hidden <flag>  |  feature area[/dim]")
             console.print()
             return
 
-        if sub in ("enable", "disable", "dev"):
+        if sub in ("enable", "disable", "dev", "hidden"):
             if len(args) < 2:
                 console.print(f"[yellow]Usage:[/yellow] feature {sub} <flag_name>")
                 console.print(f"  Tip: [bold]feature {sub} ?[/bold]  lists the flags you can {sub}")
@@ -903,16 +964,18 @@ class ConfigureMixin:
                     f"  Run [bold]feature {sub} ?[/bold] to see all available flags."
                 )
                 return
-            new_state = {"enable": "on", "disable": "off", "dev": "dev"}[sub]
+            new_state = {"enable": "on", "disable": "off", "dev": "dev", "hidden": "hidden"}[sub]
             try:
                 _persist_feature_state(flag_name, new_state)
             except RuntimeError as exc:
                 console.print(f"[red]Could not save feature flag:[/red] {exc}")
                 return
-            colour = {"on": "green", "dev": "magenta", "off": "red"}[new_state]
+            colour = {"on": "green", "dev": "magenta", "off": "red", "hidden": "yellow"}[new_state]
             note = ""
             if new_state == "dev" and not self._dev_mode:
                 note = "  [dim](type 'dev' to reveal dev commands)[/dim]"
+            elif new_state == "hidden":
+                note = "  [dim](runs, but not shown in normal ? help)[/dim]"
             console.print(
                 f"  {flag_name}  →  [{colour}]{new_state}[/{colour}]{note}  "
                 f"[dim](saved to its settings/features/ file)[/dim]"
@@ -921,8 +984,300 @@ class ConfigureMixin:
 
         console.print(
             f"[yellow]Unknown feature subcommand:[/yellow] {sub!r}\n"
-            "  Usage: feature show [on|off|dev|<name>] | feature enable <flag> | feature disable <flag> | feature dev <flag>"
+            "  Usage: feature show [on|off|dev|hidden|<name>] | feature gui | feature info <flag> |\n"
+            "         feature enable|disable|dev|hidden <flag> | feature area [<name> show|hide] |\n"
+            "         feature scope <cmd> <global|folder|device|reset> |\n"
+            "         feature default <domain> <on|dev|off> | feature carry <domain> <on|off>"
         )
+
+
+    def _cmd_feature_info(self, args: list[str]) -> None:
+        """Describe a flag: state, gated commands, and their effective scope."""
+        from app.settings.features import feature_file_for
+
+        if not args:
+            console.print("[yellow]Usage:[/yellow] feature info <flag>")
+            return
+        flag = args[0].lower()
+        flag_cmds: dict[str, list[str]] = {}
+        for cmd_key, cmd_def in COMMANDS.items():
+            if cmd_def.feature_flag:
+                flag_cmds.setdefault(cmd_def.feature_flag, []).append(cmd_key)
+        known = set(self._features) | set(flag_cmds)
+        if flag not in {k for k in known if not k.startswith("_")}:
+            console.print(
+                f"[red]Unknown feature flag:[/red] {flag!r}\n"
+                f"  Run [bold]feature show {flag}[/bold] to search, or [bold]feature show[/bold] to list all."
+            )
+            return
+
+        state = feature_state(self._features, flag)
+        colour = {"on": "green", "dev": "magenta", "hidden": "yellow"}.get(state, "red")
+        gated = sorted(flag_cmds.get(flag, []))
+        source = feature_file_for(flag).name
+
+        from app.settings.feature_labels import area_label, flag_label, load_labels
+        labels = load_labels()
+        human = flag_label(flag, flag_cmds, commands=COMMANDS, labels=labels)
+        cat = COMMANDS[gated[0]].category if gated else ""
+        area = area_label(cat, labels) if cat else ""
+
+        console.print()
+        console.print(
+            f"  [bold white]{human['title']}[/bold white]  [{colour}]{state}[/{colour}]"
+            + (f"  [dim]· {area}[/dim]" if area else "")
+        )
+        if human["subtitle"]:
+            console.print(f"  [dim]{human['subtitle']}[/dim]")
+        console.print(f"  [dim]flag: {flag}  ({source})[/dim]")
+        if not gated:
+            console.print("  [dim]No registered commands reference this flag.[/dim]\n")
+            return
+        console.print(f"  [dim]Gates {len(gated)} command(s):[/dim]")
+        for cmd_key in gated:
+            cmd_def = COMMANDS[cmd_key]
+            code_scope = cmd_def.scope
+            eff = self.resolve_scope(cmd_key, cmd_def)
+            scope_note = (
+                f"[cyan]{eff}[/cyan]" if eff == code_scope
+                else f"[cyan]{eff}[/cyan] [dim](override; code: {code_scope})[/dim]"
+            )
+            ssh = " [dim](SSH/--remote)[/dim]" if cmd_def.ssh_command else ""
+            console.print(f"    [bold]{cmd_key}[/bold]  <{scope_note}>{ssh}")
+            if cmd_def.description:
+                console.print(f"        [dim]{cmd_def.description}[/dim]")
+        console.print(
+            "\n  [dim]feature scope <command> <global|folder|device|reset> to override where a command runs.[/dim]\n"
+        )
+
+    def _cmd_feature_area(self, args: list[str]) -> None:
+        """List areas, or enable/disable a whole area.
+
+        Usage: feature area                      — list all areas + enabled state
+               feature area <name> enable|disable  — turn an area on/off (name or key)
+        Disabling an area is a real OFF switch: its commands are hidden from ?,
+        blocked at execution, and removed from every feature-editor section.
+        Individual feature-flag values are preserved and restored on re-enable.
+        """
+        from app.settings.feature_labels import area_label, load_labels
+        from app.settings.features import load_disabled_areas, set_area_disabled
+
+        labels = load_labels()
+        # Build category -> feature count + state counts.
+        cats: dict[str, dict] = {}
+        for cmd_def in COMMANDS.values():
+            flag = cmd_def.feature_flag
+            if not flag:
+                continue
+            cat = cmd_def.category or "explicit"
+            entry = cats.setdefault(cat, {"flags": set()})
+            entry["flags"].add(flag)
+        disabled = load_disabled_areas()
+
+        if args and args[0] not in ("?",):
+            # Resolve name-or-key -> category key.
+            target = " ".join(args[:-1]).strip() if len(args) >= 2 else args[0]
+            action = args[-1].lower() if len(args) >= 2 else ""
+            key = None
+            tl = target.strip().lower()
+            for cat in cats:
+                if cat == tl or area_label(cat, labels).lower() == tl:
+                    key = cat
+                    break
+            if key is None:
+                console.print(
+                    f"[red]Unknown area:[/red] {target!r}\n"
+                    "  Run [bold]feature area[/bold] to list areas."
+                )
+                return
+            if action not in ("enable", "disable", "on", "off"):
+                console.print("[yellow]Usage:[/yellow] feature area <name> enable|disable")
+                return
+            want_disabled = action in ("disable", "off")
+            try:
+                set_area_disabled(key, want_disabled)
+                self._disabled_areas = load_disabled_areas()
+                self._invalidate_visible_keys()
+            except RuntimeError as exc:
+                console.print(f"[red]Could not update area:[/red] {exc}")
+                return
+            state = "[red]disabled[/red] — all its commands are off" if want_disabled else "[green]enabled[/green]"
+            console.print(f"  [bold white]{area_label(key, labels)}[/bold white]  →  {state}")
+            return
+
+        # List all areas.
+        console.print()
+        console.print("  [bold yellow]Feature Areas[/bold yellow]  [dim](disable = the whole area is turned off everywhere)[/dim]")
+        for cat in sorted(cats, key=lambda c: area_label(c, labels).lower()):
+            flags = cats[cat]["flags"]
+            on = sum(1 for f in flags if feature_state(self._features, f) == "on")
+            off_area = cat in disabled
+            mark = "[red]disabled[/red]" if off_area else "[green]enabled[/green] "
+            console.print(
+                f"    {area_label(cat, labels):<30} {mark}  "
+                f"[dim]{on}/{len(flags)} features on[/dim]"
+            )
+        console.print("\n  [dim]feature area <name> enable|disable  to turn a whole area on/off[/dim]\n")
+
+    def _cmd_feature_scope(self, args: list[str]) -> None:
+        """Set or clear a per-command run-scope override.
+
+        Usage: feature scope <command> <global|folder|device|reset>
+        The command is matched against the registry; 'reset' clears the override.
+        """
+        from app.settings.features import (VALID_SCOPES, coerce_scope,
+                                            load_scope_overrides, set_scope_override)
+
+        if args and args[-1] == "?":
+            args = args[:-1]
+        if len(args) < 2:
+            console.print(
+                "[yellow]Usage:[/yellow] feature scope <command> <global|folder|device|reset>\n"
+                "  [dim]e.g. feature scope 'ping host' device   |   feature scope 'show bgp' reset[/dim]"
+            )
+            return
+        # The scope token is the last arg; everything before it is the command key.
+        scope_token = args[-1].lower()
+        cmd_key = " ".join(args[:-1]).strip().lower()
+
+        if cmd_key not in COMMANDS:
+            key, cmd_def, _ = match_command(cmd_key.split())
+            if key is None:
+                console.print(
+                    f"[red]Unknown command:[/red] [bold]{cmd_key}[/bold]\n"
+                    "  [dim]Give the full command key, e.g. [bold]show bgp[/bold] or [bold]ping host[/bold].[/dim]"
+                )
+                return
+            cmd_key = key
+
+        cmd_def = COMMANDS[cmd_key]
+        if scope_token in ("reset", "default", "clear", "none"):
+            try:
+                set_scope_override(cmd_key, None)
+            except RuntimeError as exc:
+                console.print(f"[red]Could not save scope override:[/red] {exc}")
+                return
+            self._scope_overrides = load_scope_overrides()
+            self._invalidate_visible_keys()
+            console.print(
+                f"  [bold]{cmd_key}[/bold]  →  scope reset to code default "
+                f"[cyan]{cmd_def.scope}[/cyan]"
+            )
+            return
+
+        norm = coerce_scope(scope_token)
+        if norm is None:
+            console.print(
+                f"[red]Invalid scope:[/red] {scope_token!r}  "
+                f"[dim](valid: {', '.join(VALID_SCOPES)}, or 'reset')[/dim]"
+            )
+            return
+        try:
+            set_scope_override(cmd_key, norm)
+        except RuntimeError as exc:
+            console.print(f"[red]Could not save scope override:[/red] {exc}")
+            return
+        self._scope_overrides = load_scope_overrides()
+        self._invalidate_visible_keys()
+        warn = ""
+        if norm != cmd_def.scope:
+            warn = f"  [dim](code default: {cmd_def.scope})[/dim]"
+        if norm == "device" and cmd_def.ssh_command is None:
+            warn += "\n  [yellow]Note:[/yellow] this command has no SSH handler — device scope may block it at runtime."
+        elif norm != "device" and cmd_def.api_handler is None:
+            warn += "\n  [yellow]Note:[/yellow] this command has no SCM API handler — it may only work via --remote."
+        console.print(
+            f"  [bold]{cmd_key}[/bold]  →  scope [cyan]{norm}[/cyan]{warn}  "
+            f"[dim](saved to local.json)[/dim]"
+        )
+
+    def _cmd_feature_meta(self, which: str, args: list[str]) -> None:
+        """Set per-domain file meta: default state or carry flag.
+
+        Usage: feature default <domain> <on|dev|off>
+               feature carry <domain> <on|off>
+        """
+        from app.settings.features import load_file_meta, set_file_meta
+
+        meta = load_file_meta()
+        if args and args[-1] == "?":
+            args = args[:-1]
+        if len(args) < 2:
+            console.print(
+                f"[yellow]Usage:[/yellow] feature {which} <domain> "
+                f"<{'on|dev|off' if which == 'default' else 'on|off'}>\n"
+                f"  [dim]Domains: {', '.join(sorted(meta)[:6])}"
+                f"{' …' if len(meta) > 6 else ''}  (see feature show for the full list)[/dim]"
+            )
+            return
+        domain = args[0]
+        value = args[1].lower()
+        if domain not in meta:
+            console.print(
+                f"[red]Unknown domain file:[/red] {domain!r}\n"
+                f"  [dim]Valid: {', '.join(sorted(meta))}[/dim]"
+            )
+            return
+        try:
+            if which == "default":
+                if value not in ("on", "dev", "off"):
+                    console.print("[yellow]Default must be one of:[/yellow] on | dev | off")
+                    return
+                set_file_meta(domain, default=value)
+                console.print(
+                    f"  [bold]{domain}[/bold]  default state  →  [cyan]{value}[/cyan]  "
+                    f"[dim](commands not listed inherit this)[/dim]"
+                )
+            else:  # carry
+                if value not in ("on", "off", "true", "false", "yes", "no"):
+                    console.print("[yellow]Carry must be:[/yellow] on | off")
+                    return
+                carry = value in ("on", "true", "yes")
+                set_file_meta(domain, carry=carry)
+                console.print(
+                    f"  [bold]{domain}[/bold]  keep-manual-edits  →  "
+                    f"[cyan]{'on' if carry else 'off'}[/cyan]  "
+                    f"[dim](regenerator {'preserves' if carry else 'overwrites'} your true/dev values)[/dim]"
+                )
+        except RuntimeError as exc:
+            console.print(f"[red]Could not save domain meta:[/red] {exc}")
+
+
+    def _cmd_feature_gui(self) -> None:
+        """Launch the browser-based feature editor and block until it closes.
+
+        Starts a local HTTP server (127.0.0.1:<port> from config.features_gui),
+        opens the default browser, and waits until the user clicks Done in the
+        page (or presses Ctrl-C here).  Saves go through the same helper as
+        `feature enable`, so changes persist to each flag's settings/features/
+        file and apply to this running shell live.
+        """
+        gui_cfg = getattr(self._config, "features_gui", None)
+        if gui_cfg is not None and not gui_cfg.enabled:
+            console.print(
+                "[yellow]The feature editor is disabled.[/yellow]\n"
+                "  Set [bold]features_gui.enabled = true[/bold] in your config.json "
+                "(see [bold]arc auth show[/bold] for its path), or use "
+                "[bold]feature show[/bold] / [bold]feature enable <flag>[/bold] instead."
+            )
+            return
+
+        port = gui_cfg.port if gui_cfg is not None else 4445
+
+        from app.web.feature_server import FeatureGuiServer
+
+        server = FeatureGuiServer(self, port=port)
+        console.print(
+            f"\n[green]Feature editor running[/green] → [bold]{server.url}[/bold]\n"
+            "  [dim]Toggle flags in the browser (changes save + apply live). "
+            "Click [bold]Done[/bold] there, or press [bold]Ctrl-C[/bold] here, to return.[/dim]\n"
+        )
+        try:
+            status = server.serve()
+        except KeyboardInterrupt:
+            server.stop()
+            status = "Feature editor closed."
+        console.print(f"[cyan]{status}[/cyan]")
 
 
     # ------------------------------------------------------------------

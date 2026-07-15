@@ -42,8 +42,8 @@ class ExecutionMixin:
 
         ctx = self._make_context()
 
-        # Enforce scope declared on the CommandDef before calling the handler.
-        if cmd_def.scope == "device" and not ctx.device:
+        # Enforce scope (with per-command override) before calling the handler.
+        if self.resolve_scope(key, cmd_def) == "device" and not ctx.device:
             device_hint = (
                 "Use [bold]cd <device>[/bold] to select a device first, "
                 "then run this command again.\n"

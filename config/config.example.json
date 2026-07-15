@@ -15,5 +15,10 @@
     "password": "",
     "port": 22
   },
+  "features_gui": {
+    "_note": "Browser-based feature-flag editor launched by 'feature gui'. enabled gates the command; port is the local 127.0.0.1 listen port for the on-demand editor server (started only while the editor is open).",
+    "enabled": true,
+    "port": 4445
+  },
   "default_folder": "Shared"
 }

@@ -91,7 +91,7 @@ from app.docs import (
     set_page_length,
 )
 from app.settings.user_prefs import UserPrefs, load_prefs, save_prefs
-from app.settings.features import dev_mode_from_env, feature_state, is_enabled, is_feature_visible, load_features
+from app.settings.features import dev_mode_from_env, effective_scope, feature_state, is_area_enabled, is_enabled, is_feature_visible, load_disabled_areas, load_features, load_scope_overrides
 from app.settings.commands import load_command_visibility, is_command_visible, is_command_executable, load_builtin_aliases
 from app.settings.commands import (
     load_shell_builtins as _load_shell_builtins,
@@ -340,6 +340,7 @@ __all__ = [
     "paging_stdout", "_PAGING_EXEMPT", "render_help_topic", "set_page_length",
     "UserPrefs", "load_prefs", "save_prefs",
     "dev_mode_from_env", "feature_state", "is_enabled", "is_feature_visible", "load_features",
+    "effective_scope", "load_scope_overrides", "load_disabled_areas", "is_area_enabled",
     "load_command_visibility", "is_command_visible", "is_command_executable", "load_builtin_aliases",
     "_load_shell_builtins", "shell_help_rows",
     "SHELL_BUILTINS", "_SHELL_BUILTINS",

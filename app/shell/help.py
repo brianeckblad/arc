@@ -115,7 +115,7 @@ class HelpMixin:
                 # Show the description and a context hint rather than "Unknown command".
                 console.print()
                 self._print_inline_usage(exact_key, exact_cmd)
-                if exact_cmd.scope == "device" and not self._state.device:
+                if self.resolve_scope(exact_key, exact_cmd) == "device" and not self._state.device:
                     console.print(
                         f"  [dim]Requires device context — "
                         f"[bold]cd <device>[/bold] first, or "
@@ -261,9 +261,10 @@ class HelpMixin:
                 console.print(f"\n[bold yellow]{category.upper()}[/bold yellow]")
                 for k in available_keys:
                     cmd = COMMANDS[k]
+                    eff_scope = self.resolve_scope(k, cmd)
                     scope_tag = (
-                        "  [dim][global][/dim]" if cmd.scope == "global"
-                        else "  [dim][device][/dim]" if cmd.scope == "device"
+                        "  [dim][global][/dim]" if eff_scope == "global"
+                        else "  [dim][device][/dim]" if eff_scope == "device"
                         else ""
                     )
                     ssh_note = " [dim](SSH)[/dim]" if cmd.ssh_command else ""
@@ -329,6 +330,10 @@ class HelpMixin:
         Dispatch, tab completion, and help must all use this same check.
         """
         if not is_command_visible(key, self._command_visibility, self._dev_mode):
+            return False
+        # A disabled area is a master OFF switch — its commands vanish from ?,
+        # completion and help (and are blocked at execution; see dispatch).
+        if getattr(cmd_def, "category", "") in getattr(self, "_disabled_areas", set()):
             return False
         return is_feature_visible(self._features, cmd_def.feature_flag, self._dev_mode)
 
@@ -425,6 +430,18 @@ class HelpMixin:
     def _invalidate_visible_keys(self) -> None:
         self._visible_keys_cache = None
 
+    def resolve_scope(self, key: str, cmd_def: CommandDef) -> str:
+        """Return the effective run scope for a command.
+
+        The code-default ``CommandDef.scope`` is the source of truth; an operator
+        may override it per command (see settings/features/ ``_scope_overrides``),
+        loaded into ``self._scope_overrides`` and updated live by the feature
+        editor / CLI.  Used by availability checks and help scope tags so the
+        GUI, CLI, and enforcement all agree.
+        """
+        overrides = getattr(self, "_scope_overrides", None) or {}
+        return overrides.get(key, cmd_def.scope)
+
     def _is_command_available(self, key: str, cmd_def: CommandDef) -> bool:
         """_is_command_visible plus the current-context gates.
 
@@ -434,7 +451,7 @@ class HelpMixin:
         """
         if not self._is_command_visible(key, cmd_def):
             return False
-        if cmd_def.scope == "device" and not self._state.device:
+        if self.resolve_scope(key, cmd_def) == "device" and not self._state.device:
             return False
         _configure_only = key == "commit" or key.startswith(
             ("set ", "delete ", "update ", "load ")
@@ -506,7 +523,7 @@ class HelpMixin:
         exact_matches: list[str] = []
 
         for key, cmd_def in COMMANDS.items():
-            if scope is not None and cmd_def.scope != scope:
+            if scope is not None and self.resolve_scope(key, cmd_def) != scope:
                 continue
             if not self._is_command_available(key, cmd_def):
                 continue
@@ -555,7 +572,7 @@ class HelpMixin:
         """
         eligible: list[str] = []
         for key, cmd_def in COMMANDS.items():
-            if cmd_def.scope != scope:
+            if self.resolve_scope(key, cmd_def) != scope:
                 continue
             if not self._is_command_available(key, cmd_def):
                 continue
@@ -598,10 +615,11 @@ class HelpMixin:
         if not cmd:
             return ""
 
-        if cmd.scope == "folder":
+        eff_scope = self.resolve_scope(command_key, cmd)
+        if eff_scope == "folder":
             return f"  [dim]→ folder: {folder}[/dim]"
 
-        if cmd.scope == "device" and device:
+        if eff_scope == "device" and device:
             device_name = device_display_name(device)
             return f"  [dim]→ device: {device_name}[/dim]"
 

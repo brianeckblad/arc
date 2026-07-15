@@ -908,6 +908,11 @@ class DispatchMixin:
         if not is_enabled(self._features, cmd_def.feature_flag, self._dev_mode):
             self._show_command_not_found(tokens)
             return False
+        # A disabled area is a master OFF switch — block execution of any command
+        # in that area regardless of its individual feature flag.
+        if cmd_def.category in getattr(self, "_disabled_areas", set()):
+            self._show_command_not_found(tokens)
+            return False
 
         if remote:
             self._execute_remote(key, cmd_def, args)

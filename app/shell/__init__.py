@@ -48,6 +48,19 @@ class ArcShell(
         # Each flag is "on" / "dev" / "off".  Edit settings/features/ or set
         # ARC_FEATURE_<NAME>=on|dev|off env vars.
         self._features: dict[str, str] = load_features()
+
+        # Per-command scope overrides — optional corrections to the code-default
+        # CommandDef.scope (see resolve_scope + _is_command_available).  Loaded
+        # from _scope_overrides in the settings/features/ files (written to
+        # local.json).  Updated live when the GUI/CLI change an override.
+        self._scope_overrides: dict[str, str] = load_scope_overrides()
+
+        # Areas (categories) fully disabled — a master OFF switch. A disabled
+        # area's commands are hidden from ?/completion/help AND blocked at
+        # execution, and removed from every feature-editor section. Individual
+        # feature-flag values are preserved (restored when the area is
+        # re-enabled). Stored in local.json _disabled_areas.
+        self._disabled_areas: set[str] = load_disabled_areas()
         
         # Command visibility — independent of feature flags.  Loaded from
         # settings/builtin-commands.json.  Values: true (visible), false (blocked),

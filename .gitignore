@@ -55,3 +55,6 @@ htmlcov/
 
 #Idea files
 ideas/
+
+# Per-user feature overrides (scope overrides, disabled areas) — never committed
+settings/features/local.json

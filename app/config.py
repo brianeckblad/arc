@@ -210,9 +210,23 @@ class SSHConfig:
 
 
 @dataclass
+class FeaturesGuiConfig:
+    """Settings for the browser-based feature-flag editor (`feature gui`).
+
+    Non-sensitive; stored at the top level of config.json (not per-profile).
+      enabled — whether the `feature gui` command is allowed to launch.
+      port    — local port the on-demand HTTP server listens on (127.0.0.1).
+    """
+
+    enabled: bool = True
+    port: int = 4445
+
+
+@dataclass
 class ArcConfig:
     scm: SCMConfig = field(default_factory=SCMConfig)
     ssh: SSHConfig = field(default_factory=SSHConfig)
+    features_gui: FeaturesGuiConfig = field(default_factory=FeaturesGuiConfig)
     debug: bool = False
     default_folder: str = "Shared"
     # Which named profile was loaded.  Set automatically by load_config().
@@ -274,7 +288,7 @@ def _to_new_format(raw: dict) -> dict:
         k: v for k, v in raw.get("ssh", {}).items()
         if not k.startswith("_") and k != "password"
     }
-    return {
+    migrated = {
         "active_profile": raw.get("active_profile", _DEFAULT_PROFILE),
         "profiles": {
             _DEFAULT_PROFILE: {
@@ -284,6 +298,10 @@ def _to_new_format(raw: dict) -> dict:
             }
         },
     }
+    # Preserve top-level (non-profile) settings across migration.
+    if "features_gui" in raw:
+        migrated["features_gui"] = raw["features_gui"]
+    return migrated
 
 
 # ---------------------------------------------------------------------------
@@ -440,6 +458,15 @@ def load_config(profile: str | None = None) -> ArcConfig:
     cfg.ssh.key_path      = os.environ.get("ARC_SSH_KEY",        cfg.ssh.key_path)
     cfg.ssh.password      = os.environ.get("ARC_SSH_PASS",       cfg.ssh.password)
     cfg.debug             = os.environ.get("ARC_DEBUG", "0") == "1"
+
+    # --- features_gui: top-level (non-profile) block ---
+    gui_raw = raw.get("features_gui", {}) if isinstance(raw, dict) else {}
+    if isinstance(gui_raw, dict):
+        cfg.features_gui.enabled = bool(gui_raw.get("enabled", True))
+        try:
+            cfg.features_gui.port = int(gui_raw.get("port", 4445))
+        except (TypeError, ValueError):
+            cfg.features_gui.port = 4445
 
     return cfg
 

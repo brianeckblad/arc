@@ -56,6 +56,10 @@ COMMAND_STRUCTURE_GENERATED_JSON = SETTINGS_DIR / "command-structure-generated.j
 # User-defined aliases live in config/<user>/preferences.json.
 COMMAND_ALIASES_JSON = SETTINGS_DIR / "command-aliases.json"
 
+# Human-readable names for the feature editor (GUI + CLI) — area/acronym labels.
+# User-editable; auto-augmented (edit-safe) by generate_feature_flags.py.
+FEATURE_LABELS_JSON = SETTINGS_DIR / "feature-labels.json"
+
 # Application variables — referenced in banner.txt etc. with {{variable_name}} syntax.
 APP_VARIABLES_JSON = SETTINGS_DIR / "app-variables.json"
 

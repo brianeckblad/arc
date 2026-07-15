@@ -16,7 +16,11 @@
 | `commanddef` | `docs/COMMANDDEF_REFERENCE.md` | — | — |
 | `shell` (REPL, dispatch, help UX) | `app/scripts/CODE_MAP.md` → range in `app/shell/<file>.py` | that one mixin file | `--file app/shell/<file>.py` |
 | `builtin` (SHELL help rows, visibility) | `settings/builtin-commands.json`, `app/settings/commands.py` | `settings/builtin-commands.json` | `--only 8,9,12` |
+| `builtin editor` (visibility/display/help via GUI) | `set_builtin_field` in `app/settings/commands.py`, `app/web/feature_server.py` | same | `--only 1,2,12` |
 | `feature` / `flag <name>` | `settings/features/` (`local.json` = user overrides, never regenerated) | owning file + `CommandDef.feature_flag` | `--only 1,2,3` |
+| `feature editor` / `feature gui` (browser) | `app/web/feature_server.py`, `app/web/feature_gui.html` | same | `--only 1,2,3` |
+| `feature names` / human labels (GUI **and** CLI) | `app/settings/feature_labels.py`, `settings/feature-labels.json` | same (labels file is user-editable + auto-augmented) | `--only 1,2,3` |
+| `feature scope` / `hidden` / `area` (CLI subcommands) | `_cmd_feature*` in `app/shell/configure.py`, helpers in `app/settings/features.py` | same | `--only 1,2,3,12` |
 | `verb visibility` (bare `?` COMMANDS section) | `settings/cli-structure.yaml` (`visible:` field), `app/settings/cli_structure.py` | `settings/cli-structure.yaml` | `--only 9,12` |
 | `theme` | `settings/theme.json`, `app/settings/theme.py` | same | `--only 10` |
 | `terminal` / prefs | `app/settings/user_prefs.py`, `_cmd_terminal` in `app/shell/configure.py` | same | `--only 4` |
@@ -135,6 +139,16 @@ Two parallel systems, same four states:
 ## Generated Commands (~1,050)
 
 Every OpenAPI operation → feature-gated command via `resource_catalog.py` + `generated.py`. All default **off** (`settings/features/`). Explicit commands shadow generated ones. No doc files — help is synthesized. PAN-OS op commands: `panos_<family>` flags, all off. Op commands with `scm_map` in `app/scripts/panos-curation.json` run via SCM async ops-jobs API; unmapped ops print `--remote` guidance.
+
+### Feature-editor sync guarantee (keep this true)
+
+The feature editor (browser `feature gui`) and the `feature`/`alias` CLI are **sync-by-construction** — new features flow into both with no editor changes:
+- **Flags/commands:** `app/web/feature_server.py` and the CLI both read the live registry (`COMMANDS`) + `settings/features/*.json` at request time. Anything `docsupdate`/`commandupdate` adds appears in both surfaces automatically.
+- **Human labels:** `generate_feature_flags.py` (in the `catalog rebuild` chain that `docsupdate` auto-runs) calls `augment_feature_labels()` to add any newly-discovered area to `settings/feature-labels.json` with a best-guess name, **preserving existing human edits** (edit-safe, like `_carry`). The shared `app/settings/feature_labels.py` renders those names in **both** the CLI (`feature show`/`info`/`area`) and the GUI.
+- **Command structure:** `commandupdate`/`command-structure update` regenerate non-override entries; GUI/CLI read them live. User `override:true` entries (from the GUI editor) are preserved.
+- **Storage:** everything the editor writes lives in `settings/` — `feature-labels.json`, `features/*.json`, `features/local.json` (`_scope_overrides`, `_disabled_areas`), `command-aliases.json`, `command-structure.json`, `builtin-commands.json` (personal aliases stay in per-user `preferences.json`). Every capability has a shared helper used by GUI **and** CLI **and** manual edits — never add a capability to only one surface.
+- **Area disable is a real gate:** `_disabled_areas` (local.json) turns a whole category OFF — `_is_command_visible` (help.py) and the dispatch executability gate both check `cmd_def.category in shell._disabled_areas`, so disabled-area commands vanish from `?`/completion/help AND are unrunnable, and every editor section (Features, Command Structure, Advanced) excludes them. It is a master gate above per-feature flags (values preserved). Managed by `feature area <name> enable|disable`, the GUI Areas tab, or hand-editing — all via `load_disabled_areas`/`set_area_disabled`.
+- **Unified GUI:** `feature gui` is one consistent SPA — top tabs (Features · Command Structure · Aliases · Built-ins · Advanced), a left sidebar of groups per section, a main pane of items, `#section/group` hash routing. Built-in visibility is edited through the same `load_command_visibility` the shell's `?`/dispatch use; file/area names come from the shared `feature_labels` layer (human-readable in GUI and CLI).
 
 ---
 

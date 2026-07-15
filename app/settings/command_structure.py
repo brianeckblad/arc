@@ -406,6 +406,79 @@ def invalidate_cache() -> None:
     _generic_fields_cache = None
 
 
+# Field keys the editor may set on each arg (others are dropped on write).
+_ARG_FIELDS = ("name", "kind", "required", "hint", "choices", "max_length")
+_VALID_KINDS = ("value", "choice", "keyword")
+
+
+def _sanitize_arg(arg: dict) -> dict:
+    """Validate + normalize one editor-supplied arg dict for persistence."""
+    if not isinstance(arg, dict):
+        raise ValueError("each field must be an object")
+    name = str(arg.get("name", "")).strip()
+    if not name:
+        raise ValueError("each field needs a name")
+    kind = str(arg.get("kind", "value")).strip().lower()
+    if kind not in _VALID_KINDS:
+        raise ValueError(f"field {name!r}: kind must be one of {_VALID_KINDS}")
+    out: dict = {"name": name, "kind": kind, "required": bool(arg.get("required", False))}
+    hint = str(arg.get("hint", "")).strip()
+    if hint:
+        out["hint"] = hint
+    if kind == "choice":
+        choices = arg.get("choices") or []
+        if isinstance(choices, str):
+            choices = [c.strip() for c in choices.split(",")]
+        cleaned = [str(c).strip() for c in choices if str(c).strip()]
+        if not cleaned:
+            raise ValueError(f"field {name!r}: choice kind needs at least one choice")
+        out["choices"] = cleaned
+    ml = arg.get("max_length")
+    if isinstance(ml, int) and ml > 0:
+        out["max_length"] = ml
+    return out
+
+
+def set_command_structure(command_key: str, args: list[dict]) -> "Path":
+    """Persist an override:true structure entry for *command_key*.
+
+    ``args`` is the editor's ordered list of field dicts (name, kind, required,
+    hint, choices).  Written as a locked (``override: true``) inline-``args``
+    entry so ``commandupdate`` / ``command-structure update`` never clobbers it.
+    Passing an empty list removes the entry.  Invalidates the cache and returns
+    the file path.
+
+    Raises ``ValueError`` on a malformed spec, ``RuntimeError`` on I/O trouble.
+    """
+    from pathlib import Path  # local import keeps module import cost low
+
+    key = command_key.strip().lower()
+    if not key:
+        raise ValueError("command key is required")
+
+    try:
+        raw = json.loads(COMMAND_STRUCTURE_JSON.read_text(encoding="utf-8")) \
+            if COMMAND_STRUCTURE_JSON.exists() else {}
+    except (json.JSONDecodeError, OSError) as exc:
+        raise RuntimeError(f"Could not read {COMMAND_STRUCTURE_JSON.name}: {exc}") from exc
+    if not isinstance(raw, dict):
+        raise RuntimeError(f"{COMMAND_STRUCTURE_JSON.name} must contain a JSON object")
+
+    if not args:
+        raw.pop(key, None)
+    else:
+        raw[key] = {"override": True, "args": [_sanitize_arg(a) for a in args]}
+
+    try:
+        COMMAND_STRUCTURE_JSON.write_text(
+            json.dumps(raw, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    except OSError as exc:
+        raise RuntimeError(f"Could not write {COMMAND_STRUCTURE_JSON.name}: {exc}") from exc
+
+    invalidate_cache()
+    return Path(COMMAND_STRUCTURE_JSON)
+
+
 # ---------------------------------------------------------------------------
 # Structure-aware tokenizing — the application figures out where each field
 # ends so the user never has to add quotes around a string field.

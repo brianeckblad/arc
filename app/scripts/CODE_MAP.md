@@ -14,13 +14,13 @@
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
-## `app/shell/configure.py`  (2229 lines)
+## `app/shell/configure.py`  (2584 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _prefs_file_label()                      10-16          Repo-relative path of the preferences file, for display.
 capture_write_ops()                      19-49          Run a write handler against a recording client and capture its mutatio
-class ConfigureMixin                     52-2158        
+class ConfigureMixin                     52-2513        
   ._cmd_configure()                      53-74          Enter configure mode (Cisco-style).
   ._stage_write()                        76-106         Validate a configure-mode write and stage it locally (no SCM change).
   ._cmd_show_pending()                   108-131        List the locally staged configure-mode changes (`show config`).
@@ -36,39 +36,44 @@ class ConfigureMixin                     52-2158
   ._confirm_configure_exit()             458-485        Ask what to do with staged changes when leaving configure mode.
   ._cmd_terminal()                       487-620        Per-user terminal preferences — persisted to config/<user>/preferences
   ._cmd_cli()                            622-676        Read/write CLI theme settings (configure mode only).
-  ._cmd_feature()                        678-925        Show or change feature-flag states at runtime.
-  ._cs_tier()                            932-958        Return the tier label based on override flag in command-structure.json
-  ._format_spec()                        961-985        Format a command arg spec in PAN-OS style.
-  ._cs_list()                            987-1082       List enabled/disabled commands with PAN-OS-style field display and pag
-  ._cs_update()                          1085-1118      Stream app/scripts/commandupdate.py — same script the LLM 'commandupda
-  ._cs_clear()                           1121-1142      Remove all override:false (cli-generated) entries from command-structu
-  ._cmd_dev()                            1148-1186      Enter the dev shell (modal, like configure mode).
-  ._dev_shell_enter()                    1188-1218      Enter the dev shell — enable dev mode and show the dev menu.
-  ._dev_shell_exit()                     1220-1228      Leave the dev shell.
-  ._dispatch_dev_shell()                 1230-1309      Route dev-shell commands.
-  ._dev_inline_help()                    1311-1396      Show contextual help for a dev shell command or sub-command.
-  ._dev_shell_help()                     1398-1427      Print full dev shell command reference.
-  ._cs_tier_legend()                     1429-1465      Print the tier legend for command-structure list.
-  ._dev_status()                         1473-1568      Unified health dashboard for the dev shell.
-  ._dev_docs()                           1574-1585      Handle dev-shell 'docs' sub-commands.
-  ._dev_docs_update()                    1587-1631      Stream docsupdate.py to pull latest pan.dev specs and regenerate catal
-  ._dev_docs_status()                    1633-1681      Show doc/spec freshness with last pull date from MANIFEST.md.
-  ._dev_catalog()                        1687-1696      Handle dev-shell 'catalog' sub-commands.
-  ._dev_catalog_rebuild()                1698-1764      Run all generator scripts to rebuild code artifacts.
-  ._print_dev_status()                   1768-1782      Print current dev mode state (used by 'dev on/off' outside the shell).
-  ._cmd_setup()                          1785-1902      Interactive credential setup wizard.
-  ._cmd_arc()                            1908-1961      ARC application information and management.
-  ._arc_help()                           1963-1986      Print arc sub-command reference.
-  ._arc_row()                            1992-1998      Print one labelled row in the arc show style.
-  ._arc_show_version()                   2000-2023      arc show version — version, Python, platform.
-  ._arc_show_paths()                     2025-2038      arc show paths — app root, settings, config directories.
-  ._arc_show_scm()                       2040-2078      arc show scm — SCM API spec freshness and last change.
-  ._arc_show_commands()                  2080-2111      arc show commands — command counts and feature flag stats.
-  ._arc_show_settings()                  2113-2135      arc show settings — settings file inventory.
-  ._arc_show_session()                   2137-2154      arc show session — active profile, TSG, folder, device, modes.
-  ._arc_show()                           2156-2158      arc show (all) — kept for backward compat; calls _cmd_arc(['show']).
-_setup_bearer_instructions()             2165-2193      Print bearer-token setup commands for the detected OS.
-_setup_oauth_instructions()              2196-2228      Print OAuth client credential setup commands for the detected OS.
+  ._cmd_feature()                        678-991        Show or change feature-flag states at runtime.
+  ._cmd_feature_info()                   994-1051       Describe a flag: state, gated commands, and their effective scope.
+  ._cmd_feature_area()                   1053-1120      List areas, or enable/disable a whole area.
+  ._cmd_feature_scope()                  1122-1192      Set or clear a per-command run-scope override.
+  ._cmd_feature_meta()                   1194-1243      Set per-domain file meta: default state or carry flag.
+  ._cmd_feature_gui()                    1246-1280      Launch the browser-based feature editor and block until it closes.
+  ._cs_tier()                            1287-1313      Return the tier label based on override flag in command-structure.json
+  ._format_spec()                        1316-1340      Format a command arg spec in PAN-OS style.
+  ._cs_list()                            1342-1437      List enabled/disabled commands with PAN-OS-style field display and pag
+  ._cs_update()                          1440-1473      Stream app/scripts/commandupdate.py — same script the LLM 'commandupda
+  ._cs_clear()                           1476-1497      Remove all override:false (cli-generated) entries from command-structu
+  ._cmd_dev()                            1503-1541      Enter the dev shell (modal, like configure mode).
+  ._dev_shell_enter()                    1543-1573      Enter the dev shell — enable dev mode and show the dev menu.
+  ._dev_shell_exit()                     1575-1583      Leave the dev shell.
+  ._dispatch_dev_shell()                 1585-1664      Route dev-shell commands.
+  ._dev_inline_help()                    1666-1751      Show contextual help for a dev shell command or sub-command.
+  ._dev_shell_help()                     1753-1782      Print full dev shell command reference.
+  ._cs_tier_legend()                     1784-1820      Print the tier legend for command-structure list.
+  ._dev_status()                         1828-1923      Unified health dashboard for the dev shell.
+  ._dev_docs()                           1929-1940      Handle dev-shell 'docs' sub-commands.
+  ._dev_docs_update()                    1942-1986      Stream docsupdate.py to pull latest pan.dev specs and regenerate catal
+  ._dev_docs_status()                    1988-2036      Show doc/spec freshness with last pull date from MANIFEST.md.
+  ._dev_catalog()                        2042-2051      Handle dev-shell 'catalog' sub-commands.
+  ._dev_catalog_rebuild()                2053-2119      Run all generator scripts to rebuild code artifacts.
+  ._print_dev_status()                   2123-2137      Print current dev mode state (used by 'dev on/off' outside the shell).
+  ._cmd_setup()                          2140-2257      Interactive credential setup wizard.
+  ._cmd_arc()                            2263-2316      ARC application information and management.
+  ._arc_help()                           2318-2341      Print arc sub-command reference.
+  ._arc_row()                            2347-2353      Print one labelled row in the arc show style.
+  ._arc_show_version()                   2355-2378      arc show version — version, Python, platform.
+  ._arc_show_paths()                     2380-2393      arc show paths — app root, settings, config directories.
+  ._arc_show_scm()                       2395-2433      arc show scm — SCM API spec freshness and last change.
+  ._arc_show_commands()                  2435-2466      arc show commands — command counts and feature flag stats.
+  ._arc_show_settings()                  2468-2490      arc show settings — settings file inventory.
+  ._arc_show_session()                   2492-2509      arc show session — active profile, TSG, folder, device, modes.
+  ._arc_show()                           2511-2513      arc show (all) — kept for backward compat; calls _cmd_arc(['show']).
+_setup_bearer_instructions()             2520-2548      Print bearer-token setup commands for the detected OS.
+_setup_oauth_instructions()              2551-2583      Print OAuth client credential setup commands for the detected OS.
 
 ## `app/settings/field_catalog.py`  (1924 lines)
 
@@ -316,6 +321,48 @@ main()                                   1149-1283
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
+## `app/web/feature_server.py`  (991 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+class _QuietThreadingHTTPServer          34-49          ThreadingHTTPServer that ignores client-disconnect errors.
+  .handle_error()                        44-49          
+_flag_to_commands()                      56-66          Build flag_name -> sorted list of command keys it gates.
+_flag_category()                         69-78          Map each flag to a display category (from the gated command's category
+_flag_universe()                         81-83          All known flag names (registry + settings), minus internal sentinels.
+_state_of()                              86-89          
+build_areas()                            97-120         Dedicated Areas section: every area with a real enabled/disabled switc
+build_features()                         123-191        Features for one area (excludes disabled areas).
+build_domains()                          194-217        Advanced / Files view: per-file _default and _carry with human names.
+build_aliases()                          220-227        System + personal aliases for the Aliases section.
+build_structure_list()                   230-254        List of set/update/delete commands that can carry a structure, by area
+build_structure()                        257-281        Editable field spec for one command.
+_domain_label()                          284-287        Human name for a feature-file stem — delegates to the shared naming la
+_builtin_group_of()                      304-308        
+_file_categories()                       317-350        Map each settings/features file stem -> set of command categories it g
+build_nav()                              353-429        Return the left-sidebar groups for a section: {groups:[{key,label,coun
+build_features_header()                  432-446        Area-level controls shown atop the Features main pane.
+build_structure_area()                   449-471        All editable set/update/delete commands in an area (Command Structure)
+build_builtins()                         474-483        Builtins in a functional group, for the Built-ins editor.
+_command_help_html()                     540-564        Render synthesized command help to a small HTML fragment for the modal
+_flag_help_html()                        567-583        Human help for a feature flag: title + what it does + gated commands.
+class FeatureGuiServer                   586-990        A blocking, on-demand HTTP server for the feature-flag editor.
+  .__init__()                            595-602        
+  ._load_html()                          607-615        
+  ._apply_change()                       617-627        Persist a flag change and update live shell state (thread-safe).
+  ._apply_area()                         629-638        Enable/disable a whole area (real OFF gate); update live shell (thread
+  ._apply_alias()                        640-678        Create/update/delete a system or personal alias (thread-safe).
+  ._apply_structure()                    680-689        Persist an override structure entry for a command (thread-safe).
+  ._apply_builtin()                      691-704        Edit a builtin field; refresh live shell visibility (thread-safe).
+  ._apply_scope()                        706-728        Set/clear a per-command scope override; update live shell (thread-safe
+  ._apply_meta()                         730-739        Set a domain file's _default / _carry (thread-safe).
+  ._payload()                            741-744        Legacy combined payload (kept for back-compat).
+  ._section()                            746-774        Build a section payload under the lock.
+  ._help()                               776-790        Return help HTML for a command, flag, or static section topic.
+  .serve()                               795-976        Start the server, open the browser, and BLOCK until the editor
+  .stop()                                978-986        
+  .url()                                 989-990        
+
 ## `app/utils/formatter.py`  (985 lines)
 
 Symbol                                   Lines          Purpose
@@ -357,7 +404,7 @@ format_raw()                             957-958
 format_dict()                            961-962        
 _flatten()                               969-984        Recursively flatten a nested dict into dot-separated key/value pairs.
 
-## `app/shell/dispatch.py`  (918 lines)
+## `app/shell/dispatch.py`  (923 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -365,7 +412,7 @@ split_pipe_line()                        23-38          Split *line* at the firs
 parse_output_filters()                   41-83          Parse a pipe filter chain into ``[(op, pattern), …]``.
 _bare_line()                             90-96          Strip ANSI + box-drawing from *line*; return None if nothing remains.
 _line_matches()                          99-105         Regex match (case-insensitive) with plain-substring fallback.
-class DispatchMixin                      108-917        
+class DispatchMixin                      108-922        
   ._cmd_watch()                          109-153        Re-run *rest* every N seconds until Ctrl-C (`watch [N] <command>`).
   ._dispatch_piped()                     155-236        Run *head*, filter its captured output through the pipe *spec*.
   ._cmd_show_connections()               238-253        List active SSH connections in the pool (`show connections`).
@@ -374,7 +421,7 @@ class DispatchMixin                      108-917
   ._cmd_history()                        294-339        Print the last N commands from the prompt history (`history [n]`).
   ._cmd_alias()                          341-412        User-defined aliases (`alias` / `alias <name> <expansion…>` /
   ._show_command_not_found()             414-507        Show a helpful message when a command is not recognized.
-  ._dispatch()                           509-917        Process one input line.  Returns True when the user wants to exit ARC.
+  ._dispatch()                           509-922        Process one input line.  Returns True when the user wants to exit ARC.
 
 ## `app/cli.py`  (911 lines)
 
@@ -473,33 +520,7 @@ class NavigationMixin                    11-718
   ._cmd_tsg()                            490-590        Switch the active Tenant Services Group (TSG) context.
   ._cmd_account()                        592-718        List or switch named credential profiles.
 
-## `app/shell/help.py`  (642 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-class HelpMixin                          8-641          
-  ._match_structured()                   9-25           Find the longest command key (with a structure spec) inside *prefix_to
-  ._print_context_help()                 27-44          Print Cisco-style context-sensitive help for a structured command.
-  ._render_context_help()                46-63          Render the next-option rows: ``  token   description`` (token column a
-  ._cmd_help_inline()                    65-190         Cisco-style compact inline help — one line per command, no panels.
-  ._cmd_help_docs()                      192-233        Show the full documentation page for a command or topic.
-  ._cmd_help_full()                      235-281        Print the full command reference regardless of context.
-  ._cmd_show_write_help()                283-306        Show available set/delete/update commands in configure mode.
-  ._print_shell_builtins()               308-321        Print the shell built-in commands section (shared by inline and full h
-  ._is_command_visible()                 323-333        Single source of truth: does this command appear in ``?`` for this ope
-  ._cmd_find()                           336-410        PAN-OS style command search: ``find command <text>``.
-  ._visible_command_keys()               412-423        Cached list of visible registry keys — the per-keystroke hot path.
-  ._invalidate_visible_keys()            425-426        
-  ._is_command_available()               428-444        _is_command_visible plus the current-context gates.
-  ._is_config_command()                  447-451        Return True when a command should appear in configure-mode `?` help.
-  ._root_verb_options()                  453-491        Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
-  ._collapsed_prefix_help_options()      493-548        Return collapsed next-token help options for a command prefix.
-  ._collapsed_tier_help_options()        550-585        Return collapsed bare-tier help options for one scope.
-  ._context_annotation()                 587-608        Return a short inline context note for commands whose output depends o
-  ._print_context_hint_for()             610-614        Print a one-line context note below an exact-match docs result.
-  ._print_inline_usage()                 616-641        Print the description + usage syntax for a complete command in `?` hel
-
-## `app/settings/command_structure.py`  (607 lines)
+## `app/settings/command_structure.py`  (680 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -513,13 +534,42 @@ load_command_structure()                 220-245        Return ``{command_key: e
 _parse_usage_spec()                      248-370        Derive a basic arg spec from a CommandDef ``usage`` string.
 arg_spec()                               373-398        Return the ordered ``args`` list for *command_key*, or ``None`` if abs
 invalidate_cache()                       401-406        Force a re-read on next access (used by tools/tests that rewrite the f
-class _NextState                         426-436        What the *next* token can be — used to drive Tab completion.
-_walk()                                  439-525        Consume *tokens* against *spec*, returning (assignments, positionals, 
-parse()                                  528-542        Parse *remainder* tokens into an args dict using the command structure
-help_options()                           545-574        Return Cisco-style ``?`` help rows for the next token after *typed*.
-completion_options()                     577-605        Return ``{text, display, meta}`` options for the next token after *typ
+_sanitize_arg()                          414-439        Validate + normalize one editor-supplied arg dict for persistence.
+set_command_structure()                  442-479        Persist an override:true structure entry for *command_key*.
+class _NextState                         499-509        What the *next* token can be — used to drive Tab completion.
+_walk()                                  512-598        Consume *tokens* against *spec*, returning (assignments, positionals, 
+parse()                                  601-615        Parse *remainder* tokens into an args dict using the command structure
+help_options()                           618-647        Return Cisco-style ``?`` help rows for the next token after *typed*.
+completion_options()                     650-678        Return ``{text, display, meta}`` options for the next token after *typ
 
-## `app/config.py`  (580 lines)
+## `app/shell/help.py`  (660 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+class HelpMixin                          8-659          
+  ._match_structured()                   9-25           Find the longest command key (with a structure spec) inside *prefix_to
+  ._print_context_help()                 27-44          Print Cisco-style context-sensitive help for a structured command.
+  ._render_context_help()                46-63          Render the next-option rows: ``  token   description`` (token column a
+  ._cmd_help_inline()                    65-190         Cisco-style compact inline help — one line per command, no panels.
+  ._cmd_help_docs()                      192-233        Show the full documentation page for a command or topic.
+  ._cmd_help_full()                      235-282        Print the full command reference regardless of context.
+  ._cmd_show_write_help()                284-307        Show available set/delete/update commands in configure mode.
+  ._print_shell_builtins()               309-322        Print the shell built-in commands section (shared by inline and full h
+  ._is_command_visible()                 324-338        Single source of truth: does this command appear in ``?`` for this ope
+  ._cmd_find()                           341-415        PAN-OS style command search: ``find command <text>``.
+  ._visible_command_keys()               417-428        Cached list of visible registry keys — the per-keystroke hot path.
+  ._invalidate_visible_keys()            430-431        
+  .resolve_scope()                       433-443        Return the effective run scope for a command.
+  ._is_command_available()               445-461        _is_command_visible plus the current-context gates.
+  ._is_config_command()                  464-468        Return True when a command should appear in configure-mode `?` help.
+  ._root_verb_options()                  470-508        Return top-level verb stems for bare `?` — Cisco/Palo root-prompt styl
+  ._collapsed_prefix_help_options()      510-565        Return collapsed next-token help options for a command prefix.
+  ._collapsed_tier_help_options()        567-602        Return collapsed bare-tier help options for one scope.
+  ._context_annotation()                 604-626        Return a short inline context note for commands whose output depends o
+  ._print_context_hint_for()             628-632        Print a one-line context note below an exact-match docs result.
+  ._print_inline_usage()                 634-659        Print the description + usage syntax for a complete command in `?` hel
+
+## `app/config.py`  (607 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -533,17 +583,18 @@ keychain_available()                     157-163        Return True when the OS 
 class SCMConfig                          171-188        SCM API credentials.
   .is_configured()                       187-188        
 class SSHConfig                          192-209        SSH connection defaults.
-class ArcConfig                          213-220        
-_read_config_file()                      227-245        Read the raw config.json from disk and return it as a dict.
-_write_config_file()                     248-257        Atomically write *raw* to CONFIG_FILE with mode 0600.
-_to_new_format()                         260-286        Migrate a legacy single-profile config dict to the multi-profile forma
-list_profiles()                          293-325        Return metadata for every configured profile.
-get_active_profile()                     328-330        Return the name of the currently active profile (default: ``"default"`
-set_active_profile()                     333-341        Persist *name* as the active profile without touching credential data.
-load_config()                            348-444        Load config for the named *profile* (or the active profile when None).
-save_config()                            447-518        Persist config: secrets to OS keychain, non-sensitive values to config
-delete_profile()                         521-547        Remove a named profile from config.json and its keychain entries.
-clear_keychain()                         550-579        Remove ARC secrets from the OS keychain.
+class FeaturesGuiConfig                  213-222        Settings for the browser-based feature-flag editor (`feature gui`).
+class ArcConfig                          226-234        
+_read_config_file()                      241-259        Read the raw config.json from disk and return it as a dict.
+_write_config_file()                     262-271        Atomically write *raw* to CONFIG_FILE with mode 0600.
+_to_new_format()                         274-304        Migrate a legacy single-profile config dict to the multi-profile forma
+list_profiles()                          311-343        Return metadata for every configured profile.
+get_active_profile()                     346-348        Return the name of the currently active profile (default: ``"default"`
+set_active_profile()                     351-359        Persist *name* as the active profile without touching credential data.
+load_config()                            366-471        Load config for the named *profile* (or the active profile when None).
+save_config()                            474-545        Persist config: secrets to OS keychain, non-sensitive values to config
+delete_profile()                         548-574        Remove a named profile from config.json and its keychain entries.
+clear_keychain()                         577-606        Remove ARC secrets from the OS keychain.
 
 ## `app/commands/operations.py`  (573 lines)
 
@@ -602,6 +653,32 @@ _load_config_version()                   362-434        Rollback: load a config 
 _show_diff()                             438-505        Show a version-to-version diff of SCM config metadata and staged chang
 COMMANDS                                 514-565        command registry dict
 
+## `app/scripts/generate_feature_flags.py`  (543 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+_load_catalog()                          85-88          
+_explicit_flags()                        91-94          
+_explicit_flag_descriptions()            97-105         Return flag → human descriptions from explicit registered commands.
+_load_existing_states()                  108-142        Preserve persisted states from files that have ``_carry: true``.
+_slug()                                  145-147        
+_resource_from_command()                 150-152        
+_resource_from_flag()                    155-161        Return (action, resource) for an explicit flag not present in the cata
+_display_resource()                      164-169        Return a readable resource name without product-prefix noise.
+_feature_resource()                      172-184        Normalize command resource tokens into the feature users expect to edi
+_resource_flag_name()                    187-189        Return the compact resource name shown in features.json comments.
+_short_summary()                         192-194        
+_comment_key()                           197-199        Return a readable ignored JSON key (leading underscore).
+_action_summary()                        202-208        Summarize one action in a compact way for the feature comment.
+_explicit_flag_meta()                    226-236        flag -> majority (category, scope) across the commands it gates.
+_carry_state()                           239-260        Preserve state across the per-action -> per-resource read/write rename
+_flag_file()                             263-280        Return the glossary file stem that owns *flag*.
+_file_readme()                           283-304        Return the _README block as a list of short lines (rendered as a JSON 
+build_feature_files()                    307-432        Build {file_stem: ordered flag map} — one small file per domain.
+render()                                 435-436        
+main()                                   439-479        
+augment_feature_labels()                 482-538        Add newly-discovered areas to settings/feature-labels.json, edit-safe.
+
 ## `app/commands/network.py`  (543 lines)
 
 Symbol                                   Lines          Purpose
@@ -626,30 +703,29 @@ _ssh_test_url()                          362-364
 _EXTRA_COMMANDS                          371-539        command registry dict
 COMMANDS.update(…)                       541-541        merge additional commands into registry
 
-## `app/scripts/generate_feature_flags.py`  (478 lines)
+## `app/settings/features.py`  (500 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_load_catalog()                          85-88          
-_explicit_flags()                        91-94          
-_explicit_flag_descriptions()            97-105         Return flag → human descriptions from explicit registered commands.
-_load_existing_states()                  108-142        Preserve persisted states from files that have ``_carry: true``.
-_slug()                                  145-147        
-_resource_from_command()                 150-152        
-_resource_from_flag()                    155-161        Return (action, resource) for an explicit flag not present in the cata
-_display_resource()                      164-169        Return a readable resource name without product-prefix noise.
-_feature_resource()                      172-184        Normalize command resource tokens into the feature users expect to edi
-_resource_flag_name()                    187-189        Return the compact resource name shown in features.json comments.
-_short_summary()                         192-194        
-_comment_key()                           197-199        Return a readable ignored JSON key (leading underscore).
-_action_summary()                        202-208        Summarize one action in a compact way for the feature comment.
-_explicit_flag_meta()                    226-236        flag -> majority (category, scope) across the commands it gates.
-_carry_state()                           239-260        Preserve state across the per-action -> per-resource read/write rename
-_flag_file()                             263-280        Return the glossary file stem that owns *flag*.
-_file_readme()                           283-299        
-build_feature_files()                    302-427        Build {file_stem: ordered flag map} — one small file per domain.
-render()                                 430-431        
-main()                                   434-473        
+_coerce_state()                          91-109         Normalize a raw features.json value into "on" | "dev" | "hidden" | "of
+coerce_scope()                           112-115        Normalize a scope token to one of VALID_SCOPES, or None if unrecognize
+_feature_files()                         119-128        All flag files, in load order: legacy single file first, then the
+load_features_with_sources()             131-176        Read every feature file; return (flag→state, flag→owning file).
+load_features()                          179-186        Read all feature files + ARC_FEATURE_<NAME> env overrides.
+feature_file_for()                       189-196        The file a flag change should persist to.
+set_feature_state()                      199-239        Persist one flag *state* ("on" | "dev" | "off") to its owning file.
+load_scope_overrides()                   251-272        Return {command_key -> scope} merged from every feature file.
+set_scope_override()                     275-315        Set or clear a per-command scope override in ``local.json``.
+effective_scope()                        318-320        Return the run scope for *command_key* — override if set, else code sc
+load_disabled_areas()                    333-346        Return the set of area/category keys that are fully disabled.
+set_area_disabled()                      349-379        Add/remove *category* from local.json ``_disabled_areas``. Returns the
+is_area_enabled()                        382-384        Return True unless *category* is in the disabled set.
+set_file_meta()                          391-423        Set ``_default`` and/or ``_carry`` on a specific domain feature file.
+load_file_meta()                         426-446        Return {domain_stem -> {default, carry, readme}} for every feature fil
+feature_state()                          449-457        Return the raw state of *flag_name* — "on", "dev", or "off".
+is_enabled()                             460-475        Return True when *flag_name* is executable in the current mode.
+is_feature_visible()                     478-494        Return True when a command should appear in ``?`` / tab completion.
+dev_mode_from_env()                      497-499        Return True when ARC_DEV_MODE is set to a truthy value (CI/CD hook).
 
 ## `app/scripts/generate_field_library.py`  (461 lines)
 
@@ -806,7 +882,7 @@ class ExecutionMixin                     7-363
   ._do_render()                          278-353        Render *data* to *con* (a Rich Console). Called by _render.
   ._make_context()                       355-363        
 
-## `app/shell/_base.py`  (358 lines)
+## `app/shell/_base.py`  (359 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -869,4 +945,23 @@ class FakeHTTP                           77-97          Scripted stand-in for ht
   .__init__()                            80-84          
   .request()                             86-93          
   .post()                                95-97          
-make_client()                            100-105
+make_client()                            100-105        
+
+## `app/settings/commands.py`  (304 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+class ShellBuiltinHelp                   37-42          One row in the SHELL section of ``?`` output.
+_load_raw()                              45-53          Read and parse builtin-commands.json.
+_coerce_visibility()                     56-73          Normalise a raw visibility value to STATE_VISIBLE/DEV/HIDDEN/BLOCKED.
+load_command_visibility()                76-83          Return {key: state} for all builtin commands.
+load_shell_builtins()                    86-89          Return all builtin command keys (for dispatch + completion).
+set_builtin_field()                      110-154        Set one field on a builtin entry in settings/builtin-commands.json.
+load_builtins_full()                     157-178        Return {name: {visible,display,help,configure_only,...}} for the edito
+load_shell_help_rows()                   181-215        Return ShellBuiltinHelp rows for entries that have a 'help' field.
+is_command_visible()                     218-230        Return True when command_key should appear in ? / tab completion.
+is_command_executable()                  233-247        Return True when command_key is allowed to run.
+load_builtin_aliases()                   250-262        Load system aliases from settings/command-aliases.json.
+shell_help_rows()                        265-279        Return SHELL help rows visible in the current shell mode.
+shell_help_names()                       282-284        Return all builtin help display names in order (used by smoke tests).
+load_startup_hints()                     287-303        Return ``[(display, hint), …]`` for entries with ``onlogin: true``.

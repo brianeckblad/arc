@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARC · Feature Editor</title>
+  <style>
+    :root{
+      --brand:#0070D1;--brand-hover:#3395E8;--brand-dim:rgba(0,112,209,.12);
+      --green:#22C55E;--yellow:#F59E0B;--red:#EF4444;--purple:#A78BFA;--teal:#009CA6;
+      --header-h:58px;--sidebar-w:280px;--radius:8px;--radius-lg:14px;
+      --mono:'JetBrains Mono','Fira Code',ui-monospace,monospace;
+      --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    }
+    [data-theme="dark"]{--bg:#0B0E1A;--bg-sidebar:#111525;--bg-card:#171B2E;--bg-hover:#1E2340;
+      --bg-active:rgba(0,112,209,.15);--bg-code:#0D1020;--border:#1E2340;--text:#D8DCF0;
+      --text-2:#8896B8;--text-3:#505A75;--header-bg:rgba(11,14,26,.95);--overlay:rgba(6,8,16,.7);}
+    [data-theme="light"]{--bg:#FFF;--bg-sidebar:#F4F6FB;--bg-card:#F9FAFD;--bg-hover:#EBEEf8;
+      --bg-active:rgba(0,112,209,.08);--bg-code:#EEF1F8;--border:#DEE2F0;--text:#1A1D2E;
+      --text-2:#4A5272;--text-3:#8896B8;--header-bg:rgba(255,255,255,.95);--overlay:rgba(20,24,40,.4);}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--sans);font-size:15px;line-height:1.55;background:var(--bg);color:var(--text);
+      height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+    code,.mono{font-family:var(--mono);}
+    button{font-family:var(--sans);cursor:pointer;}
+    ::-webkit-scrollbar{width:10px;height:10px;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px;}
+
+    /* Header */
+    .hdr{height:var(--header-h);flex-shrink:0;background:var(--header-bg);backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1rem;gap:.75rem;}
+    .logo{display:flex;align-items:baseline;gap:.4rem;margin-right:.4rem;}
+    .logo b{font-size:16px;font-weight:800;}.logo span{color:var(--text-2);font-size:12.5px;}
+    .tabs{display:flex;gap:.15rem;}
+    .tab{padding:7px 14px;border-radius:var(--radius);font-size:13.5px;font-weight:600;color:var(--text-2);
+      border:1px solid transparent;white-space:nowrap;}
+    .tab:hover{background:var(--bg-hover);color:var(--text);}
+    .tab.active{background:var(--bg-active);color:var(--text);border-color:var(--border);}
+    .grow{flex:1;}
+    .search{position:relative;width:260px;}
+    .search input{width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+      padding:7px 12px;font-size:13.5px;color:var(--text);outline:none;}
+    .search input:focus{border-color:var(--brand);}
+    .search input::placeholder{color:var(--text-3);}
+    .icon-btn{background:transparent;border:none;color:var(--text-2);font-size:17px;padding:6px 8px;border-radius:var(--radius);}
+    .icon-btn:hover{background:var(--bg-hover);color:var(--text);}
+    .btn{border:1px solid var(--border);background:var(--bg-card);color:var(--text);border-radius:var(--radius);
+      padding:7px 14px;font-size:13.5px;font-weight:600;}
+    .btn:hover{background:var(--bg-hover);border-color:var(--brand);}
+    .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff;}
+    .btn.primary:hover{background:var(--brand-hover);}
+    .btn.sm{padding:5px 11px;font-size:12px;border-radius:6px;color:var(--text-2);}
+    .btn.sm:hover{color:var(--text);}
+
+    /* Body */
+    .body{flex:1;display:flex;min-height:0;}
+    .side{width:var(--sidebar-w);flex-shrink:0;background:var(--bg-sidebar);border-right:1px solid var(--border);
+      overflow-y:auto;padding:.9rem .7rem;}
+    .side .stitle{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);
+      margin:.2rem .5rem .7rem;font-weight:700;}
+    .g-item{display:flex;align-items:center;gap:.5rem;padding:8px 10px;border-radius:var(--radius);color:var(--text-2);
+      font-size:13.5px;margin-bottom:2px;cursor:pointer;}
+    .g-item:hover{background:var(--bg-hover);color:var(--text);}
+    .g-item.active{background:var(--bg-active);color:var(--text);font-weight:600;}
+    .g-item .c{margin-left:auto;font-size:11.5px;color:var(--text-3);background:var(--bg-code);border-radius:20px;padding:1px 8px;}
+    .g-item .dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;}
+    .g-item .dot.none{background:var(--text-3);}
+    .g-item.dim{opacity:.5;}
+
+    .main{flex:1;overflow-y:auto;padding:1.5rem 1.9rem 4rem;min-width:0;}
+    .crumb{font-size:12.5px;color:var(--text-3);margin-bottom:.35rem;}
+    .phead{display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;}
+    .phead h1{font-size:21px;font-weight:700;letter-spacing:-.02em;}
+    .qmark{width:21px;height:21px;border-radius:50%;border:1px solid var(--border);background:var(--bg-code);
+      color:var(--text-2);font-size:12px;font-weight:700;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;}
+    .qmark:hover{border-color:var(--brand);color:var(--brand);}
+    .ptools{margin-left:auto;display:flex;gap:.5rem;align-items:center;}
+
+    /* Area header (features) */
+    .areabar{display:flex;align-items:center;gap:1.25rem;background:var(--bg-card);border:1px solid var(--border);
+      border-radius:var(--radius);padding:.6rem .9rem;margin-bottom:1rem;flex-wrap:wrap;}
+    .areabar .counts{display:flex;gap:.6rem;font-size:12.5px;}
+    .pill{display:flex;align-items:center;gap:.35rem;}
+    .sw{width:9px;height:9px;border-radius:50%;}
+    .sw.on{background:var(--green);}.sw.dev{background:var(--purple);}.sw.off{background:var(--red);}.sw.hidden{background:var(--yellow);}
+    .areabar .spacer{flex:1;}
+    .ctrl{display:flex;align-items:center;gap:.5rem;font-size:12.5px;color:var(--text-2);}
+    .ctrl label{font-weight:600;}
+
+    /* Cards / rows */
+    .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:.5rem;overflow:hidden;}
+    .card.saved{border-color:var(--green);}
+    .rmain{display:flex;align-items:center;gap:.75rem;padding:.65rem .85rem;}
+    .rinfo{min-width:0;flex:1;}
+    .rtitle{font-size:14px;font-weight:600;}
+    .rtech{font-family:var(--mono);font-size:11px;color:var(--text-3);margin-left:.4rem;}
+    .rsub{font-size:12.5px;color:var(--text-2);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70ch;}
+    .rmeta{font-size:12px;color:var(--text-2);margin-top:3px;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;}
+    .badge{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;background:var(--bg-code);color:var(--text-2);border:1px solid var(--border);}
+    .badge.override{border-color:var(--yellow);color:var(--yellow);}.badge.mixed{color:var(--teal);}
+    .muted{color:var(--text-3);font-size:12px;}
+    .expand{background:none;border:none;color:var(--text-3);font-size:12px;}
+    .expand:hover{color:var(--text);}
+
+    .seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--bg-code);flex-shrink:0;}
+    .seg button{border:none;background:transparent;color:var(--text-2);font-size:12px;font-weight:600;padding:6px 11px;}
+    .seg button:not(:last-child){border-right:1px solid var(--border);}
+    .seg button:hover{background:var(--bg-hover);color:var(--text);}
+    .seg button.sel[data-v="on"],.seg button.sel[data-v="true"]{background:var(--green);color:#04210f;}
+    .seg button.sel[data-v="dev"]{background:var(--purple);color:#1a0f33;}
+    .seg button.sel[data-v="off"],.seg button.sel[data-v="false"]{background:var(--red);color:#2a0808;}
+    .seg button.sel[data-v="hidden"]{background:var(--yellow);color:#2a1c04;}
+    .seg.scope button.sel{background:var(--brand);color:#fff;}
+
+    .detail{display:none;border-top:1px solid var(--border);padding:.7rem .85rem;background:var(--bg-code);}
+    .card.open .detail{display:block;}
+    .dhint{font-size:11.5px;color:var(--text-3);margin-bottom:.5rem;}
+    .crow{display:flex;align-items:center;gap:.7rem;padding:.3rem 0;font-size:12.5px;}
+    .cname{font-family:var(--mono);color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .ssh{font-size:10px;color:var(--teal);}
+    .crow .seg.scope button{padding:4px 9px;font-size:11px;}
+    .rst{font-size:11px;color:var(--text-3);background:none;border:none;}.rst:hover{color:var(--text);}
+
+    .toggle{width:42px;height:22px;border-radius:20px;background:var(--bg-code);border:1px solid var(--border);position:relative;flex-shrink:0;}
+    .toggle.on{background:var(--brand);border-color:var(--brand);}
+    .toggle .knob{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:all .15s;}
+    .toggle.on .knob{left:22px;}
+
+    /* Field editor */
+    .frow{display:flex;align-items:center;gap:.5rem;padding:.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;margin-bottom:.4rem;}
+    .frow input,.frow select{background:var(--bg-code);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:5px 8px;font-size:12.5px;outline:none;}
+    .frow input:focus,.frow select:focus{border-color:var(--brand);}
+    .frow .fn{font-family:var(--mono);width:150px;}.frow .fh{flex:1;min-width:110px;}.frow .fc{flex:1;min-width:110px;}
+    .frow .del{color:var(--red);background:none;border:none;font-size:15px;}
+    .chk{display:flex;align-items:center;gap:.3rem;font-size:12px;color:var(--text-2);}
+
+    /* Aliases */
+    .arow{display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;margin-bottom:.4rem;}
+    .arow .an{font-family:var(--mono);font-weight:600;width:130px;}.arow .aw{color:var(--text-3);}
+    .arow .ax{font-family:var(--mono);color:var(--text-2);flex:1;background:var(--bg-code);border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:12.5px;outline:none;}
+    .aadd{display:flex;gap:.5rem;margin:.4rem 0 1.1rem;}
+    .aadd input{background:var(--bg-code);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:7px 10px;font-size:13px;font-family:var(--mono);outline:none;}
+    .aadd input:focus{border-color:var(--brand);}.aadd .an{width:150px;}.aadd .ax{flex:1;}
+
+    /* Built-in editor */
+    .brow-detail label{display:block;font-size:11.5px;color:var(--text-3);margin:.5rem 0 .2rem;}
+    .brow-detail input{width:100%;background:var(--bg-code);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 9px;font-size:13px;outline:none;}
+    .brow-detail input:focus{border-color:var(--brand);}
+    .brow-detail .toggles{display:flex;gap:1.5rem;margin-top:.6rem;}
+
+    .empty{color:var(--text-3);text-align:center;padding:3rem;font-size:14px;}
+    .toast{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%);background:var(--bg-card);border:1px solid var(--green);
+      color:var(--text);padding:.6rem 1.2rem;border-radius:var(--radius);font-size:13.5px;box-shadow:0 8px 30px rgba(0,0,0,.3);
+      opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:300;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}.toast.err{border-color:var(--red);}
+    .modal-bg{position:fixed;inset:0;background:var(--overlay);display:none;align-items:flex-start;justify-content:center;z-index:350;padding:5rem 1rem;backdrop-filter:blur(3px);}
+    .modal-bg.show{display:flex;}
+    .modal{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);max-width:640px;width:100%;max-height:75vh;overflow-y:auto;padding:1.5rem 1.75rem;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+    .modal h3{font-size:18px;margin-bottom:.5rem;}.modal p{color:var(--text-2);font-size:13.5px;margin:.35rem 0;}
+    .modal li{color:var(--text-2);font-size:13px;margin-left:1.2rem;}.modal code{background:var(--bg-code);padding:1px 5px;border-radius:4px;font-size:12.5px;color:var(--teal);}
+    .modal pre{background:var(--bg-code);padding:.6rem .8rem;border-radius:6px;font-size:12.5px;overflow-x:auto;margin:.4rem 0;}
+    .modal hr{border:none;border-top:1px solid var(--border);margin:.8rem 0;}.mclose{float:right;font-size:20px;color:var(--text-3);background:none;border:none;}
+    .closed{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:1rem;z-index:400;text-align:center;padding:2rem;}
+    .closed.show{display:flex;}.closed h1{font-size:22px;}.closed p{color:var(--text-2);}
+  </style>
+</head>
+<body>
+  <header class="hdr">
+    <div class="logo"><b>ARC</b><span>Feature Editor</span></div>
+    <nav class="tabs" id="tabs"></nav>
+    <div class="grow"></div>
+    <div class="search"><input id="search" type="text" placeholder="Filter…" autocomplete="off"/></div>
+    <button class="icon-btn" id="theme">◐</button>
+    <button class="btn primary" id="done">✓ Done</button>
+  </header>
+  <div class="body">
+    <aside class="side" id="side"></aside>
+    <main class="main" id="main"></main>
+  </div>
+  <div class="toast" id="toast"></div>
+  <div class="modal-bg" id="modal"><div class="modal"><button class="mclose" id="mclose">×</button><div id="mbody"></div></div></div>
+  <div class="closed" id="closedv"><h1>✓ Editor closed</h1><p>You can return to the ARC shell now — this tab can be closed.</p></div>
+
+<script>
+const SECTIONS=[
+  {key:"areas",label:"Areas"},
+  {key:"features",label:"Features"},
+  {key:"structure",label:"Command Structure"},
+  {key:"aliases",label:"Aliases"},
+  {key:"builtins",label:"Built-ins"},
+  {key:"advanced",label:"Advanced"},
+];
+const HELP_TOPIC={areas:"areas",features:"features",structure:"structure",aliases:"aliases",builtins:"builtins",advanced:"files"};
+let cur={section:"features",group:null};
+let filter="";
+
+// ---- helpers ----
+function esc(s){return String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+function escA(s){return esc(s).replace(/"/g,"&quot;");}
+function matchTxt(t,q){if(!q)return true;const n=String(t).toLowerCase().replace(/[-_]/g," ");
+  try{return new RegExp("(?<![a-z])"+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?![a-z])","i").test(n);}catch(e){return n.includes(q.toLowerCase());}}
+async function api(p){const r=await fetch(p);return r.json();}
+async function post(p,b){const r=await fetch(p,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)});
+  const j=await r.json();if(!r.ok||j.error)throw new Error(j.error||"failed");return j;}
+let tt;function toast(m,e){const el=document.getElementById("toast");el.textContent=m;el.className="toast show"+(e?" err":"");
+  clearTimeout(tt);tt=setTimeout(()=>el.className="toast"+(e?" err":""),2500);}
+function flash(el){el.classList.add("saved");setTimeout(()=>el.classList.remove("saved"),1000);}
+function qmark(qs){const b=document.createElement("button");b.className="qmark";b.textContent="?";b.title="Help";
+  b.onclick=(e)=>{e.stopPropagation();showHelp(qs);};return b;}
+async function showHelp(qs){const body=document.getElementById("mbody");body.innerHTML="<p>Loading…</p>";
+  document.getElementById("modal").classList.add("show");
+  try{const r=await api("/api/help?"+qs);body.innerHTML=r.html||"<p>No help.</p>";}catch(e){body.innerHTML="<p>Could not load help.</p>";}}
+function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+
+// ---- router ----
+function go(section,group){location.hash=section+(group?("/"+encodeURIComponent(group)):"");}
+function parseHash(){const h=decodeURIComponent(location.hash.slice(1));const [s,g]=h.split("/");
+  return {section:SECTIONS.some(x=>x.key===s)?s:"features",group:g||null};}
+async function route(){
+  cur=parseHash();filter="";document.getElementById("search").value="";
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.k===cur.section));
+  await loadSidebar();
+  await loadMain();
+}
+window.addEventListener("hashchange",route);
+
+async function loadSidebar(){
+  const side=document.getElementById("side");
+  if(cur.section==="areas"){
+    // Areas is a single management page — a minimal sidebar for consistency.
+    side.innerHTML=`<div class="stitle">Manage</div><div class="g-item active">All areas</div>
+      <div class="muted" style="padding:.6rem .5rem;font-size:12px">Enable or disable whole capability areas. Disabling turns every command in an area off.</div>`;
+    return;
+  }
+  const nav=await api("/api/nav?section="+cur.section);
+  const groups=nav.groups||[];
+  if(!cur.group && groups.length)cur.group=groups[0].key;
+  side.innerHTML=`<div class="stitle">${cur.section==="advanced"?"Files":(cur.section==="aliases"||cur.section==="builtins"?"Groups":"Areas")}</div>`;
+  groups.forEach(g=>{
+    const it=el("div","g-item"+(g.key===cur.group?" active":""));
+    let dot="";
+    if(cur.section==="features"){const on=g.meta&&g.meta.active>0;dot=`<span class="dot ${on?'':'none'}"></span>`;}
+    it.innerHTML=`${dot}<span>${esc(g.label)}</span>`+(g.count?`<span class="c">${g.count}</span>`:"");
+    it.onclick=()=>go(cur.section,g.key);
+    side.appendChild(it);
+  });
+  if(!groups.length)side.innerHTML+=`<div class="muted" style="padding:.5rem">Nothing here.</div>`;
+}
+
+function pageHead(main,title){
+  const crumb=SECTIONS.find(s=>s.key===cur.section).label;
+  main.appendChild(el("div","crumb",`${esc(crumb)} ${cur.group?"· "+esc(title||cur.group):""}`));
+  const ph=el("div","phead");ph.appendChild(el("h1",null,esc(title||crumb)));
+  ph.appendChild(qmark("topic="+HELP_TOPIC[cur.section]));
+  return ph;
+}
+
+async function loadMain(){
+  const main=document.getElementById("main");main.innerHTML="";
+  if(cur.section==="areas")return mainAreas(main);
+  if(cur.section==="features")return mainFeatures(main);
+  if(cur.section==="structure")return mainStructure(main);
+  if(cur.section==="aliases")return mainAliases(main);
+  if(cur.section==="builtins")return mainBuiltins(main);
+  if(cur.section==="advanced")return mainAdvanced(main);
+}
+
+// ---- AREAS (enable/disable whole capability areas) ----
+async function mainAreas(main){
+  const data=await api("/api/areas");
+  const ph=el("div","phead");ph.appendChild(el("h1",null,"Feature Areas"));
+  ph.appendChild(qmark("topic=areas"));main.appendChild(ph);
+  const intro=el("div");intro.style.cssText="color:var(--text-2);font-size:13.5px;margin:-.5rem 0 1.1rem;max-width:80ch";
+  intro.textContent="Turn a whole capability area on or off. Disabling hides all its commands from the shell, blocks them from running, and removes the area from Features, Command Structure and Advanced. Your individual feature settings are remembered and restored when you re-enable it.";
+  main.appendChild(intro);
+  const areas=(data.areas||[]).filter(a=>matchTxt(a.label,filter)||matchTxt(a.area,filter));
+  if(!areas.length){main.appendChild(el("div","empty",`No areas match "<b>${esc(filter)}</b>".`));return;}
+  areas.forEach(a=>main.appendChild(areaCard(a)));
+}
+function areaCard(a){
+  const card=el("div","card");card.dataset.area=a.area;
+  const active=a.counts.on+a.counts.dev;
+  card.innerHTML=`<div class="rmain">
+    <div class="rinfo"><div class="rtitle">${esc(a.label)}<span class="rtech">${esc(a.area)}</span></div>
+      <div class="rsub">${a.feature_count} feature${a.feature_count===1?"":"s"} · ${active} on · ${a.counts.off} off${a.disabled?' · <span style="color:var(--red)">area disabled</span>':''}</div></div>
+    <div class="ctrl"><label>${a.disabled?'<span style="color:var(--red)">Disabled</span>':'<span style="color:var(--green)">Enabled</span>'}</label>
+      <div class="toggle ${a.disabled?'':'on'}" id="tog"><div class="knob"></div></div></div></div>`;
+  card.querySelector(".rinfo").prepend(qmark("topic=areas"));
+  card.querySelector("#tog").onclick=(e)=>toggleArea(a,card,e.currentTarget);
+  return card;
+}
+async function toggleArea(a,card,tog){
+  try{const r=await post("/api/area",{area:a.area,disabled:!a.disabled});
+    a.disabled=r.disabled;tog.classList.toggle("on",!a.disabled);
+    const lab=card.querySelector(".ctrl label");lab.innerHTML=a.disabled?'<span style="color:var(--red)">Disabled</span>':'<span style="color:var(--green)">Enabled</span>';
+    const sub=card.querySelector(".rsub");const active=a.counts.on+a.counts.dev;
+    sub.innerHTML=`${a.feature_count} feature${a.feature_count===1?"":"s"} · ${active} on · ${a.counts.off} off${a.disabled?' · <span style="color:var(--red)">area disabled</span>':''}`;
+    flash(card);toast(`${a.label}: ${a.disabled?"disabled — all commands off":"enabled"}`);
+  }catch(e){toast("Error: "+e.message,true);}
+}
+
+// ---- FEATURES ----
+async function mainFeatures(main){
+  const data=await api("/api/features?area="+encodeURIComponent(cur.group||""));
+  const g=data.groups[0];const hdr=data.header;
+  const ph=pageHead(main,hdr?hdr.label:"Features");main.appendChild(ph);
+  if(hdr){
+    const bar=el("div","areabar");
+    bar.innerHTML=`<div class="counts">
+      <span class="pill"><span class="sw on"></span>${hdr.counts.on} on</span>
+      <span class="pill"><span class="sw dev"></span>${hdr.counts.dev} dev</span>
+      <span class="pill"><span class="sw off"></span>${hdr.counts.off} off</span>
+      <span class="pill"><span class="sw hidden"></span>${hdr.counts.hidden} hidden</span></div>
+      <div class="spacer"></div>
+      <button class="btn sm" id="enable-all">Enable all</button>
+      <button class="btn sm" id="disable-area">Disable area</button>`;
+    bar.querySelector("#enable-all").onclick=()=>enableAll(g);
+    bar.querySelector("#disable-area").onclick=()=>disableArea(hdr);
+    main.appendChild(bar);
+  }
+  if(!g||!g.flags.length){main.appendChild(el("div","empty","No features in this area."));return;}
+  const vis=g.flags.filter(f=>featMatch(f));
+  if(!vis.length){main.appendChild(el("div","empty",`No features match "<b>${esc(filter)}</b>".`));return;}
+  vis.forEach(f=>main.appendChild(featureCard(f)));
+}
+function featMatch(f){if(!filter)return true;return matchTxt(f.title,filter)||matchTxt(f.flag,filter)||matchTxt(f.subtitle,filter)||(f.commands||[]).some(c=>matchTxt(c.command,filter));}
+function scopeSum(f){const s=[...new Set((f.commands||[]).map(c=>c.effective_scope))];if(!s.length)return"";
+  const ov=(f.commands||[]).some(c=>c.overridden);const lab=s.length===1?s[0]:"mixed";const cls=s.length>1?"mixed":(ov?"override":"");
+  return `<span class="badge ${cls}">${lab}${ov?" *":""}</span>`;}
+const FSTATES=["on","dev","off","hidden"];
+function featureCard(f){
+  const card=el("div","card");card.dataset.flag=f.flag;const n=f.command_count||0;
+  card.innerHTML=`<div class="rmain">
+    <div class="rinfo"><div class="rtitle">${esc(f.title||f.flag)}<span class="rtech">${esc(f.flag)}</span></div>
+      <div class="rsub">${esc(f.subtitle||"")}</div>
+      <div class="rmeta">${scopeSum(f)}<span class="muted">${n} command${n===1?"":"s"}</span>${n?`<button class="expand">▸ scope</button>`:""}</div></div>
+    <div class="seg st">${FSTATES.map(s=>`<button data-v="${s}" class="${f.state===s?'sel':''}">${s.toUpperCase()}</button>`).join("")}</div></div>
+    <div class="detail"><div class="dhint">Where each command runs — code default preselected.</div>
+      ${(f.commands||[]).map(scopeRow).join("")}</div>`;
+  card.querySelector(".rinfo").prepend(qmark("flag="+encodeURIComponent(f.flag)));
+  const ex=card.querySelector(".expand");if(ex)ex.onclick=()=>{card.classList.toggle("open");ex.textContent=card.classList.contains("open")?"▾ scope":"▸ scope";};
+  card.querySelectorAll(".seg.st button").forEach(b=>b.onclick=()=>setFState(f,card,b.dataset.v));
+  card.querySelectorAll(".crow").forEach(cr=>{const cmd=cr.dataset.cmd;
+    cr.querySelectorAll(".seg.scope button").forEach(b=>b.onclick=()=>setScope(f,cmd,cr,b.dataset.v));
+    const rs=cr.querySelector(".rst");if(rs)rs.onclick=()=>setScope(f,cmd,cr,"reset");});
+  return card;
+}
+function scopeRow(c){const S=["global","folder","device"];
+  return `<div class="crow" data-cmd="${escA(c.command)}"><span class="cname" title="${escA(c.description||c.command)}">${esc(c.command)}${c.ssh?' <span class="ssh">SSH</span>':''}</span>
+    <span class="seg scope">${S.map(s=>`<button data-v="${s}" class="${c.effective_scope===s?'sel':''}">${s[0].toUpperCase()+s.slice(1)}</button>`).join("")}</span>
+    <button class="rst" title="Reset to code default (${c.code_scope})">${c.overridden?"reset":"&nbsp;"}</button></div>`;}
+async function setFState(f,card,v){if(f.state===v)return;
+  try{await post("/api/feature",{flag:f.flag,state:v});f.state=v;
+    card.querySelectorAll(".seg.st button").forEach(b=>b.classList.toggle("sel",b.dataset.v===v));flash(card);
+    loadSidebar();toast(`${f.title||f.flag} → ${v.toUpperCase()}`);}catch(e){toast("Error: "+e.message,true);}}
+async function setScope(f,cmd,cr,v){
+  try{const r=await post("/api/scope",{command:cmd,scope:v==="reset"?null:v});
+    const c=(f.commands||[]).find(c=>c.command===cmd);if(c){c.effective_scope=r.effective_scope;c.overridden=r.overridden;}
+    cr.querySelectorAll(".seg.scope button").forEach(b=>b.classList.toggle("sel",b.dataset.v===r.effective_scope));
+    const rs=cr.querySelector(".rst");if(rs)rs.innerHTML=r.overridden?"reset":"&nbsp;";
+    const card=cr.closest(".card");const old=card.querySelector(".badge");if(old)old.outerHTML=scopeSum(f);flash(card);
+    toast(`${cmd} → ${r.effective_scope}`);}catch(e){toast("Error: "+e.message,true);}}
+async function enableAll(g){const flags=(g?g.flags:[]).filter(f=>f.state!=="on");
+  for(const f of flags){try{await post("/api/feature",{flag:f.flag,state:"on"});}catch(e){}}
+  toast(`Enabled ${flags.length} feature(s)`);route();}
+async function disableArea(hdr){try{await post("/api/area",{area:hdr.area,disabled:true});
+  toast(`${hdr.label}: disabled — manage in the Areas tab`);go("areas",null);}catch(e){toast("Error: "+e.message,true);}}
+
+// ---- COMMAND STRUCTURE ----
+async function mainStructure(main){
+  const data=await api("/api/structure/area?area="+encodeURIComponent(cur.group||""));
+  main.appendChild(pageHead(main,data.label));
+  const cmds=(data.commands||[]).filter(c=>matchTxt(c.command,filter)||matchTxt(c.description,filter));
+  if(!cmds.length){main.appendChild(el("div","empty","No commands match."));return;}
+  cmds.forEach(c=>main.appendChild(structCard(c)));
+}
+function structCard(c){
+  const card=el("div","card");card.dataset.cmd=c.command;
+  const tag=c.override?'<span class="badge override">locked</span>':(c.has_structure?'<span class="badge">auto</span>':'<span class="badge">none</span>');
+  card.innerHTML=`<div class="rmain"><div class="rinfo"><div class="rtitle mono">${esc(c.command)} ${tag}</div>
+    <div class="rsub">${esc(c.description||"")}</div></div>
+    <button class="expand">▸ edit fields (${c.field_count})</button></div>
+    <div class="detail"></div>`;
+  card.querySelector(".rinfo").prepend(qmark("command="+encodeURIComponent(c.command)));
+  const ex=card.querySelector(".expand");
+  ex.onclick=async()=>{const open=card.classList.toggle("open");ex.textContent=(open?"▾":"▸")+" edit fields ("+c.field_count+")";
+    if(open&&!card.querySelector(".detail").dataset.loaded){await loadFieldEditor(card,c.command);}};
+  return card;
+}
+async function loadFieldEditor(card,command){
+  const st=await api("/api/structure/item?command="+encodeURIComponent(command));
+  const det=card.querySelector(".detail");det.dataset.loaded="1";
+  let fields=JSON.parse(JSON.stringify(st.fields||[]));
+  function draw(){
+    det.innerHTML=`<div class="dhint">Reorder and edit how this command parses arguments.</div><div class="fw"></div>
+      <div style="margin-top:.6rem;display:flex;gap:.5rem"><button class="btn sm" data-a="add">+ Add field</button>
+      <button class="btn primary" data-a="save">Save (lock)</button><button class="btn sm" data-a="reset">Reset to auto</button></div>`;
+    const fw=det.querySelector(".fw");
+    fields.forEach((f,i)=>{
+      const r=el("div","frow");
+      r.innerHTML=`<span style="color:var(--text-3);cursor:grab">⋮⋮</span>
+        <input class="fn" value="${escA(f.name)}" placeholder="name"/>
+        <select class="fk">${["value","choice","keyword"].map(k=>`<option ${f.kind===k?"selected":""}>${k}</option>`).join("")}</select>
+        <label class="chk"><input type="checkbox" class="fr" ${f.required?"checked":""}/>req</label>
+        <input class="fh" value="${escA(f.hint||"")}" placeholder="hint"/>
+        <input class="fc" value="${escA((f.choices||[]).join(', '))}" placeholder="choices (comma)" ${f.kind==="choice"?"":"style=display:none"}/>
+        <button class="btn sm" data-m="up" ${i===0?"disabled":""}>↑</button>
+        <button class="btn sm" data-m="down" ${i===fields.length-1?"disabled":""}>↓</button>
+        <button class="del" title="Remove">×</button>`;
+      r.querySelector(".fn").oninput=e=>f.name=e.target.value;
+      r.querySelector(".fk").onchange=e=>{f.kind=e.target.value;draw();};
+      r.querySelector(".fr").onchange=e=>f.required=e.target.checked;
+      r.querySelector(".fh").oninput=e=>f.hint=e.target.value;
+      const fc=r.querySelector(".fc");if(fc)fc.oninput=e=>f.choices=e.target.value.split(",").map(s=>s.trim()).filter(Boolean);
+      r.querySelector('[data-m="up"]').onclick=()=>{if(i>0){[fields[i-1],fields[i]]=[fields[i],fields[i-1]];draw();}};
+      r.querySelector('[data-m="down"]').onclick=()=>{if(i<fields.length-1){[fields[i+1],fields[i]]=[fields[i],fields[i+1]];draw();}};
+      r.querySelector(".del").onclick=()=>{fields.splice(i,1);draw();};
+      fw.appendChild(r);
+    });
+    det.querySelector('[data-a="add"]').onclick=()=>{fields.push({name:"field",kind:"value",required:false,hint:"",choices:[]});draw();};
+    det.querySelector('[data-a="save"]').onclick=async()=>{try{await post("/api/structure",{command,fields});toast(command+": saved (locked)");route();}catch(e){toast("Error: "+e.message,true);}};
+    det.querySelector('[data-a="reset"]').onclick=async()=>{try{await post("/api/structure",{command,fields:[]});toast(command+": reset to auto");route();}catch(e){toast("Error: "+e.message,true);}};
+  }
+  draw();
+}
+
+// ---- ALIASES ----
+async function mainAliases(main){
+  const data=await api("/api/aliases");const grp=(cur.group==="user")?"user":"system";
+  main.appendChild(pageHead(main,grp==="user"?"My aliases":"System aliases"));
+  const add=el("div","aadd");
+  add.innerHTML=`<input class="an" placeholder="alias (e.g. sap)"/><input class="ax" placeholder="expands to… (e.g. show address)"/><button class="btn">Add</button>`;
+  add.querySelector(".btn").onclick=()=>{const an=add.querySelector(".an").value.trim(),ax=add.querySelector(".ax").value.trim();if(an&&ax)saveAlias(grp,an,ax);};
+  main.appendChild(add);
+  const rows=(data[grp]||[]).filter(a=>matchTxt(a.name,filter)||matchTxt(a.expansion,filter));
+  if(!rows.length){main.appendChild(el("div","empty","No aliases"+(filter?' match "'+esc(filter)+'"':"")+"."));return;}
+  rows.forEach(a=>{const r=el("div","arow");
+    r.innerHTML=`<span class="an">${esc(a.name)}</span><span class="aw">→</span><input class="ax" value="${escA(a.expansion)}"/><button class="btn sm save">Save</button><button class="btn sm del">Delete</button>`;
+    r.querySelector(".save").onclick=()=>saveAlias(grp,a.name,r.querySelector(".ax").value.trim());
+    r.querySelector(".del").onclick=()=>saveAlias(grp,a.name,null);main.appendChild(r);});
+}
+async function saveAlias(scope,name,expansion){try{await post("/api/alias",{scope,name,expansion});
+  toast(expansion===null?`Deleted ${name}`:`Alias ${name} saved`);loadSidebar();loadMain();}catch(e){toast("Error: "+e.message,true);}}
+
+// ---- BUILT-INS ----
+const BSTATES=[["true","SHOWN"],["dev","DEV"],["hidden","HIDDEN"],["false","DISABLED"]];
+const BVIS={visible:"true",dev:"dev",hidden:"hidden",blocked:"false"};
+async function mainBuiltins(main){
+  const data=await api("/api/builtins?group="+encodeURIComponent(cur.group||""));
+  main.appendChild(pageHead(main,cur.group));
+  const items=(data.items||[]).filter(b=>matchTxt(b.name,filter)||matchTxt(b.help,filter)||matchTxt(b.display,filter));
+  if(!items.length){main.appendChild(el("div","empty","No builtins match."));return;}
+  items.forEach(b=>main.appendChild(builtinCard(b)));
+}
+function builtinCard(b){
+  const card=el("div","card");card.dataset.name=b.name;const curv=BVIS[b.visible]||"true";
+  card.innerHTML=`<div class="rmain"><div class="rinfo"><div class="rtitle mono">${esc(b.display||b.name)}<span class="rtech">${esc(b.name)}</span></div>
+    <div class="rsub">${esc(b.help||"(no help text)")}</div></div>
+    <div class="seg st">${BSTATES.map(([v,l])=>`<button data-v="${v}" class="${curv===v?'sel':''}">${l}</button>`).join("")}</div>
+    <button class="expand">▸ edit</button></div>
+    <div class="detail brow-detail">
+      <label>Display name (shown in ? help)</label><input class="bd" value="${escA(b.display||"")}"/>
+      <label>Help text</label><input class="bh" value="${escA(b.help||"")}"/>
+      <div class="toggles">
+        <div class="ctrl"><label>Configure-mode only</label><div class="toggle ${b.configure_only?'on':''}" data-t="configure_only"><div class="knob"></div></div></div>
+        <div class="ctrl"><label>Hide in configure mode</label><div class="toggle ${b.hide_in_configure?'on':''}" data-t="hide_in_configure"><div class="knob"></div></div></div>
+      </div></div>`;
+  card.querySelector(".rinfo").prepend(qmark("topic=builtins"));
+  const ex=card.querySelector(".expand");ex.onclick=()=>{const o=card.classList.toggle("open");ex.textContent=(o?"▾":"▸")+" edit";};
+  card.querySelectorAll(".seg.st button").forEach(bt=>bt.onclick=()=>setBuiltin(b,card,"visible",bt.dataset.v,bt));
+  const bd=card.querySelector(".bd");bd.onchange=()=>setBuiltin(b,card,"display",bd.value);
+  const bh=card.querySelector(".bh");bh.onchange=()=>setBuiltin(b,card,"help",bh.value);
+  card.querySelectorAll("[data-t]").forEach(tg=>tg.onclick=()=>{const field=tg.dataset.t;const nv=!b[field];
+    setBuiltin(b,card,field,nv).then(()=>tg.classList.toggle("on",nv));});
+  return card;
+}
+async function setBuiltin(b,card,field,value,btn){
+  try{const r=await post("/api/builtin",{name:b.name,field,value});Object.assign(b,r);
+    if(field==="visible"&&btn){const curv=BVIS[r.visible]||"true";card.querySelectorAll(".seg.st button").forEach(x=>x.classList.toggle("sel",x.dataset.v===curv));}
+    flash(card);toast(`${b.name}: ${field} updated`);}catch(e){toast("Error: "+e.message,true);}
+}
+
+// ---- ADVANCED / FILES ----
+async function mainAdvanced(main){
+  const data=await api("/api/files");
+  const d=(data.domains||[]).find(x=>x.stem===cur.group)||data.domains[0];
+  if(!d){main.appendChild(pageHead(main,"Advanced"));main.appendChild(el("div","empty","No files."));return;}
+  main.appendChild(pageHead(main,d.label));
+  const card=el("div","card");card.style.padding="1rem";
+  card.innerHTML=`<div class="rtitle">${esc(d.label)} <span class="rtech">${d.stem}.json</span></div>
+    <div class="muted" style="margin:.4rem 0 .9rem">${esc((d.readme||"").slice(0,260))}</div>
+    <div style="display:flex;gap:2rem;flex-wrap:wrap;align-items:center">
+      <div class="ctrl"><label>Default state</label><span class="seg df">${["on","dev","off"].map(s=>`<button data-v="${s}" class="${d.default===s?'sel':''}">${s.toUpperCase()}</button>`).join("")}</span></div>
+      <div class="ctrl"><label>Keep my edits</label><div class="toggle ${d.carry?'on':''}" id="carry"><div class="knob"></div></div></div>
+    </div>`;
+  card.querySelectorAll(".seg.df button").forEach(b=>b.onclick=()=>setFile(d,card,"default",b.dataset.v));
+  card.querySelector("#carry").onclick=e=>setFile(d,card,"carry",!d.carry,e.currentTarget);
+  main.appendChild(card);
+}
+async function setFile(d,card,field,value,tog){
+  try{const body={domain:d.stem};body[field]=value;const r=await post("/api/meta",body);
+    if(field==="default"){d.default=r.default;card.querySelectorAll(".seg.df button").forEach(b=>b.classList.toggle("sel",b.dataset.v===value));}
+    else{d.carry=r.carry;if(tog)tog.classList.toggle("on",r.carry);}
+    toast(`${d.label}: ${field} updated`);}catch(e){toast("Error: "+e.message,true);}
+}
+
+// ---- shell ----
+function buildTabs(){const t=document.getElementById("tabs");
+  SECTIONS.forEach(s=>{const b=el("div","tab","");b.dataset.k=s.key;b.textContent=s.label;b.onclick=()=>go(s.key,null);t.appendChild(b);});}
+document.getElementById("search").addEventListener("input",e=>{filter=e.target.value.trim();loadMain();});
+document.getElementById("theme").onclick=()=>{const h=document.documentElement;h.dataset.theme=h.dataset.theme==="dark"?"light":"dark";};
+document.getElementById("mclose").onclick=()=>document.getElementById("modal").classList.remove("show");
+document.getElementById("modal").onclick=e=>{if(e.target.id==="modal")e.currentTarget.classList.remove("show");};
+async function closeEditor(){try{await fetch("/api/close",{method:"POST"});}catch(e){}document.getElementById("closedv").classList.add("show");}
+document.getElementById("done").onclick=closeEditor;
+window.addEventListener("keydown",e=>{if(e.key==="Escape"){const m=document.getElementById("modal");if(m.classList.contains("show"))m.classList.remove("show");else closeEditor();}});
+buildTabs();
+if(!location.hash)location.hash="features";
+route();
+</script>
+</body>
+</html>

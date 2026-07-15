@@ -72,13 +72,31 @@ _ON_WORDS     = {"on", "true", "1", "yes", "enabled"}
 _DEV_WORDS    = {"dev", "development", "beta", "wip"}
 _HIDDEN_WORDS = {"hidden", "invisible", "stealth"}
 
+# Command run-scope values (mirror app.commands.base.CommandScope).  Scope is a
+# per-command property sourced from code; the feature files may carry optional
+# per-command *overrides* (see load_scope_overrides / set_scope_override).
+SCOPE_GLOBAL = "global"
+SCOPE_FOLDER = "folder"
+SCOPE_DEVICE = "device"
+VALID_SCOPES = (SCOPE_GLOBAL, SCOPE_FOLDER, SCOPE_DEVICE)
+
+# Key under which per-command scope overrides live inside a feature file.
+_SCOPE_OVERRIDES_KEY = "_scope_overrides"
+
+# Key under which disabled areas (categories) live in local.json.  A disabled
+# area is a real OFF gate — its commands are hidden and blocked everywhere.
+_DISABLED_AREAS_KEY = "_disabled_areas"
+
 
 def _coerce_state(value: object) -> str:
     """Normalize a raw features.json value into "on" | "dev" | "hidden" | "off".
 
-    Accepts booleans (``true``/``false``) and strings (``"dev"``, ``"hidden"`` …).
-    Anything unrecognized is treated as OFF — the safe default.
+    Accepts booleans (``true``/``false``), strings (``"dev"``, ``"hidden"`` …),
+    and the forward-compatible object form ``{"state": <value>}`` (extra keys
+    ignored).  Anything unrecognized is treated as OFF — the safe default.
     """
+    if isinstance(value, dict):
+        value = value.get("state", False)
     if isinstance(value, bool):
         return STATE_ON if value else STATE_OFF
     token = str(value).strip().lower()
@@ -89,6 +107,13 @@ def _coerce_state(value: object) -> str:
     if token in _ON_WORDS:
         return STATE_ON
     return STATE_OFF
+
+
+def coerce_scope(value: object) -> str | None:
+    """Normalize a scope token to one of VALID_SCOPES, or None if unrecognized."""
+    token = str(value).strip().lower()
+    return token if token in VALID_SCOPES else None
+
 
 
 def _feature_files() -> list[Path]:
@@ -169,6 +194,256 @@ def feature_file_for(flag_name: str) -> Path:
     """
     _flags, sources = load_features_with_sources()
     return sources.get(flag_name, FEATURES_DIR / "local.json")
+
+
+def set_feature_state(flag_name: str, state: str) -> Path:
+    """Persist one flag *state* ("on" | "dev" | "off") to its owning file.
+
+    Writes the flag into its glossary file under ``settings/features/`` (the
+    same file the CLI ``feature enable`` uses), creating ``local.json`` for
+    flags with no generated home.  Returns the file that was written.
+
+    This is the single source of truth for persisting a flag change — both the
+    ``feature`` shell command and the browser GUI server call it, so the two
+    can never diverge on how/where a flag is stored.  Callers that hold live
+    shell state (``self._features`` + the visible-keys cache) are responsible
+    for updating it after this returns.
+
+    Raises ``RuntimeError`` if the owning file cannot be read or written.
+    """
+    target = feature_file_for(flag_name)
+    try:
+        raw = json.loads(target.read_text(encoding="utf-8")) if target.exists() else {}
+    except (json.JSONDecodeError, OSError) as exc:
+        raise RuntimeError(f"Could not read {target.name}: {exc}") from exc
+    if not isinstance(raw, dict):
+        raise RuntimeError(f"{target.name} must contain a JSON object")
+
+    normalized = _coerce_state(state)
+    raw_value: bool | str
+    if normalized == STATE_ON:
+        raw_value = True
+    elif normalized == STATE_DEV:
+        raw_value = "dev"
+    elif normalized == STATE_HIDDEN:
+        raw_value = "hidden"
+    else:
+        raw_value = False
+
+    raw[flag_name] = raw_value
+    try:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(raw, indent=2) + "\n", encoding="utf-8")
+    except OSError as exc:
+        raise RuntimeError(f"Could not write {target.name}: {exc}") from exc
+    return target
+
+
+# ---------------------------------------------------------------------------
+# Per-command scope overrides — optional corrections to the code-default scope.
+#
+# Scope (global/folder/device) is a per-command property defined in code
+# (CommandDef.scope).  Operators may override it per command; overrides live in
+# settings/features/local.json under ``_scope_overrides`` so they survive
+# regeneration, but the loader honors ``_scope_overrides`` found in ANY file.
+# ---------------------------------------------------------------------------
+
+def load_scope_overrides() -> dict[str, str]:
+    """Return {command_key -> scope} merged from every feature file.
+
+    Only well-formed entries (scope in VALID_SCOPES) are kept.  Later files win
+    on collision, matching the load order in ``_feature_files()``.
+    """
+    overrides: dict[str, str] = {}
+    for path in _feature_files():
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        if not isinstance(raw, dict):
+            continue
+        block = raw.get(_SCOPE_OVERRIDES_KEY)
+        if not isinstance(block, dict):
+            continue
+        for cmd_key, scope in block.items():
+            norm = coerce_scope(scope)
+            if norm is not None:
+                overrides[str(cmd_key)] = norm
+    return overrides
+
+
+def set_scope_override(command_key: str, scope: str | None) -> Path:
+    """Set or clear a per-command scope override in ``local.json``.
+
+    *scope* of None (or an unrecognized value) removes the override.  Returns
+    the file written (always ``local.json`` — the regeneration-proof home).
+
+    Raises ``RuntimeError`` if the file cannot be read or written.
+    """
+    target = FEATURES_DIR / "local.json"
+    try:
+        raw = json.loads(target.read_text(encoding="utf-8")) if target.exists() else {}
+    except (json.JSONDecodeError, OSError) as exc:
+        raise RuntimeError(f"Could not read {target.name}: {exc}") from exc
+    if not isinstance(raw, dict):
+        raise RuntimeError(f"{target.name} must contain a JSON object")
+
+    block = raw.get(_SCOPE_OVERRIDES_KEY)
+    if not isinstance(block, dict):
+        block = {}
+
+    norm = coerce_scope(scope) if scope is not None else None
+    if norm is None:
+        block.pop(command_key, None)
+    else:
+        block[command_key] = norm
+
+    if block:
+        raw[_SCOPE_OVERRIDES_KEY] = block
+    else:
+        raw.pop(_SCOPE_OVERRIDES_KEY, None)
+
+    try:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if raw:
+            target.write_text(json.dumps(raw, indent=2) + "\n", encoding="utf-8")
+        elif target.exists():
+            # Nothing left to store — remove the empty file to avoid clutter.
+            target.unlink()
+    except OSError as exc:
+        raise RuntimeError(f"Could not write {target.name}: {exc}") from exc
+    return target
+
+
+def effective_scope(overrides: dict[str, str], command_key: str, code_scope: str) -> str:
+    """Return the run scope for *command_key* — override if set, else code scope."""
+    return overrides.get(command_key, code_scope)
+
+
+# ---------------------------------------------------------------------------
+# Area (category) enablement — a real master switch for a whole area.
+#
+# A DISABLED area is turned OFF everywhere: its commands are hidden from ?,
+# tab-completion and help, blocked at execution, and removed from every feature
+# editor section.  It is a master gate ABOVE the per-feature flags — individual
+# flag values are preserved and restored when the area is re-enabled.  Stored in
+# local.json under ``_disabled_areas`` so it survives regeneration.
+# ---------------------------------------------------------------------------
+
+def load_disabled_areas() -> set[str]:
+    """Return the set of area/category keys that are fully disabled."""
+    disabled: set[str] = set()
+    for path in _feature_files():
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        if not isinstance(raw, dict):
+            continue
+        block = raw.get(_DISABLED_AREAS_KEY)
+        if isinstance(block, list):
+            disabled.update(str(x) for x in block)
+    return disabled
+
+
+def set_area_disabled(category: str, disabled: bool) -> Path:
+    """Add/remove *category* from local.json ``_disabled_areas``. Returns the file."""
+    target = FEATURES_DIR / "local.json"
+    try:
+        raw = json.loads(target.read_text(encoding="utf-8")) if target.exists() else {}
+    except (json.JSONDecodeError, OSError) as exc:
+        raise RuntimeError(f"Could not read {target.name}: {exc}") from exc
+    if not isinstance(raw, dict):
+        raise RuntimeError(f"{target.name} must contain a JSON object")
+
+    current = raw.get(_DISABLED_AREAS_KEY)
+    areas = set(current) if isinstance(current, list) else set()
+    if disabled:
+        areas.add(category)
+    else:
+        areas.discard(category)
+
+    if areas:
+        raw[_DISABLED_AREAS_KEY] = sorted(areas)
+    else:
+        raw.pop(_DISABLED_AREAS_KEY, None)
+
+    try:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if raw:
+            target.write_text(json.dumps(raw, indent=2) + "\n", encoding="utf-8")
+        elif target.exists():
+            target.unlink()
+    except OSError as exc:
+        raise RuntimeError(f"Could not write {target.name}: {exc}") from exc
+    return target
+
+
+def is_area_enabled(disabled_areas: set[str], category: str) -> bool:
+    """Return True unless *category* is in the disabled set."""
+    return category not in disabled_areas
+
+
+# ---------------------------------------------------------------------------
+# File-level meta editing — _default and _carry, surfaced with friendly names.
+# ---------------------------------------------------------------------------
+
+def set_file_meta(
+    domain_stem: str,
+    *,
+    default: str | None = None,
+    carry: bool | None = None,
+) -> Path:
+    """Set ``_default`` and/or ``_carry`` on a specific domain feature file.
+
+    *domain_stem* is the file stem (e.g. ``"scm-ngfw-objects"``).  Only the
+    provided fields are changed.  Returns the file written.
+
+    Raises ``RuntimeError`` if the file cannot be read or written.
+    """
+    target = FEATURES_DIR / f"{domain_stem}.json"
+    try:
+        raw = json.loads(target.read_text(encoding="utf-8")) if target.exists() else {}
+    except (json.JSONDecodeError, OSError) as exc:
+        raise RuntimeError(f"Could not read {target.name}: {exc}") from exc
+    if not isinstance(raw, dict):
+        raise RuntimeError(f"{target.name} must contain a JSON object")
+
+    if default is not None:
+        state = _coerce_state(default)
+        raw["_default"] = {STATE_ON: True, STATE_DEV: "dev", STATE_HIDDEN: "hidden"}.get(state, False)
+    if carry is not None:
+        raw["_carry"] = bool(carry)
+
+    try:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(raw, indent=2) + "\n", encoding="utf-8")
+    except OSError as exc:
+        raise RuntimeError(f"Could not write {target.name}: {exc}") from exc
+    return target
+
+
+def load_file_meta() -> dict[str, dict]:
+    """Return {domain_stem -> {default, carry, readme}} for every feature file."""
+    meta: dict[str, dict] = {}
+    if not FEATURES_DIR.is_dir():
+        return meta
+    for path in sorted(FEATURES_DIR.glob("*.json")):
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        if not isinstance(raw, dict):
+            continue
+        readme = raw.get("_README", "")
+        if isinstance(readme, list):
+            readme = " ".join(str(x) for x in readme)
+        meta[path.stem] = {
+            "default": _coerce_state(raw["_default"]) if "_default" in raw else STATE_OFF,
+            "carry": bool(raw.get("_carry", False)),
+            "readme": readme,
+        }
+    return meta
 
 
 def feature_state(flags: FeatureMap, flag_name: str) -> str:

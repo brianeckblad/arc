@@ -89,6 +89,95 @@ def load_shell_builtins() -> Tuple[str, ...]:
     return tuple(key for key in raw if not key.startswith("_"))
 
 
+# Fields the GUI/CLI may edit on a builtin entry (others are preserved on write).
+_BUILTIN_EDITABLE = {
+    "visible": "state",   # true | "dev" | "hidden" | false
+    "display": "text",
+    "help": "text",
+    "configure_only": "bool",
+    "hide_in_configure": "bool",
+    "onlogin": "bool",
+    "startup_hint": "text",
+}
+_VISIBLE_TOKENS = {
+    "true": True, "on": True, "visible": True, "1": True,
+    "false": False, "off": False, "blocked": False, "0": False,
+    "dev": "dev", "development": "dev", "wip": "dev",
+    "hidden": "hidden", "stealth": "hidden",
+}
+
+
+def set_builtin_field(name: str, field: str, value: object) -> "Path":
+    """Set one field on a builtin entry in settings/builtin-commands.json.
+
+    Preserves comment keys and every other field on the entry.  ``visible`` is
+    normalized to one of ``true`` / ``"dev"`` / ``"hidden"`` / ``false``; the
+    boolean toggles coerce truthy/falsey; text fields store the string as-is.
+
+    Raises ``ValueError`` for an unknown builtin/field or a bad ``visible``
+    value; ``RuntimeError`` on I/O trouble.  Returns the file path.
+    """
+    from pathlib import Path
+
+    key = (name or "").strip()
+    if field not in _BUILTIN_EDITABLE:
+        raise ValueError(f"field not editable: {field!r}")
+
+    try:
+        raw = json.loads(COMMANDS_FILE.read_text(encoding="utf-8")) if COMMANDS_FILE.exists() else {}
+    except (json.JSONDecodeError, OSError) as exc:
+        raise RuntimeError(f"Could not read {COMMANDS_FILE.name}: {exc}") from exc
+    if not isinstance(raw, dict) or key not in raw or key.startswith("_"):
+        raise ValueError(f"unknown builtin: {name!r}")
+
+    entry = raw[key]
+    if not isinstance(entry, dict):
+        # Promote a simple bool entry to the rich form before editing.
+        entry = {"visible": bool(entry)}
+        raw[key] = entry
+
+    kind = _BUILTIN_EDITABLE[field]
+    if kind == "state":
+        token = str(value).strip().lower()
+        if token not in _VISIBLE_TOKENS:
+            raise ValueError(f"invalid visible value: {value!r}")
+        entry["visible"] = _VISIBLE_TOKENS[token]
+    elif kind == "bool":
+        entry[field] = bool(value)
+    else:
+        entry[field] = str(value)
+
+    try:
+        COMMANDS_FILE.write_text(json.dumps(raw, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    except OSError as exc:
+        raise RuntimeError(f"Could not write {COMMANDS_FILE.name}: {exc}") from exc
+    return Path(COMMANDS_FILE)
+
+
+def load_builtins_full() -> dict[str, dict]:
+    """Return {name: {visible,display,help,configure_only,...}} for the editor."""
+    raw = _load_raw()
+    out: dict[str, dict] = {}
+    for key, val in raw.items():
+        if key.startswith("_"):
+            continue
+        if isinstance(val, dict):
+            out[key] = {
+                "visible": _coerce_visibility(val),
+                "display": val.get("display", key),
+                "help": val.get("help", ""),
+                "configure_only": bool(val.get("configure_only", False)),
+                "hide_in_configure": bool(val.get("hide_in_configure", False)),
+                "onlogin": bool(val.get("onlogin", False)),
+                "startup_hint": val.get("startup_hint", ""),
+            }
+        else:
+            out[key] = {"visible": _coerce_visibility(val), "display": key, "help": "",
+                        "configure_only": False, "hide_in_configure": False,
+                        "onlogin": False, "startup_hint": ""}
+    return out
+
+
 def load_shell_help_rows(dev_mode: bool = False) -> Tuple[ShellBuiltinHelp, ...]:
     """Return ShellBuiltinHelp rows for entries that have a 'help' field.
 
