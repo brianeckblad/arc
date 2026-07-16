@@ -7,6 +7,19 @@ import threading  # commit-confirmed auto-revert timer
 from app.shell._base import *  # noqa: F401,F403  (shared spine namespace)
 
 
+def _identity_name(claims: dict) -> str:
+    """First human-readable principal name from SCM userinfo claims, else ''.
+
+    Checks the standard OIDC/OAuth identity claims in priority order. Callers
+    that also accept a service-account token add ``client_id`` as a final
+    fallback themselves.
+    """
+    return (
+        claims.get("name") or claims.get("email")
+        or claims.get("preferred_username") or claims.get("sub") or ""
+    )
+
+
 def _prefs_file_label() -> str:
     """Repo-relative path of the config file (holds preferences), for display."""
     from app.config import CONFIG_FILE
@@ -1394,8 +1407,7 @@ class ConfigureMixin:
                 "if API calls fail."
             )
         if claims:
-            who = (claims.get("name") or claims.get("email") or claims.get("preferred_username")
-                   or claims.get("sub") or claims.get("client_id") or "")
+            who = _identity_name(claims) or claims.get("client_id") or ""
             email = claims.get("email", "")
             detail = f"{who}" + (f"  <{email}>" if email and email != who else "")
             console.print(f"  [dim]Signed in as[/dim] [bold]{detail or 'unknown principal'}[/bold]")
@@ -2491,10 +2503,7 @@ class ConfigureMixin:
                     "run [bold]login[/bold] again next launch.[/yellow]"
                 )
             try:
-                claims = self._scm.get_userinfo()
-                who = ((claims.get("name") or claims.get("email")
-                        or claims.get("preferred_username") or claims.get("sub") or "")
-                       if claims else "")
+                who = _identity_name(self._scm.get_userinfo())
                 if who:
                     console.print(f"  [dim]Signed in as[/dim] [bold]{who}[/bold]")
             except Exception:  # noqa: BLE001
@@ -2602,12 +2611,9 @@ class ConfigureMixin:
                         console.print(f"[green]✓[/green] Authenticated — token valid ~{expires_in // 60} min.")
                     else:
                         console.print("[green]✓[/green] Authenticated.")
-                claims = client.get_userinfo()
-                if claims:
-                    who = (claims.get("name") or claims.get("email")
-                           or claims.get("preferred_username") or claims.get("sub") or "")
-                    if who:
-                        console.print(f"  [dim]Signed in as[/dim] [bold]{who}[/bold]")
+                who = _identity_name(client.get_userinfo())
+                if who:
+                    console.print(f"  [dim]Signed in as[/dim] [bold]{who}[/bold]")
             except Exception as exc:  # noqa: BLE001
                 console.print(f"[yellow]Saved, but authentication failed:[/yellow] {exc}\n"
                               "  [dim]Check the credentials and try [bold]login[/bold].[/dim]")

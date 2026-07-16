@@ -701,7 +701,9 @@ def save_config(cfg: ArcConfig, profile: str | None = None) -> None:
         for legacy in ("scm", "ssh", "features_gui", "arc_gui", "active_profile",
                        "oauth", "default_folder"):
             raw.pop(legacy, None)
-        auth_section = raw.get("auth") if isinstance(raw.get("auth"), dict) else {}
+        auth_section = raw.get("auth")
+        if not isinstance(auth_section, dict):
+            auth_section = {}
         auth_section["preferred_method"] = cfg.auth_method or "service"
         auth_section["storage"] = storage
         auth_section.setdefault("active_profile", target)
@@ -710,11 +712,12 @@ def save_config(cfg: ArcConfig, profile: str | None = None) -> None:
             "features": {"enabled": cfg.features_gui.enabled, "port": cfg.features_gui.port},
             "arc":      {"enabled": cfg.arc_gui.enabled, "port": cfg.arc_gui.port},
         }
-        profs = raw.get("profiles") if isinstance(raw.get("profiles"), dict) else {}
-        pentry = profs.get(target) if isinstance(profs.get(target), dict) else {}
-        # Strip any auth ids that lingered in an old config.json profile block.
-        pentry = {"default_folder": cfg.default_folder}
-        profs[target] = pentry
+        profs = raw.get("profiles")
+        if not isinstance(profs, dict):
+            profs = {}
+        # Reset the profile block to the non-secret default folder, dropping any
+        # auth ids that lingered in an old config.json.
+        profs[target] = {"default_folder": cfg.default_folder}
         raw["profiles"] = profs
         _order = ["preferences", "auth", "gui", "profiles"]
         raw = {**{k: raw[k] for k in _order if k in raw},
@@ -776,7 +779,9 @@ def save_session_token(
         # Record active profile + preferred method (non-secret); leave the
         # storage mode and every other config.json section untouched.
         raw = _read_config_file()
-        auth_section = raw.get("auth") if isinstance(raw.get("auth"), dict) else {}
+        auth_section = raw.get("auth")
+        if not isinstance(auth_section, dict):
+            auth_section = {}
         auth_section["preferred_method"] = "bearer"
         auth_section.setdefault("active_profile", profile)
         raw["auth"] = auth_section
@@ -806,7 +811,9 @@ def delete_profile(name: str) -> None:
         auth_raw["profiles"] = aprofs
         # If the deleted profile was active, fall back to default.
         if _active_profile_name(raw) == name:
-            auth_section = raw.get("auth") if isinstance(raw.get("auth"), dict) else {}
+            auth_section = raw.get("auth")
+            if not isinstance(auth_section, dict):
+                auth_section = {}
             auth_section["active_profile"] = _DEFAULT_PROFILE
             raw["auth"] = auth_section
             raw.pop("active_profile", None)
