@@ -691,6 +691,21 @@ def save_config(cfg: ArcConfig, profile: str | None = None) -> None:
         if not isinstance(profiles, dict):
             profiles = {}
         profiles[target] = {"scm": scm_entry, "ssh": ssh_entry}
+        if storage == "keychain":
+            # keychain mode keeps long-lived secrets out of auth.json. Switching
+            # the (global) storage mode file→keychain must also scrub cleartext
+            # secrets left in OTHER profiles by a previous file-mode session — not
+            # just the profile being saved. (A per-profile session bearer_token is
+            # ephemeral state, so it is left alone.)
+            for pdata in profiles.values():
+                if not isinstance(pdata, dict):
+                    continue
+                pscm = pdata.get("scm")
+                if isinstance(pscm, dict):
+                    pscm.pop("client_secret", None)
+                pssh = pdata.get("ssh")
+                if isinstance(pssh, dict):
+                    pssh.pop("password", None)
         auth_raw["profiles"] = profiles
         _write_auth_file(auth_raw)
 

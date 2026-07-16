@@ -526,11 +526,10 @@ class ArcGuiServer(BaseGuiServer):
         # Blank secret fields are treated as "leave unchanged" (the GUI never
         # reads secrets back, so an empty field must not wipe a stored one).
         with self._lock:
-            # Storage mode + preferred auth method (full parity with the setup CLI).
+            # Storage mode (the GUI's only auth toggle). auth_method is derived
+            # from which credentials exist, not sent by the credentials form.
             if data.get("auth_storage") in ("keychain", "file"):
                 cfg.auth_storage = data["auth_storage"]
-            if data.get("auth_method") in ("service", "bearer"):
-                cfg.auth_method = data["auth_method"]
             if "client_id" in scm:
                 cfg.scm.client_id = str(scm["client_id"]).strip()
             if "tsg_id" in scm:

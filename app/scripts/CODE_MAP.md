@@ -502,7 +502,7 @@ class NavigationMixin                    11-875
   ._cmd_tsg()                            647-747        Switch the active Tenant Services Group (TSG) context.
   ._cmd_account()                        749-875        List or switch named credential profiles.
 
-## `app/config.py`  (861 lines)
+## `app/config.py`  (876 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -533,10 +533,10 @@ list_profiles()                          475-499        Return metadata for ever
 get_active_profile()                     502-504        Return the name of the currently active profile (default: ``"default"`
 set_active_profile()                     507-517        Persist *name* as the active profile without touching credential data.
 load_config()                            524-631        Load config for the named *profile* (or the active profile when None).
-save_config()                            634-734        Persist config: secrets to OS keychain, non-sensitive values to config
-save_session_token()                     737-789        Persist a manually-minted SESSION token to auth.json — non-destructive
-delete_profile()                         792-828        Remove a named profile from config.json and its keychain entries.
-clear_keychain()                         831-860        Remove ARC secrets from the OS keychain.
+save_config()                            634-749        Persist config: secrets to OS keychain, non-sensitive values to config
+save_session_token()                     752-804        Persist a manually-minted SESSION token to auth.json — non-destructive
+delete_profile()                         807-843        Remove a named profile from config.json and its keychain entries.
+clear_keychain()                         846-875        Remove ARC secrets from the OS keychain.
 
 ## `app/scripts/generate_panos_catalog.py`  (852 lines)
 
@@ -621,12 +621,12 @@ class HelpMixin                          8-661
   ._print_context_hint_for()             630-634        Print a one-line context note below an exact-match docs result.
   ._print_inline_usage()                 636-661        Print the description + usage syntax for a complete command in `?` hel
 
-## `app/web/arc_server.py`  (626 lines)
+## `app/web/arc_server.py`  (625 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _item_help()                             78-79          
-class ArcGuiServer                       82-625         Blocking, on-demand HTTP server for the ARC settings console.
+class ArcGuiServer                       82-624         Blocking, on-demand HTTP server for the ARC settings console.
   .__init__()                            88-89          
   .route_get()                           93-115         
   .route_post()                          117-138        
@@ -643,9 +643,9 @@ class ArcGuiServer                       82-625         Blocking, on-demand HTTP
   ._get_branding()                       411-446        
   ._apply_branding()                     448-481        
   ._get_credentials()                    485-515        
-  ._apply_credentials()                  517-562        Update credentials; secrets go to the OS keychain or auth.json per mod
-  ._test_auth()                          564-577        Attempt SCM authentication with the current credentials.
-  ._run_maintenance()                    581-625        Run a maintenance script (docs/commands update, catalog rebuild).
+  ._apply_credentials()                  517-561        Update credentials; secrets go to the OS keychain or auth.json per mod
+  ._test_auth()                          563-576        Attempt SCM authentication with the current credentials.
+  ._run_maintenance()                    580-624        Run a maintenance script (docs/commands update, catalog rebuild).
 
 ## `app/commands/operations.py`  (572 lines)
 
