@@ -11,9 +11,9 @@ ARC never writes secrets to `config.json`. If the OS keychain is unavailable,
 secrets through environment variables for that session.
 
 > **Platform-specific setup guides:**
-> - `help config osx` — macOS (Keychain, zshrc, Touch ID)
-> - `help config win` — Windows (Credential Manager, PowerShell)
-> - `help config nix` — Linux (Secret Service, bashrc, headless/CI)
+> - `setup osx` — macOS (Keychain, zshrc, Touch ID)
+> - `setup win` — Windows (Credential Manager, PowerShell)
+> - `setup linux` — Linux (Secret Service, bashrc, headless/CI)
 
 ## SCM service account field mapping
 
@@ -100,9 +100,9 @@ ARC never writes secrets to `config.json`. If the OS keychain is unavailable,
 secrets through environment variables for that session.
 
 > **Platform-specific setup guides:**
-> - `help config osx` — macOS (Keychain, zshrc, Touch ID)
-> - `help config win` — Windows (Credential Manager, PowerShell)
-> - `help config nix` — Linux (Secret Service, bashrc, headless/CI)
+> - `setup osx` — macOS (Keychain, zshrc, Touch ID)
+> - `setup win` — Windows (Credential Manager, PowerShell)
+> - `setup linux` — Linux (Secret Service, bashrc, headless/CI)
 
 ## Credential setup
 

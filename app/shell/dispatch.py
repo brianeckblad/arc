@@ -426,15 +426,18 @@ class DispatchMixin:
             console.print(
                 f"\n[yellow]No command:[/yellow] [bold]{cmd_text}[/bold]\n\n"
                 "[cyan]Looking for setup/configuration help?[/cyan]\n\n"
-                "  [bold]Platform-specific guides:[/bold]\n"
-                "    • [cyan]help config osx[/cyan]      — macOS (Keychain, Touch ID)\n"
-                "    • [cyan]help config nix[/cyan]      — Linux (libsecret / Secret Service)\n"
-                "    • [cyan]help config win[/cyan]      — Windows (Credential Manager)\n"
-                "    • [cyan]help config generate[/cyan] — generate a starter config file\n"
-                "    • [cyan]help configuration[/cyan]   — full configuration reference\n\n"
-                "  [bold]Configuration commands:[/bold]\n"
+                "  [bold]Guided setup:[/bold]\n"
+                "    • [cyan]setup[/cyan]            — menu (detects your OS)\n"
+                "    • [cyan]setup scm[/cyan]        — interactive credential wizard\n"
+                "    • [cyan]setup osx[/cyan]        — macOS (Keychain, Touch ID)\n"
+                "    • [cyan]setup linux[/cyan]      — Linux (libsecret / Secret Service)\n"
+                "    • [cyan]setup win[/cyan]        — Windows (Credential Manager)\n\n"
+                "  [bold]Reference:[/bold]\n"
+                "    • [cyan]help configuration[/cyan]   — full configuration reference\n"
+                "    • [cyan]help config generate[/cyan] — generate a starter config file\n\n"
+                "  [bold]Other:[/bold]\n"
+                "    • [cyan]arc gui-configure[/cyan]    — browser settings console\n"
                 "    • [cyan]arc auth configure[/cyan]   — (outside shell) credential setup wizard\n"
-                "    • [cyan]arc config generate[/cyan]  — (outside shell) create config file\n"
             )
             return
         

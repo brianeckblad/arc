@@ -506,6 +506,7 @@ class ArcGuiServer(BaseGuiServer):
         cfg = getattr(self._shell, "_config", None)
         scm = getattr(cfg, "scm", None)
         ssh = getattr(cfg, "ssh", None)
+        oauth = getattr(cfg, "oauth", None)
         has_bearer = bool(getattr(scm, "bearer_token", "")) if scm else False
         has_secret = bool(getattr(scm, "client_secret", "")) if scm else False
         has_oauth = bool(
@@ -520,6 +521,12 @@ class ArcGuiServer(BaseGuiServer):
                 "has_secret": has_secret,
                 "has_bearer": has_bearer,
                 "auth_method": "bearer" if has_bearer else ("service-account" if has_oauth else "none"),
+            },
+            "oauth": {
+                "auth_url": getattr(oauth, "auth_url", "") if oauth else "",
+                "token_url": getattr(oauth, "token_url", "") if oauth else "",
+                "client_id": getattr(oauth, "client_id", "") if oauth else "",
+                "configured": bool(getattr(oauth, "is_configured", False)) if oauth else False,
             },
             "ssh": {
                 "user": getattr(ssh, "user", "") if ssh else "",
@@ -539,6 +546,7 @@ class ArcGuiServer(BaseGuiServer):
             raise RuntimeError("config unavailable")
         scm = data.get("scm") or {}
         ssh = data.get("ssh") or {}
+        oauth = data.get("oauth") or {}
         # Blank secret fields are treated as "leave unchanged" (the GUI never
         # reads secrets back, so an empty field must not wipe a stored one).
         with self._lock:
@@ -552,6 +560,13 @@ class ArcGuiServer(BaseGuiServer):
                 cfg.scm.bearer_token = str(scm["bearer_token"]).strip()
             if scm.get("clear_bearer"):
                 cfg.scm.bearer_token = ""
+            # OAuth endpoints for experimental user login (non-secret; config.json).
+            if "auth_url" in oauth:
+                cfg.oauth.auth_url = str(oauth["auth_url"]).strip()
+            if "token_url" in oauth:
+                cfg.oauth.token_url = str(oauth["token_url"]).strip()
+            if "client_id" in oauth:
+                cfg.oauth.client_id = str(oauth["client_id"]).strip()
             if "user" in ssh:
                 cfg.ssh.user = str(ssh["user"]).strip()
             # SSH key toggle: when disabled, clear the key path (password auth).

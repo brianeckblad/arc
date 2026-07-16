@@ -24,7 +24,7 @@ needed to add a command.
 Merge order in `registry.py` (later shadows earlier):
 **OpenAPI-generated < PAN-OS-generated < curated/explicit.** A hand-written
 command with the same key always wins. Every command carries an explicit
-`scope=` (`folder` | `device` | `global`) and usually a `feature_flag`
+`scope=` (`folder` | `device` | `remote` | `global`) and usually a `feature_flag`
 resolved against `settings/features/`.
 
 ## How to change things here

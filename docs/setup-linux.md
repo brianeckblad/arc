@@ -206,6 +206,6 @@ chmod 644 ~/.ssh/panos_key.pub
 
 - `help config`             — general configuration overview
 - `help config generate`    — generate a starter config file
-- `help config osx`         — macOS setup
-- `help config win`         — Windows setup
+- `setup osx`         — macOS setup
+- `setup win`         — Windows setup
 - `help configuration`      — full configuration reference

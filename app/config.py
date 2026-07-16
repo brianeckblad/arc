@@ -243,11 +243,41 @@ class ArcGuiConfig:
 
 
 @dataclass
+class OAuthConfig:
+    """Experimental user-account browser login (OAuth authorization-code + PKCE).
+
+    Non-secret endpoint configuration for the `login` command / `app/auth/
+    user_login.py`.  Stored at the top level of config.json (not per-profile).
+    Environment variables (``ARC_OAUTH_*``) override these at runtime.
+
+      auth_url      — authorization endpoint (browser is sent here)
+      token_url     — token endpoint (code is exchanged here)
+      client_id     — public OAuth client id
+      scope         — space-separated scopes (optional)
+      redirect_port — loopback callback port (default 4455)
+
+    None of these are secrets (no client secret is used in PKCE), so config.json
+    (mode 0600) is an appropriate home — no keychain entry needed.
+    """
+
+    auth_url: str = ""
+    token_url: str = ""
+    client_id: str = ""
+    scope: str = ""
+    redirect_port: int = 4455
+
+    @property
+    def is_configured(self) -> bool:
+        return bool(self.auth_url and self.token_url and self.client_id)
+
+
+@dataclass
 class ArcConfig:
     scm: SCMConfig = field(default_factory=SCMConfig)
     ssh: SSHConfig = field(default_factory=SSHConfig)
     features_gui: FeaturesGuiConfig = field(default_factory=FeaturesGuiConfig)
     arc_gui: ArcGuiConfig = field(default_factory=ArcGuiConfig)
+    oauth: OAuthConfig = field(default_factory=OAuthConfig)
     debug: bool = False
     default_folder: str = "Shared"
     # Which named profile was loaded.  Set automatically by load_config().
@@ -344,6 +374,8 @@ def _to_new_format(raw: dict) -> dict:
         migrated["features_gui"] = raw["features_gui"]
     if "arc_gui" in raw:
         migrated["arc_gui"] = raw["arc_gui"]
+    if "oauth" in raw:
+        migrated["oauth"] = raw["oauth"]
     if "preferences" in raw:
         migrated["preferences"] = raw["preferences"]
     return migrated
@@ -522,6 +554,27 @@ def load_config(profile: str | None = None) -> ArcConfig:
         except (TypeError, ValueError):
             cfg.arc_gui.port = 4444
 
+    # --- oauth: top-level (non-profile) block; env vars override on disk ---
+    oauth_raw = raw.get("oauth", {}) if isinstance(raw, dict) else {}
+    if isinstance(oauth_raw, dict):
+        cfg.oauth.auth_url = str(oauth_raw.get("auth_url", "") or "")
+        cfg.oauth.token_url = str(oauth_raw.get("token_url", "") or "")
+        cfg.oauth.client_id = str(oauth_raw.get("client_id", "") or "")
+        cfg.oauth.scope = str(oauth_raw.get("scope", "") or "")
+        try:
+            cfg.oauth.redirect_port = int(oauth_raw.get("redirect_port", 4455))
+        except (TypeError, ValueError):
+            cfg.oauth.redirect_port = 4455
+    # Environment overrides (runtime only; not persisted back).
+    cfg.oauth.auth_url = os.environ.get("ARC_OAUTH_AUTH_URL", cfg.oauth.auth_url).strip()
+    cfg.oauth.token_url = os.environ.get("ARC_OAUTH_TOKEN_URL", cfg.oauth.token_url).strip()
+    cfg.oauth.client_id = os.environ.get("ARC_OAUTH_CLIENT_ID", cfg.oauth.client_id).strip()
+    cfg.oauth.scope = os.environ.get("ARC_OAUTH_SCOPE", cfg.oauth.scope).strip()
+    try:
+        cfg.oauth.redirect_port = int(os.environ.get("ARC_OAUTH_REDIRECT_PORT", cfg.oauth.redirect_port))
+    except (TypeError, ValueError):
+        pass
+
     return cfg
 
 
@@ -600,6 +653,22 @@ def save_config(cfg: ArcConfig, profile: str | None = None) -> None:
             "enabled": cfg.arc_gui.enabled,
             "port": cfg.arc_gui.port,
         }
+        # Persist the non-secret OAuth endpoint block (experimental user login).
+        # Only write keys with values so an all-empty block stays absent.
+        oauth_block = {
+            k: v for k, v in {
+                "auth_url": cfg.oauth.auth_url,
+                "token_url": cfg.oauth.token_url,
+                "client_id": cfg.oauth.client_id,
+                "scope": cfg.oauth.scope,
+            }.items() if v
+        }
+        if cfg.oauth.redirect_port and cfg.oauth.redirect_port != 4455:
+            oauth_block["redirect_port"] = cfg.oauth.redirect_port
+        if oauth_block:
+            raw["oauth"] = oauth_block
+        else:
+            raw.pop("oauth", None)
 
         _write_config_file(raw)
 

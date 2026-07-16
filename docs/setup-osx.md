@@ -194,6 +194,6 @@ arc auth configure --ssh-key ~/.ssh/panos_key
 
 - `help config`             — general configuration overview
 - `help config generate`    — generate a starter config file
-- `help config win`         — Windows setup
-- `help config nix`         — Linux setup
+- `setup win`         — Windows setup
+- `setup linux`         — Linux setup
 - `help configuration`      — full configuration reference

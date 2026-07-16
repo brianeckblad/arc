@@ -14,13 +14,13 @@
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
-## `app/shell/configure.py`  (2692 lines)
+## `app/shell/configure.py`  (2817 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _prefs_file_label()                      10-16          Repo-relative path of the config file (holds preferences), for display
 capture_write_ops()                      19-52          Run a write handler against a recording client and capture its mutatio
-class ConfigureMixin                     55-2621        
+class ConfigureMixin                     55-2746        
   ._cmd_configure()                      56-77          Enter configure mode (Cisco-style).
   ._stage_write()                        79-110         Validate a configure-mode write and stage it locally (no SCM change).
   ._cmd_show_pending()                   112-135        List the locally staged configure-mode changes (`show config`).
@@ -63,26 +63,25 @@ class ConfigureMixin                     55-2621
   ._dev_catalog()                        2144-2153      Handle dev-shell 'catalog' sub-commands.
   ._dev_catalog_rebuild()                2155-2221      Run all generator scripts to rebuild code artifacts.
   ._print_dev_status()                   2225-2239      Print current dev mode state (used by 'dev on/off' outside the shell).
-  ._cmd_setup()                          2242-2359      Interactive credential setup wizard.
-  ._cmd_arc()                            2365-2423      ARC application information and management.
-  ._arc_help()                           2425-2449      Print arc sub-command reference.
-  ._arc_row()                            2455-2461      Print one labelled row in the arc show style.
-  ._arc_show_version()                   2463-2486      arc show version — version, Python, platform.
-  ._arc_show_paths()                     2488-2501      arc show paths — app root, settings, config directories.
-  ._arc_show_scm()                       2503-2541      arc show scm — SCM API spec freshness and last change.
-  ._arc_show_commands()                  2543-2574      arc show commands — command counts and feature flag stats.
-  ._arc_show_settings()                  2576-2598      arc show settings — settings file inventory.
-  ._arc_show_session()                   2600-2617      arc show session — active profile, TSG, folder, device, modes.
-  ._arc_show()                           2619-2621      arc show (all) — kept for backward compat; calls _cmd_arc(['show']).
-_setup_bearer_instructions()             2628-2656      Print bearer-token setup commands for the detected OS.
-_setup_oauth_instructions()              2659-2691      Print OAuth client credential setup commands for the detected OS.
+  ._cmd_setup()                          2242-2262      Guided setup — dispatcher for the `setup` subcommands.
+  ._setup_menu()                         2264-2290      Print the setup overview: detected OS + the available subcommands.
+  ._setup_os_guide()                     2292-2314      Render the OS-specific setup guide with a 'three ways to configure' he
+  ._setup_scm_wizard()                   2316-2447      Interactive credential setup wizard.
+  ._setup_userlogin()                    2449-2484      Guide (and optionally run) the experimental browser user-login flow.
+  ._cmd_arc()                            2490-2548      ARC application information and management.
+  ._arc_help()                           2550-2574      Print arc sub-command reference.
+  ._arc_row()                            2580-2586      Print one labelled row in the arc show style.
+  ._arc_show_version()                   2588-2611      arc show version — version, Python, platform.
+  ._arc_show_paths()                     2613-2626      arc show paths — app root, settings, config directories.
+  ._arc_show_scm()                       2628-2666      arc show scm — SCM API spec freshness and last change.
+  ._arc_show_commands()                  2668-2699      arc show commands — command counts and feature flag stats.
+  ._arc_show_settings()                  2701-2723      arc show settings — settings file inventory.
+  ._arc_show_session()                   2725-2742      arc show session — active profile, TSG, folder, device, modes.
+  ._arc_show()                           2744-2746      arc show (all) — kept for backward compat; calls _cmd_arc(['show']).
+_setup_bearer_instructions()             2753-2781      Print bearer-token setup commands for the detected OS.
+_setup_oauth_instructions()              2784-2816      Print OAuth client credential setup commands for the detected OS.
 
-## `app/settings/field_catalog.py`  (1924 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-
-## `app/scripts/smoke_test.py`  (1903 lines)
+## `app/scripts/smoke_test.py`  (1951 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -98,15 +97,20 @@ test_token_optimizations()               626-638
 test_config()                            645-793        
 test_formatter()                         800-837        
 test_banner_alignment()                  852-876        
-test_inline_help_alignment()             892-1086       
-test_theme()                             1094-1196      
-test_code_map()                          1206-1241      
-test_command_visibility()                1244-1430      
-test_configure_flow()                    1437-1579      Section 13 — Configure/commit flow unit tests.
-test_gui_endpoints()                     1582-1799      Section 14 — Browser-console endpoint coverage (offline, no SCM).
-test_new_commands()                      1802-1825      Section 14b — the session's new features stay wired (registry + builti
-_test_gui_and_commands()                 1828-1831      Section 14 driver — GUI endpoint coverage + new-command wiring.
-main()                                   1853-1898      
+test_inline_help_alignment()             892-1132       
+test_theme()                             1140-1242      
+test_code_map()                          1252-1287      
+test_command_visibility()                1290-1476      
+test_configure_flow()                    1483-1625      Section 13 — Configure/commit flow unit tests.
+test_gui_endpoints()                     1628-1847      Section 14 — Browser-console endpoint coverage (offline, no SCM).
+test_new_commands()                      1850-1873      Section 14b — the session's new features stay wired (registry + builti
+_test_gui_and_commands()                 1876-1879      Section 14 driver — GUI endpoint coverage + new-command wiring.
+main()                                   1901-1946      
+
+## `app/settings/field_catalog.py`  (1924 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
 ## `app/api/client.py`  (1372 lines)
 
@@ -331,6 +335,28 @@ main()                                   1152-1286
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
+## `app/shell/completer.py`  (1043 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+_parse_usage()                           26-62          Parse a usage string into (required_slots, optional_keywords).
+_usage_options()                         65-99          Return (token, display_meta) completions for the slot after *typed* ar
+_tokenize_partial()                      102-135        Split *text* for completion, honouring quotes, tracking the in-progres
+class ArcCompleter                       138-1042       Context-aware tab completer.
+  .__init__()                            147-148        
+  ._command_visible()                    150-159        Return True when a registered command is visible in this shell mode.
+  ._command_is_dev_gated()               161-171        Return True when the command exists but is gated behind dev mode.
+  .get_completions()                     173-194        
+  ._complete_normal()                    196-766        Yield completions for non-dev-shell commands.
+  ._complete_dev_shell()                 768-832        Yield completions for dev shell commands.
+  ._match_complete_command()             834-849        Return the longest complete command key the user has fully entered.
+  ._complete_arguments()                 851-903        Yield completions for the argument region of a complete command.
+  ._object_names()                       928-967        Existing object names in the active folder, cached for a minute.
+  ._dynamic_name_options()               969-995        Live object names for name-completion slots.
+  ._arg_options()                        997-1014       Resolve next-slot argument options: structure file first, usage fallba
+  ._all_commands()                       1017-1026      
+  ._dev_gated_commands()                 1028-1042      Return command keys that are gated by a 'dev' feature flag.
+
 ## `app/web/feature_server.py`  (1030 lines)
 
 Symbol                                   Lines          Purpose
@@ -413,29 +439,7 @@ format_raw()                             957-958
 format_dict()                            961-962        
 _flatten()                               969-984        Recursively flatten a nested dict into dot-separated key/value pairs.
 
-## `app/shell/completer.py`  (943 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_parse_usage()                           26-62          Parse a usage string into (required_slots, optional_keywords).
-_usage_options()                         65-99          Return (token, display_meta) completions for the slot after *typed* ar
-_tokenize_partial()                      102-135        Split *text* for completion, honouring quotes, tracking the in-progres
-class ArcCompleter                       138-942        Context-aware tab completer.
-  .__init__()                            147-148        
-  ._command_visible()                    150-159        Return True when a registered command is visible in this shell mode.
-  ._command_is_dev_gated()               161-171        Return True when the command exists but is gated behind dev mode.
-  .get_completions()                     173-194        
-  ._complete_normal()                    196-666        Yield completions for non-dev-shell commands.
-  ._complete_dev_shell()                 668-732        Yield completions for dev shell commands.
-  ._match_complete_command()             734-749        Return the longest complete command key the user has fully entered.
-  ._complete_arguments()                 751-803        Yield completions for the argument region of a complete command.
-  ._object_names()                       828-867        Existing object names in the active folder, cached for a minute.
-  ._dynamic_name_options()               869-895        Live object names for name-completion slots.
-  ._arg_options()                        897-914        Resolve next-slot argument options: structure file first, usage fallba
-  ._all_commands()                       917-926        
-  ._dev_gated_commands()                 928-942        Return command keys that are gated by a 'dev' feature flag.
-
-## `app/shell/dispatch.py`  (936 lines)
+## `app/shell/dispatch.py`  (939 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -443,7 +447,7 @@ split_pipe_line()                        23-38          Split *line* at the firs
 parse_output_filters()                   41-83          Parse a pipe filter chain into ``[(op, pattern), …]``.
 _bare_line()                             90-96          Strip ANSI + box-drawing from *line*; return None if nothing remains.
 _line_matches()                          99-105         Regex match (case-insensitive) with plain-substring fallback.
-class DispatchMixin                      108-935        
+class DispatchMixin                      108-938        
   ._cmd_watch()                          109-153        Re-run *rest* every N seconds until Ctrl-C (`watch [N] <command>`).
   ._dispatch_piped()                     155-236        Run *head*, filter its captured output through the pipe *spec*.
   ._cmd_show_connections()               238-253        List active SSH connections in the pool (`show connections`).
@@ -451,29 +455,29 @@ class DispatchMixin                      108-935
   ._save_pipe_output()                   275-292        Write piped output *lines* to *target* as plain UTF-8 text.
   ._cmd_history()                        294-339        Print the last N commands from the prompt history (`history [n]`).
   ._cmd_alias()                          341-412        User-defined aliases (`alias` / `alias <name> <expansion…>` /
-  ._show_command_not_found()             414-507        Show a helpful message when a command is not recognized.
-  ._dispatch()                           509-935        Process one input line.  Returns True when the user wants to exit ARC.
+  ._show_command_not_found()             414-510        Show a helpful message when a command is not recognized.
+  ._dispatch()                           512-938        Process one input line.  Returns True when the user wants to exit ARC.
 
-## `app/cli.py`  (911 lines)
+## `app/cli.py`  (927 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 main()                                   49-65          Launch the ARC interactive shell.
 open_docs()                              69-74          Open ARC documentation in the default browser (fully offline, no serve
-auth_configure()                         86-241         Interactively configure ARC credentials.
-auth_show()                              245-310        Display current configuration (credentials masked).
-auth_clear()                             314-334        Remove ARC secrets from the OS keychain.
-_short_err()                             337-339        Return the first line of an error string — avoids huge httpx traceback
-auth_migrate()                           343-416        Migrate old keychain entries to the new arc.* naming scheme.
-auth_delete_profile()                    420-445        Delete a named credential profile from config.json and the OS keychain
-auth_test()                              449-677        Test connectivity using stored credentials.
-config_generate()                        719-754        Generate a starter config.json with annotated placeholders and mode 06
-_ensure_vendor_files()                   772-792        Download vendor JS/CSS to docs/vendor/ if not already present.
-_build_docs_bundle()                     795-829        Embed all docs/*.md files into docs/docs-bundle.js.
-_do_cliup()                              832-851        Core cliup logic — rebuild the offline browser docs bundle.
-cliup()                                  855-874        Rebuild the offline browser docs bundle.
-scm_get()                                886-898        Perform a raw GET request against the SCM API.
-run()                                    905-906        
+auth_configure()                         86-257         Interactively configure ARC credentials.
+auth_show()                              261-326        Display current configuration (credentials masked).
+auth_clear()                             330-350        Remove ARC secrets from the OS keychain.
+_short_err()                             353-355        Return the first line of an error string — avoids huge httpx traceback
+auth_migrate()                           359-432        Migrate old keychain entries to the new arc.* naming scheme.
+auth_delete_profile()                    436-461        Delete a named credential profile from config.json and the OS keychain
+auth_test()                              465-693        Test connectivity using stored credentials.
+config_generate()                        735-770        Generate a starter config.json with annotated placeholders and mode 06
+_ensure_vendor_files()                   788-808        Download vendor JS/CSS to docs/vendor/ if not already present.
+_build_docs_bundle()                     811-845        Embed all docs/*.md files into docs/docs-bundle.js.
+_do_cliup()                              848-867        Core cliup logic — rebuild the offline browser docs bundle.
+cliup()                                  871-890        Rebuild the offline browser docs bundle.
+scm_get()                                902-914        Perform a raw GET request against the SCM API.
+run()                                    921-922        
 
 ## `app/shell/navigation.py`  (876 lines)
 
@@ -532,6 +536,36 @@ print_report()                           718-796
 render()                                 802-824        
 main()                                   830-847        
 
+## `app/config.py`  (745 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+_profile_key()                           96-105         Return a profile-scoped keychain key.
+class ConfigSecurityError                108-109        Raised when ARC refuses to persist secrets insecurely.
+keychain_read_failed()                   121-123        True when at least one keychain read failed this process (backend down
+_keychain_get()                          126-135        Return a credential from the OS keychain, or '' if absent / unavailabl
+_keychain_set()                          138-151        Store *value* in the OS keychain.  Returns True on success.
+_keychain_delete()                       154-161        Remove a credential from the keychain.  Silently ignores missing entri
+keychain_available()                     164-170        Return True when the OS keychain can be read/written.
+class SCMConfig                          178-195        SCM API credentials.
+  .is_configured()                       194-195        
+class SSHConfig                          199-216        SSH connection defaults.
+class FeaturesGuiConfig                  220-229        Settings for the browser-based feature-flag editor (`feature gui-confi
+class ArcGuiConfig                       233-242        Settings for the browser-based ARC settings console (`arc gui-configur
+class OAuthConfig                        246-271        Experimental user-account browser login (OAuth authorization-code + PK
+  .is_configured()                       270-271        
+class ArcConfig                          275-285        
+_read_config_file()                      292-310        Read the raw config.json from disk and return it as a dict.
+_write_config_file()                     313-342        Write *raw* to CONFIG_FILE atomically, with mode 0600.
+_to_new_format()                         345-381        Migrate a legacy single-profile config dict to the multi-profile forma
+list_profiles()                          388-420        Return metadata for every configured profile.
+get_active_profile()                     423-425        Return the name of the currently active profile (default: ``"default"`
+set_active_profile()                     428-436        Persist *name* as the active profile without touching credential data.
+load_config()                            443-578        Load config for the named *profile* (or the active profile when None).
+save_config()                            581-682        Persist config: secrets to OS keychain, non-sensitive values to config
+delete_profile()                         685-712        Remove a named profile from config.json and its keychain entries.
+clear_keychain()                         715-744        Remove ARC secrets from the OS keychain.
+
 ## `app/settings/command_structure.py`  (680 lines)
 
 Symbol                                   Lines          Purpose
@@ -553,34 +587,6 @@ _walk()                                  512-598        Consume *tokens* against
 parse()                                  601-615        Parse *remainder* tokens into an args dict using the command structure
 help_options()                           618-647        Return Cisco-style ``?`` help rows for the next token after *typed*.
 completion_options()                     650-678        Return ``{text, display, meta}`` options for the next token after *typ
-
-## `app/config.py`  (676 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_profile_key()                           96-105         Return a profile-scoped keychain key.
-class ConfigSecurityError                108-109        Raised when ARC refuses to persist secrets insecurely.
-keychain_read_failed()                   121-123        True when at least one keychain read failed this process (backend down
-_keychain_get()                          126-135        Return a credential from the OS keychain, or '' if absent / unavailabl
-_keychain_set()                          138-151        Store *value* in the OS keychain.  Returns True on success.
-_keychain_delete()                       154-161        Remove a credential from the keychain.  Silently ignores missing entri
-keychain_available()                     164-170        Return True when the OS keychain can be read/written.
-class SCMConfig                          178-195        SCM API credentials.
-  .is_configured()                       194-195        
-class SSHConfig                          199-216        SSH connection defaults.
-class FeaturesGuiConfig                  220-229        Settings for the browser-based feature-flag editor (`feature gui-confi
-class ArcGuiConfig                       233-242        Settings for the browser-based ARC settings console (`arc gui-configur
-class ArcConfig                          246-255        
-_read_config_file()                      262-280        Read the raw config.json from disk and return it as a dict.
-_write_config_file()                     283-312        Write *raw* to CONFIG_FILE atomically, with mode 0600.
-_to_new_format()                         315-349        Migrate a legacy single-profile config dict to the multi-profile forma
-list_profiles()                          356-388        Return metadata for every configured profile.
-get_active_profile()                     391-393        Return the name of the currently active profile (default: ``"default"`
-set_active_profile()                     396-404        Persist *name* as the active profile without touching credential data.
-load_config()                            411-525        Load config for the named *profile* (or the active profile when None).
-save_config()                            528-613        Persist config: secrets to OS keychain, non-sensitive values to config
-delete_profile()                         616-643        Remove a named profile from config.json and its keychain entries.
-clear_keychain()                         646-675        Remove ARC secrets from the OS keychain.
 
 ## `app/shell/help.py`  (662 lines)
 
@@ -609,12 +615,12 @@ class HelpMixin                          8-661
   ._print_context_hint_for()             630-634        Print a one-line context note below an exact-match docs result.
   ._print_inline_usage()                 636-661        Print the description + usage syntax for a complete command in `?` hel
 
-## `app/web/arc_server.py`  (637 lines)
+## `app/web/arc_server.py`  (652 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _item_help()                             79-80          
-class ArcGuiServer                       83-636         Blocking, on-demand HTTP server for the ARC settings console.
+class ArcGuiServer                       83-651         Blocking, on-demand HTTP server for the ARC settings console.
   .__init__()                            89-90          
   .route_get()                           94-116         
   .route_post()                          118-141        
@@ -631,10 +637,10 @@ class ArcGuiServer                       83-636         Blocking, on-demand HTTP
   ._get_branding()                       414-449        
   ._apply_branding()                     451-484        
   ._apply_auth_pref()                    488-499        
-  ._get_credentials()                    503-531        
-  ._apply_credentials()                  533-573        Update credentials; secrets go to the OS keychain via save_config.
-  ._test_auth()                          575-588        Attempt SCM authentication with the current credentials.
-  ._run_maintenance()                    592-636        Run a maintenance script (docs/commands update, catalog rebuild).
+  ._get_credentials()                    503-538        
+  ._apply_credentials()                  540-588        Update credentials; secrets go to the OS keychain via save_config.
+  ._test_auth()                          590-603        Attempt SCM authentication with the current credentials.
+  ._run_maintenance()                    607-651        Run a maintenance script (docs/commands update, catalog rebuild).
 
 ## `app/commands/operations.py`  (573 lines)
 
@@ -767,6 +773,32 @@ is_enabled()                             464-479        Return True when *flag_n
 is_feature_visible()                     482-498        Return True when a command should appear in ``?`` / tab completion.
 dev_mode_from_env()                      501-503        Return True when ARC_DEV_MODE is set to a truthy value (CI/CD hook).
 
+## `app/docs.py`  (487 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+slugify()                                72-76          Return the docs filename slug for a shell command or topic.
+available_help_topics()                  79-84          Return topics that can be completed after ``help ``.
+doc_path_for_topic()                     87-111         Return the Markdown path for a help topic, if one exists.
+synthesize_command_help()                114-141        Build a Markdown help page for a command straight from the registry.
+set_page_length()                        155-158        Set the pager threshold (0 disables paging). Called from shell startup
+page_length()                            161-163        Current pager threshold in lines (0 = paging disabled).
+class _PagingFile                        166-247        A sys.stdout wrapper that pauses output every *page_size* lines.
+  .__init__()                            174-184        
+  .isatty()                              187-188        
+  .fileno()                              190-191        
+  .write()                               193-211        
+  .flush()                               213-214        
+  ._getch()                              216-227        
+  ._show_more()                          229-247        Print --More-- prompt; return False if user quits.
+paging_stdout()                          258-274        Context manager: wrap sys.stdout with line-based paging.
+cisco_pager()                            277-349        Cisco IOS-style --More-- interactive pager.
+render_help_topic()                      352-395        Render a Markdown help topic inside the ARC shell.
+os_setup_doc()                           408-410        Return the platform doc filename for an OS key (or None if unknown).
+render_doc_file()                        413-438        Render a Markdown file from the docs root by filename (front-matter st
+topic_to_page_path()                     445-465        Convert a help topic string to a relative docs page path.
+open_docs_in_browser()                   468-486        Open docs/index.html in the default browser using a file:// URL.
+
 ## `app/scripts/generate_field_library.py`  (461 lines)
 
 Symbol                                   Lines          Purpose
@@ -810,30 +842,6 @@ regenerate_index()                       360-371        Rewrite docs/commands/in
 regenerate_api_reference()               374-397        Rewrite docs/commands/api-reference.md from front-matter + the registr
 _invalid_docs()                          400-417        Existing command docs that are malformed or point at unknown commands.
 main()                                   420-448        
-
-## `app/docs.py`  (451 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-slugify()                                79-83          Return the docs filename slug for a shell command or topic.
-available_help_topics()                  86-91          Return topics that can be completed after ``help ``.
-doc_path_for_topic()                     94-118         Return the Markdown path for a help topic, if one exists.
-synthesize_command_help()                121-148        Build a Markdown help page for a command straight from the registry.
-set_page_length()                        162-165        Set the pager threshold (0 disables paging). Called from shell startup
-page_length()                            168-170        Current pager threshold in lines (0 = paging disabled).
-class _PagingFile                        173-254        A sys.stdout wrapper that pauses output every *page_size* lines.
-  .__init__()                            181-191        
-  .isatty()                              194-195        
-  .fileno()                              197-198        
-  .write()                               200-218        
-  .flush()                               220-221        
-  ._getch()                              223-234        
-  ._show_more()                          236-254        Print --More-- prompt; return False if user quits.
-paging_stdout()                          265-281        Context manager: wrap sys.stdout with line-based paging.
-cisco_pager()                            284-356        Cisco IOS-style --More-- interactive pager.
-render_help_topic()                      359-402        Render a Markdown help topic inside the ARC shell.
-topic_to_page_path()                     409-429        Convert a help topic string to a relative docs page path.
-open_docs_in_browser()                   432-450        Open docs/index.html in the default browser using a file:// URL.
 
 ## `app/commands/setup.py`  (448 lines)
 
@@ -969,22 +977,22 @@ build_changes_markdown()                 193-233        Render CHANGES.md from p
 update()                                 239-313        Pull every registered page and refresh mirrors.  Returns exit code.
 main()                                   319-331        
 
-## `app/web/gui_base.py`  (322 lines)
+## `app/web/gui_base.py`  (326 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 class QuietThreadingHTTPServer           51-66          ThreadingHTTPServer that ignores client-disconnect errors.
   .handle_error()                        61-66          
-class BaseGuiServer                      69-321         A blocking, on-demand, loopback HTTP server for one ARC browser GUI.
+class BaseGuiServer                      69-325         A blocking, on-demand, loopback HTTP server for one ARC browser GUI.
   .__init__()                            84-92          
   .route_get()                           96-102         Return a JSON-serialisable dict for a GET data route, or None for 404.
   .route_post()                          104-111        Handle a POST mutation and return a result dict, or None for 404.
   ._load_html()                          115-123        
   ._asset()                              126-142        Return (bytes, content-type) for a shared asset, or None if missing.
   .url()                                 145-146        
-  .serve()                               150-298        Start the server, open the browser, and BLOCK until the page closes.
-  ._watchdog()                           300-311        Close the server if the page stops sending heartbeats.
-  .stop()                                313-321        
+  .serve()                               150-302        Start the server, open the browser, and BLOCK until the page closes.
+  ._watchdog()                           304-315        Close the server if the page stops sending heartbeats.
+  .stop()                                317-325        
 
 ## `app/scripts/test_sls.py`  (322 lines)
 

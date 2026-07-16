@@ -90,6 +90,9 @@ def auth_configure(
     scm_tsg: Optional[str] = typer.Option(None, "--scm-tsg-id"),
     ssh_user: Optional[str] = typer.Option(None, "--ssh-user"),
     ssh_key: Optional[str] = typer.Option(None, "--ssh-key"),
+    oauth_auth_url: Optional[str] = typer.Option(None, "--oauth-auth-url", help="Experimental user-login: OAuth authorization endpoint URL."),
+    oauth_token_url: Optional[str] = typer.Option(None, "--oauth-token-url", help="Experimental user-login: OAuth token endpoint URL."),
+    oauth_client_id: Optional[str] = typer.Option(None, "--oauth-client-id", help="Experimental user-login: public OAuth client id."),
     profile: str = typer.Option("default", "--profile", "-p", help="Named credential profile to create or update."),
 ) -> None:
     """Interactively configure ARC credentials.
@@ -193,6 +196,19 @@ def auth_configure(
         secret=True,
         hint="Leave blank if using key auth or SSH agent",
     )
+
+    # ── OAuth endpoints (experimental user login) — flags only, no prompts ────
+    if oauth_auth_url is not None:
+        cfg.oauth.auth_url = oauth_auth_url.strip()
+    if oauth_token_url is not None:
+        cfg.oauth.token_url = oauth_token_url.strip()
+    if oauth_client_id is not None:
+        cfg.oauth.client_id = oauth_client_id.strip()
+    if any(v is not None for v in (oauth_auth_url, oauth_token_url, oauth_client_id)):
+        console.print(
+            "\n[dim]OAuth user-login endpoints saved. Run [bold]login[/bold] in the "
+            "ARC shell to authenticate via the browser.[/dim]"
+        )
 
     try:
         save_config(cfg, profile=profile)
@@ -749,8 +765,8 @@ def config_generate(
         f"       [dim]{CONFIG_FILE}[/dim]\n"
         "  2. Run [bold]arc auth configure[/bold] — migrates secrets to the OS keychain\n"
         "  3. Run [bold]arc auth show[/bold]  — confirm everything is configured\n\n"
-        "  See [bold]help config osx[/bold] / [bold]help config win[/bold] / "
-        "[bold]help config nix[/bold] for platform-specific keychain CLI commands."
+        "  Inside ARC, run [bold]setup osx[/bold] / [bold]setup win[/bold] / "
+        "[bold]setup linux[/bold] for platform-specific keychain CLI commands."
     )
 
 

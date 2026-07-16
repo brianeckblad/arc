@@ -1085,6 +1085,52 @@ def test_inline_help_alignment() -> None:
             fail("context help options wrong",
                  f"type={at_type} value={at_value} kw={at_kw}")
 
+    # 9j — Builtin sub-command completion: every builtin that documents
+    #      sub-commands must actually yield them from get_completions (guards
+    #      against builtins that tab-complete as a word but dead-end on args).
+    from prompt_toolkit.document import Document
+
+    def _fake_full_shell() -> SimpleNamespace:
+        shell = SimpleNamespace(
+            _features={}, _dev_mode=False, _command_visibility={},
+            _prefs=SimpleNamespace(aliases={"slt": "show log traffic"},
+                                   terminal_length=0, terminal_width=0, terminal_height=0),
+            _ssh=SimpleNamespace(_pool={"fw-dallas-01": object()}),
+            _state=SimpleNamespace(devices_cache=[], folders_cache=[], snippets_cache=[],
+                                   tsgs_cache=[], dev_shell=False, configure_mode=True,
+                                   staged_ops=[{"command": "set address web1"}]),
+        )
+        shell._is_command_visible = HelpMixin._is_command_visible.__get__(shell)
+        shell._visible_command_keys = HelpMixin._visible_command_keys.__get__(shell)
+        return shell
+
+    comp = ArcCompleter(_fake_full_shell())
+
+    def _texts(line: str) -> set[str]:
+        doc = Document(text=line, cursor_position=len(line))
+        return {c.text for c in comp.get_completions(doc, None)}
+
+    builtin_cases = {
+        "commit ": {"check", "watch", "confirmed", "confirm"},
+        "alias ": {"delete", "slt"},
+        "close ": {"connection"},
+        "close connection ": {"fw-dallas-01"},
+        "unstage ": {"1"},
+    }
+    for line, expected in builtin_cases.items():
+        got = _texts(line)
+        if expected & got:
+            ok(f"builtin completion: {line.strip()!r} offers {sorted(expected & got)}")
+        else:
+            fail(f"builtin {line.strip()!r} yielded no expected sub-command",
+                 f"expected any of {sorted(expected)}, got {sorted(got)[:8]}")
+
+    # `docs ` should offer help topics (non-empty).
+    if _texts("docs "):
+        ok("builtin completion: 'docs' offers help topics")
+    else:
+        fail("builtin 'docs' offered no help topics")
+
 
 
 # ---------------------------------------------------------------------------
@@ -1647,8 +1693,10 @@ def test_gui_endpoints() -> None:
         from app.web.feature_server import FeatureGuiServer
         server_a = ArcGuiServer(shell, port=4744)
         server_f = FeatureGuiServer(shell, port=4745)
-        threading.Thread(target=server_a.serve, daemon=True).start()
-        threading.Thread(target=server_f.serve, daemon=True).start()
+        # open_browser=False: the smoke test only exercises the HTTP endpoints —
+        # it must never pop a browser tab.
+        threading.Thread(target=lambda: server_a.serve(open_browser=False), daemon=True).start()
+        threading.Thread(target=lambda: server_f.serve(open_browser=False), daemon=True).start()
         time.sleep(0.5)
 
         def _req(port, path, body=None):

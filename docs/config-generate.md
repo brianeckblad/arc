@@ -65,8 +65,8 @@ arc auth show
 ## See Also
 
 - `help config`         — general configuration overview
-- `help config osx`     — macOS keychain CLI commands
-- `help config win`     — Windows Credential Manager CLI commands
-- `help config nix`     — Linux secret-tool CLI commands
+- `setup osx`     — macOS keychain CLI commands
+- `setup win`     — Windows Credential Manager CLI commands
+- `setup linux`     — Linux secret-tool CLI commands
 - `help configuration`  — full configuration reference
 

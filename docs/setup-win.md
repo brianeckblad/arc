@@ -174,6 +174,6 @@ arc auth configure --ssh-key "$env:USERPROFILE\.ssh\panos_key"
 
 - `help config`             — general configuration overview
 - `help config generate`    — generate a starter config file
-- `help config osx`         — macOS setup
-- `help config nix`         — Linux setup
+- `setup osx`         — macOS setup
+- `setup linux`         — Linux setup
 - `help configuration`      — full configuration reference

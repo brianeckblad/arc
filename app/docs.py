@@ -52,13 +52,6 @@ GENERAL_TOPICS = {
     "architecture":     "architecture.md",
     "configuration":    "configuration.md",
     "config":           "configuration.md",
-    # Platform-specific config help — DO NOT REMOVE (user-facing help topics)
-    "config osx":       "config-osx.md",
-    "config mac":       "config-osx.md",
-    "config win":       "config-win.md",
-    "config windows":   "config-win.md",
-    "config nix":       "config-nix.md",
-    "config linux":     "config-nix.md",
     "config generate":  "config-generate.md",
     "commands":         "commands/index.md",
     # API reference — complete mapping of API resources to ARC commands
@@ -399,6 +392,49 @@ def render_help_topic(console: Console, topic: str, use_pager: bool = True) -> b
     else:
         _print_doc()
     
+    return True
+
+
+# OS-key → platform doc.  Rendered by the `setup <os>` subcommands (these guides
+# used to be reachable as `help config <os>` topics; they now live under setup).
+_OS_SETUP_DOCS = {
+    "osx": "setup-osx.md", "mac": "setup-osx.md", "macos": "setup-osx.md",
+    "darwin": "setup-osx.md",
+    "linux": "setup-linux.md", "nix": "setup-linux.md", "wsl": "setup-linux.md",
+    "win": "setup-win.md", "windows": "setup-win.md",
+}
+
+
+def os_setup_doc(os_key: str) -> str | None:
+    """Return the platform doc filename for an OS key (or None if unknown)."""
+    return _OS_SETUP_DOCS.get(os_key.strip().lower())
+
+
+def render_doc_file(console: Console, filename: str, title: str | None = None,
+                    use_pager: bool = True) -> bool:
+    """Render a Markdown file from the docs root by filename (front-matter stripped).
+
+    Used for guides that are no longer registered as `help` topics (e.g. the
+    per-OS `setup osx|linux|win` pages).  Returns True when rendered.
+    """
+    path = DOCS_ROOT / filename
+    if not path.exists() or not path.is_file():
+        return False
+    _meta, markdown_text = parse_front_matter(path.read_text(encoding="utf-8"))
+    line_count = len(markdown_text.split("\n"))
+    needs_pager = _PAGE_LENGTH > 0 and line_count > _PAGE_LENGTH
+
+    def _print_doc():
+        console.print()
+        console.print(Panel(Markdown(markdown_text), title=title or f"Help: {filename}",
+                            border_style="cyan"))
+        console.print()
+
+    if use_pager and needs_pager:
+        with console.pager(styles=True):
+            _print_doc()
+    else:
+        _print_doc()
     return True
 
 

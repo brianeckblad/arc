@@ -436,6 +436,106 @@ class ArcCompleter(Completer):
                                      display_meta=f"current value")
             return
 
+        # ---- commit → sub-command completion ----
+        if first == "commit" and has_arg_space and len(parts) <= 2:
+            for sub, meta in (
+                ("check", "re-validate the queue, apply nothing"),
+                ("watch", "apply, then follow the push job live"),
+                ("confirmed", "auto-revert unless confirmed in time"),
+                ("confirm", "make a pending confirmed-commit permanent"),
+            ):
+                if sub.startswith(partial_arg.lower()):
+                    yield Completion(sub, start_position=-len(partial_arg), display_meta=meta)
+            return
+
+        # ---- alias → delete / existing alias names ----
+        if first == "alias" and has_arg_space:
+            second = parts[1].lower() if len(parts) > 1 else ""
+            aliases = getattr(self._shell._prefs, "aliases", {}) or {}
+            if len(parts) <= 2:
+                if "delete".startswith(partial_arg.lower()):
+                    yield Completion("delete", start_position=-len(partial_arg),
+                                     display_meta="remove an alias")
+                for name in aliases:
+                    if name.startswith(partial_arg.lower()):
+                        yield Completion(name, start_position=-len(partial_arg),
+                                         display_meta=aliases[name])
+            elif second == "delete":
+                partial_name = parts[2] if len(parts) > 2 else ""
+                for name in aliases:
+                    if name.startswith(partial_name.lower()):
+                        yield Completion(name, start_position=-len(partial_name))
+            return
+
+        # ---- unstage → staged-entry index completion ----
+        if first == "unstage" and has_arg_space and len(parts) <= 2:
+            queue = getattr(self._shell._state, "staged_ops", None) or []
+            for i, entry in enumerate(queue, start=1):
+                token = str(i)
+                if token.startswith(partial_arg):
+                    label = entry.get("command", "") if isinstance(entry, dict) else str(entry)
+                    yield Completion(token, start_position=-len(partial_arg),
+                                     display_meta=(label[:48] or "staged change"))
+            return
+
+        # ---- close connection <host> → active SSH pool hosts ----
+        if first == "close" and has_arg_space:
+            second = parts[1].lower() if len(parts) > 1 else ""
+            # Once "connection" is fully typed (trailing space or a 3rd token),
+            # complete host names; otherwise offer the "connection" sub-word.
+            if second == "connection" and (len(parts) > 2 or text.endswith(" ")):
+                partial_host = parts[2] if len(parts) > 2 else ""
+                pool = getattr(getattr(self._shell, "_ssh", None), "_pool", {}) or {}
+                for host in pool:
+                    if host.lower().startswith(partial_host.lower()):
+                        yield Completion(host, start_position=-len(partial_host),
+                                         display_meta="active connection")
+                return
+            if "connection".startswith(partial_arg.lower()):
+                yield Completion("connection", start_position=-len(partial_arg),
+                                 display_meta="drop a pooled SSH connection")
+            return
+
+        # ---- docs <topic> → help topic completion (bare `docs` opens the bundle) ----
+        if first == "docs" and has_arg_space:
+            partial_topic = " ".join(parts[1:]).lower()
+            for topic in available_help_topics():
+                if topic.startswith(partial_topic):
+                    yield Completion(topic[len(partial_topic):], start_position=-len(partial_topic))
+            return
+
+        # ---- watch [N] <command> → complete the watched command name ----
+        if first == "watch" and has_arg_space:
+            sub_parts = parts[1:]
+            if sub_parts and sub_parts[0].isdigit():
+                sub_parts = sub_parts[1:]
+            sub_text = " ".join(sub_parts) + (" " if text.endswith(" ") else "")
+            if sub_parts:
+                yield from self._complete_normal(sub_parts, sub_text)
+            else:
+                for name in sorted(self._all_commands(include_remote_suffix=False)):
+                    yield Completion(name, start_position=0)
+            return
+
+        # ---- setup → subcommand completion (scm | osx | linux | win) ----
+        if first == "setup" and has_arg_space and len(parts) <= 2:
+            for sub, meta in (
+                ("scm", "interactive credential wizard"),
+                ("osx", "macOS step-by-step guide"),
+                ("linux", "Linux / WSL guide"),
+                ("win", "Windows guide"),
+            ):
+                if sub.startswith(partial_arg.lower()):
+                    yield Completion(sub, start_position=-len(partial_arg), display_meta=meta)
+            return
+
+        # ---- no-argument builtins → only offer `?` (no stray registry hits) ----
+        if first in ("status", "login", "abandon", "pwd", "clear",
+                     "history", "logout") and has_arg_space and len(parts) <= 2:
+            if "?".startswith(partial_arg):
+                yield Completion("?", start_position=-len(partial_arg), display_meta="help")
+            return
+
         # ---- show terminal (builtin — inject alongside registry show-commands) ----
         if first == "show" and has_arg_space and len(parts) <= 2:
             if "terminal".startswith(partial_arg.lower()):

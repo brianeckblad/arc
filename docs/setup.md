@@ -15,6 +15,7 @@ storing those credentials safely for your platform.
 | A pre-issued **bearer token** | [Bearer token setup](#bearer-token) |
 | An **OAuth client ID + secret** (service account) | [OAuth setup](#oauth-client-credentials) |
 | Neither — I need to create a service account | [Create a service account](#create-a-service-account) |
+| I want to **log in with my Palo user account** in the browser | [Browser user login](#browser-user-login-experimental) |
 
 **2. How will you SSH to devices?**
 
@@ -119,6 +120,35 @@ export SCM_TSG_ID=your-tsg-id
 arc auth configure
 # Same prompts.  Client secret stored in Windows Credential Manager.
 ```
+
+---
+
+## Browser user login (experimental)
+
+Prefer signing in with your own Palo user account instead of a service account?
+ARC can run a standard OAuth authorization-code + PKCE browser flow: it opens
+your browser, you log in, and ARC stores the returned bearer token (in the OS
+keychain) and uses it until it expires.
+
+> **Important:** SCM has **no public browser-login endpoint** that mints an API
+> token for user accounts, so this path is **experimental**. It only works once
+> your identity provider's OAuth endpoints are configured. No client secret is
+> used (PKCE), so the endpoint values live in `config.json`, not the keychain.
+
+```
+# 1. Configure the OAuth endpoints once (non-secret):
+arc auth configure \
+    --oauth-auth-url  https://<idp>/authorize \
+    --oauth-token-url https://<idp>/token \
+    --oauth-client-id <public-client-id>
+#    …or set them in `arc gui-configure` → Authentication.
+#    (ARC_OAUTH_AUTH_URL / ARC_OAUTH_TOKEN_URL / ARC_OAUTH_CLIENT_ID override.)
+
+# 2. Log in from inside ARC:
+login          # opens the browser; token stored until it expires
+```
+
+Service-account auth (above) remains the supported, fully-featured path.
 
 ---
 
@@ -232,9 +262,27 @@ account lab
 
 ## Platform-specific full guides
 
-- `help config osx`     — macOS (Keychain, Touch ID)
-- `help config nix`     — Linux (libsecret / Secret Service / env vars)
-- `help config win`     — Windows (Credential Manager / PowerShell)
+- `setup osx`     — macOS (Keychain, Touch ID)
+- `setup linux`     — Linux (libsecret / Secret Service / env vars)
+- `setup win`     — Windows (Credential Manager / PowerShell)
 - `help config generate` — generate a starter config file
 - `help configuration`  — full configuration reference
+
+---
+
+## Once you're connected — what else ARC can do
+
+After `arc auth test` shows a green check, these are the high-value entry points:
+
+| Command | What it does |
+|---------|--------------|
+| `arc gui-configure` | Browser settings console: authentication, credentials/keychain, theme, API sources, maintenance |
+| `feature gui-configure` | Browser feature editor: turn commands on/dev/hidden/off, areas, scope, aliases, built-ins |
+| `feature show` / `feature find <text>` | List/search every capability flag and the commands it gates |
+| `login` | Experimental browser user-account login (see above) |
+| `show log traffic\|threat\|system` | Fleet logs from Strata Logging Service — no device context needed |
+| `clone <res> <src> <new>` | Duplicate any named object into the active container |
+| `cd snippet <name>` | Work inside an SCM snippet container instead of a folder |
+| `configure` → `set …` → `commit` | Staged writes: validate locally, then push (`commit watch`, `commit confirmed`) |
+| `?` | Cisco-style, context-aware inline help for what you can run right now |
 

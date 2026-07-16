@@ -12,13 +12,13 @@ offline browser site (`docs/index.html`, opened by the `docs` builtin).
 - `help <topic>` — renders a Markdown file from this folder (e.g. `help usage`).
 - `help <command>` — the command's page from `docs/commands/`, or a page
   synthesized from the registry when no file exists.
-- `help config osx|win|nix` — OS-specific credential setup.
+- `setup osx|linux|win` — OS-specific credential setup.
 
 ## What lives here
 
 | Path | One line |
 |---|---|
-| `usage.md` / `setup.md` / `configuration.md` / `config-*.md` / `architecture.md` / `dev-versioning.md` | Hand-written user/operator topics for `help <topic>` |
+| `usage.md` / `setup.md` / `setup-*.md` / `configuration.md` / `config-generate.md` / `architecture.md` / `dev-versioning.md` | Hand-written user/operator topics (`setup-*.md` render via the `setup osx\|linux\|win` shell subcommands) |
 | `commands/` | Hand-written command pages with YAML front-matter (+ generated `index.md`, `api-reference.md`) |
 | `scm-api/` | Mirrored pan.dev OpenAPI specs + guides (pulled by `app/scripts/docsupdate.py`; includes `CHANGES.md`, `MANIFEST.md`) |
 | `panos-cli/` | Diffable PAN-OS CLI command mirrors (pulled by `app/scripts/panosupdate.py`) |

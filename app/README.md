@@ -12,7 +12,6 @@ user-editable assets are in `settings/`, secrets in `config/<user>/`
 | `paths.py` | Single source of truth for asset paths — never hard-code a path elsewhere |
 | `config.py` | `ArcConfig` + named profiles; secrets in the OS keychain, non-sensitive in `config/<user>/config.json` |
 | `docs.py` | `help <topic>` renderer + `synthesize_command_help` for commands with no doc file |
-| `shell_catalog.py` | Builtin names + SHELL help rows — edit this **before** touching the shell |
 | `shell/` | The REPL as mixins — see [shell/README.md](shell/README.md) |
 | `commands/` | CommandDef registry (curated + generated + PAN-OS) — see [commands/README.md](commands/README.md) |
 | `api/` | `SCMClient` (REST) + SLS log-query client — see [api/README.md](api/README.md) |
@@ -24,7 +23,8 @@ user-editable assets are in `settings/`, secrets in `config/<user>/`
 ## How the pieces relate
 
 `cli.py` bootstraps config and starts `shell.ArcShell`. The shell dispatches
-each line: builtins (from `shell_catalog.py`) first, then `registry.match_command()`
+each line: builtins (names + help from `settings/builtin-commands.json`, loaded
+via `settings/commands.py`) first, then `registry.match_command()`
 over the merged CommandDef dict. Handlers get an `ExecutionContext` carrying
 `.scm` (SCMClient), `.ssh` (SSHManager), `.config`, `.device`, `.folder`,
 `.tsg_id`. Results are rendered by `_render()` → `utils/formatter.py`.

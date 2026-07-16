@@ -23,8 +23,9 @@ you need, never a whole file.
 ## How the pieces relate
 
 `_base.py` holds everything shared; each mixin does
-`from app.shell._base import *`. Builtin **names** live in
-`app/shell_catalog.py` (edit that first); their **behavior** is a `_cmd_*`
+`from app.shell._base import *`. Builtin **names** (and their help rows/visibility)
+live in `settings/builtin-commands.json`, loaded via `app/settings/commands.py`
+(edit the JSON first); their **behavior** is a `_cmd_*`
 method plus an `elif` branch in `dispatch.py`. All visibility flows through
 `help.py::_is_command_visible()` — dispatch, completion, fuzzy suggestions,
 and `?` all call it.
@@ -33,12 +34,12 @@ and `?` all call it.
 
 - Find the method via `app/scripts/CODE_MAP.md`, edit that one range, then validate:
   `python app/scripts/smoke_test.py --file app/shell/<file>.py`.
-- New builtin: add the name + help row in `app/shell_catalog.py`, the
-  `_cmd_*` method in the owning mixin, the dispatch branch in `dispatch.py`.
-  Validate: `python app/scripts/smoke_test.py --file app/shell_catalog.py` (section 8
-  enforces builtin ↔ catalog ↔ help sync).
+- New builtin: add the entry (name + 7 fields) in `settings/builtin-commands.json`,
+  the `_cmd_*` method in the owning mixin, the dispatch branch in `dispatch.py`.
+  Validate: `python app/scripts/smoke_test.py --only 8,9,12` (enforces builtin ↔
+  help-row ↔ visibility sync).
 - Banner changes (`prompt.py::_print_startup_help`): update `_BANNER_LINES`
-  in `_base.py`; smoke §7 checks alignment.
+  in `_base.py`; smoke §8 checks alignment.
 - Completion changes: smoke `--only 9` (structure completion + context help).
 
 ## Do not

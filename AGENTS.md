@@ -16,10 +16,10 @@
 | `commanddef` | `docs/COMMANDDEF_REFERENCE.md` | — | — |
 | `shell` (REPL, dispatch, help UX) | `app/scripts/CODE_MAP.md` → range in `app/shell/<file>.py` | that one mixin file | `--file app/shell/<file>.py` |
 | `builtin` (SHELL help rows, visibility) | `settings/builtin-commands.json`, `app/settings/commands.py` | `settings/builtin-commands.json` | `--only 8,9,12` |
-| `builtin editor` (visibility/display/help via GUI) | `set_builtin_field` in `app/settings/commands.py`, `app/web/feature_server.py` | same | `--only 1,2,12` |
+| `builtin editor` (visibility/display/help via GUI) | `set_builtin_field` in `app/settings/commands.py`, `app/web/feature_server.py` | same | `--only 1,2,12,14` |
 | `feature` / `flag <name>` | `settings/features/` (`local.json` = user overrides, never regenerated) | owning file + `CommandDef.feature_flag` | `--only 1,2,3` |
-| `feature editor` / `feature gui-configure` (browser) | `app/web/gui_base.py`, `app/web/feature_server.py`, `app/web/feature_gui.html` | same | `--only 1,2,3` |
-| `arc settings console` / `arc gui-configure` (browser) | `app/web/gui_base.py`, `app/web/arc_server.py`, `app/web/arc_gui.html` | same | `--only 1,2,3` |
+| `feature editor` / `feature gui-configure` (browser) | `app/web/gui_base.py`, `app/web/feature_server.py`, `app/web/feature_gui.html` | same | `--only 1,2,14` |
+| `arc settings console` / `arc gui-configure` (browser) | `app/web/gui_base.py`, `app/web/arc_server.py`, `app/web/arc_gui.html` | same | `--only 1,2,14` |
 | `feature names` / human labels (GUI **and** CLI) | `app/settings/feature_labels.py`, `settings/feature-labels.json` | same (labels file is user-editable + auto-augmented) | `--only 1,2,3` |
 | `feature scope` / `hidden` / `area` (CLI subcommands) | `_cmd_feature*` in `app/shell/configure.py`, helpers in `app/settings/features.py` | same | `--only 1,2,3,12` |
 | `verb visibility` (bare `?` COMMANDS section) | `settings/cli-structure.yaml` (`visible:` field), `app/settings/cli_structure.py` | `settings/cli-structure.yaml` | `--only 9,12` |
@@ -27,7 +27,8 @@
 | `terminal` / prefs | `app/settings/user_prefs.py`, `_cmd_terminal` in `app/shell/configure.py` | same | `--only 4` |
 | `argspec` (greedy `set` parsing, slot completion) | `settings/command-structure.json` (hand-curated), `app/settings/field_catalog.py` (AUTO-GENERATED), `app/settings/command_structure.py` | hand file or `python app/scripts/generate_field_library.py` | `--only 4` |
 | `auth` | `app/config.py`, `app/cli.py` (auth group) | same | `--file app/config.py` |
-| `login` (experimental OAuth user auth) | `app/auth/user_login.py` (ARC_OAUTH_* env), `docs/commands/login.md` | same | `--only 1,2` |
+| `login` (experimental OAuth user auth) | `app/auth/user_login.py` (config.json `oauth` block; `ARC_OAUTH_*` env override), `_cmd_login` in `app/shell/configure.py`, `docs/commands/login.md` | same + `app/config.py` `OAuthConfig` | `--only 1,2,6` |
+| `setup` (guided setup) | `_cmd_setup` in `app/shell/configure.py` (dispatches `scm` → wizard, `osx\|linux\|win` → `_setup_os_guide` rendering `docs/setup-<os>.md` via `render_doc_file` in `app/docs.py`) | same | `--only 1,2,9` |
 | `clone` / `cd snippet` (object clone + snippet container) | `app/commands/clone.py`, `app/shell/navigation.py` | same | `--only 1,2,3` |
 | `scm-api` / `endpoint` | `app/scripts/API_INDEX.md`; `docs/scm-api/specs/<cat>.md` | `app/api/client.py` | full suite |
 | `docsupdate` / `scm-sources` | `app/scripts/DOCS_AGENT.md`, `settings/scm-sources.json` | `settings/scm-sources.json` or `python app/scripts/docsupdate.py` | `--self-test` |
@@ -37,7 +38,8 @@
 | `config-view` | `app/commands/config_view.py` (`_FORMAT_SET_SPECS` table) | same | `--only 1,2,3` |
 | `pipes` (match/except/count/json/save) | `parse_output_filters` + `_dispatch_piped` in `app/shell/dispatch.py` | same | `--only 4` |
 | `alias` / `history` | `_cmd_alias`/`_cmd_history` in `app/shell/dispatch.py` | same | `--only 4` |
-| `find` (search commands) | `_cmd_find` in `app/shell/help.py`, `_complete_find` in `app/shell/completer.py` | same | `--only 1,2` |
+| `find` (search commands) | `_cmd_find` in `app/shell/help.py`, inline `find` handling in `app/shell/completer.py` | same | `--only 1,2` |
+| `completion` (tab-complete a builtin/command) | `_complete_normal` in `app/shell/completer.py` | same | `--only 9` |
 | `watch` | `_cmd_watch` in `app/shell/dispatch.py` | same | `--only 1,2` |
 | `scaffold` | — | `python app/scripts/scaffold.py "<cmd>" <module>` | `--only 1,2,3` |
 | `map` / `method <name>` | `app/scripts/CODE_MAP.md` | — | — |
@@ -148,9 +150,9 @@ Two parallel systems, same four states:
 
 ---
 
-## Generated Commands (~1,050)
+## Generated Commands (~1,050 SCM + PAN-OS)
 
-Every OpenAPI operation → feature-gated command via `resource_catalog.py` + `generated.py`. All default **off** (`settings/features/`). Explicit commands shadow generated ones. No doc files — help is synthesized. PAN-OS op commands: `panos_<family>` flags, all off. Op commands with `scm_map` in `app/scripts/panos-curation.json` run via SCM async ops-jobs API; unmapped ops print `--remote` guidance.
+Every OpenAPI operation → feature-gated command via `resource_catalog.py` (~1,050 SCM ops) + `generated.py`; PAN-OS adds the rest (registry total ≈ 4,850, all feature-gated). All default **off** (`settings/features/`). Explicit commands shadow generated ones. No doc files — help is synthesized. PAN-OS op commands: `panos_<family>` flags, all off. Op commands with `scm_map` in `app/scripts/panos-curation.json` run via SCM async ops-jobs API; unmapped ops print `--remote` guidance.
 
 ### Feature-editor sync guarantee (keep this true)
 
@@ -161,7 +163,7 @@ The feature editor (browser `feature gui-configure`) and the `feature`/`alias` C
 - **Storage:** everything the editor writes lives in `settings/` — `feature-labels.json`, `features/*.json`, `features/local.json` (`_scope_overrides`, `_disabled_areas`), `command-aliases.json`, `command-structure.json`, `builtin-commands.json` (personal aliases stay in the per-user `config.json` preferences block). Every capability has a shared helper used by GUI **and** CLI **and** manual edits — never add a capability to only one surface.
 - **Area disable is a real gate:** `_disabled_areas` (local.json) turns a whole category OFF — `_is_command_visible` (help.py) and the dispatch executability gate both check `cmd_def.category in shell._disabled_areas`, so disabled-area commands vanish from `?`/completion/help AND are unrunnable, and every editor section (Features, Command Structure, Advanced) excludes them. It is a master gate above per-feature flags (values preserved). Managed by `feature area <name> enable|disable`, the GUI Areas tab, or hand-editing — all via `load_disabled_areas`/`set_area_disabled`.
 - **Shared GUI base:** both browser consoles extend `BaseGuiServer` (`app/web/gui_base.py`) and share `/assets/gui.css` + `/assets/gui.js`. `arc gui-configure` manages preferences, config.json, credentials/keychain, auth, branding, API sources, appearance and maintenance.
-- **Unified GUI:** `feature gui-configure` is one consistent SPA — top tabs (Features · Command Structure · Aliases · Built-ins · Advanced), a left sidebar of groups per section, a main pane of items, `#section/group` hash routing. Built-in visibility is edited through the same `load_command_visibility` the shell's `?`/dispatch use; file/area names come from the shared `feature_labels` layer (human-readable in GUI and CLI).
+- **Unified GUI:** `feature gui-configure` is one consistent SPA — top tabs (Areas · Features · Command Structure · Aliases · Built-ins · Advanced), a left sidebar of groups per section, a main pane of items, `#section/group` hash routing. Built-in visibility is edited through the same `load_command_visibility` the shell's `?`/dispatch use; file/area names come from the shared `feature_labels` layer (human-readable in GUI and CLI).
 
 ---
 
@@ -224,6 +226,7 @@ update tool keeps it correct. Never mark network *config* as `device`/`remote`.
 - `?` is Cisco-style progressive help: context-aware, three tiers GLOBAL / FOLDER / DEVICE + SHELL. In dev mode `?` shows the full command tree (all non-`false` commands + builtins) then appends the DEV SHELL section.
 - **`?` must preserve the input buffer** — uses `run_in_terminal` in `_make_key_bindings`. Never use `validate_and_handle` for `?`.
 - Every builtin must handle `<builtin> ?` — dispatch calls the handler with `["?"]`. See `terminal`, `feature`, `find` cases in `app/shell/dispatch.py`.
+- **Every builtin must be tab-completable.** First-word completion is automatic via `_all_commands()` (reads `settings/builtin-commands.json`). Any builtin with sub-commands or arguments (`commit`, `alias`, `watch`, `docs`, `close connection`, `unstage`, `cd`, `feature`, …) also needs a `first == "<name>"` case in `_complete_normal` (`app/shell/completer.py`). No-arg builtins offer `?`. Smoke §9 (`9j`) asserts documented sub-commands actually yield. Validate `--only 9`.
 - Prompt: `arc:global >` · `arc:Production >` · `arc:fw01:device >` · configure `#` · dev shell `:dev`. Never show `:Shared`. While `commit confirmed` countdown is active, prompt appends `[CONFIRM: Xm Ys]` in red.
 - Unambiguous prefix shorthand (`sh sec pol` → `show security policy`); ambiguous never auto-expands.
 - `cd` never opens SSH; `connect` does.
@@ -285,6 +288,7 @@ python app/scripts/smoke_test.py --file <path>   # auto-selects sections
 | 11 | CODE_MAP freshness | any 300+ line file |
 | 12 | command visibility (builtin + feature states) | `settings/commands.py`, `settings/features.py`, `builtin-commands.json` |
 | 13 | configure/commit flow (offline) | `app/shell/configure.py`, `app/commands/operations.py`, `app/shell/navigation.py` |
+| 14 | browser consoles (feature/arc GUI) + new command registrations | `app/web/**`, new `CommandDef`s / builtins |
 
 Pre-commit runs 1–3 + regenerates `CODE_MAP.md`. Version `0.1.<commit-count>` auto-bumped — never hand-edit.
 

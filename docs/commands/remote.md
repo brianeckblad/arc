@@ -65,5 +65,5 @@ If you have no stored credentials, you'll be prompted during the keyboard-intera
 ## See Also
 
 - `help connect` — SSH to the current `cd` device
-- `help config osx` / `help config win` / `help config nix` — credential storage
+- `setup osx` / `setup win` / `setup linux` — credential storage
 - `help cd` — change device context without connecting

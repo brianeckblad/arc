@@ -75,8 +75,9 @@ arc:global # abandon               # discard the queue — SCM never touched
 
 Every command is gated by a flag in the per-domain glossary
 (`settings/features/scm-<spec>.json`, `panos-ops.json`, `panos-config.json`).
-Values: `true` (on), `"dev"` (hidden unless development mode), `false` (off);
-a missing flag is off — fail closed. SCM resources get per-operation flags
+Values: `true` (on), `"dev"` (hidden unless development mode), `"hidden"`
+(hidden from `?` but always runnable), `false` (off); a missing flag is off —
+fail closed. SCM resources get per-operation flags
 (`show_address`, `create_address`, `update_objects`, `delete_objects`); PAN-OS
 commands are gated per family (`panos_debug_ike`, `panos_config_rulebase`).
 

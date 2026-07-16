@@ -147,12 +147,15 @@ class BaseGuiServer:
 
     # -- lifecycle ---------------------------------------------------------
 
-    def serve(self) -> str:
+    def serve(self, open_browser: bool = True) -> str:
         """Start the server, open the browser, and BLOCK until the page closes.
 
         Returns a short status string for the caller to print.  On a bind
         failure (port already in use) returns immediately without blocking so
         the shell stays responsive.
+
+        *open_browser* defaults to True.  Pass ``False`` for headless/automated
+        callers (e.g. the smoke test) so no browser tab is launched.
         """
         server = self  # captured by the handler
 
@@ -284,10 +287,11 @@ class BaseGuiServer:
         # re-fetches saved prefs/theme) instead of re-focusing a stale tab.
         import time as _time
         url = f"http://{self._host}:{self._port}/?v={int(_time.time())}"
-        try:
-            webbrowser.open(url)
-        except Exception:  # pragma: no cover - headless safety net
-            pass
+        if open_browser:
+            try:
+                webbrowser.open(url)
+            except Exception:  # pragma: no cover - headless safety net
+                pass
 
         try:
             self._closed.wait()

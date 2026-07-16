@@ -10,7 +10,7 @@ nothing here owns data except the generated `field_catalog.py`.
 | Module | Reads | One line |
 |---|---|---|
 | `features.py` | `settings/features/*.json` | Flag glossary loader — on / `"dev"` / off; missing = off; `ARC_FEATURE_*` env overrides |
-| `commands.py` | `settings/commands.json` | Per-command visibility bools, independent of feature flags |
+| `commands.py` | `settings/builtin-commands.json` | Shell-builtin registry: names, help rows, and the 7 visibility/display fields per builtin (`set_builtin_field` writer) |
 | `theme.py` | `settings/theme.json` | `ArcTheme` — Rich style strings for every colour role |
 | `cli_structure.py` | `settings/cli-structure.yaml` | Verb labels, section headers, help footer, configure banner (all with hard-coded fallbacks) |
 | `command_structure.py` | `settings/command-structure.json` + `field_catalog` | Field-order walker driving greedy `set <object>` parsing + slot completion |

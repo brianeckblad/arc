@@ -2239,7 +2239,81 @@ class ConfigureMixin:
             )
 
 
-    def _cmd_setup(self, args: list[str]) -> None:  # noqa: C901 (acceptable complexity)
+    def _cmd_setup(self, args: list[str]) -> None:
+        """Guided setup — dispatcher for the `setup` subcommands.
+
+        ``setup``                → menu (detected OS + what each subcommand does)
+        ``setup scm``            → interactive SCM/SSH credential wizard
+        ``setup osx|linux|win``  → OS-specific step-by-step guide (wizard · GUI · manual)
+        """
+        from app.docs import os_setup_doc
+
+        sub = args[0].lower() if args else ""
+        if sub in ("", "?", "help", "menu"):
+            self._setup_menu()
+            return
+        if sub in ("scm", "creds", "credentials", "auth"):
+            self._setup_scm_wizard()
+            return
+        if os_setup_doc(sub):
+            self._setup_os_guide(sub)
+            return
+        console.print(f"\n[yellow]Unknown setup target:[/yellow] [bold]{sub}[/bold]\n")
+        self._setup_menu()
+
+    def _setup_menu(self) -> None:
+        """Print the setup overview: detected OS + the available subcommands."""
+        os_name = platform.system()  # "Darwin" | "Linux" | "Windows"
+        detected = {"Darwin": "osx", "Linux": "linux", "Windows": "win"}.get(os_name, "")
+        os_label = {"Darwin": "macOS", "Linux": "Linux / WSL", "Windows": "Windows"}.get(os_name, os_name)
+
+        console.print()
+        console.print("[bold cyan]ARC Setup[/bold cyan]")
+        console.print(f"[dim]Detected platform: {os_label}[/dim]\n")
+        console.print("  Choose what to set up:\n")
+        rows = [
+            ("setup scm", "Interactive credential wizard — SCM auth + device SSH (recommended)"),
+            ("setup osx", "macOS step-by-step guide (Keychain, Touch ID)"),
+            ("setup linux", "Linux / WSL guide (libsecret / Secret Service / env vars)"),
+            ("setup win", "Windows guide (Credential Manager / PowerShell)"),
+        ]
+        for cmd, desc in rows:
+            mark = "  [green]◀ your platform[/green]" if detected and cmd.endswith(detected) else ""
+            console.print(f"  [cyan]{cmd:<13}[/cyan] {desc}{mark}")
+        console.print()
+        console.print(
+            "  [dim]Prefer a browser? [bold]arc gui-configure[/bold] → Authentication does all of this in a GUI.\n"
+            "  Full reference: [bold]help configuration[/bold]  ·  starter file: [bold]help config generate[/bold][/dim]"
+        )
+        if detected:
+            console.print(f"\n  [dim]Tip: start with [bold]setup {detected}[/bold] or [bold]setup scm[/bold].[/dim]")
+        console.print()
+
+    def _setup_os_guide(self, os_key: str) -> None:
+        """Render the OS-specific setup guide with a 'three ways to configure' header."""
+        from app.docs import os_setup_doc, render_doc_file
+
+        doc = os_setup_doc(os_key)
+        os_label = {
+            "osx": "macOS", "mac": "macOS", "macos": "macOS", "darwin": "macOS",
+            "linux": "Linux / WSL", "nix": "Linux / WSL", "wsl": "Linux / WSL",
+            "win": "Windows", "windows": "Windows",
+        }.get(os_key.lower(), os_key)
+
+        console.print()
+        console.print(f"[bold cyan]Set up ARC on {os_label} — three ways[/bold cyan]")
+        console.print(
+            "  [bold]1. Guided wizard[/bold]  → [cyan]setup scm[/cyan]   "
+            "(asks 2 questions, prints the exact commands)\n"
+            "  [bold]2. Browser console[/bold] → [cyan]arc gui-configure[/cyan]  "
+            "(Authentication · credentials · keychain)\n"
+            "  [bold]3. Manual[/bold]         → follow the platform steps below"
+        )
+        if not render_doc_file(console, doc, title=f"Set up ARC — {os_label}"):
+            console.print(f"\n[yellow]Guide not found for {os_label}.[/yellow] "
+                          "Try [bold]setup scm[/bold] or [bold]arc gui-configure[/bold].\n")
+
+    def _setup_scm_wizard(self) -> None:  # noqa: C901 (acceptable complexity)
         """Interactive credential setup wizard.
 
         Auto-detects the host OS, asks two short questions (SCM auth method and
@@ -2248,12 +2322,6 @@ class ConfigureMixin:
 
         Side effects: prints to console only.  Does not modify any config files.
         """
-        # If any args were given treat them as a passthrough to `help setup`.
-        if args:
-            from app.docs import render_help_topic  # Deferred: avoids circular at module level
-            render_help_topic(console, "setup")
-            return
-
         os_name = platform.system()  # "Darwin" | "Linux" | "Windows"
         os_label = {"Darwin": "macOS", "Linux": "Linux / WSL", "Windows": "Windows"}.get(os_name, os_name)
         keychain_name = {
@@ -2272,7 +2340,8 @@ class ConfigureMixin:
             "[bold]Q1[/bold]  What SCM credentials do you have?\n"
             "  [bold cyan]1[/bold cyan]  A pre-issued bearer token\n"
             "  [bold cyan]2[/bold cyan]  OAuth client ID + secret  (service account)\n"
-            "  [bold cyan]3[/bold cyan]  Neither — I need to create a service account first"
+            "  [bold cyan]3[/bold cyan]  Neither — I need to create a service account first\n"
+            "  [bold cyan]4[/bold cyan]  Log in with my Palo user account in the browser  [dim](experimental)[/dim]"
         )
         try:
             scm_choice = console.input("  → ").strip()
@@ -2280,8 +2349,8 @@ class ConfigureMixin:
             console.print("\n[dim]Setup cancelled.[/dim]")
             return
 
-        if scm_choice not in ("1", "2", "3"):
-            console.print("[yellow]Invalid choice — please type 1, 2, or 3.[/yellow]")
+        if scm_choice not in ("1", "2", "3", "4"):
+            console.print("[yellow]Invalid choice — please type 1, 2, 3, or 4.[/yellow]")
             return
 
         # ── Question 2: SSH auth method ──────────────────────────────────────
@@ -2312,6 +2381,9 @@ class ConfigureMixin:
         elif scm_choice == "2":
             console.print("[bold cyan]SCM — OAuth client credentials:[/bold cyan]")
             _setup_oauth_instructions(console, os_name)
+        elif scm_choice == "4":
+            console.print("[bold cyan]SCM — browser user login (experimental):[/bold cyan]")
+            self._setup_userlogin(os_name)
         else:
             console.print("[bold cyan]SCM — create a service account first:[/bold cyan]")
             console.print(
@@ -2346,15 +2418,68 @@ class ConfigureMixin:
         # ── Final verification ────────────────────────────────────────────────
         console.print()
         console.print("[bold]─── Verify afterwards ───[/bold]")
+        if scm_choice == "4":
+            console.print(
+                "  login            # inside ARC: opens the browser to authenticate\n"
+                "  arc auth test    # live API call to SCM\n"
+                "  [dim](the token is stored in the keychain and used until it expires)[/dim]"
+            )
+        else:
+            console.print(
+                "  arc auth show    # confirm config values (secrets masked)\n"
+                "  arc auth test    # live API call to SCM\n"
+                "  Then restart ARC — the prompt should show [green]✓ SCM connected[/green]."
+            )
+        console.print()
+        console.print("[bold]─── Once connected, explore ───[/bold]")
         console.print(
-            "  arc auth show    # confirm config values (secrets masked)\n"
-            "  arc auth test    # live API call to SCM\n"
-            "  Then restart ARC — the prompt should show [green]✓ SCM connected[/green]."
+            "  [cyan]arc gui-configure[/cyan]      settings console (auth, theme, sources) in your browser\n"
+            "  [cyan]feature gui-configure[/cyan]  turn commands on/off, areas, aliases, built-ins\n"
+            "  [cyan]show log traffic[/cyan]       fleet logs from Strata Logging Service (no device context)\n"
+            "  [cyan]clone[/cyan] / [cyan]cd snippet[/cyan]       duplicate objects · work inside a snippet container\n"
+            "  [cyan]feature show[/cyan]           list every capability flag and what it gates"
         )
         console.print()
         console.print(
             "[dim]Full setup guide: [bold]help setup[/bold]  ·  "
-            "Platform details: [bold]help config osx[/bold] / [bold]help config nix[/bold] / [bold]help config win[/bold][/dim]"
+            "Platform steps: [bold]setup osx[/bold] / [bold]setup linux[/bold] / [bold]setup win[/bold][/dim]"
+        )
+        console.print()
+
+    def _setup_userlogin(self, os_name: str) -> None:
+        """Guide (and optionally run) the experimental browser user-login flow.
+
+        If the OAuth endpoints are already configured, offer to run ``login``
+        now; otherwise print exactly how to configure them (persisted in
+        config.json, no secret involved) and point at ``arc gui-configure``.
+        """
+        from app.auth.user_login import LoginConfig
+
+        cfg = LoginConfig()
+        console.print(
+            "  [dim]SCM has no public browser-login endpoint for user accounts, so this\n"
+            "  path is experimental: it needs your identity provider's OAuth endpoints.[/dim]"
+        )
+        if cfg.configured:
+            console.print(
+                "  [green]OAuth endpoints are configured.[/green] To log in now:\n"
+                "  [bold cyan]login[/bold cyan]   [dim]— opens the browser, stores the token until it expires[/dim]"
+            )
+            try:
+                ans = console.input("  Run [bold]login[/bold] now? [y/N] ").strip().lower()
+            except (EOFError, KeyboardInterrupt):
+                ans = ""
+            if ans in ("y", "yes"):
+                self._cmd_login([])
+            return
+        console.print(
+            "  Configure the OAuth endpoints once (no client secret is used):\n"
+            "  [bold]arc auth configure[/bold] \\\n"
+            "      --oauth-auth-url  https://<idp>/authorize \\\n"
+            "      --oauth-token-url https://<idp>/token \\\n"
+            "      --oauth-client-id <public-client-id>\n"
+            "  [dim]…or set them in [bold]arc gui-configure[/bold] → Authentication.[/dim]\n"
+            "  Then run [bold cyan]login[/bold cyan] inside ARC to authenticate in your browser."
         )
         console.print()
 

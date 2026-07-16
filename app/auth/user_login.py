@@ -7,7 +7,9 @@ it implements the standard authorization-code + PKCE loopback flow and works
 only once a compatible authorization endpoint / client ID / redirect URI is
 configured (via the ``ARC_OAUTH_*`` environment variables below).
 
-Configuration (all required to attempt a login):
+Configuration (all required to attempt a login) — set via the `oauth` block in
+config.json (e.g. `arc auth configure --oauth-*` or `arc gui-configure`), or via
+environment variables which override the file:
   ARC_OAUTH_AUTH_URL    — authorization endpoint (browser is sent here)
   ARC_OAUTH_TOKEN_URL   — token endpoint (code is exchanged here)
   ARC_OAUTH_CLIENT_ID   — public OAuth client id
@@ -38,15 +40,29 @@ class LoginError(Exception):
 
 
 class LoginConfig:
-    """OAuth settings pulled from the environment (see module docstring)."""
+    """OAuth settings — environment first, then config.json (see module docstring)."""
 
     def __init__(self) -> None:
-        self.auth_url = os.environ.get("ARC_OAUTH_AUTH_URL", "").strip()
-        self.token_url = os.environ.get("ARC_OAUTH_TOKEN_URL", "").strip()
-        self.client_id = os.environ.get("ARC_OAUTH_CLIENT_ID", "").strip()
-        self.scope = os.environ.get("ARC_OAUTH_SCOPE", "").strip()
+        # config.json (non-secret `oauth` block) provides persisted defaults;
+        # ARC_OAUTH_* env vars override.  load_config() already folds env over
+        # the file, so reading cfg.oauth here yields the fully-resolved values.
+        auth_url = token_url = client_id = scope = ""
+        redirect_port = 4455
         try:
-            self.redirect_port = int(os.environ.get("ARC_OAUTH_REDIRECT_PORT", "4455"))
+            from app.config import load_config
+            oauth = load_config().oauth
+            auth_url, token_url = oauth.auth_url, oauth.token_url
+            client_id, scope = oauth.client_id, oauth.scope
+            redirect_port = oauth.redirect_port
+        except Exception:  # noqa: BLE001 — fall back to env-only below
+            pass
+
+        self.auth_url = os.environ.get("ARC_OAUTH_AUTH_URL", auth_url).strip()
+        self.token_url = os.environ.get("ARC_OAUTH_TOKEN_URL", token_url).strip()
+        self.client_id = os.environ.get("ARC_OAUTH_CLIENT_ID", client_id).strip()
+        self.scope = os.environ.get("ARC_OAUTH_SCOPE", scope).strip()
+        try:
+            self.redirect_port = int(os.environ.get("ARC_OAUTH_REDIRECT_PORT", redirect_port))
         except ValueError:
             self.redirect_port = 4455
 
@@ -144,9 +160,10 @@ def run_user_login(timeout: float = 180.0) -> tuple[str, int]:
     cfg = LoginConfig()
     if not cfg.configured:
         raise LoginError(
-            "User-account login is not configured. Set ARC_OAUTH_AUTH_URL, "
-            "ARC_OAUTH_TOKEN_URL and ARC_OAUTH_CLIENT_ID (see docs/device-access "
-            "or the Authentication section of `arc gui-configure`)."
+            "User-account login is not configured. Set the OAuth endpoints via "
+            "`arc auth configure --oauth-auth-url … --oauth-token-url … "
+            "--oauth-client-id …` (or `arc gui-configure` → Authentication, or the "
+            "ARC_OAUTH_* environment variables)."
         )
     verifier, challenge = _pkce_pair()
     state = secrets.token_urlsafe(16)

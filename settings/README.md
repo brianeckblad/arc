@@ -5,14 +5,18 @@ Edit a file, save, restart ARC. That's it.
 
 | File / dir | What it controls | How to edit |
 |------------|------------------|-------------|
-| `features/` | Which commands are turned **on / dev / off** — one JSON file per domain | Set a flag to `true`, `"dev"`, or `false` |
-| `commands.json` | Hide/show **individual** commands, independent of feature flags | Add `"<command>": false` to hide one |
+| `features/` | Which commands are turned **on / dev / hidden / off** — one JSON file per domain | Set a flag to `true`, `"dev"`, `"hidden"`, or `false` |
+| `builtin-commands.json` | Shell builtins: visibility, display name, help text, configure-mode gating (7 fields per builtin) | Edit a field, or use `feature gui-configure` |
 | `banner.txt` | The startup logo / banner | Plain text + Rich colour tags like `[bold cyan]…[/bold cyan]` |
 | `goodbye.txt` | Random exit messages (one per line) | Add/remove lines |
 | `theme.json` | Colours used in `?` help and prompts | Rich style strings: `"cyan"`, `"bold yellow"`, `"dim"` |
-| `cli-structure.yaml` | Verb descriptions, section headers, help footer, configure banner | YAML key/values |
+| `cli-structure.yaml` | Verb descriptions, section headers, help footer, configure banner, verb visibility | YAML key/values |
 | `command-structure.json` | The **order** of fields for curated `set <object>` commands | Move field names in the array |
+| `command-aliases.json` | System command aliases (e.g. `sh` → `show`) applied before prefix expansion | Add `"<typed>": "<command>"` |
+| `feature-labels.json` | Human names for areas/files shown in the feature editor (GUI + CLI) | Rename freely; auto-augmented, edit-safe |
+| `app-variables.json` | Branding tokens used across banner/help | Edit values |
 | `panos-sources.json` | Which PAN-OS docs pages the command catalog is built from | Add a page entry per new PAN-OS version |
+| `scm-sources.json` | pan.dev SCM OpenAPI spec/guide registry (auto-mirrors all specs) | Rarely — docsupdate self-updates it |
 
 > **Command help text** (the one-liner + usage shown by `?` and the full
 > `help <command>` page) is **not** here — it lives in that command's
@@ -40,14 +44,17 @@ per-domain files so each is readable on its own:
   `panos_config_<family>` flags only when SCM is unreachable.
 - `curated.json` — fallback for flags with no derivable domain (normally
   absent/empty).
+- `local.json` — **your** overrides: disabled areas (`_disabled_areas`) and
+  per-command scope overrides (`_scope_overrides`). Never regenerated.
 
-Each flag has one of three states:
+Each flag has one of four states:
 
 ```json
 {
-  "show_address": true,       // ON  — visible and runnable for everyone
-  "nat_rules":    "dev",      // DEV — hidden until development mode
-  "delete_objects": false     // OFF — hidden and blocked for everyone
+  "show_address": true,       // ON     — visible and runnable for everyone
+  "nat_rules":    "dev",      // DEV    — hidden until development mode
+  "audit_export": "hidden",   // HIDDEN — hidden from ? but always runnable
+  "delete_objects": false     // OFF    — hidden and blocked for everyone
 }
 ```
 
@@ -66,7 +73,7 @@ it in dev mode, flip it to `true` here when ready.
 **Inside ARC** (one session only, not saved):
 
 ```
-feature show                 list every flag grouped ON / DEV / OFF
+feature show                 list every flag grouped ON / DEV / HIDDEN / OFF
 feature find <text>          search flags AND the commands they gate
 feature enable show_zone     set one ON for this session
 feature disable show_zone    set one OFF for this session
@@ -77,11 +84,14 @@ One-shot/CI override: `ARC_FEATURE_<NAME>=on|dev|off`.
 
 ---
 
-## commands.json — hide individual commands
+## builtin-commands.json — shell builtins (visibility, help, gating)
 
-Independent of feature flags: features gate functional areas; this file hides
-one specific command (e.g. deprecate `show devices` without touching code).
-Set `"show devices": false`. Keys starting with `_` are comments.
+The shell builtins (`cd`, `commit`, `feature`, `terminal`, …) — their names,
+help rows, and 7 fields each: `visible` (`true`/`"dev"`/`"hidden"`/`false`),
+`display`, `help`, `configure_only`, `hide_in_configure`, `onlogin`,
+`startup_hint`. Hide `show connections` by setting its `visible` to `false`;
+show a builtin only in configure mode with `configure_only`. Easiest edited via
+`feature gui-configure` (Built-ins tab). Keys starting with `_` are comments.
 
 ---
 

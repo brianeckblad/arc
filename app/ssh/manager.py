@@ -299,8 +299,8 @@ class SSHManager:
             transport.close()
             _no_creds_hint = (
                 f"Authentication failed for {user}@{host}:{port}.\n"
-                "  • Run `arc auth login` to configure SSH credentials.\n"
-                "  • See `help config osx` / `help config win` / `help config nix`."
+                "  • Run `arc auth configure` to store SSH credentials.\n"
+                "  • See `setup osx` / `setup win` / `setup linux` for platform steps."
             )
             raise SSHError(_no_creds_hint)
 

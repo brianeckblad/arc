@@ -227,8 +227,8 @@
   },
   "setup": {
     "visible": true,
-    "display": "setup",
-    "help": "Guided credential setup wizard  (auto-detects OS, two questions)",
+    "display": "setup <scm|osx|linux|win>",
+    "help": "Guided setup: menu, credential wizard (setup scm), or OS step-by-step guide",
     "configure_only": false,
     "hide_in_configure": false,
     "onlogin": false,

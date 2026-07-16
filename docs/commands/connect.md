@@ -51,5 +51,5 @@ If you have no stored credentials, you'll be prompted during the keyboard-intera
 ## See Also
 
 - `help remote` — SSH to a named device (also sets device context)
-- `help config osx` / `help config win` / `help config nix` — credential storage
+- `setup osx` / `setup win` / `setup linux` — credential storage
 - `help cd` — change device context

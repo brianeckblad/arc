@@ -232,7 +232,7 @@ async function mainAuthentication(main){
   const holder=el("div");holder.id="authpanel";main.appendChild(holder);
   renderAuthPanel(c.preferred_auth);
 }
-function renderAuthPanel(method){
+async function renderAuthPanel(method){
   const h=document.getElementById("authpanel");h.innerHTML="";
   if(method==="service"){
     const p=panel("Service Account (recommended)");
@@ -241,8 +241,19 @@ function renderAuthPanel(method){
     h.appendChild(p);
   }else{
     const p=panel("User Account (experimental)");
-    p.appendChild(intro("Interactive browser login (OAuth authorization-code + PKCE). SCM has no public browser flow that mints an API token for user accounts, so this is <b>experimental</b> and needs <code>ARC_OAUTH_AUTH_URL</code>, <code>ARC_OAUTH_TOKEN_URL</code> and <code>ARC_OAUTH_CLIENT_ID</code>. Once configured, run <code>login</code> in the ARC shell."));
+    p.appendChild(intro("Interactive browser login (OAuth authorization-code + PKCE). SCM has no public browser flow that mints an API token for user accounts, so this is <b>experimental</b>. Enter your identity provider's OAuth endpoints below (no client secret is used), then run <code>login</code> in the ARC shell. Environment variables <code>ARC_OAUTH_*</code> override these."));
     const badge=el("span","badge override","experimental");p.appendChild(badge);
+    const c=await api("/api/credentials");
+    const o=c.oauth||{};
+    p.appendChild(fieldRow("Authorization URL",txtInput("oa-auth",o.auth_url||""),{hint:"browser is sent here"}));
+    p.appendChild(fieldRow("Token URL",txtInput("oa-token",o.token_url||""),{hint:"code is exchanged here"}));
+    p.appendChild(fieldRow("Client ID",txtInput("oa-cid",o.client_id||""),{hint:"public OAuth client id"}));
+    const bar=saveBar(async()=>{try{await post("/api/credentials",{oauth:{
+      auth_url:document.getElementById("oa-auth").value,
+      token_url:document.getElementById("oa-token").value,
+      client_id:document.getElementById("oa-cid").value}});
+      toast("OAuth endpoints saved — run 'login' in the shell");renderAuthPanel("user");}catch(e){toast("Error: "+e.message,true);}},"Save OAuth endpoints");
+    p.appendChild(bar);
     h.appendChild(p);
   }
 }
