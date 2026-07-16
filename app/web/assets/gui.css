@@ -209,3 +209,15 @@ select.w-txt{cursor:pointer;}
 .kv-k{max-width:240px;}.kv-arrow{color:var(--text-3);flex-shrink:0;}
 .kv-label{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);font-weight:700;margin:.9rem 0 .4rem;}
 .stub{color:var(--text-3);text-align:center;padding:2.5rem;font-size:14px;border:1px dashed var(--border);border-radius:var(--radius);}
+
+/* Shared intro/lede paragraph (both consoles) — was duplicated inline. */
+.intro{color:var(--text-2);font-size:13px;line-height:1.55;max-width:82ch;margin:-.3rem 0 1.2rem;}
+.intro code{background:var(--bg-code);padding:1px 5px;border-radius:4px;font-size:12.5px;color:var(--teal);}
+
+/* Quality floor: visible keyboard focus + honour reduced motion. */
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:4px;}
+.w-txt:focus-visible,.w-num:focus-visible,.w-area:focus-visible,
+.search input:focus-visible,.frow input:focus-visible,.frow select:focus-visible{outline-offset:0;}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;}
+}

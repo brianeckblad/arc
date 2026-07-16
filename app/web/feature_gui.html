@@ -22,6 +22,7 @@
   <div class="modal-bg" id="modal"><div class="modal"><button class="mclose" id="mclose">×</button><div id="mbody"></div></div></div>
   <div class="closed" id="closedv"><h1>✓ Editor closed</h1><p>You can return to the ARC shell now — this tab can be closed.</p></div>
 
+<script src="/assets/gui.js"></script>
 <script>
 const SECTIONS=[
   {key:"areas",label:"Areas"},
@@ -41,22 +42,8 @@ let _renderSeq=0;
 let _renderChain=Promise.resolve();
 
 // ---- helpers ----
-function esc(s){return String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
-function escA(s){return esc(s).replace(/"/g,"&quot;");}
-function matchTxt(t,q){if(!q)return true;const n=String(t).toLowerCase().replace(/[-_]/g," ");
-  try{return new RegExp("(?<![a-z])"+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?![a-z])","i").test(n);}catch(e){return n.includes(q.toLowerCase());}}
-async function api(p){const r=await fetch(p);return r.json();}
-async function post(p,b){const r=await fetch(p,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)});
-  const j=await r.json();if(!r.ok||j.error)throw new Error(j.error||"failed");return j;}
-let tt;function toast(m,e){const el=document.getElementById("toast");el.textContent=m;el.className="toast show"+(e?" err":"");
-  clearTimeout(tt);tt=setTimeout(()=>el.className="toast"+(e?" err":""),2500);}
-function flash(el){el.classList.add("saved");setTimeout(()=>el.classList.remove("saved"),1000);}
-function qmark(qs){const b=document.createElement("button");b.className="qmark";b.textContent="?";b.title="Help";
-  b.onclick=(e)=>{e.stopPropagation();showHelp(qs);};return b;}
-async function showHelp(qs){const body=document.getElementById("mbody");body.innerHTML="<p>Loading…</p>";
-  document.getElementById("modal").classList.add("show");
-  try{const r=await api("/api/help?"+qs);body.innerHTML=r.html||"<p>No help.</p>";}catch(e){body.innerHTML="<p>Could not load help.</p>";}}
-function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+// esc, escA, matchTxt, api, post, toast, flash, qmark, showHelp, el all come
+// from the shared /assets/gui.js — the single source of truth both consoles use.
 
 // ---- router ----
 function go(section,group){location.hash=section+(group?("/"+encodeURIComponent(group)):"");}
@@ -419,14 +406,8 @@ document.getElementById("modal").onclick=e=>{if(e.target.id==="modal")e.currentT
 async function closeEditor(){try{await fetch("/api/close",{method:"POST"});}catch(e){}stopHeartbeat();document.getElementById("closedv").classList.add("show");}
 document.getElementById("done").onclick=closeEditor;
 window.addEventListener("keydown",e=>{if(e.key==="Escape"){const m=document.getElementById("modal");if(m.classList.contains("show"))m.classList.remove("show");else closeEditor();}});
-/* Tab-lifecycle heartbeat: keeps the CLI from hanging if the tab is closed
-   without clicking Done.  pagehide beacon closes instantly; periodic ping lets
-   the server's watchdog reap a crashed/killed tab.  (Mirrors assets/gui.js.) */
-let _hb=null;
-function stopHeartbeat(){if(_hb){clearInterval(_hb);_hb=null;}}
-(function startHeartbeat(){const ping=()=>{try{fetch("/api/ping",{method:"POST",keepalive:true});}catch(e){}};
-  ping();_hb=setInterval(ping,10000);
-  window.addEventListener("pagehide",()=>{try{navigator.sendBeacon("/api/close");}catch(e){try{fetch("/api/close",{method:"POST",keepalive:true});}catch(_){}}});})();
+// Tab-lifecycle heartbeat (startHeartbeat/stopHeartbeat) lives in the shared
+// gui.js and auto-starts on DOMContentLoaded; closeEditor() calls stopHeartbeat.
 buildTabs();
 if(!location.hash)location.hash="features";
 // Apply the user's saved theme before first render so the GUI opens in it.
