@@ -105,6 +105,15 @@
     .seg.scope button.sel{background:var(--brand);color:#fff;}
     .seg.scope button.sel[data-v="remote"]{background:var(--yellow);color:#2a1c04;}
 
+    /* Bulk "set all" bar: buttons are actions (no persistent selection); hover
+       previews the state colour so the effect is obvious before clicking. */
+    .bulklab{font-size:12px;font-weight:600;color:var(--text-3);}
+    .seg.bulk button[data-v="on"]:hover{background:var(--green);color:#04210f;}
+    .seg.bulk button[data-v="dev"]:hover{background:var(--purple);color:#1a0f33;}
+    .seg.bulk button[data-v="off"]:hover{background:var(--red);color:#2a0808;}
+    .seg.bulk button[data-v="hidden"]:hover{background:var(--yellow);color:#2a1c04;}
+    .rtech.area{color:var(--teal);}
+
     .detail{display:none;border-top:1px solid var(--border);padding:.7rem .85rem;background:var(--bg-code);}
     .card.open .detail{display:block;}
     .dhint{font-size:11.5px;color:var(--text-3);margin-bottom:.5rem;}

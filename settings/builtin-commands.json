@@ -82,7 +82,7 @@
     "startup_hint": ""
   },
   "close connection": {
-    "visible": true,
+    "visible": false,
     "display": "close connection <host>",
     "help": "Drop a specific SSH connection from the pool  (see show connections)",
     "configure_only": false,
@@ -253,7 +253,7 @@
     "startup_hint": ""
   },
   "show connections": {
-    "visible": true,
+    "visible": false,
     "display": "show connections",
     "help": "List active SSH connections in the pool  (close connection <host> to drop one)",
     "configure_only": false,

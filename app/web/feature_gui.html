@@ -34,6 +34,11 @@ const SECTIONS=[
 const HELP_TOPIC={areas:"areas",features:"features",structure:"structure",aliases:"aliases",builtins:"builtins",advanced:"files"};
 let cur={section:"features",group:null};
 let filter="";
+// Monotonic render token: every loadMain() bumps it.  Serialized + latest-wins
+// so overlapping async renders (fast typing in the filter box) can't both append
+// to #main and produce duplicate cards.
+let _renderSeq=0;
+let _renderChain=Promise.resolve();
 
 // ---- helpers ----
 function esc(s){return String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
@@ -96,7 +101,16 @@ function pageHead(main,title){
   return ph;
 }
 
-async function loadMain(){
+// Serialize renders and keep only the latest: a newer loadMain() call bumps
+// _renderSeq, and queued stale renders bail before touching the DOM.  Without
+// this, fast typing in the filter box let two in-flight renders both clear then
+// both append after their awaits resolved — showing every match twice.
+function loadMain(){
+  const seq=++_renderSeq;
+  _renderChain=_renderChain.then(()=>{ if(seq!==_renderSeq)return; return _loadMain(); });
+  return _renderChain;
+}
+async function _loadMain(){
   const main=document.getElementById("main");main.innerHTML="";
   if(cur.section==="areas")return mainAreas(main);
   if(cur.section==="features")return mainFeatures(main);
@@ -142,7 +156,24 @@ async function toggleArea(a,card,tog){
 
 // ---- FEATURES ----
 async function mainFeatures(main){
-  const data=await api("/api/features?area="+encodeURIComponent(cur.group||""));
+  const searching=!!filter;
+  // When filtering, search across ALL areas (area="") so bulk actions can hit
+  // every match; otherwise scope to the selected area for the counts + header.
+  const data=await api("/api/features?area="+encodeURIComponent(searching?"":(cur.group||"")));
+
+  if(searching){
+    let flags=[];const seen=new Set();
+    (data.groups||[]).forEach(gr=>(gr.flags||[]).forEach(f=>{
+      if(seen.has(f.flag))return;seen.add(f.flag);f._areaLabel=gr.label;flags.push(f);}));
+    const vis=flags.filter(f=>featMatch(f));
+    const ph=el("div","phead");ph.appendChild(el("h1",null,"Search"));
+    ph.appendChild(qmark("topic=features"));main.appendChild(ph);
+    main.appendChild(bulkBar(vis,`${vis.length} match${vis.length===1?"":"es"} for “${esc(filter)}” across all areas`,"Set all matches:"));
+    if(!vis.length){main.appendChild(el("div","empty",`No features match "<b>${esc(filter)}</b>".`));return;}
+    vis.forEach(f=>main.appendChild(featureCard(f,true)));
+    return;
+  }
+
   const g=data.groups[0];const hdr=data.header;
   const ph=pageHead(main,hdr?hdr.label:"Features");main.appendChild(ph);
   if(hdr){
@@ -153,9 +184,11 @@ async function mainFeatures(main){
       <span class="pill"><span class="sw off"></span>${hdr.counts.off} off</span>
       <span class="pill"><span class="sw hidden"></span>${hdr.counts.hidden} hidden</span></div>
       <div class="spacer"></div>
-      <button class="btn sm" id="enable-all">Enable all</button>
+      <span class="bulklab">Set all:</span>
+      <div class="seg bulk">${FSTATES.map(s=>`<button data-v="${s}">${s.toUpperCase()}</button>`).join("")}</div>
       <button class="btn sm" id="disable-area">Disable area</button>`;
-    bar.querySelector("#enable-all").onclick=()=>enableAll(g);
+    const flags=g?g.flags:[];
+    bar.querySelectorAll(".seg.bulk button").forEach(b=>b.onclick=()=>bulkApply(flags,b.dataset.v));
     bar.querySelector("#disable-area").onclick=()=>disableArea(hdr);
     main.appendChild(bar);
   }
@@ -164,15 +197,35 @@ async function mainFeatures(main){
   if(!vis.length){main.appendChild(el("div","empty",`No features match "<b>${esc(filter)}</b>".`));return;}
   vis.forEach(f=>main.appendChild(featureCard(f)));
 }
+// A bulk-action bar: one button per state that applies to every flag in `list`.
+function bulkBar(list,label,setLabel){
+  const bar=el("div","areabar");
+  bar.innerHTML=`<div class="counts"><span class="muted">${label}</span></div>
+    <div class="spacer"></div>
+    <span class="bulklab">${esc(setLabel||"Set all:")}</span>
+    <div class="seg bulk">${FSTATES.map(s=>`<button data-v="${s}">${s.toUpperCase()}</button>`).join("")}</div>`;
+  bar.querySelectorAll(".seg.bulk button").forEach(b=>b.onclick=()=>bulkApply(list,b.dataset.v));
+  return bar;
+}
+// Apply one state to a list of flags, then refresh while preserving the filter.
+async function bulkApply(list,state){
+  const targets=(list||[]).filter(f=>f.state!==state);
+  if(!targets.length){toast(`All already ${state.toUpperCase()}`);return;}
+  let ok=0;
+  for(const f of targets){try{await post("/api/feature",{flag:f.flag,state});ok++;}catch(e){}}
+  toast(`Set ${ok} feature${ok===1?"":"s"} → ${state.toUpperCase()}`);
+  loadSidebar();loadMain();
+}
 function featMatch(f){if(!filter)return true;return matchTxt(f.title,filter)||matchTxt(f.flag,filter)||matchTxt(f.subtitle,filter)||(f.commands||[]).some(c=>matchTxt(c.command,filter));}
 function scopeSum(f){const s=[...new Set((f.commands||[]).map(c=>c.effective_scope))];if(!s.length)return"";
   const ov=(f.commands||[]).some(c=>c.overridden);const lab=s.length===1?s[0]:"mixed";const cls=s.length>1?"mixed":(ov?"override":"");
   return `<span class="badge ${cls}">${lab}${ov?" *":""}</span>`;}
 const FSTATES=["on","dev","off","hidden"];
-function featureCard(f){
+function featureCard(f,showArea){
   const card=el("div","card");card.dataset.flag=f.flag;const n=f.command_count||0;
+  const area=showArea&&f._areaLabel?`<span class="rtech area">${esc(f._areaLabel)}</span>`:"";
   card.innerHTML=`<div class="rmain">
-    <div class="rinfo"><div class="rtitle">${esc(f.title||f.flag)}<span class="rtech">${esc(f.flag)}</span></div>
+    <div class="rinfo"><div class="rtitle">${esc(f.title||f.flag)}<span class="rtech">${esc(f.flag)}</span>${area}</div>
       <div class="rsub">${esc(f.subtitle||"")}</div>
       <div class="rmeta">${scopeSum(f)}<span class="muted">${n} command${n===1?"":"s"}</span>${n?`<button class="expand">▸ scope</button>`:""}</div></div>
     <div class="seg st">${FSTATES.map(s=>`<button data-v="${s}" class="${f.state===s?'sel':''}">${s.toUpperCase()}</button>`).join("")}</div></div>
@@ -202,9 +255,6 @@ async function setScope(f,cmd,cr,v){
     const rs=cr.querySelector(".rst");if(rs)rs.innerHTML=r.overridden?"reset":"&nbsp;";
     const card=cr.closest(".card");const old=card.querySelector(".badge");if(old)old.outerHTML=scopeSum(f);flash(card);
     toast(`${cmd} → ${r.effective_scope}`);}catch(e){toast("Error: "+e.message,true);}}
-async function enableAll(g){const flags=(g?g.flags:[]).filter(f=>f.state!=="on");
-  for(const f of flags){try{await post("/api/feature",{flag:f.flag,state:"on"});}catch(e){}}
-  toast(`Enabled ${flags.length} feature(s)`);route();}
 async function disableArea(hdr){try{await post("/api/area",{area:hdr.area,disabled:true});
   toast(`${hdr.label}: disabled — manage in the Areas tab`);go("areas",null);}catch(e){toast("Error: "+e.message,true);}}
 
