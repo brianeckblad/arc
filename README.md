@@ -285,3 +285,44 @@ a 2,500-line module to answer a question. `app/scripts/CODE_MAP.md` maps every m
 in large files to exact line ranges — read the range, not the file. Keyword
 routing ("say `render`, touch `formatter.py`") sends each task straight to its
 owner. The result: humans and agents alike spend tokens on the change, not the search.
+
+### Working on ARC with an LLM (Copilot · Claude Code · Claude)
+
+ARC keeps **one** instruction file — `AGENTS.md` — and every LLM coding tool
+reads *that same file*, so guidance never diverges and there is no per-tool copy
+to maintain:
+
+| Tool | How it reads `AGENTS.md` | Notes |
+|---|---|---|
+| **GitHub Copilot** | natively — `AGENTS.md` is the open cross-tool standard | agent + chat |
+| **Claude Code** | via `CLAUDE.md`, a **symlink** to `AGENTS.md` (git mode `120000`) | Claude Code auto-loads `CLAUDE.md`, never `AGENTS.md` |
+| **Claude app / claude.ai** | attach `AGENTS.md` to the Project | no repo-file mechanism |
+
+You edit `AGENTS.md` and all three see it — `CLAUDE.md` is a symlink, not a
+second copy. (On Windows without Developer Mode a symlink may not survive
+`git clone`; if so, replace `CLAUDE.md` with a one-line file containing
+`@AGENTS.md` — the portable equivalent that imports the hub.)
+
+**`.claude/` is Claude-Code-only and is _not_ referenced by any instruction
+file** — the Claude Code harness discovers it by convention. Other tools ignore
+it, which is why the shared brain lives in root `AGENTS.md`, not in `.claude/`:
+
+- `.claude/settings.local.json` — permissions + the command sandbox, read at startup.
+- `.claude/agents/*.md` — repo-specific **subagents**, registered by their
+  frontmatter and spawned only when a task matches their description (zero
+  context cost until then). Each inherits `AGENTS.md` automatically and points
+  at `CODE_MAP.md` rather than duplicating it:
+
+  | Subagent | Owns |
+  |---|---|
+  | `command-editor` | CLI command definitions in `app/commands/*` |
+  | `api-domain-expert` | SCM REST client, auth/login, SLS — `app/api/*`, `app/config.py` |
+  | `shell-ux-editor` | the REPL mixins in `app/shell/*` |
+  | `feature-config-editor` | `settings/*` + the two browser consoles |
+
+**The loop, whichever tool you use:** open `AGENTS.md` → follow the **Task
+Routing** table to the one or two files that own the keyword → look the method
+up in `app/scripts/CODE_MAP.md` and read *only that line range* (never a whole
+300+ line file) → make the change → validate with the `--only` / `--file` smoke
+command the routing row names. In Claude Code, hand matching work to the
+subagent above and it boots already knowing the routing.

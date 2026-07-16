@@ -47,6 +47,8 @@
 
 **Spoke files:** `docs/COMMAND_PATTERNS.md` · `docs/RENDER_CATALOG.md` · `docs/COMMANDDEF_REFERENCE.md` · `app/scripts/API_INDEX.md` · `app/scripts/CODE_MAP.md` · `app/scripts/DOCS_AGENT.md`
 
+**Claude Code subagents** (`.claude/agents/`, loaded only when spawned — zero context cost otherwise): `command-editor` (app/commands/*), `api-domain-expert` (app/api + auth + SLS), `shell-ux-editor` (app/shell REPL mixins), `feature-config-editor` (settings/ + web consoles). Each references this hub + `CODE_MAP.md` instead of duplicating it; delegate matching tasks to them. This file is the single source of truth — other tools (GitHub Copilot, the Claude app) read `AGENTS.md` directly; Claude Code reads it via `CLAUDE.md` (`@AGENTS.md`). The subagents are the Claude-Code-only layer; `.claude/` holds no shared instructions, only Claude Code config + these agents.
+
 ---
 
 ## Project Structure
