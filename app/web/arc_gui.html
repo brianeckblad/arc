@@ -237,29 +237,13 @@ async function testAuth(){toast("Testing SCM authentication…");try{const r=awa
 async function mainAuthentication(main){
   main.appendChild(pageHead("Authentication",null));
   const c=await api("/api/credentials");
-  const sel=panel("Preferred method","");
-  sel.querySelector(".panel-head").appendChild(qmark("topic=item.auth_method"));
-  const seg=segmented("authseg",[{v:"service",label:"Service Account"},{v:"user",label:"User Account"}],c.preferred_auth,async v=>{
-    try{await post("/api/auth-pref",{method:v});toast("Preferred auth: "+v);renderAuthPanel(v);}catch(e){toast("Error: "+e.message,true);}});
-  sel.appendChild(seg);
-  const tb=el("button","btn","Test SCM auth");tb.type="button";tb.style.marginLeft=".6rem";tb.onclick=testAuth;sel.appendChild(tb);
-  main.appendChild(sel);
-  const holder=el("div");holder.id="authpanel";main.appendChild(holder);
-  renderAuthPanel(c.preferred_auth);
-}
-async function renderAuthPanel(method){
-  const h=document.getElementById("authpanel");h.innerHTML="";
-  if(method==="service"){
-    const p=panel("Service Account (recommended)");
-    p.appendChild(intro("OAuth client-credentials — the standard, fully-supported SCM API auth. Set the Client ID, TSG ID and Client secret under Credentials & Keychain."));
-    const b=el("button","btn sm","Go to Credentials");b.type="button";b.onclick=()=>go("credentials");p.appendChild(b);
-    h.appendChild(p);
-  }else{
-    const p=panel("User Account (login)");
-    p.appendChild(intro("Run <code>login</code> in the ARC shell to authenticate <b>via the API</b> using your service-account credentials — no browser. It mints a fresh 15-minute token from <code>/auth/v1/oauth2/access_token</code> and reads <code>/auth/v1/oauth2/userinfo</code> to show who you are. Set the credentials under <b>Credentials &amp; Keychain</b> (or run <code>setup scm</code>)."));
-    const b=el("button","btn sm","Go to Credentials");b.type="button";b.onclick=()=>go("credentials");p.appendChild(b);
-    h.appendChild(p);
-  }
+  const p=panel("How ARC signs in to SCM");
+  p.appendChild(intro("ARC authenticates to the SCM API over OAuth <b>client-credentials</b> (<code>POST /auth/v1/oauth2/access_token</code>) — there is no browser sign-in. Provide credentials under <b>Credentials &amp; Keychain</b> two ways:<ul><li><b>Service account</b> — store Client ID + secret + TSG; ARC mints and refreshes tokens automatically.</li><li><b>Token</b> — a pre-issued bearer token, or one minted by <code>setup scm</code> → manual sign-in (stored in <code>auth.json</code>, reused until it expires; the password is never saved).</li></ul>Run <code>login</code> in the ARC shell to re-authenticate and see your identity via <code>/auth/v1/oauth2/userinfo</code>."));
+  const cur=(c.scm&&c.scm.auth_method)?c.scm.auth_method:"none";
+  p.appendChild(el("div","muted","Currently configured: "+esc(cur)));
+  const tb=el("button","btn","Test SCM auth");tb.type="button";tb.onclick=testAuth;p.appendChild(tb);
+  const b=el("button","btn sm","Go to Credentials");b.type="button";b.style.marginLeft=".6rem";b.onclick=()=>go("credentials");p.appendChild(b);
+  main.appendChild(p);
 }
 
 /* ---- Branding & Variables ---- */

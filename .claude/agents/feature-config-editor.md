@@ -30,11 +30,13 @@ ARC's three-folder rule: `app/` = code, `settings/` = user-editable config,
   `app/settings/feature_labels.py` (auto-augmented).
 - Theme: `settings/theme.json` + `app/settings/theme.py`. Prefs:
   `app/settings/user_prefs.py` + `_cmd_terminal`.
-- Browser consoles (loopback HTTP): shared `app/web/gui_base.py`;
-  `app/web/feature_server.py`+`feature_gui.html`;
-  `app/web/arc_server.py`+`arc_gui.html`; shared `app/web/assets/gui.{css,js}`.
-  The two consoles share widgets — keep them consistent.
+
+**Scope boundary:** this agent owns the `settings/` files + their loaders. The
+**browser consoles** (`app/web/*`) that *edit* these settings belong to the
+`gui-console-editor` agent — delegate GUI-server/HTML/JS work there. The
+sync-by-construction contract means a new capability needs a shared helper used
+by both the CLI (here) and the GUI (that agent).
 
 **Validate:** `python app/scripts/smoke_test.py --only 1,2,3` for flags/labels;
-add `9,12` for visibility, `14` for the GUI servers; `--only 10` for theme,
-`--only 4` for prefs. Report the actual result.
+add `9,12` for visibility; `--only 10` for theme, `--only 4` for prefs. Report
+the actual result.

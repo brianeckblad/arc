@@ -30,7 +30,7 @@ otherwise edit by hand. Sections:
 | Section | Manages |
 |---|---|
 | Dashboard | Health: SCM connectivity, keychain, profile/TSG/folder, GUI ports |
-| Authentication | Service Account (recommended) + User Account (`login`); Test auth |
+| Authentication | How SCM sign-in works (client-credentials; service account or token); Test auth + `login` |
 | Credentials & Keychain | Storage mode (keychain/file) + SCM client id / TSG / secret / bearer + SSH user / key / port / password; real token expiry |
 | Connection / config.json | Default folder, debug, GUI **ports** + enabled toggles, profiles |
 | Preferences | Terminal paging/width/height, spinner |

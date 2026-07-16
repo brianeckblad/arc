@@ -1355,8 +1355,6 @@ class ConfigureMixin:
             )
             return
 
-        import time as _time
-
         # Mint a fresh token via the API (client-credentials → access_token).
         try:
             from app.api.client import SCMClient
@@ -1366,38 +1364,35 @@ class ConfigureMixin:
             return
 
         self._scm = client
-        expires_in = 0
-        if has_creds:
-            try:
-                expires_in = client.authenticate_now()
-            except Exception as exc:  # noqa: BLE001
-                console.print(f"[red]Authentication failed:[/red] {exc}")
-                return
+        # A service account already minted a fresh token in SCMClient.__init__
+        # (a bad secret would have raised above), so read the captured lifetime
+        # rather than re-authenticating. It re-mints on every launch, so there's
+        # no persisted bearer whose expiry we should record.
+        expires_in = client.token_expires_in if has_creds else 0
 
-        # Record the REAL token expiry in the auth store (auth.json) so the
-        # startup purge and the GUI see the same value. Only persist when the
-        # endpoint reported a lifetime — a fake expiry must never be written.
-        if expires_in > 0:
-            from app.config import save_config
-            self._config.scm.token_expiry = int(_time.time()) + expires_in
-            try:
-                save_config(self._config)
-            except Exception:  # noqa: BLE001 — persistence is best-effort here
-                pass
-
-        # Confirm identity via the userinfo endpoint (best-effort).
+        # Confirm identity via userinfo — best-effort, and for a bearer-only login
+        # it is our only signal that the pre-issued token is actually valid.
         claims = {}
         try:
             claims = client.get_userinfo()
         except Exception:  # noqa: BLE001
             claims = {}
 
-        if expires_in > 0:
-            console.print(
-                f"[green]✓[/green] Authenticated to SCM — token valid for ~{expires_in // 60} min."
-            )
+        if has_creds:
+            if expires_in > 0:
+                console.print(
+                    f"[green]✓[/green] Authenticated to SCM — token valid for ~{expires_in // 60} min."
+                )
+            else:
+                console.print("[green]✓[/green] Authenticated to SCM.")
+        elif claims:
+            console.print("[green]✓[/green] Authenticated to SCM with the stored bearer token.")
         else:
-            console.print("[green]✓[/green] Authenticated to SCM.")
+            console.print(
+                "[yellow]⚠[/yellow] Using the stored bearer token, but SCM returned no identity — "
+                "it may be expired or invalid. Run [bold]setup scm[/bold] to re-authenticate "
+                "if API calls fail."
+            )
         if claims:
             who = (claims.get("name") or claims.get("email") or claims.get("preferred_username")
                    or claims.get("sub") or claims.get("client_id") or "")
@@ -2382,12 +2377,21 @@ class ConfigureMixin:
         # Work on a fresh copy; the live config is only adopted on success.
         new = load_config(self._config.profile_name)
 
+        def ask_default(label: str, current: str) -> str | None:
+            """Prompt showing the stored value as default: Enter keeps it, x exits."""
+            shown = f"{label} [{current}]: " if current else f"{label}: "
+            val = ask(shown)
+            if val is None:
+                return None            # x / exit — abort
+            return val or current      # empty input keeps the remembered value
+
         # ── Q1: SCM auth ─────────────────────────────────────────────────────
         console.print(
             "[bold]Q1[/bold]  SCM credentials:\n"
             "  [bold cyan]1[/bold cyan]  I have a pre-issued bearer token\n"
-            "  [bold cyan]2[/bold cyan]  I have a client ID + secret (service account)\n"
-            "  [bold cyan]3[/bold cyan]  I need to create a service account first  [dim](show steps + exit)[/dim]\n"
+            "  [bold cyan]2[/bold cyan]  I have a client ID + secret (service account) — [dim]saved, auto-connects[/dim]\n"
+            "  [bold cyan]3[/bold cyan]  Sign in manually now  [dim](username + password + TSG; remembers TSG/username, never the password)[/dim]\n"
+            "  [bold cyan]4[/bold cyan]  I need to create a service account first  [dim](show steps + exit)[/dim]\n"
             "  [bold cyan]x[/bold cyan]  Exit"
         )
         choice = ask("  → ")
@@ -2402,13 +2406,13 @@ class ConfigureMixin:
             new.scm.token_expiry = 0
             new.auth_method = "bearer"
         elif choice == "2":
-            cid = ask("  Client ID: ")
+            cid = ask_default("  Client ID", new.scm.client_id)
             if cid is None:
                 return cancelled()
             sec = secret("  Client secret: ")
             if sec is None:
                 return cancelled()
-            tsg = ask("  TSG ID: ")
+            tsg = ask_default("  TSG ID", new.scm.tsg_id)
             if tsg is None:
                 return cancelled()
             new.scm.client_id = cid
@@ -2418,12 +2422,92 @@ class ConfigureMixin:
             new.scm.token_expiry = 0
             new.auth_method = "service"
         elif choice == "3":
+            # Manual sign-in — mint a token now via the documented client-credentials
+            # access_token endpoint (pan.dev /auth/v1/oauth2/access_token, in
+            # app/api/_auth.py::oauth_token). We persist the minted token + its REAL
+            # expiry + TSG + username to auth.json so the live token is re-used across
+            # restarts for its whole lifetime; the password (client secret) is used
+            # once for the token request and NEVER written to disk.
+            un = ask_default("  Username (client ID)", new.scm.client_id)
+            if un is None:
+                return cancelled()
+            if not un:
+                console.print("[yellow]A username is required.[/yellow]")
+                return cancelled()
+            pw = secret("  Password (client secret): ")
+            if not pw:
+                return cancelled()
+            tsg = ask_default("  TSG ID", new.scm.tsg_id)
+            if tsg is None:
+                return cancelled()
+            if not tsg:
+                console.print("[yellow]A TSG ID is required.[/yellow]")
+                return cancelled()
+            console.print("  [dim]Signing in…[/dim]")
+            try:
+                import httpx
+                from app.api._auth import oauth_token
+                with httpx.Client(timeout=30) as _http:
+                    token, expires_in = oauth_token(_http, un, pw, tsg)
+            except Exception as exc:  # noqa: BLE001
+                console.print(
+                    f"[red]Sign-in failed:[/red] {exc}\n"
+                    "  [dim]Check the username / password / TSG and try again.[/dim]"
+                )
+                return cancelled()
+            # Adopt the token in memory, then persist it as SESSION state to
+            # auth.json. save_session_token is NON-DESTRUCTIVE: it never touches
+            # the stored client secret, the storage mode, the keychain, SSH, or
+            # any other profile. The password is discarded. Manual sign-in is
+            # self-contained — it returns here without the storage/SSH/commit flow.
+            new.scm.client_id = un
+            new.scm.tsg_id = tsg
+            new.scm.bearer_token = token
+            new.scm.token_expiry = (int(_time.time()) + expires_in) if expires_in > 0 else 0
+            new.scm.client_secret = ""        # the password is never persisted
+            new.auth_method = "bearer"
+            self._config = new
+            try:
+                from app.api.client import SCMClient
+                self._scm = SCMClient(new.scm)
+            except Exception as exc:  # noqa: BLE001
+                console.print(f"[red]Signed in, but SCM client init failed:[/red] {exc}")
+                return
+            if expires_in > 0:
+                from app.config import save_session_token
+                save_session_token(
+                    new.profile_name, client_id=un, tsg_id=tsg,
+                    bearer_token=token, token_expiry=new.scm.token_expiry,
+                )
+                console.print(
+                    f"  [green]✓[/green] Signed in — token valid ~{expires_in // 60} min, saved to "
+                    "[bold]config/<user>/auth.json[/bold] "
+                    "[dim](reused until it expires; password not stored)[/dim]."
+                )
+            else:
+                console.print(
+                    "  [green]✓[/green] Signed in for this session. "
+                    "[yellow]No token lifetime was returned, so it isn't saved for reuse — "
+                    "run [bold]login[/bold] again next launch.[/yellow]"
+                )
+            try:
+                claims = self._scm.get_userinfo()
+                who = ((claims.get("name") or claims.get("email")
+                        or claims.get("preferred_username") or claims.get("sub") or "")
+                       if claims else "")
+                if who:
+                    console.print(f"  [dim]Signed in as[/dim] [bold]{who}[/bold]")
+            except Exception:  # noqa: BLE001
+                pass
+            console.print()
+            return
+        elif choice == "4":
             console.print(
                 "\n[bold cyan]Create a service account:[/bold cyan]\n"
                 "  1. Log in to https://stratacloudmanager.paloaltonetworks.com/\n"
                 "  2. Settings → Identity & Access → Service Accounts → Add\n"
                 "  3. Copy the Client ID, Client Secret, and TSG ID (secret shown once).\n"
-                "  Then run [bold]setup scm[/bold] again and choose option 2.\n"
+                "  Then run [bold]setup scm[/bold] again and choose option 2 or 3.\n"
             )
             return
         else:
@@ -2502,6 +2586,10 @@ class ConfigureMixin:
         console.print(f"\n[green]✓[/green] Credentials saved [dim](secrets in {where})[/dim].")
 
         # ── Authenticate + identity (best-effort) ────────────────────────────
+        # SCMClient(new.scm) already mints a token in __init__ for a service
+        # account (or accepts the bearer directly), so read the captured lifetime
+        # rather than re-authenticating. Service-account tokens re-mint on every
+        # launch, so there's no persisted bearer whose expiry we'd record.
         has_creds = bool(new.scm.client_id and new.scm.client_secret and new.scm.tsg_id)
         if has_creds or new.scm.bearer_token:
             try:
@@ -2509,11 +2597,8 @@ class ConfigureMixin:
                 client = SCMClient(new.scm)
                 self._scm = client
                 if has_creds:
-                    expires_in = client.authenticate_now()
+                    expires_in = client.token_expires_in
                     if expires_in > 0:
-                        new.scm.token_expiry = int(_time.time()) + expires_in
-                        save_config(new)
-                        self._config = new
                         console.print(f"[green]✓[/green] Authenticated — token valid ~{expires_in // 60} min.")
                     else:
                         console.print("[green]✓[/green] Authenticated.")

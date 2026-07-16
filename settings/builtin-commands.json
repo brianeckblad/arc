@@ -48,7 +48,7 @@
   "login": {
     "visible": true,
     "display": "login",
-    "help": "Log in to SCM with a user account via the browser  (experimental OAuth)",
+    "help": "Authenticate to SCM now via the API and show your identity (no browser)",
     "configure_only": false,
     "hide_in_configure": false,
     "onlogin": false,

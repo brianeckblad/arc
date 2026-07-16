@@ -7,7 +7,6 @@ See docs/commands/ and docs/scm-api/specs/ngfw-objects.yaml for full API referen
 
 from __future__ import annotations
 
-import re as _re
 from typing import Any
 
 from app.commands.base import (

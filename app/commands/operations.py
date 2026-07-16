@@ -122,7 +122,6 @@ def _clear_session_id(ctx: ExecutionContext, args: dict) -> str:
 
 
 def _ssh_clear_session_id(args: dict) -> str:
-    import shlex as _shlex
     session_id = shlex.quote(str(args.get("id") or (args.get("_positional") or [""])[0] or ""))
     return f"clear session id {session_id}"
 

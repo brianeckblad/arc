@@ -157,15 +157,16 @@ class SCMClient:
     def _headers(self) -> dict[str, str]:
         return {"Authorization": f"Bearer {self._token}"}
 
-    def authenticate_now(self) -> int:
-        """Force a fresh client-credentials token; return its REAL lifetime (seconds).
+    @property
+    def token_expires_in(self) -> int:
+        """REAL lifetime (seconds) of the token minted at construction.
 
-        Used by `login` / `setup` to authenticate on demand via the SCM
-        ``access_token`` endpoint (no browser).  Returns the endpoint-provided
-        ``expires_in`` (0 when the endpoint omits it — the caller then records no
-        expiry rather than a fabricated one).
+        ``__init__`` already performs the client-credentials mint (or accepts a
+        pre-issued bearer), so this reports the captured ``expires_in`` WITHOUT
+        re-authenticating.  0 when a pre-issued bearer token was used, or when the
+        access_token endpoint omitted ``expires_in`` — callers then record no
+        expiry rather than a fabricated one.
         """
-        self._authenticate()
         return int(getattr(self, "_token_expires_in", 0) or 0)
 
     def get_userinfo(self) -> dict:

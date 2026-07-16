@@ -1292,14 +1292,13 @@ def test_command_visibility() -> None:
 
     from app.settings.commands import (
         _coerce_visibility,
-        is_command_visible, is_command_executable,
+        is_command_executable,
         shell_help_rows,
         STATE_VISIBLE, STATE_DEV, STATE_HIDDEN, STATE_BLOCKED,
         load_command_visibility,
     )
     from app.settings.features import (
-        is_enabled, is_feature_visible,
-        STATE_ON, STATE_DEV as FEAT_DEV, STATE_OFF,
+        is_enabled, STATE_ON, STATE_DEV as FEAT_DEV, STATE_OFF,
         STATE_HIDDEN as FEAT_HIDDEN,
     )
     from app.shell.help import HelpMixin
@@ -1534,7 +1533,7 @@ def test_configure_flow() -> None:
         from app.shell.configure import ConfigureMixin
         # Verify the method exists and its return annotation is int | None
         import inspect
-        hints = inspect.get_annotations(ConfigureMixin._rollback_version, eval_str=False)
+        inspect.get_annotations(ConfigureMixin._rollback_version, eval_str=False)  # raises if missing
         ok("_rollback_version: exists on ConfigureMixin")
         # Verify _arm_commit_confirmed stores armed_at timestamp
         import threading
@@ -1570,7 +1569,6 @@ def test_configure_flow() -> None:
             client._cfg = cfg
             client._token = "fake"
             client._page_reporter = None
-            import httpx
             client._http = MagicMock()
         # Simulate a first page of 10 items with total=25 and _MAX_LIST_PAGES=1
         first = {"data": [{"id": i} for i in range(10)], "total": 25, "limit": 10}
@@ -1579,7 +1577,7 @@ def test_configure_flow() -> None:
         with patch.object(client, "_request", return_value={"data": [{"id": 99}]}):
             with warnings.catch_warnings(record=True) as w:
                 warnings.simplefilter("always")
-                result = client._collect_pages("https://x", "/path", None, first)
+                client._collect_pages("https://x", "/path", None, first)  # triggers the cap warning
                 if w and "safety cap" in str(w[0].message).lower():
                     ok("pagination truncation: warning emitted when cap reached")
                 else:
@@ -1591,7 +1589,7 @@ def test_configure_flow() -> None:
     # ── Thread safety: _LAST_ROWS uses lock ──────────────────────────────────
     try:
         import threading
-        from app.commands.operations import _LAST_ROWS_LOCK, _LAST_ROWS
+        from app.commands.operations import _LAST_ROWS_LOCK
         assert isinstance(_LAST_ROWS_LOCK, type(threading.Lock()))
         ok("operations._LAST_ROWS_LOCK is a threading.Lock")
     except Exception as exc:
@@ -1638,8 +1636,8 @@ def test_gui_endpoints() -> None:
       * POST endpoints reject invalid-but-dispatching payloads with a clean 400
         (this is what catches a route handler dispatching to a missing/broken
         method — the class of bug that silently 500'd POST /api/feature).
-      * A few real arc-console round-trips (theme/prefs/branding/sources/
-        auth-pref) persist to the temp tree and read back.
+      * A few real arc-console round-trips (theme/prefs/branding/sources)
+        persist to the temp tree and read back.
     Also asserts the session's new commands are still wired.
     """
     section("14. Browser-console endpoints  (offline, no SCM)")
@@ -1757,7 +1755,6 @@ def test_gui_endpoints() -> None:
             (4745, "/api/scope", {"command": "show address", "scope": "bogus"}),
             (4745, "/api/theme", {"base": "NoSuchTheme", "overrides": {}}),
             (4744, "/api/theme", {"base": "NoSuchTheme", "overrides": {}}),
-            (4744, "/api/auth-pref", {"method": "bogus"}),
             (4744, "/api/sources", {"which": "bogus"}),
             (4744, "/api/config", {"features_gui": {"port": 4444}, "arc_gui": {"port": 4444}}),
         ]
@@ -1779,9 +1776,6 @@ def test_gui_endpoints() -> None:
         st, data = _req(4744, "/api/prefs", {"terminal_length": 42, "spinner": False})
         if st != 200 or data.get("terminal_length") != 42:
             rt_fail.append(f"prefs save ({st})")
-        st, data = _req(4744, "/api/auth-pref", {"method": "user"})
-        if st != 200 or data.get("preferred_auth") != "user":
-            rt_fail.append(f"auth-pref save ({st})")
         st, data = _req(4744, "/api/branding",
                         {"goodbye_header": "## h", "goodbye_lines": ["bye one", "bye two"],
                          "app_variables": [{"key": "app_name", "value": "ARC"}]})
@@ -1799,7 +1793,7 @@ def test_gui_endpoints() -> None:
         if rt_fail:
             fail("ARC console POST round-trips", "; ".join(rt_fail))
         else:
-            ok("ARC console: theme/prefs/auth-pref/branding/sources round-trip to temp files")
+            ok("ARC console: theme/prefs/branding/sources round-trip to temp files")
 
         # --- Feature toggle applies to the LIVE shell (no restart) ---
         try:
@@ -1833,7 +1827,7 @@ def test_gui_endpoints() -> None:
         except Exception as exc:  # noqa: BLE001
             fail("tab lifecycle", str(exc))
 
-    except Exception as exc:  # noqa: BLE001
+    except Exception:  # noqa: BLE001
         fail("GUI endpoint coverage", traceback.format_exc(limit=4).strip())
     finally:
         for srv in (server_a, server_f):

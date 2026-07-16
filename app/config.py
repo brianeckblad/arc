@@ -426,15 +426,19 @@ def _active_profile_name(config_raw: dict) -> str:
 
 
 def _all_profile_names(config_raw: dict, auth_raw: dict) -> list[str]:
-    """Union of profiles across auth.json + config.json (+ default), preserving order."""
+    """Configured profiles across auth.json + config.json, preserving order.
+
+    Falls back to ``[default]`` ONLY when nothing is configured, so a user who
+    created just named profiles doesn't see a phantom empty ``default`` entry.
+    """
     names: list[str] = []
     for src in (auth_raw.get("profiles", {}), config_raw.get("profiles", {})):
         if isinstance(src, dict):
             for name in src:
                 if name not in names:
                     names.append(name)
-    if _DEFAULT_PROFILE not in names:
-        names.insert(0, _DEFAULT_PROFILE)
+    if not names:
+        names.append(_DEFAULT_PROFILE)
     return names
 
 
@@ -725,6 +729,59 @@ def save_config(cfg: ArcConfig, profile: str | None = None) -> None:
             "Use a machine with keychain access, choose file storage, or provide "
             "secrets through environment variables for this session."
         )
+
+
+def save_session_token(
+    profile: str,
+    *,
+    client_id: str,
+    tsg_id: str,
+    bearer_token: str,
+    token_expiry: int,
+) -> None:
+    """Persist a manually-minted SESSION token to auth.json — non-destructively.
+
+    Used by ``setup scm`` manual sign-in.  The ephemeral bearer token (like
+    ``token_expiry``) is session state, so it is written to auth.json regardless
+    of the storage mode and read back by ``load_config``'s auth.json fallback.
+
+    This deliberately does NOT: change the storage mode, touch the OS keychain,
+    write or delete any stored client secret / SSH settings, or affect any other
+    profile.  The password (client secret) is never captured here.
+    """
+    with _CONFIG_WRITE_LOCK:
+        auth_raw = _read_auth_file()
+        profiles = auth_raw.get("profiles")
+        if not isinstance(profiles, dict):
+            profiles = {}
+        entry = profiles.get(profile)
+        if not isinstance(entry, dict):
+            entry = {}
+        scm = entry.get("scm")
+        if not isinstance(scm, dict):
+            scm = {}
+        scm["client_id"] = client_id
+        scm["tsg_id"] = tsg_id
+        scm["bearer_token"] = bearer_token
+        if token_expiry:
+            scm["token_expiry"] = int(token_expiry)
+        else:
+            scm.pop("token_expiry", None)
+        scm.pop("client_secret", None)  # the password is never persisted
+        entry["scm"] = scm
+        profiles[profile] = entry
+        auth_raw["profiles"] = profiles
+        _write_auth_file(auth_raw)
+
+        # Record active profile + preferred method (non-secret); leave the
+        # storage mode and every other config.json section untouched.
+        raw = _read_config_file()
+        auth_section = raw.get("auth") if isinstance(raw.get("auth"), dict) else {}
+        auth_section["preferred_method"] = "bearer"
+        auth_section.setdefault("active_profile", profile)
+        raw["auth"] = auth_section
+        raw.pop("active_profile", None)  # drop any legacy top-level key
+        _write_config_file(raw)
 
 
 def delete_profile(name: str) -> None:

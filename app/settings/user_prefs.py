@@ -14,7 +14,6 @@ Current keys:
     spinner           bool  Show the "querying SCM…" spinner during API calls.
     aliases           dict  User-defined command aliases.
     gui_theme         dict  Shared browser-GUI theme (both consoles).
-    preferred_auth    str   Preferred SCM auth method: "service" | "user".
     scm_token_expiry  int   Deprecated — real token expiry now lives in auth.json
                             (SCMConfig.token_expiry). Retained only so older
                             config.json preference blocks still load.
@@ -53,8 +52,6 @@ class UserPrefs:
     # {"base": <name>, "overrides": {"--token": "#hex"}}.  Per-user only; never
     # affects the terminal shell theme (settings/theme.json).
     gui_theme: dict = field(default_factory=dict)
-    # Preferred SCM auth method surfaced in the ARC console: "service" | "user".
-    preferred_auth: str = "service"
     # Deprecated: the real token expiry now lives in auth.json
     # (SCMConfig.token_expiry). Kept so older config.json preference blocks that
     # still carry this key continue to load without error.

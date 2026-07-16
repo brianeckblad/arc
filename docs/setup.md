@@ -44,16 +44,25 @@ end, and typing **`x`** at any prompt exits without saving.
 | Choice | What happens |
 |--------|--------------|
 | **1. Bearer token** | Prompts for a pre-issued token |
-| **2. Client ID + secret** (service account) | Prompts for client id / secret / TSG, then authenticates |
-| **3. Create a service account first** | Prints the portal steps and exits |
+| **2. Client ID + secret** (service account) | Prompts for client id / secret / TSG (both remembered), then authenticates — auto-reconnects on every launch |
+| **3. Sign in manually now** | Prompts for username (client id) / password (client secret) / TSG, mints a token immediately, and stores the **token + its real expiry + TSG + username** in `auth.json`. The token is reused across restarts until it expires; the **password is never written to disk**. TSG and username are remembered so you don't retype them. |
+| **4. Create a service account first** | Prints the portal steps and exits |
 | **x. Exit** | Aborts — nothing saved |
 
-**Secret storage** — you then choose where secrets are kept:
+**Secret storage** — for choices 1 and 2 you then choose where secrets are kept
+(choice 3 always stores its ephemeral token in `auth.json`, so it skips this):
 
 | Mode | Where secrets go |
 |------|------------------|
 | **keychain** (default, secure) | OS keychain (macOS Keychain / libsecret / Windows Credential Manager) |
 | **file** (insecure, opt-in) | plaintext `config/<user>/auth.json` (0600) — **you must type `yes` to confirm** |
+
+**Manual sign-in vs. service account:** both use the same client-credentials
+grant against `POST /auth/v1/oauth2/access_token`. A **service account** (choice 2)
+saves your client secret so ARC mints fresh tokens automatically forever. **Manual
+sign-in** (choice 3) never stores the secret — it mints one token now and reuses
+it until it expires (typically minutes to hours), then prompts you to sign in
+again. Use manual sign-in when you don't want a long-lived secret on the machine.
 
 **Q2 — Device SSH:** key file, password, skip, or exit.
 

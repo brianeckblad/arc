@@ -60,7 +60,6 @@ _SECTION_HELP = {
     "item.terminal_width": "<h3>Terminal width</h3><p>Force a render width in columns. 0 = auto-detect from the terminal.</p>",
     "item.terminal_height": "<h3>Terminal height</h3><p>Force a render height. 0 = auto-detect.</p>",
     "item.spinner": "<h3>Spinner</h3><p>Show the “querying SCM…” spinner during API calls.</p>",
-    "item.auth_method": "<h3>Preferred auth</h3><p><b>Service Account</b> = OAuth client-credentials (recommended, fully supported). <b>User Account</b> = run <code>login</code> in the ARC shell to authenticate via the API and show your identity (no browser).</p>",
     "item.client_id": "<h3>Client ID</h3><p>SCM service-account OAuth client id (non-secret; stored in config.json).</p>",
     "item.tsg_id": "<h3>TSG ID</h3><p>Tenant Service Group id the token is scoped to.</p>",
     "item.client_secret": "<h3>Client secret</h3><p>Service-account OAuth secret. Stored in the OS keychain — never in config.json. Leave blank to keep the stored value.</p>",
@@ -132,8 +131,6 @@ class ArcGuiServer(BaseGuiServer):
             return self._apply_branding(data)
         if path == "/api/credentials":
             return self._apply_credentials(data)
-        if path == "/api/auth-pref":
-            return self._apply_auth_pref(str(data.get("method", "")))
         if path == "/api/test-auth":
             return self._test_auth()
         if path == "/api/maintenance":
@@ -215,7 +212,6 @@ class ArcGuiServer(BaseGuiServer):
             "debug": bool(getattr(cfg, "debug", False)) if cfg else False,
             "features_gui_port": getattr(getattr(cfg, "features_gui", None), "port", 4445) if cfg else 4445,
             "arc_gui_port": getattr(getattr(cfg, "arc_gui", None), "port", 4444) if cfg else 4444,
-            "preferred_auth": getattr(getattr(shell, "_prefs", None), "preferred_auth", "service"),
             "token_expiry": getattr(scm_cfg, "token_expiry", 0) if scm_cfg else 0,
             "auth_storage": getattr(cfg, "auth_storage", "keychain") if cfg else "keychain",
         }
@@ -484,21 +480,6 @@ class ArcGuiServer(BaseGuiServer):
                 APP_VARIABLES_JSON.write_text(_json.dumps(rebuilt, indent=2) + "\n", encoding="utf-8")
         return self._get_branding()
 
-    # -- auth preference --------------------------------------------------
-
-    def _apply_auth_pref(self, method: str) -> dict:
-        from app.settings.user_prefs import save_prefs
-
-        if method not in ("service", "user"):
-            raise ValueError("auth method must be 'service' or 'user'")
-        prefs = getattr(self._shell, "_prefs", None)
-        if prefs is None:
-            raise RuntimeError("preferences unavailable")
-        with self._lock:
-            prefs.preferred_auth = method
-            save_prefs(prefs)
-        return {"preferred_auth": method}
-
     # -- credentials & keychain -------------------------------------------
 
     def _get_credentials(self) -> dict:
@@ -514,7 +495,6 @@ class ArcGuiServer(BaseGuiServer):
         ) if scm else False
         return {
             "keychain_available": keychain_available(),
-            "preferred_auth": getattr(getattr(self._shell, "_prefs", None), "preferred_auth", "service"),
             "auth_method": getattr(cfg, "auth_method", "service") if cfg else "service",
             "auth_storage": getattr(cfg, "auth_storage", "keychain") if cfg else "keychain",
             "token_expiry": getattr(scm, "token_expiry", 0) if scm else 0,

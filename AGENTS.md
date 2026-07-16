@@ -47,7 +47,17 @@
 
 **Spoke files:** `docs/COMMAND_PATTERNS.md` · `docs/RENDER_CATALOG.md` · `docs/COMMANDDEF_REFERENCE.md` · `app/scripts/API_INDEX.md` · `app/scripts/CODE_MAP.md` · `app/scripts/DOCS_AGENT.md`
 
-**Claude Code subagents** (`.claude/agents/`, loaded only when spawned — zero context cost otherwise): `command-editor` (app/commands/*), `api-domain-expert` (app/api + auth + SLS), `shell-ux-editor` (app/shell REPL mixins), `feature-config-editor` (settings/ + web consoles). Each references this hub + `CODE_MAP.md` instead of duplicating it; delegate matching tasks to them. This file is the single source of truth — other tools (GitHub Copilot, the Claude app) read `AGENTS.md` directly; Claude Code reads it via `CLAUDE.md` (`@AGENTS.md`). The subagents are the Claude-Code-only layer; `.claude/` holds no shared instructions, only Claude Code config + these agents.
+**Claude Code subagents** (`.claude/agents/`, loaded only when spawned — zero context cost otherwise), one per subsystem — delegate matching tasks:
+- `command-editor` — CommandDefs in `app/commands/*` (add/edit CLI commands, scope, PAN-OS command behavior)
+- `api-domain-expert` — SCM REST client, auth/login, SLS (`app/api/*`, `app/config.py`)
+- `shell-ux-editor` — the REPL mixins in `app/shell/*` (dispatch, help, completion, pipes, prompt)
+- `render-formatter` — output rendering: `app/utils/formatter.py` + `_render()` + `docs/RENDER_CATALOG.md`
+- `argspec-editor` — `set`/`update` arg syntax: `command-structure.json` + `field_catalog.py` + greedy parser
+- `feature-config-editor` — `settings/*` files + their loaders (flags, builtins, labels, theme, prefs)
+- `gui-console-editor` — the two browser consoles in `app/web/*` (feature/arc GUI)
+- `generator-pipeline` — docsupdate/panosupdate/commandupdate + `generate_*.py` + source registries
+
+Each references this hub + `CODE_MAP.md` instead of duplicating it. This file is the single source of truth — other tools (GitHub Copilot, the Claude app) read `AGENTS.md` directly; Claude Code reads it via `CLAUDE.md` (a symlink to this file). The subagents are the Claude-Code-only layer; `.claude/` holds no shared instructions, only Claude Code config + these agents.
 
 ---
 
@@ -265,7 +275,7 @@ After `docsupdate`: `catalog rebuild` runs automatically on success — it regen
   - `config.json` — NON-secret, sectioned & readable: `preferences` · `auth` {preferred_method, storage, active_profile} · `gui` {features, arc} · `profiles` {default_folder}.
   - `auth.json` — ALL auth info per profile: `scm` {client_id, tsg_id, real token_expiry} + `ssh` {user, key_path, port}. Secrets (client_secret, bearer_token, SSH password) live here **only** in `storage:"file"` mode; otherwise the OS **keychain**.
 - **Storage modes:** `keychain` (default, secure) vs `file` (plaintext auth.json, opt-in with warnings). Settable in BOTH `setup scm` and `arc gui-configure` — full parity, both via `app/config.py` (`load_config`/`save_config`) which is the single source of truth. Old config.json + keychain auto-migrate on first save.
-- `setup scm` is an interactive configurator (bearer / client-creds / create-SA→exit; storage prompt; SSH; Exit anywhere saves nothing). `login` re-authenticates via the API + `/userinfo`. Token expiry is the REAL `expires_in` (omit when unknown); expired tokens purged at startup (`_init_clients`).
+- `setup scm` is an interactive configurator (bearer / client-creds / **manual sign-in** / create-SA→exit; storage prompt for the first two; SSH; Exit anywhere saves nothing). **Manual sign-in** mints a token now via the client-credentials `access_token` endpoint and stores the token + REAL expiry + TSG + username in `auth.json` (file storage) — reused across restarts until expiry; the password (client secret) is never persisted; TSG/username pre-fill on the next run. `login` re-authenticates via the API + `/userinfo`. Token expiry is the REAL `expires_in` (omit when unknown); expired tokens purged at startup (`_init_clients`).
 - Profiles: `account <name>` switches in-shell.
 - Env vars: `SCM_BEARER_TOKEN`, `SCM_CLIENT_ID`, `SCM_CLIENT_SECRET`, `SCM_TSG_ID`, `ARC_SSH_USER`, `ARC_SSH_KEY`, `ARC_SSH_PASS`, `ARC_AUTH_STORAGE=keychain|file`, `ARC_DEBUG=1`, `ARC_DEV_MODE=1`, `ARC_FEATURE_<NAME>=on|dev|off`.
 - Default keeps secrets OUT of plaintext (keychain); `file` mode is explicit opt-in. `getpass` for secret prompts; `_mask()` when printing; catch specific exceptions.

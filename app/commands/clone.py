@@ -11,7 +11,7 @@ a collection endpoint is cloned via the generated resource catalog.
 """
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 from app.commands.base import CommandDef, ExecutionContext, require_scm
 from app.commands.resource_catalog import CATALOG

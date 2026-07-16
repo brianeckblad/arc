@@ -98,7 +98,7 @@ no restart:
 - **`feature gui-configure`** — the feature-flag editor: areas, per-command
   feature state (on/dev/off/hidden), scope, command structure, aliases, built-ins.
 - **`arc gui-configure`** — the settings console: dashboard, authentication
-  (Service/User account), credentials & keychain, `config.json`, preferences,
+  (how SCM sign-in works + Test auth), credentials & keychain, `config.json`, preferences,
   appearance/theme (shared by both GUIs), branding (banner/goodbye/app-variables),
   API sources, and maintenance (Update Docs & Commands).
 
@@ -315,10 +315,14 @@ it, which is why the shared brain lives in root `AGENTS.md`, not in `.claude/`:
 
   | Subagent | Owns |
   |---|---|
-  | `command-editor` | CLI command definitions in `app/commands/*` |
+  | `command-editor` | CLI command definitions in `app/commands/*` (scope, PAN-OS behavior) |
   | `api-domain-expert` | SCM REST client, auth/login, SLS — `app/api/*`, `app/config.py` |
-  | `shell-ux-editor` | the REPL mixins in `app/shell/*` |
-  | `feature-config-editor` | `settings/*` + the two browser consoles |
+  | `shell-ux-editor` | the REPL mixins in `app/shell/*` (dispatch, help, completion, pipes) |
+  | `render-formatter` | output rendering — `app/utils/formatter.py` + `_render()` |
+  | `argspec-editor` | `set`/`update` arg syntax — `command-structure.json` + field catalog |
+  | `feature-config-editor` | `settings/*` files + their loaders (flags, builtins, theme, prefs) |
+  | `gui-console-editor` | the two browser consoles in `app/web/*` |
+  | `generator-pipeline` | docsupdate/panosupdate/commandupdate + `generate_*.py` + registries |
 
 **The loop, whichever tool you use:** open `AGENTS.md` → follow the **Task
 Routing** table to the one or two files that own the keyword → look the method
