@@ -51,6 +51,14 @@ _OS_USERNAME  = _getpass.getuser()
 
 CONFIG_DIR  = _PROJECT_ROOT / "config" / _OS_USERNAME
 CONFIG_FILE = CONFIG_DIR / "config.json"
+# All auth data (ids + real token expiry; plaintext secrets only in "file" mode).
+AUTH_FILE   = CONFIG_DIR / "auth.json"
+
+_AUTH_WARNING = (
+    "ARC auth store. In 'keychain' mode this holds only non-secret identifiers; "
+    "in 'file' mode it ALSO holds plaintext secrets (client secret, bearer token, "
+    "SSH password). Keep this file private (chmod 600) and out of version control."
+)
 
 # Legacy path (platformdirs-based — used by earlier ARC versions).
 try:
@@ -189,6 +197,8 @@ class SCMConfig:
     client_id: str = ""
     client_secret: str = ""
     tsg_id: str = ""
+    # Real epoch-seconds expiry of the current bearer token (0 = unknown/none).
+    token_expiry: int = 0
 
     @property
     def is_configured(self) -> bool:
@@ -243,43 +253,17 @@ class ArcGuiConfig:
 
 
 @dataclass
-class OAuthConfig:
-    """Experimental user-account browser login (OAuth authorization-code + PKCE).
-
-    Non-secret endpoint configuration for the `login` command / `app/auth/
-    user_login.py`.  Stored at the top level of config.json (not per-profile).
-    Environment variables (``ARC_OAUTH_*``) override these at runtime.
-
-      auth_url      — authorization endpoint (browser is sent here)
-      token_url     — token endpoint (code is exchanged here)
-      client_id     — public OAuth client id
-      scope         — space-separated scopes (optional)
-      redirect_port — loopback callback port (default 4455)
-
-    None of these are secrets (no client secret is used in PKCE), so config.json
-    (mode 0600) is an appropriate home — no keychain entry needed.
-    """
-
-    auth_url: str = ""
-    token_url: str = ""
-    client_id: str = ""
-    scope: str = ""
-    redirect_port: int = 4455
-
-    @property
-    def is_configured(self) -> bool:
-        return bool(self.auth_url and self.token_url and self.client_id)
-
-
-@dataclass
 class ArcConfig:
     scm: SCMConfig = field(default_factory=SCMConfig)
     ssh: SSHConfig = field(default_factory=SSHConfig)
     features_gui: FeaturesGuiConfig = field(default_factory=FeaturesGuiConfig)
     arc_gui: ArcGuiConfig = field(default_factory=ArcGuiConfig)
-    oauth: OAuthConfig = field(default_factory=OAuthConfig)
     debug: bool = False
     default_folder: str = "Shared"
+    # Preferred SCM auth method: "service" (client-credentials) | "bearer".
+    auth_method: str = "service"
+    # Where auth secrets live: "keychain" (secure, default) | "file" (plaintext auth.json).
+    auth_storage: str = "keychain"
     # Which named profile was loaded.  Set automatically by load_config().
     # Used by save_config() to write back to the correct profile slot.
     profile_name: str = _DEFAULT_PROFILE
@@ -342,6 +326,61 @@ def _write_config_file(raw: dict) -> None:
         CONFIG_FILE.chmod(stat.S_IRUSR | stat.S_IWUSR)
 
 
+# ---------------------------------------------------------------------------
+# auth.json — the auth store (ids + real token expiry; secrets only in file mode)
+# ---------------------------------------------------------------------------
+
+def _read_auth_file() -> dict:
+    """Read config/<user>/auth.json, or return an empty dict."""
+    if AUTH_FILE.exists():
+        try:
+            data = json.loads(AUTH_FILE.read_text())
+            return data if isinstance(data, dict) else {}
+        except (OSError, json.JSONDecodeError, TypeError, ValueError) as exc:
+            logger.debug("Could not parse auth.json: %s", exc)
+    return {}
+
+
+def _write_auth_file(raw: dict) -> None:
+    """Write *raw* to AUTH_FILE atomically at mode 0600 (serialized by the lock)."""
+    import tempfile
+
+    payload = {"_warning": _AUTH_WARNING}
+    payload.update({k: v for k, v in raw.items() if k != "_warning"})
+    with _CONFIG_WRITE_LOCK:
+        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        CONFIG_DIR.chmod(stat.S_IRWXU)
+        fd, tmp_path = tempfile.mkstemp(dir=str(CONFIG_DIR), prefix=".auth-", suffix=".tmp")
+        try:
+            os.chmod(tmp_path, 0o600)
+            with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                json.dump(payload, handle, indent=2)
+                handle.write("\n")
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(tmp_path, AUTH_FILE)
+        except BaseException:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+            raise
+        AUTH_FILE.chmod(stat.S_IRUSR | stat.S_IWUSR)
+
+
+def _auth_storage_mode(config_raw: dict, auth_raw: dict) -> str:
+    """Resolve the storage mode ("keychain" | "file") from config/auth files + env."""
+    mode = ""
+    auth_section = config_raw.get("auth") if isinstance(config_raw, dict) else None
+    if isinstance(auth_section, dict):
+        mode = str(auth_section.get("storage", "") or "")
+    if not mode:
+        mode = str(auth_raw.get("storage", "") or "")
+    mode = os.environ.get("ARC_AUTH_STORAGE", mode).strip().lower()
+    return "file" if mode == "file" else "keychain"
+
+
+
 def _to_new_format(raw: dict) -> dict:
     """Migrate a legacy single-profile config dict to the multi-profile format.
 
@@ -349,7 +388,7 @@ def _to_new_format(raw: dict) -> dict:
     the ``default`` profile.  The original dict is not mutated.
     """
     if "profiles" in raw:
-        return raw  # already in new format
+        return raw  # already in (at least) multi-profile format
 
     legacy_scm = {
         k: v for k, v in raw.get("scm", {}).items()
@@ -369,16 +408,60 @@ def _to_new_format(raw: dict) -> dict:
             }
         },
     }
-    # Preserve top-level (non-profile) settings across migration.
     if "features_gui" in raw:
         migrated["features_gui"] = raw["features_gui"]
     if "arc_gui" in raw:
         migrated["arc_gui"] = raw["arc_gui"]
-    if "oauth" in raw:
-        migrated["oauth"] = raw["oauth"]
     if "preferences" in raw:
         migrated["preferences"] = raw["preferences"]
     return migrated
+
+
+def _active_profile_name(config_raw: dict) -> str:
+    """Active profile name from the sectioned ``auth`` block, else legacy top-level."""
+    auth = config_raw.get("auth") if isinstance(config_raw, dict) else None
+    if isinstance(auth, dict) and auth.get("active_profile"):
+        return str(auth["active_profile"])
+    return str(config_raw.get("active_profile", _DEFAULT_PROFILE))
+
+
+def _all_profile_names(config_raw: dict, auth_raw: dict) -> list[str]:
+    """Union of profiles across auth.json + config.json (+ default), preserving order."""
+    names: list[str] = []
+    for src in (auth_raw.get("profiles", {}), config_raw.get("profiles", {})):
+        if isinstance(src, dict):
+            for name in src:
+                if name not in names:
+                    names.append(name)
+    if _DEFAULT_PROFILE not in names:
+        names.insert(0, _DEFAULT_PROFILE)
+    return names
+
+
+def _profile_auth_ids(config_raw: dict, auth_raw: dict, profile: str) -> tuple[dict, dict]:
+    """Return (scm, ssh) auth dicts for *profile*.
+
+    Prefers auth.json; falls back to migrating from the old config.json layout so
+    a pre-auth.json install keeps working until the next save rewrites both files.
+    """
+    aprofiles = auth_raw.get("profiles", {}) if isinstance(auth_raw, dict) else {}
+    entry = aprofiles.get(profile)
+    if isinstance(entry, dict):
+        return (entry.get("scm", {}) or {}, entry.get("ssh", {}) or {})
+    cprofiles = config_raw.get("profiles", {}) if isinstance(config_raw, dict) else {}
+    pdata = cprofiles.get(profile)
+    if isinstance(pdata, dict):
+        return (pdata.get("scm", {}) or {}, pdata.get("ssh", {}) or {})
+    return (config_raw.get("scm", {}) or {}, config_raw.get("ssh", {}) or {})
+
+
+def _default_folder_for(config_raw: dict, profile: str) -> str:
+    """Per-profile default folder (config.json profiles), with legacy fallback."""
+    cprofiles = config_raw.get("profiles", {}) if isinstance(config_raw, dict) else {}
+    pdata = cprofiles.get(profile)
+    if isinstance(pdata, dict) and pdata.get("default_folder"):
+        return str(pdata["default_folder"])
+    return str(config_raw.get("default_folder", "Shared"))
 
 
 # ---------------------------------------------------------------------------
@@ -393,47 +476,41 @@ def list_profiles() -> list[dict]:
 
     When no config file exists, returns a single placeholder for ``default``.
     """
-    raw = _read_config_file()
-    active = raw.get("active_profile", _DEFAULT_PROFILE)
-
-    if "profiles" in raw:
-        result: list[dict] = []
-        for name, pdata in raw["profiles"].items():
-            scm_block = pdata.get("scm", {}) if isinstance(pdata, dict) else {}
-            result.append({
-                "name":           name,
-                "client_id":      scm_block.get("client_id", ""),
-                "tsg_id":         scm_block.get("tsg_id", ""),
-                "default_folder": pdata.get("default_folder", "Shared") if isinstance(pdata, dict) else "Shared",
-                "active":         name == active,
-            })
-        return result
-
-    # Legacy single-profile format.
-    scm_block = raw.get("scm", {})
-    return [{
-        "name":           _DEFAULT_PROFILE,
-        "client_id":      scm_block.get("client_id", ""),
-        "tsg_id":         scm_block.get("tsg_id", ""),
-        "default_folder": raw.get("default_folder", "Shared"),
-        "active":         True,
+    config_raw = _read_config_file()
+    auth_raw = _read_auth_file()
+    active = _active_profile_name(config_raw)
+    result: list[dict] = []
+    for name in _all_profile_names(config_raw, auth_raw):
+        scm_block, _ssh = _profile_auth_ids(config_raw, auth_raw, name)
+        result.append({
+            "name":           name,
+            "client_id":      scm_block.get("client_id", ""),
+            "tsg_id":         scm_block.get("tsg_id", ""),
+            "default_folder": _default_folder_for(config_raw, name),
+            "active":         name == active,
+        })
+    return result or [{
+        "name": _DEFAULT_PROFILE, "client_id": "", "tsg_id": "",
+        "default_folder": "Shared", "active": True,
     }]
 
 
 def get_active_profile() -> str:
     """Return the name of the currently active profile (default: ``"default"``)."""
-    return _read_config_file().get("active_profile", _DEFAULT_PROFILE)
+    return _active_profile_name(_read_config_file())
 
 
 def set_active_profile(name: str) -> None:
-    """Persist *name* as the active profile without touching credential data.
-
-    Migrates a legacy config to the multi-profile format on first call if
-    the config file has not been migrated yet.
-    """
-    raw = _to_new_format(_read_config_file())
-    raw["active_profile"] = name
-    _write_config_file(raw)
+    """Persist *name* as the active profile without touching credential data."""
+    with _CONFIG_WRITE_LOCK:
+        raw = _read_config_file()
+        auth = raw.get("auth")
+        if not isinstance(auth, dict):
+            auth = {}
+        auth["active_profile"] = name
+        raw["auth"] = auth
+        raw.pop("active_profile", None)  # drop legacy top-level key
+        _write_config_file(raw)
 
 
 # ---------------------------------------------------------------------------
@@ -449,82 +526,75 @@ def load_config(profile: str | None = None) -> ArcConfig:
       3. Environment variables (always win)
     """
     cfg = ArcConfig()
-    raw = _read_config_file()
+    config_raw = _read_config_file()
+    auth_raw = _read_auth_file()
 
-    # Determine which profile data block to load.
-    if "profiles" in raw:
-        active = raw.get("active_profile", _DEFAULT_PROFILE)
-        target = profile or active
-        pdata = raw["profiles"].get(target)
-        if pdata is None:
-            # Requested profile does not exist — fall back to active profile.
-            logger.debug("Profile '%s' not found; falling back to '%s'", target, active)
-            target = active
-            pdata = raw["profiles"].get(target, {})
-        scm_raw = pdata.get("scm", {}) if isinstance(pdata, dict) else {}
-        ssh_raw = pdata.get("ssh", {}) if isinstance(pdata, dict) else {}
-        cfg.default_folder = pdata.get("default_folder", "Shared") if isinstance(pdata, dict) else "Shared"
-    else:
-        # Legacy single-profile format.
-        target  = _DEFAULT_PROFILE
-        scm_raw = raw.get("scm", {})
-        ssh_raw = raw.get("ssh", {})
-        cfg.default_folder = raw.get("default_folder", "Shared")
-
+    active = _active_profile_name(config_raw)
+    target = profile or active
+    # Fall back to active if the requested profile is unknown to both stores.
+    if target not in _all_profile_names(config_raw, auth_raw):
+        logger.debug("Profile '%s' not found; falling back to '%s'", target, active)
+        target = active
     cfg.profile_name = target
 
-    # --- Secrets from keychain (profile-scoped new key names) ---
-    bearer_key   = _profile_key(_KEY_SCM_BEARER,   target)
-    secret_key   = _profile_key(_KEY_SCM_SECRET,   target)
-    ssh_user_key = _profile_key(_KEY_SSH_USER,     target)
-    ssh_pass_key = _profile_key(_KEY_SSH_PASSWORD, target)
+    storage = _auth_storage_mode(config_raw, auth_raw)
+    cfg.auth_storage = storage
 
-    cfg.scm.bearer_token  = _keychain_get(bearer_key)
-    cfg.scm.client_secret = _keychain_get(secret_key)
-    cfg.ssh.user_from_keychain = _keychain_get(ssh_user_key)  # may be empty
-    cfg.ssh.password      = _keychain_get(ssh_pass_key)
+    # Preferred auth method (config.json auth section).
+    auth_section = config_raw.get("auth") if isinstance(config_raw, dict) else None
+    if isinstance(auth_section, dict) and auth_section.get("preferred_method"):
+        cfg.auth_method = str(auth_section["preferred_method"])
 
-    # --- Legacy key migration (read old keys when new keys are empty) ---
-    # This lets users who configured ARC before the rename keep working.
-    # The next save_config() call will write the new keys and clear the old ones.
-    if target == _DEFAULT_PROFILE:
-        if not cfg.scm.bearer_token:
-            cfg.scm.bearer_token  = _keychain_get(_LEGACY_KEY_SCM_BEARER)
-        if not cfg.scm.client_secret:
-            cfg.scm.client_secret = _keychain_get(_LEGACY_KEY_SCM_SECRET)
-        if not cfg.ssh.password:
-            cfg.ssh.password      = _keychain_get(_LEGACY_KEY_SSH_PASSWORD)
+    scm_raw, ssh_raw = _profile_auth_ids(config_raw, auth_raw, target)
+    cfg.default_folder = _default_folder_for(config_raw, target)
 
-    # Legacy profile-scoped keys (old format used suffixed variants of old names)
-    if not cfg.scm.bearer_token:
-        cfg.scm.bearer_token  = _keychain_get(_profile_key(_LEGACY_KEY_SCM_BEARER,   target))
-    if not cfg.scm.client_secret:
-        cfg.scm.client_secret = _keychain_get(_profile_key(_LEGACY_KEY_SCM_SECRET,   target))
-    if not cfg.ssh.password:
-        cfg.ssh.password      = _keychain_get(_profile_key(_LEGACY_KEY_SSH_PASSWORD, target))
-
-    # --- Non-sensitive fields from config file ---
+    # --- Non-secret ids (auth.json / migrated legacy config) ---
     cfg.scm.client_id = scm_raw.get("client_id", "")
     cfg.scm.tsg_id    = scm_raw.get("tsg_id", "")
+    try:
+        cfg.scm.token_expiry = int(scm_raw.get("token_expiry", 0) or 0)
+    except (TypeError, ValueError):
+        cfg.scm.token_expiry = 0
 
-    # Legacy plaintext secrets: used only when keychain returned nothing.
-    # Stripped from disk on the next save_config() call.
-    if not cfg.scm.bearer_token:
-        cfg.scm.bearer_token  = scm_raw.get("bearer_token", "")
-    if not cfg.scm.client_secret:
+    # --- Secrets: from auth.json (file mode) or the OS keychain (keychain mode) ---
+    if storage == "file":
+        cfg.scm.bearer_token  = scm_raw.get("bearer_token", "") or scm_raw.get("token", "")
         cfg.scm.client_secret = scm_raw.get("client_secret", "")
+        cfg.ssh.password      = ssh_raw.get("password", "")
+    else:
+        bearer_key   = _profile_key(_KEY_SCM_BEARER,   target)
+        secret_key   = _profile_key(_KEY_SCM_SECRET,   target)
+        ssh_pass_key = _profile_key(_KEY_SSH_PASSWORD, target)
+        cfg.scm.bearer_token  = _keychain_get(bearer_key)
+        cfg.scm.client_secret = _keychain_get(secret_key)
+        cfg.ssh.password      = _keychain_get(ssh_pass_key)
+        # Legacy keychain key migration (pre-rename / pre-auth.json installs).
+        if target == _DEFAULT_PROFILE:
+            if not cfg.scm.bearer_token:
+                cfg.scm.bearer_token  = _keychain_get(_LEGACY_KEY_SCM_BEARER)
+            if not cfg.scm.client_secret:
+                cfg.scm.client_secret = _keychain_get(_LEGACY_KEY_SCM_SECRET)
+            if not cfg.ssh.password:
+                cfg.ssh.password      = _keychain_get(_LEGACY_KEY_SSH_PASSWORD)
+        if not cfg.scm.bearer_token:
+            cfg.scm.bearer_token  = _keychain_get(_profile_key(_LEGACY_KEY_SCM_BEARER, target))
+        if not cfg.scm.client_secret:
+            cfg.scm.client_secret = _keychain_get(_profile_key(_LEGACY_KEY_SCM_SECRET, target))
+        if not cfg.ssh.password:
+            cfg.ssh.password      = _keychain_get(_profile_key(_LEGACY_KEY_SSH_PASSWORD, target))
+        # Legacy plaintext secrets in an old config.json (pre-auth.json) — last resort.
+        if not cfg.scm.bearer_token:
+            cfg.scm.bearer_token  = scm_raw.get("bearer_token", "")
+        if not cfg.scm.client_secret:
+            cfg.scm.client_secret = scm_raw.get("client_secret", "")
 
-    # SSH fields — keychain takes priority over config.json for username.
-    # cfg.ssh.user_from_keychain was set above from the keychain.
-    # Fall back to config.json "username" / legacy "user" key.
-    cfg.ssh.user = (
-        cfg.ssh.user_from_keychain
-        or ssh_raw.get("username", ssh_raw.get("user", "admin"))
-    )
+    # SSH non-secret fields (auth.json uses "user"; legacy config used "username").
+    cfg.ssh.user = ssh_raw.get("user", ssh_raw.get("username", "admin"))
     cfg.ssh.key_path = ssh_raw.get("key_path", "")
-    cfg.ssh.port     = int(ssh_raw.get("port", 22))
-    if not cfg.ssh.password:
-        cfg.ssh.password = ssh_raw.get("password", "")
+    try:
+        cfg.ssh.port = int(ssh_raw.get("port", 22))
+    except (TypeError, ValueError):
+        cfg.ssh.port = 22
 
     # --- Environment variables always win ---
     cfg.scm.bearer_token  = os.environ.get("SCM_BEARER_TOKEN",  cfg.scm.bearer_token)
@@ -536,44 +606,23 @@ def load_config(profile: str | None = None) -> ArcConfig:
     cfg.ssh.password      = os.environ.get("ARC_SSH_PASS",       cfg.ssh.password)
     cfg.debug             = os.environ.get("ARC_DEBUG", "0") == "1"
 
-    # --- features_gui: top-level (non-profile) block ---
-    gui_raw = raw.get("features_gui", {}) if isinstance(raw, dict) else {}
-    if isinstance(gui_raw, dict):
-        cfg.features_gui.enabled = bool(gui_raw.get("enabled", True))
+    # --- GUI blocks: sectioned config.json `gui.{features,arc}`, legacy fallback ---
+    gui_section = config_raw.get("gui") if isinstance(config_raw, dict) else None
+    gui_section = gui_section if isinstance(gui_section, dict) else {}
+    feat_raw = gui_section.get("features") or config_raw.get("features_gui") or {}
+    if isinstance(feat_raw, dict):
+        cfg.features_gui.enabled = bool(feat_raw.get("enabled", True))
         try:
-            cfg.features_gui.port = int(gui_raw.get("port", 4445))
+            cfg.features_gui.port = int(feat_raw.get("port", 4445))
         except (TypeError, ValueError):
             cfg.features_gui.port = 4445
-
-    # --- arc_gui: top-level (non-profile) block ---
-    arc_raw = raw.get("arc_gui", {}) if isinstance(raw, dict) else {}
+    arc_raw = gui_section.get("arc") or config_raw.get("arc_gui") or {}
     if isinstance(arc_raw, dict):
         cfg.arc_gui.enabled = bool(arc_raw.get("enabled", True))
         try:
             cfg.arc_gui.port = int(arc_raw.get("port", 4444))
         except (TypeError, ValueError):
             cfg.arc_gui.port = 4444
-
-    # --- oauth: top-level (non-profile) block; env vars override on disk ---
-    oauth_raw = raw.get("oauth", {}) if isinstance(raw, dict) else {}
-    if isinstance(oauth_raw, dict):
-        cfg.oauth.auth_url = str(oauth_raw.get("auth_url", "") or "")
-        cfg.oauth.token_url = str(oauth_raw.get("token_url", "") or "")
-        cfg.oauth.client_id = str(oauth_raw.get("client_id", "") or "")
-        cfg.oauth.scope = str(oauth_raw.get("scope", "") or "")
-        try:
-            cfg.oauth.redirect_port = int(oauth_raw.get("redirect_port", 4455))
-        except (TypeError, ValueError):
-            cfg.oauth.redirect_port = 4455
-    # Environment overrides (runtime only; not persisted back).
-    cfg.oauth.auth_url = os.environ.get("ARC_OAUTH_AUTH_URL", cfg.oauth.auth_url).strip()
-    cfg.oauth.token_url = os.environ.get("ARC_OAUTH_TOKEN_URL", cfg.oauth.token_url).strip()
-    cfg.oauth.client_id = os.environ.get("ARC_OAUTH_CLIENT_ID", cfg.oauth.client_id).strip()
-    cfg.oauth.scope = os.environ.get("ARC_OAUTH_SCOPE", cfg.oauth.scope).strip()
-    try:
-        cfg.oauth.redirect_port = int(os.environ.get("ARC_OAUTH_REDIRECT_PORT", cfg.oauth.redirect_port))
-    except (TypeError, ValueError):
-        pass
 
     return cfg
 
@@ -585,99 +634,95 @@ def save_config(cfg: ArcConfig, profile: str | None = None) -> None:
     ``cfg.profile_name`` (set by ``load_config``), which falls back to
     ``"default"`` if not set.
 
-    The config file is always written in the multi-profile format.  A legacy
-    single-profile file is migrated on the first save_config() call.
+    The config file is always written in the sectioned format; auth values go to
+    auth.json (secrets there only in "file" storage mode, else the OS keychain).
 
-    Secrets are never written to disk.  If the OS keychain cannot store a
-    non-empty secret, non-sensitive config is still saved and
-    ``ConfigSecurityError`` is raised.
+    In keychain mode, if the OS keychain cannot store a non-empty secret, the rest
+    is still saved and ``ConfigSecurityError`` is raised.
     """
     target = profile or cfg.profile_name or _DEFAULT_PROFILE
+    storage = (cfg.auth_storage or "keychain").strip().lower()
+    storage = "file" if storage == "file" else "keychain"
 
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     CONFIG_DIR.chmod(stat.S_IRWXU)
 
-    # Store secrets in the keychain under the new profile-scoped key names.
-    # arc.bearer.token / arc.bearer.password / arc.shell.username / arc.shell.password
     failed_secret_keys: list[str] = []
-    for key, value in (
-        (_profile_key(_KEY_SCM_BEARER,   target), cfg.scm.bearer_token),
-        (_profile_key(_KEY_SCM_SECRET,   target), cfg.scm.client_secret),
-        (_profile_key(_KEY_SSH_USER,     target), cfg.ssh.user),
-        (_profile_key(_KEY_SSH_PASSWORD, target), cfg.ssh.password),
-    ):
-        saved = _keychain_set(key, value)
-        if value and not saved:
-            failed_secret_keys.append(key)
+    if storage == "keychain":
+        # Secrets → OS keychain (profile-scoped). SSH user is non-secret (auth.json).
+        for key, value in (
+            (_profile_key(_KEY_SCM_BEARER,   target), cfg.scm.bearer_token),
+            (_profile_key(_KEY_SCM_SECRET,   target), cfg.scm.client_secret),
+            (_profile_key(_KEY_SSH_PASSWORD, target), cfg.ssh.password),
+        ):
+            saved = _keychain_set(key, value)
+            if value and not saved:
+                failed_secret_keys.append(key)
+        if target == _DEFAULT_PROFILE:
+            for legacy_key in (_LEGACY_KEY_SCM_BEARER, _LEGACY_KEY_SCM_SECRET, _LEGACY_KEY_SSH_PASSWORD):
+                _keychain_delete(legacy_key)
+    else:
+        # File mode: secrets live in auth.json — purge any keychain copies so the
+        # two stores never disagree.
+        for base in (_KEY_SCM_BEARER, _KEY_SCM_SECRET, _KEY_SSH_USER, _KEY_SSH_PASSWORD):
+            _keychain_delete(_profile_key(base, target))
 
-    # Migrate: clear legacy key names so they don't linger in the keychain.
-    # Only clear legacy keys for the default profile (they were only ever
-    # written for the default profile under the old scheme).
-    if target == _DEFAULT_PROFILE:
-        for legacy_key in (_LEGACY_KEY_SCM_BEARER, _LEGACY_KEY_SCM_SECRET, _LEGACY_KEY_SSH_PASSWORD):
-            _keychain_delete(legacy_key)
+    # --- auth.json: all auth ids + real token_expiry; secrets only in file mode ---
+    scm_entry: dict = {"client_id": cfg.scm.client_id, "tsg_id": cfg.scm.tsg_id}
+    if cfg.scm.token_expiry:
+        scm_entry["token_expiry"] = int(cfg.scm.token_expiry)
+    ssh_entry: dict = {"user": cfg.ssh.user, "key_path": cfg.ssh.key_path, "port": cfg.ssh.port}
+    if storage == "file":
+        if cfg.scm.client_secret:
+            scm_entry["client_secret"] = cfg.scm.client_secret
+        if cfg.scm.bearer_token:
+            scm_entry["bearer_token"] = cfg.scm.bearer_token
+        if cfg.ssh.password:
+            ssh_entry["password"] = cfg.ssh.password
 
-    # Build the on-disk profile block.
-    # Secrets (bearer_token, client_secret, password) are in keychain — not on disk.
-    # SSH user is now also in keychain, but we keep a copy in config.json as fallback
-    # for systems without a keychain (headless/CI) and for readability.
-    profile_data: dict = {
-        "scm": {
-            "client_id": cfg.scm.client_id,
-            "tsg_id":    cfg.scm.tsg_id,
-        },
-        "ssh": {
-            "username": cfg.ssh.user,   # kept for headless fallback; keychain is primary
-            "key_path": cfg.ssh.key_path,
-            "port":     cfg.ssh.port,
-        },
-        "default_folder": cfg.default_folder,
-    }
-
-    # Read existing config (to preserve other profiles), migrate if needed.
-    # The whole read-modify-write runs under the config lock so a concurrent
-    # save_prefs() can't clobber the blocks we don't touch here.
     with _CONFIG_WRITE_LOCK:
-        raw = _to_new_format(_read_config_file())
-        raw.setdefault("active_profile", target)
-        raw.setdefault("profiles", {})
-        raw["profiles"][target] = profile_data
+        auth_raw = _read_auth_file()
+        auth_raw["storage"] = storage
+        profiles = auth_raw.get("profiles")
+        if not isinstance(profiles, dict):
+            profiles = {}
+        profiles[target] = {"scm": scm_entry, "ssh": ssh_entry}
+        auth_raw["profiles"] = profiles
+        _write_auth_file(auth_raw)
 
-        # Persist the top-level (non-profile) GUI blocks from cfg so port/enabled
-        # edits round-trip. Both GUIs read these back in load_config().
-        raw["features_gui"] = {
-            "enabled": cfg.features_gui.enabled,
-            "port": cfg.features_gui.port,
+        # --- config.json: sectioned, non-secret only ---
+        raw = _read_config_file()
+        # Drop legacy top-level auth/profile shapes that we've now migrated
+        # (default_folder now lives per-profile under profiles.<name>).
+        for legacy in ("scm", "ssh", "features_gui", "arc_gui", "active_profile",
+                       "oauth", "default_folder"):
+            raw.pop(legacy, None)
+        auth_section = raw.get("auth") if isinstance(raw.get("auth"), dict) else {}
+        auth_section["preferred_method"] = cfg.auth_method or "service"
+        auth_section["storage"] = storage
+        auth_section.setdefault("active_profile", target)
+        raw["auth"] = auth_section
+        raw["gui"] = {
+            "features": {"enabled": cfg.features_gui.enabled, "port": cfg.features_gui.port},
+            "arc":      {"enabled": cfg.arc_gui.enabled, "port": cfg.arc_gui.port},
         }
-        raw["arc_gui"] = {
-            "enabled": cfg.arc_gui.enabled,
-            "port": cfg.arc_gui.port,
-        }
-        # Persist the non-secret OAuth endpoint block (experimental user login).
-        # Only write keys with values so an all-empty block stays absent.
-        oauth_block = {
-            k: v for k, v in {
-                "auth_url": cfg.oauth.auth_url,
-                "token_url": cfg.oauth.token_url,
-                "client_id": cfg.oauth.client_id,
-                "scope": cfg.oauth.scope,
-            }.items() if v
-        }
-        if cfg.oauth.redirect_port and cfg.oauth.redirect_port != 4455:
-            oauth_block["redirect_port"] = cfg.oauth.redirect_port
-        if oauth_block:
-            raw["oauth"] = oauth_block
-        else:
-            raw.pop("oauth", None)
-
+        profs = raw.get("profiles") if isinstance(raw.get("profiles"), dict) else {}
+        pentry = profs.get(target) if isinstance(profs.get(target), dict) else {}
+        # Strip any auth ids that lingered in an old config.json profile block.
+        pentry = {"default_folder": cfg.default_folder}
+        profs[target] = pentry
+        raw["profiles"] = profs
+        _order = ["preferences", "auth", "gui", "profiles"]
+        raw = {**{k: raw[k] for k in _order if k in raw},
+               **{k: v for k, v in raw.items() if k not in _order}}
         _write_config_file(raw)
 
     if failed_secret_keys:
         failed = ", ".join(failed_secret_keys)
         raise ConfigSecurityError(
             f"OS keychain could not store ARC secret(s): {failed}. "
-            "Secrets were not written to config.json. "
-            "Use `arc auth configure` on a machine with keychain access, or provide "
+            "Secrets were not written to disk. "
+            "Use a machine with keychain access, choose file storage, or provide "
             "secrets through environment variables for this session."
         )
 
@@ -692,17 +737,24 @@ def delete_profile(name: str) -> None:
         raise ValueError("Cannot delete the 'default' profile.")
 
     with _CONFIG_WRITE_LOCK:
-        raw = _to_new_format(_read_config_file())
-        if name not in raw.get("profiles", {}):
+        raw = _read_config_file()
+        auth_raw = _read_auth_file()
+        cprofs = raw.get("profiles", {}) if isinstance(raw.get("profiles"), dict) else {}
+        aprofs = auth_raw.get("profiles", {}) if isinstance(auth_raw.get("profiles"), dict) else {}
+        if name not in cprofs and name not in aprofs:
             raise ValueError(f"Profile '{name}' does not exist.")
-
-        del raw["profiles"][name]
-
+        cprofs.pop(name, None)
+        aprofs.pop(name, None)
+        raw["profiles"] = cprofs
+        auth_raw["profiles"] = aprofs
         # If the deleted profile was active, fall back to default.
-        if raw.get("active_profile") == name:
-            raw["active_profile"] = _DEFAULT_PROFILE
-
+        if _active_profile_name(raw) == name:
+            auth_section = raw.get("auth") if isinstance(raw.get("auth"), dict) else {}
+            auth_section["active_profile"] = _DEFAULT_PROFILE
+            raw["auth"] = auth_section
+            raw.pop("active_profile", None)
         _write_config_file(raw)
+        _write_auth_file(auth_raw)
 
     # Remove profile-scoped keychain entries (new and legacy key names).
     for base in (_KEY_SCM_BEARER, _KEY_SCM_SECRET, _KEY_SSH_USER, _KEY_SSH_PASSWORD):

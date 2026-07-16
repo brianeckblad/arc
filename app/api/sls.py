@@ -195,7 +195,7 @@ class SLSClient:
     def _authenticate(self) -> None:
         """OAuth client-credentials flow — shared with SCMClient (app/api/_auth.py)."""
         try:
-            self._token = oauth_token(
+            self._token, _expires_in = oauth_token(
                 self._http, self._cfg.client_id, self._cfg.client_secret, self._cfg.tsg_id
             )
         except httpx.HTTPStatusError as exc:

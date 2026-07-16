@@ -30,8 +30,8 @@ otherwise edit by hand. Sections:
 | Section | Manages |
 |---|---|
 | Dashboard | Health: SCM connectivity, keychain, profile/TSG/folder, GUI ports |
-| Authentication | Service Account (recommended) + User Account (experimental); Test auth |
-| Credentials & Keychain | SCM client id / TSG / secret / bearer + SSH user / key / port / password (secrets → OS keychain) |
+| Authentication | Service Account (recommended) + User Account (`login`); Test auth |
+| Credentials & Keychain | Storage mode (keychain/file) + SCM client id / TSG / secret / bearer + SSH user / key / port / password; real token expiry |
 | Connection / config.json | Default folder, debug, GUI **ports** + enabled toggles, profiles |
 | Preferences | Terminal paging/width/height, spinner |
 | Appearance / Theme | GUI palette + per-token colours (saved per user) |
@@ -49,21 +49,21 @@ edits and manual edits stay equivalent. Secrets are never written
 to `config.json` — only to the OS keychain — and are never read back into the
 browser (blank secret fields mean "leave unchanged").
 
-## `login` (experimental user-account auth)
+## `login` (API authentication + identity)
 
-`login` runs an OAuth 2.0 **authorization-code + PKCE** loopback flow: it opens
-your browser to authenticate, captures the redirect on a local callback, and
-exchanges the code for a bearer token (stored in the keychain; expiry recorded
-in preferences). The live SCM client is then re-initialised.
+`login` authenticates to SCM **via the API — no browser**. It mints a fresh
+15-minute token from your service-account credentials (client-credentials grant),
+then reads the userinfo endpoint to display who you are. The live SCM client is
+re-initialised (no restart) and the token expiry is recorded in preferences.
 
-> **Experimental.** SCM's public API is built around OAuth *client-credentials*
-> (service accounts). There is no publicly documented browser flow that mints an
-> SCM API token for a user account, so `login` requires a compatible endpoint to
-> be configured:
->
-> - `ARC_OAUTH_AUTH_URL` — authorization endpoint
-> - `ARC_OAUTH_TOKEN_URL` — token endpoint
-> - `ARC_OAUTH_CLIENT_ID` — public client id
-> - `ARC_OAUTH_SCOPE` (optional), `ARC_OAUTH_REDIRECT_PORT` (optional, default 4455)
->
-> For production use, prefer a **Service Account**: `arc auth configure`.
+Endpoints (pan.dev):
+
+- `POST /auth/v1/oauth2/access_token` — mint the token (Client ID + Secret as HTTP
+  Basic auth, `grant_type=client_credentials`).
+  [Docs](https://pan.dev/scm/api/auth/post-auth-v-1-oauth-2-access-token/)
+- `POST /auth/v1/oauth2/userinfo` — identity claims for the token.
+  [Docs](https://pan.dev/scm/api/auth/post-auth-v-1-oauth-2-userinfo/)
+
+`login` needs SCM credentials configured first (`setup scm` / `arc auth
+configure`). If none are present, it points you at `setup scm`. Service-account
+credentials remain the supported, fully-featured auth path.

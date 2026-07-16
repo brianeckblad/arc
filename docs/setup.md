@@ -15,7 +15,7 @@ storing those credentials safely for your platform.
 | A pre-issued **bearer token** | [Bearer token setup](#bearer-token) |
 | An **OAuth client ID + secret** (service account) | [OAuth setup](#oauth-client-credentials) |
 | Neither — I need to create a service account | [Create a service account](#create-a-service-account) |
-| I want to **log in with my Palo user account** in the browser | [Browser user login](#browser-user-login-experimental) |
+| I want to **log in now and confirm my identity** (uses the API) | [Log in via the API](#log-in-via-the-api-login) |
 
 **2. How will you SSH to devices?**
 
@@ -32,11 +32,33 @@ storing those credentials safely for your platform.
 ## One-command wizard (recommended)
 
 ```
-setup
+setup scm
 ```
 
-Run `setup` at the ARC prompt.  ARC auto-detects your OS, asks two questions,
-and prints the exact commands to run — nothing is written until you confirm.
+`setup scm` is an **interactive configurator** — it asks a few questions, saves
+your answers, authenticates, and shows who you are. Nothing is written until the
+end, and typing **`x`** at any prompt exits without saving.
+
+**Q1 — SCM credentials**
+
+| Choice | What happens |
+|--------|--------------|
+| **1. Bearer token** | Prompts for a pre-issued token |
+| **2. Client ID + secret** (service account) | Prompts for client id / secret / TSG, then authenticates |
+| **3. Create a service account first** | Prints the portal steps and exits |
+| **x. Exit** | Aborts — nothing saved |
+
+**Secret storage** — you then choose where secrets are kept:
+
+| Mode | Where secrets go |
+|------|------------------|
+| **keychain** (default, secure) | OS keychain (macOS Keychain / libsecret / Windows Credential Manager) |
+| **file** (insecure, opt-in) | plaintext `config/<user>/auth.json` (0600) — **you must type `yes` to confirm** |
+
+**Q2 — Device SSH:** key file, password, skip, or exit.
+
+Everything can also be set in the browser: **`arc gui-configure` → Credentials &
+Keychain** (same storage-mode toggle, full parity with the CLI).
 
 ---
 
@@ -123,32 +145,32 @@ arc auth configure
 
 ---
 
-## Browser user login (experimental)
+## Log in via the API (`login`)
 
-Prefer signing in with your own Palo user account instead of a service account?
-ARC can run a standard OAuth authorization-code + PKCE browser flow: it opens
-your browser, you log in, and ARC stores the returned bearer token (in the OS
-keychain) and uses it until it expires.
-
-> **Important:** SCM has **no public browser-login endpoint** that mints an API
-> token for user accounts, so this path is **experimental**. It only works once
-> your identity provider's OAuth endpoints are configured. No client secret is
-> used (PKCE), so the endpoint values live in `config.json`, not the keychain.
+Once your SCM credentials are configured, run `login` inside ARC to authenticate
+**via the API — no browser** — and confirm your identity:
 
 ```
-# 1. Configure the OAuth endpoints once (non-secret):
-arc auth configure \
-    --oauth-auth-url  https://<idp>/authorize \
-    --oauth-token-url https://<idp>/token \
-    --oauth-client-id <public-client-id>
-#    …or set them in `arc gui-configure` → Authentication.
-#    (ARC_OAUTH_AUTH_URL / ARC_OAUTH_TOKEN_URL / ARC_OAUTH_CLIENT_ID override.)
-
-# 2. Log in from inside ARC:
-login          # opens the browser; token stored until it expires
+login
 ```
 
-Service-account auth (above) remains the supported, fully-featured path.
+It mints a fresh 15-minute token from your service account and reads the userinfo
+endpoint to show who you are:
+
+```
+✓ Authenticated to SCM — token valid for ~15 min.
+  Signed in as ARC Service  <svc@1234.iam.panserviceaccount.com>
+  TSG: 1234567890
+```
+
+Two documented SCM endpoints are used:
+
+- `POST /auth/v1/oauth2/access_token` — mint the token (Client ID + Secret as HTTP
+  Basic, `client_credentials`). [pan.dev](https://pan.dev/scm/api/auth/post-auth-v-1-oauth-2-access-token/)
+- `POST /auth/v1/oauth2/userinfo` — identity claims for the token.
+  [pan.dev](https://pan.dev/scm/api/auth/post-auth-v-1-oauth-2-userinfo/)
+
+If no credentials are set yet, `login` points you at `setup scm`.
 
 ---
 
@@ -279,7 +301,7 @@ After `arc auth test` shows a green check, these are the high-value entry points
 | `arc gui-configure` | Browser settings console: authentication, credentials/keychain, theme, API sources, maintenance |
 | `feature gui-configure` | Browser feature editor: turn commands on/dev/hidden/off, areas, scope, aliases, built-ins |
 | `feature show` / `feature find <text>` | List/search every capability flag and the commands it gates |
-| `login` | Experimental browser user-account login (see above) |
+| `login` | Authenticate now via the API and show your identity (no browser) |
 | `show log traffic\|threat\|system` | Fleet logs from Strata Logging Service — no device context needed |
 | `clone <res> <src> <new>` | Duplicate any named object into the active container |
 | `cd snippet <name>` | Work inside an SCM snippet container instead of a folder |

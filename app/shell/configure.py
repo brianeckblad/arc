@@ -1322,64 +1322,93 @@ class ConfigureMixin:
         console.print(f"[cyan]{status}[/cyan]")
 
     def _cmd_login(self, args: list[str]) -> None:
-        """Log in to SCM with a user account via the browser (experimental).
+        """Authenticate to SCM now via the API and show who you are (no browser).
 
-        Runs the OAuth authorization-code + PKCE loopback flow (see
-        app/auth/user_login.py).  On success the bearer token is stored in the
-        OS keychain and its expiry recorded in preferences, and the live SCM
-        client is re-initialised.  Requires ARC_OAUTH_* configuration.
+        Uses the documented client-credentials flow to mint a fresh 15-minute
+        token from the SCM ``access_token`` endpoint, then calls ``userinfo`` to
+        display the authenticated identity.  The live SCM client is refreshed and
+        the token expiry recorded in preferences.  Requires SCM credentials
+        (client id + secret + TSG, or a pre-issued bearer token).
+
+        pan.dev refs:
+          /scm/api/auth/post-auth-v-1-oauth-2-access-token/
+          /scm/api/auth/post-auth-v-1-oauth-2-userinfo/
         """
         if args and args[0] in ("?", "help"):
             console.print(
-                "[bold]login[/bold] — SCM user-account browser login (experimental)\n"
-                "  Opens your browser to authenticate, then stores the returned token.\n"
-                "  Requires [bold]ARC_OAUTH_AUTH_URL[/bold], [bold]ARC_OAUTH_TOKEN_URL[/bold], "
-                "[bold]ARC_OAUTH_CLIENT_ID[/bold].\n"
-                "  For service accounts use [bold]arc auth configure[/bold] instead."
+                "[bold]login[/bold] — authenticate to SCM now and show your identity (API, no browser)\n"
+                "  Mints a fresh 15-minute token via the client-credentials grant, then reads\n"
+                "  [bold]/auth/v1/oauth2/userinfo[/bold] to display who you are.\n\n"
+                "  Needs SCM credentials — set them with [bold]setup scm[/bold] / "
+                "[bold]arc auth configure[/bold].\n"
+                "  [dim]Docs: pan.dev → Create an access token · Retrieve OAuth 2.0 claims[/dim]"
             )
             return
 
-        from app.auth.user_login import LoginError, run_user_login
-
-        console.print("[dim]Opening browser for SCM login…[/dim]")
-        try:
-            token, expires_in = run_user_login()
-        except LoginError as exc:
+        scm = self._config.scm
+        has_creds = bool(scm.client_id and scm.client_secret and scm.tsg_id)
+        if not (has_creds or scm.bearer_token.strip()):
             console.print(
-                f"[yellow]Login unavailable:[/yellow] {exc}\n"
-                "  [dim]This is an experimental flow. Service-account auth "
-                "([bold]arc auth configure[/bold]) is the supported path.[/dim]"
+                "[yellow]No SCM credentials configured.[/yellow]\n"
+                "  Run [bold]setup scm[/bold] (or [bold]arc auth configure[/bold]) to set a\n"
+                "  service account (client id + secret + TSG), then run [bold]login[/bold] again."
             )
-            return
-        except Exception as exc:  # noqa: BLE001
-            console.print(f"[red]Login failed:[/red] {exc}")
             return
 
         import time as _time
 
-        from app.config import ConfigSecurityError, save_config
-
-        self._config.scm.bearer_token = token
-        try:
-            save_config(self._config)
-        except ConfigSecurityError as exc:
-            console.print(f"[yellow]Token obtained but not stored in keychain:[/yellow] {exc}")
-        prefs = getattr(self, "_prefs", None)
-        if prefs is not None:
-            prefs.scm_token_expiry = int(_time.time()) + max(0, expires_in)
-            save_prefs(prefs)
-        # Re-initialise the live SCM client with the new token.
+        # Mint a fresh token via the API (client-credentials → access_token).
         try:
             from app.api.client import SCMClient
-            self._scm = SCMClient(self._config.scm)
+            client = SCMClient(self._config.scm)
         except Exception as exc:  # noqa: BLE001
-            console.print(f"[yellow]Token stored, but SCM client re-init failed:[/yellow] {exc}")
+            console.print(f"[red]Login failed:[/red] {exc}")
             return
-        mins = max(0, expires_in) // 60
-        console.print(
-            f"[green]✓[/green] Logged in — token valid for ~{mins} min. "
-            "[dim](stored in keychain; expiry in preferences)[/dim]"
-        )
+
+        self._scm = client
+        expires_in = 0
+        if has_creds:
+            try:
+                expires_in = client.authenticate_now()
+            except Exception as exc:  # noqa: BLE001
+                console.print(f"[red]Authentication failed:[/red] {exc}")
+                return
+
+        # Record the REAL token expiry in the auth store (auth.json) so the
+        # startup purge and the GUI see the same value. Only persist when the
+        # endpoint reported a lifetime — a fake expiry must never be written.
+        if expires_in > 0:
+            from app.config import save_config
+            self._config.scm.token_expiry = int(_time.time()) + expires_in
+            try:
+                save_config(self._config)
+            except Exception:  # noqa: BLE001 — persistence is best-effort here
+                pass
+
+        # Confirm identity via the userinfo endpoint (best-effort).
+        claims = {}
+        try:
+            claims = client.get_userinfo()
+        except Exception:  # noqa: BLE001
+            claims = {}
+
+        if expires_in > 0:
+            console.print(
+                f"[green]✓[/green] Authenticated to SCM — token valid for ~{expires_in // 60} min."
+            )
+        else:
+            console.print("[green]✓[/green] Authenticated to SCM.")
+        if claims:
+            who = (claims.get("name") or claims.get("email") or claims.get("preferred_username")
+                   or claims.get("sub") or claims.get("client_id") or "")
+            email = claims.get("email", "")
+            detail = f"{who}" + (f"  <{email}>" if email and email != who else "")
+            console.print(f"  [dim]Signed in as[/dim] [bold]{detail or 'unknown principal'}[/bold]")
+            tsg = claims.get("tsg_id") or scm.tsg_id
+            if tsg:
+                console.print(f"  [dim]TSG:[/dim] {tsg}")
+        else:
+            console.print("  [dim]Identity claims unavailable (userinfo not returned).[/dim]")
 
 
     # ------------------------------------------------------------------
@@ -2314,172 +2343,197 @@ class ConfigureMixin:
                           "Try [bold]setup scm[/bold] or [bold]arc gui-configure[/bold].\n")
 
     def _setup_scm_wizard(self) -> None:  # noqa: C901 (acceptable complexity)
-        """Interactive credential setup wizard.
+        """Interactive SCM + SSH credential configurator.
 
-        Auto-detects the host OS, asks two short questions (SCM auth method and
-        SSH auth method), then prints the exact commands the operator needs to
-        run — nothing is written to disk until the operator follows those steps.
-
-        Side effects: prints to console only.  Does not modify any config files.
+        Collects credentials in the shell, lets the user pick a **storage mode**
+        (keychain = secure default, or a plaintext ``auth.json`` = insecure), and
+        commits everything at the END.  An Exit at any prompt aborts and saves
+        nothing.  For service accounts it also authenticates and shows identity.
         """
-        os_name = platform.system()  # "Darwin" | "Linux" | "Windows"
+        import getpass as _getpass
+        import time as _time
+
+        from app.config import (ConfigSecurityError, load_config, save_config)
+
+        os_name = platform.system()
         os_label = {"Darwin": "macOS", "Linux": "Linux / WSL", "Windows": "Windows"}.get(os_name, os_name)
-        keychain_name = {
-            "Darwin":  "macOS Keychain",
-            "Linux":   "Secret Service (libsecret) or config file",
-            "Windows": "Windows Credential Manager",
-        }.get(os_name, "the OS keychain")
 
         console.print()
-        console.print("[bold cyan]ARC Credential Setup Wizard[/bold cyan]")
-        console.print(f"[dim]Detected platform: {os_label}  ·  Secrets stored in: {keychain_name}[/dim]")
+        console.print("[bold cyan]ARC Credential Setup[/bold cyan]")
+        console.print(f"[dim]Platform: {os_label}  ·  type [bold]x[/bold] at any prompt to exit (nothing is saved)[/dim]")
         console.print()
 
-        # ── Question 1: SCM auth method ──────────────────────────────────────
-        console.print(
-            "[bold]Q1[/bold]  What SCM credentials do you have?\n"
-            "  [bold cyan]1[/bold cyan]  A pre-issued bearer token\n"
-            "  [bold cyan]2[/bold cyan]  OAuth client ID + secret  (service account)\n"
-            "  [bold cyan]3[/bold cyan]  Neither — I need to create a service account first\n"
-            "  [bold cyan]4[/bold cyan]  Log in with my Palo user account in the browser  [dim](experimental)[/dim]"
-        )
-        try:
-            scm_choice = console.input("  → ").strip()
-        except (EOFError, KeyboardInterrupt):
-            console.print("\n[dim]Setup cancelled.[/dim]")
-            return
-
-        if scm_choice not in ("1", "2", "3", "4"):
-            console.print("[yellow]Invalid choice — please type 1, 2, 3, or 4.[/yellow]")
-            return
-
-        # ── Question 2: SSH auth method ──────────────────────────────────────
-        console.print()
-        console.print(
-            "[bold]Q2[/bold]  How will you SSH to managed devices?\n"
-            "  [bold cyan]1[/bold cyan]  SSH key file  (recommended — no password stored)\n"
-            "  [bold cyan]2[/bold cyan]  Password"
-        )
-        try:
-            ssh_choice = console.input("  → ").strip()
-        except (EOFError, KeyboardInterrupt):
-            console.print("\n[dim]Setup cancelled.[/dim]")
-            return
-
-        if ssh_choice not in ("1", "2"):
-            console.print("[yellow]Invalid choice — please type 1 or 2.[/yellow]")
-            return
-
-        console.print()
-        console.print("[bold]─── Steps to follow (run these outside ARC) ───[/bold]")
-        console.print()
-
-        # ── SCM instructions ─────────────────────────────────────────────────
-        if scm_choice == "1":
-            console.print("[bold cyan]SCM — bearer token:[/bold cyan]")
-            _setup_bearer_instructions(console, os_name)
-        elif scm_choice == "2":
-            console.print("[bold cyan]SCM — OAuth client credentials:[/bold cyan]")
-            _setup_oauth_instructions(console, os_name)
-        elif scm_choice == "4":
-            console.print("[bold cyan]SCM — browser user login (experimental):[/bold cyan]")
-            self._setup_userlogin(os_name)
-        else:
-            console.print("[bold cyan]SCM — create a service account first:[/bold cyan]")
-            console.print(
-                "  1. Log in to https://stratacloudmanager.paloaltonetworks.com/\n"
-                "  2. Navigate to Settings → Identity & Access → Service Accounts\n"
-                "  3. Add a service account; copy Client ID, Client Secret, and TSG ID.\n"
-                "     (The secret is shown only once — save it now.)\n"
-                "  4. Come back and run [bold]setup[/bold] again — choose option 2 (OAuth)."
-            )
-            console.print()
-
-        # ── SSH instructions ─────────────────────────────────────────────────
-        if ssh_choice == "1":
-            console.print()
-            console.print("[bold cyan]SSH — key file:[/bold cyan]")
-            console.print(
-                "  # Generate a dedicated key (run once):\n"
-                "  ssh-keygen -t ed25519 -f ~/.ssh/panos_key -C arc-panos\n\n"
-                "  # Tell ARC to use it:\n"
-                "  arc auth configure --ssh-key ~/.ssh/panos_key"
-            )
-        else:
-            console.print()
-            console.print("[bold cyan]SSH — password:[/bold cyan]")
-            console.print(
-                "  arc auth configure\n"
-                "  # When prompted:\n"
-                "  #   SSH username: admin\n"
-                f"  #   SSH password: <paste>   ← stored in {keychain_name}"
-            )
-
-        # ── Final verification ────────────────────────────────────────────────
-        console.print()
-        console.print("[bold]─── Verify afterwards ───[/bold]")
-        if scm_choice == "4":
-            console.print(
-                "  login            # inside ARC: opens the browser to authenticate\n"
-                "  arc auth test    # live API call to SCM\n"
-                "  [dim](the token is stored in the keychain and used until it expires)[/dim]"
-            )
-        else:
-            console.print(
-                "  arc auth show    # confirm config values (secrets masked)\n"
-                "  arc auth test    # live API call to SCM\n"
-                "  Then restart ARC — the prompt should show [green]✓ SCM connected[/green]."
-            )
-        console.print()
-        console.print("[bold]─── Once connected, explore ───[/bold]")
-        console.print(
-            "  [cyan]arc gui-configure[/cyan]      settings console (auth, theme, sources) in your browser\n"
-            "  [cyan]feature gui-configure[/cyan]  turn commands on/off, areas, aliases, built-ins\n"
-            "  [cyan]show log traffic[/cyan]       fleet logs from Strata Logging Service (no device context)\n"
-            "  [cyan]clone[/cyan] / [cyan]cd snippet[/cyan]       duplicate objects · work inside a snippet container\n"
-            "  [cyan]feature show[/cyan]           list every capability flag and what it gates"
-        )
-        console.print()
-        console.print(
-            "[dim]Full setup guide: [bold]help setup[/bold]  ·  "
-            "Platform steps: [bold]setup osx[/bold] / [bold]setup linux[/bold] / [bold]setup win[/bold][/dim]"
-        )
-        console.print()
-
-    def _setup_userlogin(self, os_name: str) -> None:
-        """Guide (and optionally run) the experimental browser user-login flow.
-
-        If the OAuth endpoints are already configured, offer to run ``login``
-        now; otherwise print exactly how to configure them (persisted in
-        config.json, no secret involved) and point at ``arc gui-configure``.
-        """
-        from app.auth.user_login import LoginConfig
-
-        cfg = LoginConfig()
-        console.print(
-            "  [dim]SCM has no public browser-login endpoint for user accounts, so this\n"
-            "  path is experimental: it needs your identity provider's OAuth endpoints.[/dim]"
-        )
-        if cfg.configured:
-            console.print(
-                "  [green]OAuth endpoints are configured.[/green] To log in now:\n"
-                "  [bold cyan]login[/bold cyan]   [dim]— opens the browser, stores the token until it expires[/dim]"
-            )
+        def ask(prompt: str) -> str | None:
             try:
-                ans = console.input("  Run [bold]login[/bold] now? [y/N] ").strip().lower()
+                val = console.input(prompt).strip()
             except (EOFError, KeyboardInterrupt):
-                ans = ""
-            if ans in ("y", "yes"):
-                self._cmd_login([])
-            return
+                return None
+            return None if val.lower() in ("x", "exit", "quit", "q") else val
+
+        def secret(prompt: str) -> str | None:
+            try:
+                return _getpass.getpass(prompt)
+            except (EOFError, KeyboardInterrupt):
+                return None
+
+        def cancelled() -> None:
+            console.print("\n[dim]Setup cancelled — nothing saved.[/dim]\n")
+
+        # Work on a fresh copy; the live config is only adopted on success.
+        new = load_config(self._config.profile_name)
+
+        # ── Q1: SCM auth ─────────────────────────────────────────────────────
         console.print(
-            "  Configure the OAuth endpoints once (no client secret is used):\n"
-            "  [bold]arc auth configure[/bold] \\\n"
-            "      --oauth-auth-url  https://<idp>/authorize \\\n"
-            "      --oauth-token-url https://<idp>/token \\\n"
-            "      --oauth-client-id <public-client-id>\n"
-            "  [dim]…or set them in [bold]arc gui-configure[/bold] → Authentication.[/dim]\n"
-            "  Then run [bold cyan]login[/bold cyan] inside ARC to authenticate in your browser."
+            "[bold]Q1[/bold]  SCM credentials:\n"
+            "  [bold cyan]1[/bold cyan]  I have a pre-issued bearer token\n"
+            "  [bold cyan]2[/bold cyan]  I have a client ID + secret (service account)\n"
+            "  [bold cyan]3[/bold cyan]  I need to create a service account first  [dim](show steps + exit)[/dim]\n"
+            "  [bold cyan]x[/bold cyan]  Exit"
+        )
+        choice = ask("  → ")
+        if choice is None:
+            return cancelled()
+        if choice == "1":
+            tok = secret("  Bearer token: ")
+            if not tok:
+                return cancelled()
+            new.scm.bearer_token = tok.strip()
+            new.scm.client_id = new.scm.client_secret = new.scm.tsg_id = ""
+            new.scm.token_expiry = 0
+            new.auth_method = "bearer"
+        elif choice == "2":
+            cid = ask("  Client ID: ")
+            if cid is None:
+                return cancelled()
+            sec = secret("  Client secret: ")
+            if sec is None:
+                return cancelled()
+            tsg = ask("  TSG ID: ")
+            if tsg is None:
+                return cancelled()
+            new.scm.client_id = cid
+            new.scm.client_secret = sec
+            new.scm.tsg_id = tsg
+            new.scm.bearer_token = ""
+            new.scm.token_expiry = 0
+            new.auth_method = "service"
+        elif choice == "3":
+            console.print(
+                "\n[bold cyan]Create a service account:[/bold cyan]\n"
+                "  1. Log in to https://stratacloudmanager.paloaltonetworks.com/\n"
+                "  2. Settings → Identity & Access → Service Accounts → Add\n"
+                "  3. Copy the Client ID, Client Secret, and TSG ID (secret shown once).\n"
+                "  Then run [bold]setup scm[/bold] again and choose option 2.\n"
+            )
+            return
+        else:
+            console.print("[yellow]Invalid choice.[/yellow]")
+            return cancelled()
+
+        # ── Storage mode ─────────────────────────────────────────────────────
+        console.print(
+            "\n[bold]Where should secrets be stored?[/bold]\n"
+            "  [bold cyan]keychain[/bold cyan]  OS keychain — encrypted, recommended (default)\n"
+            "  [bold cyan]file[/bold cyan]      plaintext config/<user>/auth.json — [red]INSECURE[/red]\n"
+            "  [bold cyan]x[/bold cyan]         Exit"
+        )
+        smode = ask("  Storage [keychain/file]: ")
+        if smode is None:
+            return cancelled()
+        if smode.lower() in ("file", "f"):
+            console.print(
+                "  [red]⚠  WARNING:[/red] file mode writes your client secret / bearer token / SSH\n"
+                "  password in [bold]plaintext[/bold] to auth.json (0600). Anyone who can read the\n"
+                "  file gets your credentials. Prefer the keychain unless you understand the risk."
+            )
+            confirm = ask("  Type [bold]yes[/bold] to confirm insecure file storage: ")
+            if confirm is None:
+                return cancelled()
+            new.auth_storage = "file" if confirm.lower() == "yes" else "keychain"
+            if new.auth_storage == "keychain":
+                console.print("  [dim]Keeping secure keychain storage.[/dim]")
+        else:
+            new.auth_storage = "keychain"
+
+        # ── Q2: SSH auth ─────────────────────────────────────────────────────
+        console.print(
+            "\n[bold]Q2[/bold]  Device SSH auth:\n"
+            "  [bold cyan]1[/bold cyan]  SSH key file  (recommended)\n"
+            "  [bold cyan]2[/bold cyan]  Password\n"
+            "  [bold cyan]s[/bold cyan]  Skip SSH for now\n"
+            "  [bold cyan]x[/bold cyan]  Exit"
+        )
+        sshc = ask("  → ")
+        if sshc is None:
+            return cancelled()
+        if sshc == "1":
+            user = ask("  SSH username [admin]: ")
+            if user is None:
+                return cancelled()
+            new.ssh.user = user or "admin"
+            kp = ask("  SSH key path [~/.ssh/id_ed25519]: ")
+            if kp is None:
+                return cancelled()
+            new.ssh.key_path = os.path.expanduser(kp or "~/.ssh/id_ed25519")
+            new.ssh.password = ""
+        elif sshc == "2":
+            user = ask("  SSH username [admin]: ")
+            if user is None:
+                return cancelled()
+            new.ssh.user = user or "admin"
+            pw = secret("  SSH password: ")
+            if pw is None:
+                return cancelled()
+            new.ssh.password = pw
+            new.ssh.key_path = ""
+        elif sshc in ("s", "skip", ""):
+            pass
+        else:
+            console.print("[yellow]Invalid choice.[/yellow]")
+            return cancelled()
+
+        # ── Commit (only now) ────────────────────────────────────────────────
+        try:
+            save_config(new)
+        except ConfigSecurityError as exc:
+            console.print(f"\n[yellow]⚠[/yellow] {exc}")
+        self._config = new
+        where = "plaintext auth.json" if new.auth_storage == "file" else "the OS keychain"
+        console.print(f"\n[green]✓[/green] Credentials saved [dim](secrets in {where})[/dim].")
+
+        # ── Authenticate + identity (best-effort) ────────────────────────────
+        has_creds = bool(new.scm.client_id and new.scm.client_secret and new.scm.tsg_id)
+        if has_creds or new.scm.bearer_token:
+            try:
+                from app.api.client import SCMClient
+                client = SCMClient(new.scm)
+                self._scm = client
+                if has_creds:
+                    expires_in = client.authenticate_now()
+                    if expires_in > 0:
+                        new.scm.token_expiry = int(_time.time()) + expires_in
+                        save_config(new)
+                        self._config = new
+                        console.print(f"[green]✓[/green] Authenticated — token valid ~{expires_in // 60} min.")
+                    else:
+                        console.print("[green]✓[/green] Authenticated.")
+                claims = client.get_userinfo()
+                if claims:
+                    who = (claims.get("name") or claims.get("email")
+                           or claims.get("preferred_username") or claims.get("sub") or "")
+                    if who:
+                        console.print(f"  [dim]Signed in as[/dim] [bold]{who}[/bold]")
+            except Exception as exc:  # noqa: BLE001
+                console.print(f"[yellow]Saved, but authentication failed:[/yellow] {exc}\n"
+                              "  [dim]Check the credentials and try [bold]login[/bold].[/dim]")
+
+        console.print()
+        console.print("[bold]─── Next ───[/bold]")
+        console.print(
+            "  [cyan]arc auth test[/cyan]           live API check\n"
+            "  [cyan]login[/cyan]                   re-authenticate + show identity\n"
+            "  [cyan]arc gui-configure[/cyan]       manage all of this in the browser\n"
+            "  [cyan]feature gui-configure[/cyan]   turn commands on/off"
         )
         console.print()
 
@@ -2746,71 +2800,3 @@ class ConfigureMixin:
         self._cmd_arc(["show"])
 
 
-# ---------------------------------------------------------------------------
-# Private helpers — per-platform SCM setup instructions.
-# ---------------------------------------------------------------------------
-
-def _setup_bearer_instructions(console, os_name: str) -> None:  # type: ignore[type-arg]
-    """Print bearer-token setup commands for the detected OS."""
-    if os_name == "Darwin":
-        console.print(
-            "  arc auth configure\n"
-            "  # When prompted:\n"
-            "  #   SCM auth method: 1 (bearer token)\n"
-            "  #   Token: <paste>   ← stored in macOS Keychain, NOT on disk\n\n"
-            "  # Or store manually via the security CLI:\n"
-            "  security add-generic-password -U -s arc -a arc.bearer.token -w YOUR_TOKEN"
-        )
-    elif os_name == "Windows":
-        console.print(
-            "  arc auth configure\n"
-            "  # When prompted:\n"
-            "  #   SCM auth method: 1 (bearer token)\n"
-            "  #   Token: <paste>   ← stored in Windows Credential Manager\n\n"
-            "  # Or set for this PowerShell session only:\n"
-            "  $env:SCM_BEARER_TOKEN = 'YOUR_TOKEN'"
-        )
-    else:
-        console.print(
-            "  arc auth configure\n"
-            "  # When prompted:\n"
-            "  #   SCM auth method: 1 (bearer token)\n"
-            "  #   Token: <paste>   ← stored via libsecret or config file (0600)\n\n"
-            "  # Or set for this terminal session only:\n"
-            "  export SCM_BEARER_TOKEN=your-bearer-token"
-        )
-
-
-def _setup_oauth_instructions(console, os_name: str) -> None:  # type: ignore[type-arg]
-    """Print OAuth client credential setup commands for the detected OS."""
-    if os_name == "Darwin":
-        console.print(
-            "  arc auth configure\n"
-            "  # When prompted:\n"
-            "  #   SCM auth method: 2 (OAuth)\n"
-            "  #   Client ID:     <paste>  ← safe to store in config file\n"
-            "  #   Client secret: <paste>  ← stored in macOS Keychain\n"
-            "  #   TSG ID:        <paste>  ← safe to store in config file"
-        )
-    elif os_name == "Windows":
-        console.print(
-            "  arc auth configure\n"
-            "  # When prompted:\n"
-            "  #   SCM auth method: 2 (OAuth)\n"
-            "  #   Client ID:     <paste>  ← safe to store in config file\n"
-            "  #   Client secret: <paste>  ← stored in Windows Credential Manager\n"
-            "  #   TSG ID:        <paste>  ← safe to store in config file"
-        )
-    else:
-        console.print(
-            "  arc auth configure\n"
-            "  # When prompted:\n"
-            "  #   SCM auth method: 2 (OAuth)\n"
-            "  #   Client ID:     <paste>  ← safe to store in config file\n"
-            "  #   Client secret: <paste>  ← stored via libsecret / config file 0600\n"
-            "  #   TSG ID:        <paste>  ← safe to store in config file\n\n"
-            "  # Or export for this session:\n"
-            "  export SCM_CLIENT_ID=...\n"
-            "  export SCM_CLIENT_SECRET=...\n"
-            "  export SCM_TSG_ID=..."
-        )

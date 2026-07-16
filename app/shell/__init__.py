@@ -117,6 +117,22 @@ class ArcShell(
                 "[dim]Use SCM_* env vars for this session, or run [bold]arc auth test[/bold] to diagnose.[/dim]"
             )
 
+        # Purge an expired stored token (real expiry) so a stale bearer isn't used.
+        # Client-credential profiles re-mint automatically; a bare expired bearer is
+        # cleared here so the operator is prompted to re-authenticate.
+        try:
+            import time as _time
+            exp = int(getattr(self._config.scm, "token_expiry", 0) or 0)
+            if exp and _time.time() >= exp:
+                self._config.scm.token_expiry = 0
+                if not (self._config.scm.client_id and self._config.scm.client_secret
+                        and self._config.scm.tsg_id):
+                    self._config.scm.bearer_token = ""
+                from app.config import save_config as _save_config
+                _save_config(self._config)
+        except Exception:  # noqa: BLE001 — best-effort cleanup, never block startup
+            pass
+
         if self._config.scm.is_configured:
             try:
                 self._scm = SCMClient(self._config.scm)

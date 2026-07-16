@@ -190,11 +190,25 @@ async function mainConnection(main){
 async function mainCredentials(main){
   main.appendChild(pageHead("Credentials & Keychain",null));
   const c=await api("/api/credentials");
-  if(!c.keychain_available)main.appendChild(intro('<span style="color:var(--yellow)">⚠ OS keychain unavailable — secrets cannot be stored. Use environment variables until keychain access is available.</span>'));
+  if(!c.keychain_available)main.appendChild(intro('<span style="color:var(--yellow)">⚠ OS keychain unavailable — secrets cannot be stored in the keychain. Use file storage or environment variables.</span>'));
+
+  // ---- Storage mode (full parity with the setup CLI) ----
+  const stBox=panel("Secret storage");
+  stBox.appendChild(intro("Where ARC keeps secrets. <b>Keychain</b> = OS-encrypted (recommended). <b>File</b> = plaintext <code>config/&lt;user&gt;/auth.json</code> (0600) — INSECURE, anyone who can read the file gets your credentials."));
+  const stSeg=segmented("st-storage",[{v:"keychain",label:"Keychain (secure)"},{v:"file",label:"File (insecure)"}],c.auth_storage||"keychain",v=>{
+    document.getElementById("st-warn").style.display=(v==="file")?"":"none";});
+  stBox.appendChild(stSeg);
+  const warn=el("div");warn.id="st-warn";warn.style.cssText="color:var(--red);font-size:12.5px;margin-top:.5rem;"+((c.auth_storage==="file")?"":"display:none");
+  warn.innerHTML="⚠ File mode writes your client secret, bearer token and SSH password in <b>plaintext</b> to auth.json.";
+  stBox.appendChild(warn);
+  if(c.token_expiry){const exp=new Date(c.token_expiry*1000);
+    stBox.appendChild(el("div","muted","Current token expires: "+exp.toLocaleString()));}
+  main.appendChild(stBox);
+
   const scmBox=panel("SCM — Service Account");
   scmBox.appendChild(fieldRow("Client ID",txtInput("sc-id",c.scm.client_id),{help:"item.client_id"}));
   scmBox.appendChild(fieldRow("TSG ID",txtInput("sc-tsg",c.scm.tsg_id),{help:"item.tsg_id"}));
-  scmBox.appendChild(fieldRow("Client secret",secInput("sc-secret",c.scm.has_secret?"•••• stored — type to replace":"not set"),{hint:"OS keychain",help:"item.client_secret"}));
+  scmBox.appendChild(fieldRow("Client secret",secInput("sc-secret",c.scm.has_secret?"•••• stored — type to replace":"not set"),{hint:"keychain or auth.json",help:"item.client_secret"}));
   scmBox.appendChild(fieldRow("Bearer token",secInput("sc-bearer",c.scm.has_bearer?"•••• stored — type to replace":"not set"),{hint:"overrides service account",help:"item.bearer"}));
   main.appendChild(scmBox);
   const sshBox=panel("Device SSH");
@@ -203,10 +217,11 @@ async function mainCredentials(main){
   const keyRow=fieldRow("SSH key path",txtInput("sh-key",c.ssh.key_path),{help:"item.ssh_key_path"});
   keyRow.id="sh-keyrow";keyRow.style.display=c.ssh.key_enabled?"":"none";sshBox.appendChild(keyRow);
   sshBox.appendChild(fieldRow("SSH port",numInput("sh-port",c.ssh.port)));
-  sshBox.appendChild(fieldRow("SSH password",secInput("sh-pass",c.ssh.has_password?"•••• stored — type to replace":"not set"),{hint:"OS keychain",help:"item.ssh_password"}));
+  sshBox.appendChild(fieldRow("SSH password",secInput("sh-pass",c.ssh.has_password?"•••• stored — type to replace":"not set"),{hint:"keychain or auth.json",help:"item.ssh_password"}));
   main.appendChild(sshBox);
   wireToggle("sh-keyen",on=>{document.getElementById("sh-keyrow").style.display=on?"":"none";});
   const bar=saveBar(async()=>{try{await post("/api/credentials",{
+    auth_storage:segVal("st-storage"),
     scm:{client_id:document.getElementById("sc-id").value,tsg_id:document.getElementById("sc-tsg").value,
       client_secret:document.getElementById("sc-secret").value,bearer_token:document.getElementById("sc-bearer").value},
     ssh:{user:document.getElementById("sh-user").value,key_enabled:toggleVal("sh-keyen"),
@@ -240,20 +255,9 @@ async function renderAuthPanel(method){
     const b=el("button","btn sm","Go to Credentials");b.type="button";b.onclick=()=>go("credentials");p.appendChild(b);
     h.appendChild(p);
   }else{
-    const p=panel("User Account (experimental)");
-    p.appendChild(intro("Interactive browser login (OAuth authorization-code + PKCE). SCM has no public browser flow that mints an API token for user accounts, so this is <b>experimental</b>. Enter your identity provider's OAuth endpoints below (no client secret is used), then run <code>login</code> in the ARC shell. Environment variables <code>ARC_OAUTH_*</code> override these."));
-    const badge=el("span","badge override","experimental");p.appendChild(badge);
-    const c=await api("/api/credentials");
-    const o=c.oauth||{};
-    p.appendChild(fieldRow("Authorization URL",txtInput("oa-auth",o.auth_url||""),{hint:"browser is sent here"}));
-    p.appendChild(fieldRow("Token URL",txtInput("oa-token",o.token_url||""),{hint:"code is exchanged here"}));
-    p.appendChild(fieldRow("Client ID",txtInput("oa-cid",o.client_id||""),{hint:"public OAuth client id"}));
-    const bar=saveBar(async()=>{try{await post("/api/credentials",{oauth:{
-      auth_url:document.getElementById("oa-auth").value,
-      token_url:document.getElementById("oa-token").value,
-      client_id:document.getElementById("oa-cid").value}});
-      toast("OAuth endpoints saved — run 'login' in the shell");renderAuthPanel("user");}catch(e){toast("Error: "+e.message,true);}},"Save OAuth endpoints");
-    p.appendChild(bar);
+    const p=panel("User Account (login)");
+    p.appendChild(intro("Run <code>login</code> in the ARC shell to authenticate <b>via the API</b> using your service-account credentials — no browser. It mints a fresh 15-minute token from <code>/auth/v1/oauth2/access_token</code> and reads <code>/auth/v1/oauth2/userinfo</code> to show who you are. Set the credentials under <b>Credentials &amp; Keychain</b> (or run <code>setup scm</code>)."));
+    const b=el("button","btn sm","Go to Credentials");b.type="button";b.onclick=()=>go("credentials");p.appendChild(b);
     h.appendChild(p);
   }
 }

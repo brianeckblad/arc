@@ -87,6 +87,8 @@ function segmented(id,options,selected,onChange){
     wrap.appendChild(b);});
   return wrap;
 }
+/* Read the selected value of a segmented control created by segmented(). */
+function segVal(id){const s=document.getElementById(id);const b=s&&s.querySelector("button.sel");return b?b.dataset.v:"";}
 
 /* ---- layout ---- */
 function pageHead(title,topic){const ph=el("div","phead");ph.appendChild(el("h1",null,esc(title)));

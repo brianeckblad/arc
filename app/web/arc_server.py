@@ -60,7 +60,7 @@ _SECTION_HELP = {
     "item.terminal_width": "<h3>Terminal width</h3><p>Force a render width in columns. 0 = auto-detect from the terminal.</p>",
     "item.terminal_height": "<h3>Terminal height</h3><p>Force a render height. 0 = auto-detect.</p>",
     "item.spinner": "<h3>Spinner</h3><p>Show the “querying SCM…” spinner during API calls.</p>",
-    "item.auth_method": "<h3>Preferred auth</h3><p><b>Service Account</b> = OAuth client-credentials (recommended, fully supported). <b>User Account</b> = experimental browser login (needs <code>ARC_OAUTH_*</code>).</p>",
+    "item.auth_method": "<h3>Preferred auth</h3><p><b>Service Account</b> = OAuth client-credentials (recommended, fully supported). <b>User Account</b> = run <code>login</code> in the ARC shell to authenticate via the API and show your identity (no browser).</p>",
     "item.client_id": "<h3>Client ID</h3><p>SCM service-account OAuth client id (non-secret; stored in config.json).</p>",
     "item.tsg_id": "<h3>TSG ID</h3><p>Tenant Service Group id the token is scoped to.</p>",
     "item.client_secret": "<h3>Client secret</h3><p>Service-account OAuth secret. Stored in the OS keychain — never in config.json. Leave blank to keep the stored value.</p>",
@@ -216,7 +216,8 @@ class ArcGuiServer(BaseGuiServer):
             "features_gui_port": getattr(getattr(cfg, "features_gui", None), "port", 4445) if cfg else 4445,
             "arc_gui_port": getattr(getattr(cfg, "arc_gui", None), "port", 4444) if cfg else 4444,
             "preferred_auth": getattr(getattr(shell, "_prefs", None), "preferred_auth", "service"),
-            "token_expiry": getattr(getattr(shell, "_prefs", None), "scm_token_expiry", 0),
+            "token_expiry": getattr(scm_cfg, "token_expiry", 0) if scm_cfg else 0,
+            "auth_storage": getattr(cfg, "auth_storage", "keychain") if cfg else "keychain",
         }
 
     # -- preferences -------------------------------------------------------
@@ -506,7 +507,6 @@ class ArcGuiServer(BaseGuiServer):
         cfg = getattr(self._shell, "_config", None)
         scm = getattr(cfg, "scm", None)
         ssh = getattr(cfg, "ssh", None)
-        oauth = getattr(cfg, "oauth", None)
         has_bearer = bool(getattr(scm, "bearer_token", "")) if scm else False
         has_secret = bool(getattr(scm, "client_secret", "")) if scm else False
         has_oauth = bool(
@@ -515,18 +515,15 @@ class ArcGuiServer(BaseGuiServer):
         return {
             "keychain_available": keychain_available(),
             "preferred_auth": getattr(getattr(self._shell, "_prefs", None), "preferred_auth", "service"),
+            "auth_method": getattr(cfg, "auth_method", "service") if cfg else "service",
+            "auth_storage": getattr(cfg, "auth_storage", "keychain") if cfg else "keychain",
+            "token_expiry": getattr(scm, "token_expiry", 0) if scm else 0,
             "scm": {
                 "client_id": getattr(scm, "client_id", "") if scm else "",
                 "tsg_id": getattr(scm, "tsg_id", "") if scm else "",
                 "has_secret": has_secret,
                 "has_bearer": has_bearer,
                 "auth_method": "bearer" if has_bearer else ("service-account" if has_oauth else "none"),
-            },
-            "oauth": {
-                "auth_url": getattr(oauth, "auth_url", "") if oauth else "",
-                "token_url": getattr(oauth, "token_url", "") if oauth else "",
-                "client_id": getattr(oauth, "client_id", "") if oauth else "",
-                "configured": bool(getattr(oauth, "is_configured", False)) if oauth else False,
             },
             "ssh": {
                 "user": getattr(ssh, "user", "") if ssh else "",
@@ -538,7 +535,7 @@ class ArcGuiServer(BaseGuiServer):
         }
 
     def _apply_credentials(self, data: dict) -> dict:
-        """Update credentials; secrets go to the OS keychain via save_config."""
+        """Update credentials; secrets go to the OS keychain or auth.json per mode."""
         from app.config import ConfigSecurityError, save_config
 
         cfg = getattr(self._shell, "_config", None)
@@ -546,10 +543,14 @@ class ArcGuiServer(BaseGuiServer):
             raise RuntimeError("config unavailable")
         scm = data.get("scm") or {}
         ssh = data.get("ssh") or {}
-        oauth = data.get("oauth") or {}
         # Blank secret fields are treated as "leave unchanged" (the GUI never
         # reads secrets back, so an empty field must not wipe a stored one).
         with self._lock:
+            # Storage mode + preferred auth method (full parity with the setup CLI).
+            if data.get("auth_storage") in ("keychain", "file"):
+                cfg.auth_storage = data["auth_storage"]
+            if data.get("auth_method") in ("service", "bearer"):
+                cfg.auth_method = data["auth_method"]
             if "client_id" in scm:
                 cfg.scm.client_id = str(scm["client_id"]).strip()
             if "tsg_id" in scm:
@@ -560,13 +561,6 @@ class ArcGuiServer(BaseGuiServer):
                 cfg.scm.bearer_token = str(scm["bearer_token"]).strip()
             if scm.get("clear_bearer"):
                 cfg.scm.bearer_token = ""
-            # OAuth endpoints for experimental user login (non-secret; config.json).
-            if "auth_url" in oauth:
-                cfg.oauth.auth_url = str(oauth["auth_url"]).strip()
-            if "token_url" in oauth:
-                cfg.oauth.token_url = str(oauth["token_url"]).strip()
-            if "client_id" in oauth:
-                cfg.oauth.client_id = str(oauth["client_id"]).strip()
             if "user" in ssh:
                 cfg.ssh.user = str(ssh["user"]).strip()
             # SSH key toggle: when disabled, clear the key path (password auth).

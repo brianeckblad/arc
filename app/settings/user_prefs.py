@@ -15,7 +15,9 @@ Current keys:
     aliases           dict  User-defined command aliases.
     gui_theme         dict  Shared browser-GUI theme (both consoles).
     preferred_auth    str   Preferred SCM auth method: "service" | "user".
-    scm_token_expiry  int   Epoch when the stored bearer token expires (0 = none).
+    scm_token_expiry  int   Deprecated — real token expiry now lives in auth.json
+                            (SCMConfig.token_expiry). Retained only so older
+                            config.json preference blocks still load.
 """
 
 from __future__ import annotations
@@ -53,8 +55,9 @@ class UserPrefs:
     gui_theme: dict = field(default_factory=dict)
     # Preferred SCM auth method surfaced in the ARC console: "service" | "user".
     preferred_auth: str = "service"
-    # Epoch seconds when the stored SCM bearer token expires (0 = unknown/none).
-    # Set by the experimental user-account `login` flow.
+    # Deprecated: the real token expiry now lives in auth.json
+    # (SCMConfig.token_expiry). Kept so older config.json preference blocks that
+    # still carry this key continue to load without error.
     scm_token_expiry: int = 0
 
 

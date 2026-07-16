@@ -90,9 +90,6 @@ def auth_configure(
     scm_tsg: Optional[str] = typer.Option(None, "--scm-tsg-id"),
     ssh_user: Optional[str] = typer.Option(None, "--ssh-user"),
     ssh_key: Optional[str] = typer.Option(None, "--ssh-key"),
-    oauth_auth_url: Optional[str] = typer.Option(None, "--oauth-auth-url", help="Experimental user-login: OAuth authorization endpoint URL."),
-    oauth_token_url: Optional[str] = typer.Option(None, "--oauth-token-url", help="Experimental user-login: OAuth token endpoint URL."),
-    oauth_client_id: Optional[str] = typer.Option(None, "--oauth-client-id", help="Experimental user-login: public OAuth client id."),
     profile: str = typer.Option("default", "--profile", "-p", help="Named credential profile to create or update."),
 ) -> None:
     """Interactively configure ARC credentials.
@@ -196,19 +193,6 @@ def auth_configure(
         secret=True,
         hint="Leave blank if using key auth or SSH agent",
     )
-
-    # ── OAuth endpoints (experimental user login) — flags only, no prompts ────
-    if oauth_auth_url is not None:
-        cfg.oauth.auth_url = oauth_auth_url.strip()
-    if oauth_token_url is not None:
-        cfg.oauth.token_url = oauth_token_url.strip()
-    if oauth_client_id is not None:
-        cfg.oauth.client_id = oauth_client_id.strip()
-    if any(v is not None for v in (oauth_auth_url, oauth_token_url, oauth_client_id)):
-        console.print(
-            "\n[dim]OAuth user-login endpoints saved. Run [bold]login[/bold] in the "
-            "ARC shell to authenticate via the browser.[/dim]"
-        )
 
     try:
         save_config(cfg, profile=profile)
@@ -702,32 +686,30 @@ app.add_typer(config_app, name="config")
 
 # Template written by `arc config generate`.
 # _note fields are ignored by load_config() — they document the file for humans.
+# config.json holds NON-secret settings only; auth values live in auth.json
+# (with secrets in the OS keychain unless auth.storage = "file").
 _CONFIG_TEMPLATE = {
     "_note": (
-        "ARC config — fill in non-secret REPLACE_WITH_* values, then run: arc auth configure  "
-        "(secrets are prompted securely and stored in the OS keychain)"
+        "ARC config.json — NON-secret, sectioned. Auth values live in auth.json "
+        "(run: setup scm  — or  arc auth configure). Secrets go to the OS keychain "
+        "unless auth.storage is set to 'file'."
     ),
-    "scm": {
-        "_note": (
-            "Use bearer_token OR OAuth. Do not put secrets in this file; leave bearer_token "
-            "and client_secret blank and enter them via arc auth configure or env vars."
-        ),
-        "bearer_token": "",
-        "client_id":    "REPLACE_WITH_SCM_CLIENT_ID",
-        "client_secret": "",
-        "tsg_id":       "REPLACE_WITH_SCM_TSG_ID",
+    "preferences": {
+        "_note": "Per-user shell prefs (terminal, aliases, GUI theme). Managed via the terminal/alias commands.",
     },
-    "ssh": {
-        "_note": (
-            "SSH is used for --remote, remote <device>, and connect commands.  "
-            "Prefer key_path over password — leave password blank if using a key."
-        ),
-        "user":     "admin",
-        "key_path": "",
-        "password": "",
-        "port":     22,
+    "auth": {
+        "_note": "preferred_method: service|bearer · storage: keychain (secure) | file (plaintext auth.json)",
+        "preferred_method": "service",
+        "storage": "keychain",
+        "active_profile": "default",
     },
-    "default_folder": "Shared",
+    "gui": {
+        "features": {"enabled": True, "port": 4445},
+        "arc":      {"enabled": True, "port": 4444},
+    },
+    "profiles": {
+        "default": {"default_folder": "Shared"},
+    },
 }
 
 
@@ -761,12 +743,11 @@ def config_generate(
     )
     console.print(
         "[bold]Next steps:[/bold]\n"
-        f"  1. Edit the file and replace [cyan]REPLACE_WITH_*[/cyan] values:\n"
-        f"       [dim]{CONFIG_FILE}[/dim]\n"
-        "  2. Run [bold]arc auth configure[/bold] — migrates secrets to the OS keychain\n"
-        "  3. Run [bold]arc auth show[/bold]  — confirm everything is configured\n\n"
-        "  Inside ARC, run [bold]setup osx[/bold] / [bold]setup win[/bold] / "
-        "[bold]setup linux[/bold] for platform-specific keychain CLI commands."
+        "  1. Run [bold]setup scm[/bold] inside ARC (or [bold]arc auth configure[/bold]) to enter\n"
+        "     credentials — they're saved to auth.json (secrets → keychain by default).\n"
+        "  2. Run [bold]arc auth show[/bold] — confirm everything is configured.\n\n"
+        "  Platform steps: inside ARC run [bold]setup osx[/bold] / [bold]setup win[/bold] / "
+        "[bold]setup linux[/bold]."
     )
 
 

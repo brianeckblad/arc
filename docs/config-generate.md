@@ -13,52 +13,56 @@ arc config generate --force   # overwrite an existing config file
 ## What it does
 
 1. Creates the ARC config directory if it does not exist.
-2. Writes a template `config.json` with `_note` fields that explain each section.
+2. Writes a sectioned template `config.json` with `_note` fields that explain each section.
 3. Sets the file permissions to `0600` (owner read/write only).
 4. Prints the path to the file and next steps.
+
+`config.json` holds **non-secret** settings only, in readable sections. All auth
+information — credentials, storage mode, and the real token expiry — lives in a
+separate `auth.json`. In the default `keychain` storage mode, secrets stay in the
+OS keychain and `auth.json` carries only non-secret identifiers; in `file` mode
+(opt-in, insecure) `auth.json` also holds the plaintext secrets.
 
 ## The generated file
 
 ```json
 {
-  "_note": "ARC config — fill in non-secret REPLACE_WITH_* values, then run: arc auth configure",
-  "scm": {
-    "_note": "Do not put secrets in this file; leave bearer_token and client_secret blank",
-    "bearer_token": "",
-    "client_id":     "REPLACE_WITH_SCM_CLIENT_ID",
-    "client_secret": "",
-    "tsg_id":        "REPLACE_WITH_SCM_TSG_ID"
+  "_note": "ARC config.json — NON-secret, sectioned. Auth values live in auth.json (run: setup scm  — or  arc auth configure). Secrets go to the OS keychain unless auth.storage is set to 'file'.",
+  "preferences": {
+    "_note": "Per-user shell prefs (terminal, aliases, GUI theme). Managed via the terminal/alias commands."
   },
-  "ssh": {
-    "_note": "SSH is used for --remote, remote <device>, and connect commands",
-    "user":     "admin",
-    "key_path": "",
-    "password": "",
-    "port":     22
+  "auth": {
+    "_note": "preferred_method: service|bearer · storage: keychain (secure) | file (plaintext auth.json)",
+    "preferred_method": "service",
+    "storage": "keychain",
+    "active_profile": "default"
   },
-  "default_folder": "Shared"
+  "gui": {
+    "features": {"enabled": true, "port": 4445},
+    "arc":      {"enabled": true, "port": 4444}
+  },
+  "profiles": {
+    "default": {"default_folder": "Shared"}
+  }
 }
 ```
 
 `_note` fields are ignored by ARC at runtime — they exist only as documentation
-inside the file.
+inside the file. Credentials are **not** entered here: run `setup scm` (in the
+ARC shell) or `arc auth configure`, which write them to `auth.json` (secrets to
+the OS keychain by default).
 
 ## Workflow
 
 ```bash
-# Step 1 — generate
+# Step 1 — generate the sectioned config.json
 arc config generate
 
-# Step 2 — fill in non-sensitive values (client_id, tsg_id, SSH user/key)
-#           leave bearer_token / client_secret / password blank;
-#           arc auth configure prompts securely and stores them in the OS keychain
-$EDITOR ~/.config/arc/config.json     # Linux / macOS
-notepad %APPDATA%\arc\config.json     # Windows
+# Step 2 — enter credentials (writes auth.json; secrets → keychain by default)
+#           inside the ARC shell:   setup scm
+#           or from the CLI:        arc auth configure
 
-# Step 3 — migrate secrets to OS keychain
-arc auth configure
-
-# Step 4 — confirm everything is set
+# Step 3 — confirm everything is set
 arc auth show
 ```
 

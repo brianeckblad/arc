@@ -26,8 +26,8 @@
 | `theme` | `settings/theme.json`, `app/settings/theme.py` | same | `--only 10` |
 | `terminal` / prefs | `app/settings/user_prefs.py`, `_cmd_terminal` in `app/shell/configure.py` | same | `--only 4` |
 | `argspec` (greedy `set` parsing, slot completion) | `settings/command-structure.json` (hand-curated), `app/settings/field_catalog.py` (AUTO-GENERATED), `app/settings/command_structure.py` | hand file or `python app/scripts/generate_field_library.py` | `--only 4` |
-| `auth` | `app/config.py`, `app/cli.py` (auth group) | same | `--file app/config.py` |
-| `login` (experimental OAuth user auth) | `app/auth/user_login.py` (config.json `oauth` block; `ARC_OAUTH_*` env override), `_cmd_login` in `app/shell/configure.py`, `docs/commands/login.md` | same + `app/config.py` `OAuthConfig` | `--only 1,2,6` |
+| `auth` / `auth.json` / `storage mode` | `app/config.py` (`load_config`/`save_config`, `AUTH_FILE`, keychain vs file), `app/cli.py` (auth group) | same | `--only 1,2,6` |
+| `login` (SCM API auth + identity) | `app/api/_auth.py` (`oauth_token` + `fetch_userinfo`), `_cmd_login` in `app/shell/configure.py`, `docs/commands/login.md` | same + `SCMClient.get_userinfo`/`authenticate_now` in `app/api/client.py` | `--only 1,2,6` |
 | `setup` (guided setup) | `_cmd_setup` in `app/shell/configure.py` (dispatches `scm` → wizard, `osx\|linux\|win` → `_setup_os_guide` rendering `docs/setup-<os>.md` via `render_doc_file` in `app/docs.py`) | same | `--only 1,2,9` |
 | `clone` / `cd snippet` (object clone + snippet container) | `app/commands/clone.py`, `app/shell/navigation.py` | same | `--only 1,2,3` |
 | `scm-api` / `endpoint` | `app/scripts/API_INDEX.md`; `docs/scm-api/specs/<cat>.md` | `app/api/client.py` | full suite |
@@ -68,17 +68,17 @@ arc/
 │   ├── panos-sources.json         ← PAN-OS CLI docs pages (docs.paloaltonetworks.com)
 │   ├── scm-sources.json           ← SCM / pan.dev OpenAPI spec + guide registry
 │   ├── feature-labels.json        ← human names for the feature editor (GUI + CLI)
-├── config/<os_username>/          ← gitignored: config.json (incl. preferences block)
+├── config/<os_username>/          ← gitignored (0600): config.json (sectioned, non-secret) + auth.json (auth store; secrets here only in file mode)
 ├── docs/                          ← user-facing Markdown (help <topic>)
 │   ├── commands/                  ← hand-written pages only (no generated stubs)
 │   └── scm-api/                   ← pulled pan.dev specs (docsupdate)
 └── app/                           ← CODE ONLY
     ├── cli.py                     ← typer entry
     ├── paths.py                   ← single source for asset paths
-    ├── config.py                  ← ArcConfig + profiles + keychain
+    ├── config.py                  ← ArcConfig + profiles + keychain + auth.json store (secure/file modes)
     ├── docs.py                    ← help renderer + synthesize_command_help
     ├── api/client.py              ← SCMClient: _request() + per-domain wrappers
-    ├── auth/user_login.py         ← experimental OAuth PKCE user login (`login`)
+    ├── api/_auth.py               ← oauth_token (access_token) + fetch_userinfo — the `login` API flow
     ├── ssh/manager.py             ← paramiko pool
     ├── web/                       ← browser consoles (loopback-only HTTP):
     │   ├── gui_base.py            ← BaseGuiServer: shared server + Host guard
@@ -259,10 +259,14 @@ After `docsupdate`: `catalog rebuild` runs automatically on success — it regen
 
 ## Config, Auth, Security
 
-- Config: `config/<os_username>/config.json` (0600) — non-sensitive only. Secrets in OS keychain. `arc auth configure` (wizard), `arc auth test`, `arc config generate`.
+- **Two files in `config/<os_username>/` (both 0600, gitignored):**
+  - `config.json` — NON-secret, sectioned & readable: `preferences` · `auth` {preferred_method, storage, active_profile} · `gui` {features, arc} · `profiles` {default_folder}.
+  - `auth.json` — ALL auth info per profile: `scm` {client_id, tsg_id, real token_expiry} + `ssh` {user, key_path, port}. Secrets (client_secret, bearer_token, SSH password) live here **only** in `storage:"file"` mode; otherwise the OS **keychain**.
+- **Storage modes:** `keychain` (default, secure) vs `file` (plaintext auth.json, opt-in with warnings). Settable in BOTH `setup scm` and `arc gui-configure` — full parity, both via `app/config.py` (`load_config`/`save_config`) which is the single source of truth. Old config.json + keychain auto-migrate on first save.
+- `setup scm` is an interactive configurator (bearer / client-creds / create-SA→exit; storage prompt; SSH; Exit anywhere saves nothing). `login` re-authenticates via the API + `/userinfo`. Token expiry is the REAL `expires_in` (omit when unknown); expired tokens purged at startup (`_init_clients`).
 - Profiles: `account <name>` switches in-shell.
-- Env vars: `SCM_BEARER_TOKEN`, `SCM_CLIENT_ID`, `SCM_CLIENT_SECRET`, `SCM_TSG_ID`, `ARC_SSH_USER`, `ARC_SSH_KEY`, `ARC_SSH_PASS`, `ARC_DEBUG=1`, `ARC_DEV_MODE=1`, `ARC_FEATURE_<NAME>=on|dev|off`.
-- Never write secrets to config.json; `getpass` for secret prompts; `_mask()` when printing; catch specific exceptions.
+- Env vars: `SCM_BEARER_TOKEN`, `SCM_CLIENT_ID`, `SCM_CLIENT_SECRET`, `SCM_TSG_ID`, `ARC_SSH_USER`, `ARC_SSH_KEY`, `ARC_SSH_PASS`, `ARC_AUTH_STORAGE=keychain|file`, `ARC_DEBUG=1`, `ARC_DEV_MODE=1`, `ARC_FEATURE_<NAME>=on|dev|off`.
+- Default keeps secrets OUT of plaintext (keychain); `file` mode is explicit opt-in. `getpass` for secret prompts; `_mask()` when printing; catch specific exceptions.
 
 ---
 

@@ -40,7 +40,7 @@ from typing import Any, Optional
 
 import httpx
 
-from app.api._auth import oauth_token
+from app.api._auth import fetch_userinfo, oauth_token
 from app.config import SCMConfig
 
 
@@ -93,6 +93,7 @@ class SCMClient:
         self._cfg = cfg
         self._http = httpx.Client(timeout=30)
         self._token: str = ""
+        self._token_expires_in: int = 0
         # Optional progress callback — set by the execution layer during paginated
         # fetches so the spinner text updates as pages arrive.  Signature:
         #   _page_reporter(fetched_so_far: int, total: int) -> None
@@ -136,7 +137,8 @@ class SCMClient:
     def _authenticate(self) -> None:
         """Obtain an OAuth token via the client-credentials flow.
 
-        pan.dev ref: https://pan.app/scripts/scm/api/auth/post-auth-v-1-oauth-2-access-token/
+        pan.dev ref: /scm/api/auth/post-auth-v-1-oauth-2-access-token/
+        Records the real token lifetime in ``self._token_expires_in`` (0 = unknown).
         """
         if not (self._cfg.client_id and self._cfg.client_secret and self._cfg.tsg_id):
             raise SCMError(
@@ -144,7 +146,7 @@ class SCMClient:
                 "SCM_CLIENT_ID / SCM_CLIENT_SECRET / SCM_TSG_ID."
             )
         try:
-            self._token = oauth_token(
+            self._token, self._token_expires_in = oauth_token(
                 self._http, self._cfg.client_id, self._cfg.client_secret, self._cfg.tsg_id
             )
         except httpx.HTTPStatusError as exc:
@@ -154,6 +156,28 @@ class SCMClient:
 
     def _headers(self) -> dict[str, str]:
         return {"Authorization": f"Bearer {self._token}"}
+
+    def authenticate_now(self) -> int:
+        """Force a fresh client-credentials token; return its REAL lifetime (seconds).
+
+        Used by `login` / `setup` to authenticate on demand via the SCM
+        ``access_token`` endpoint (no browser).  Returns the endpoint-provided
+        ``expires_in`` (0 when the endpoint omits it — the caller then records no
+        expiry rather than a fabricated one).
+        """
+        self._authenticate()
+        return int(getattr(self, "_token_expires_in", 0) or 0)
+
+    def get_userinfo(self) -> dict:
+        """Return the SCM OAuth 2.0 identity claims for the current token.
+
+        pan.dev ref: /scm/api/auth/post-auth-v-1-oauth-2-userinfo/.  Best-effort:
+        returns ``{}`` if unauthenticated or the endpoint declines — callers show
+        identity when present and carry on otherwise.
+        """
+        if not self._token:
+            return {}
+        return fetch_userinfo(self._http, self._token)
 
     # ------------------------------------------------------------------
     # Generic request helpers
