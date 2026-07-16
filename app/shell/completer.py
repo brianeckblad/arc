@@ -210,11 +210,13 @@ class ArcCompleter(Completer):
             second = parts[1].lower() if len(parts) > 1 else ""
             # cd device / cd folder sub-commands
             if first == "cd" and len(parts) <= 2:
-                for sub in ("device", "folder", "..", "/"):
+                for sub in ("device", "folder", "snippet", "..", "/"):
                     if sub.startswith(partial_arg.lower()):
-                        meta = "set device context" if sub == "device" else (
-                               "set folder scope" if sub == "folder" else "clear context"
-                        )
+                        meta = {
+                            "device": "set device context",
+                            "folder": "set folder scope",
+                            "snippet": "enter snippet container",
+                        }.get(sub, "clear context")
                         yield Completion(sub, start_position=-len(partial_arg), display_meta=meta)
                 # Also offer device names directly (backward compat)
                 for device in self._shell._state.devices_cache:
@@ -237,6 +239,20 @@ class ArcCompleter(Completer):
                     if folder.lower().startswith(partial_folder.lower()):
                         yield Completion(folder, start_position=-len(partial_folder))
                 return
+            # cd snippet <name> → complete snippet name
+            if first == "cd" and second == "snippet":
+                partial_snip = parts[2] if len(parts) > 2 else ""
+                snippets = self._shell._state.snippets_cache
+                if not snippets:
+                    refresh = getattr(self._shell, "_refresh_snippets", None)
+                    if refresh:
+                        refresh(silent=True)
+                        snippets = self._shell._state.snippets_cache
+                for snip in snippets:
+                    if snip.lower().startswith(partial_snip.lower()):
+                        yield Completion(snip, start_position=-len(partial_snip),
+                                         display_meta="snippet")
+                return
             # remote/connect → device names
             for device in self._shell._state.devices_cache:
                 candidate = device_display_name(device, "")
@@ -245,14 +261,52 @@ class ArcCompleter(Completer):
             return
 
 
-        # ---- folder → 'create' subcommand only (switching uses 'cd folder') ----
+        # ---- clone <resource> <source> <new-name> ----
+        if first == "clone" and has_arg_space:
+            from app.commands.clone import _CORE as _CLONE_CORE
+            # clone <resource>
+            if len(parts) <= 2:
+                for res in sorted(_CLONE_CORE):
+                    if res.startswith(partial_arg.lower()):
+                        yield Completion(res, start_position=-len(partial_arg),
+                                         display_meta="object type")
+                return
+            resource = parts[1].lower()
+            # clone <resource> <source> → live source names
+            if len(parts) == 3 and resource in self._NAME_SOURCES:
+                partial_src = parts[2]
+                for name in self._object_names(resource):
+                    if name.lower().startswith(partial_src.lower()):
+                        yield Completion(name, start_position=-len(partial_src),
+                                         display_meta="source object")
+            return
+
+        # ---- folder → create / attach-snippet / detach-snippet subcommands ----
         if first == "folder" and has_arg_space:
-            if len(parts) <= 2 and "create".startswith(partial_arg.lower()):
-                yield Completion(
-                    "create",
-                    start_position=-len(partial_arg),
-                    display_meta="create a new folder",
-                )
+            second = parts[1].lower() if len(parts) > 1 else ""
+            if len(parts) <= 2:
+                for sub, meta in (
+                    ("create", "create a new folder"),
+                    ("attach-snippet", "attach a snippet to the active folder"),
+                    ("detach-snippet", "detach a snippet from the active folder"),
+                ):
+                    if sub.startswith(partial_arg.lower()):
+                        yield Completion(sub, start_position=-len(partial_arg),
+                                         display_meta=meta)
+                return
+            # folder attach-snippet <snippet> / folder detach-snippet <snippet>
+            if second in ("attach-snippet", "detach-snippet"):
+                partial_snip = parts[2] if len(parts) > 2 else ""
+                snippets = self._shell._state.snippets_cache
+                if not snippets:
+                    refresh = getattr(self._shell, "_refresh_snippets", None)
+                    if refresh:
+                        refresh(silent=True)
+                        snippets = self._shell._state.snippets_cache
+                for snip in snippets:
+                    if snip.lower().startswith(partial_snip.lower()):
+                        yield Completion(snip, start_position=-len(partial_snip),
+                                         display_meta="snippet")
             return
 
         # ---- catalog → subcommand completion (dev mode only) ----
@@ -292,13 +346,23 @@ class ArcCompleter(Completer):
             return
 
         # ---- feature → subcommand + flag name completion ----
+        if first == "arc" and has_arg_space and len(parts) <= 2:
+            for sub, meta in (("show", "application info"),
+                              ("gui-configure", "open browser settings console")):
+                if sub.startswith(partial_arg.lower()):
+                    yield Completion(sub, start_position=-len(partial_arg), display_meta=meta)
+            return
+
         if first == "feature" and has_arg_space:
             second = parts[1].lower() if len(parts) > 1 else ""
             if len(parts) <= 2:
-                # Complete subcommands: show, enable, disable, dev, help
-                for sub in ("show", "enable", "disable", "dev", "help"):
+                # Complete subcommands: show, enable, disable, dev, gui-configure, help
+                for sub, meta in (("show", "list flags"), ("enable", "flag ON"),
+                                  ("disable", "flag OFF"), ("dev", "flag DEV"),
+                                  ("gui-configure", "open browser feature editor"),
+                                  ("help", "feature docs")):
                     if sub.startswith(partial_arg.lower()):
-                        yield Completion(sub, start_position=-len(partial_arg))
+                        yield Completion(sub, start_position=-len(partial_arg), display_meta=meta)
             elif second == "show" and len(parts) <= 3:
                 partial_filter = parts[2] if len(parts) > 2 else ""
                 for option in ("on", "off", "dev"):

@@ -88,6 +88,28 @@ dev                      # toggle development mode (reveals "dev" flags)
 Permanent changes: edit the JSON and restart. CI: `ARC_DEV_MODE=1`,
 `ARC_FEATURE_<NAME>=on|dev|off`.
 
+### Browser consoles — `feature gui-configure` & `arc gui-configure`
+
+Two local, loopback-only browser GUIs (127.0.0.1, Host-header guarded) manage
+everything you'd otherwise hand-edit — changes apply to the running shell live,
+no restart:
+
+- **`feature gui-configure`** — the feature-flag editor: areas, per-command
+  feature state (on/dev/off/hidden), scope, command structure, aliases, built-ins.
+- **`arc gui-configure`** — the settings console: dashboard, authentication
+  (Service/User account), credentials & keychain, `config.json`, preferences,
+  appearance/theme (shared by both GUIs), branding (banner/goodbye/app-variables),
+  API sources, and maintenance (Update Docs & Commands).
+
+Both share one foundation (`app/web/gui_base.py`) + a widget library; see
+`docs/gui-consoles.md`.
+
+### Object clone & snippet containers
+
+`clone <resource> <source> <new-name>` duplicates any named object into the
+active container. `cd snippet <name>` enters an SCM snippet so `set`/`show`/
+`clone` target it instead of the folder (mutually exclusive containers).
+
 ### Generated command surface (~1,050 commands from OpenAPI)
 
 Every operation in the pulled SCM OpenAPI specs becomes a feature-gated
@@ -177,7 +199,7 @@ watch 10 show routing protocol bgp peer --remote   # every 10s, Ctrl-C stops;
 
 ### Aliases, history, terminal preferences
 
-Per-user, stored in `config/<user>/preferences.json`, loaded at launch:
+Per-user, stored in `config/<user>/config.json`, loaded at launch:
 
 ```text
 alias slt show log traffic     # define; then: slt | match deny

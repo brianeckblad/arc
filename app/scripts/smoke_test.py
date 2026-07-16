@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """ARC smoke test suite.
 
-Covers thirteen concern areas:
+Covers fourteen concern areas:
   1. Syntax       — py_compile every Python module under app/
-  2. Imports      — every module imports cleanly (no side-effect errors)
+  2. Imports      — every module imports cleanly (no side-effect errors);
+                    GUI route handlers all resolve to real methods
   3. Registry     — COMMANDS dict is structurally valid (no lambdas, required fields, etc.)
   4. Arg parser   — _parse_args() and match_command() return the right shapes
   5. Token opts   — KEYWORD_PARAMS is a module-level constant in registry.py
@@ -14,7 +15,8 @@ Covers thirteen concern areas:
  10. Theme system — ArcTheme fields, THEME_KEYS, load_theme(), file locations
  11. Code map     — app/scripts/CODE_MAP.md is current (no line-range drift in large files)
  12. Visibility   — builtin (true/hidden/false) and feature-flag (on/dev/hidden/off) states
- 13. Commit flow  — staging, unstage, abandon, commit-confirmed structure (offline)
+ 13. Commit flow  — staging, unstage, abandon, commit-confirmed structure (offline; --only 13)
+ 14. Browser GUIs — both consoles' GET/POST routes over HTTP + new-command wiring
 
 Run directly:
     python app/scripts/smoke_test.py
@@ -99,7 +101,9 @@ def _parse_cli_args() -> tuple[set[int], bool]:
     """
     args = sys.argv[1:]
     quiet = "--quiet" in args
-    all_sections = set(range(1, 13))
+    # Sections 1-12 + 14 run by default; section 13 (configure/commit flow) is
+    # opt-in via --only because it constructs heavier mock state.
+    all_sections = set(range(1, 13)) | {14}
 
     if "--only" in args:
         idx = args.index("--only")
@@ -211,6 +215,31 @@ def test_imports() -> None:
             ok(mod)
         except Exception:
             fail(mod, traceback.format_exc(limit=3).strip())
+
+    # GUI servers: every method their route_get/route_post handlers dispatch to
+    # must actually exist on the class.  Guards against a refactor silently
+    # dropping a handler method (which surfaces only as a runtime 500 in the
+    # browser — e.g. a deleted `def _apply_change` leaving dead code).
+    import inspect
+    import re as _re
+
+    for cls_path in ("app.web.feature_server:FeatureGuiServer",
+                     "app.web.arc_server:ArcGuiServer"):
+        mod_name, cls_name = cls_path.split(":")
+        cls = getattr(importlib.import_module(mod_name), cls_name)
+        missing: list[str] = []
+        for handler in ("route_get", "route_post"):
+            fn = getattr(cls, handler, None)
+            if fn is None:
+                continue
+            src = inspect.getsource(fn)
+            for meth in _re.findall(r"self\.(_[a-z][a-z0-9_]*)\(", src):
+                if not hasattr(cls, meth) and meth not in missing:
+                    missing.append(meth)
+        if missing:
+            fail(f"{cls_name}: route handlers call missing method(s)", ", ".join(sorted(missing)))
+        else:
+            ok(f"{cls_name}: all route-handler methods exist")
 
 
 # ---------------------------------------------------------------------------
@@ -519,27 +548,43 @@ def test_arg_parser() -> None:
             fail("payload builder constraint validation misbehaved",
                  f"built={built!r} pattern={pattern_rejected} max_length={too_long_rejected}")
 
-    # 4d — user preferences round-trip (config/<user>/preferences.json)
+    # 4d — user preferences round-trip (now stored in config/<user>/config.json)
+    import json as _json
+
     from app.settings import user_prefs as _up
+    import app.config as _cfgmod
 
     prefs = _up.UserPrefs(terminal_length=24, terminal_width=120, spinner=False,
                           aliases={"slt": "show log traffic"})
-    original_file = _up.PREFS_FILE
-    _up.PREFS_FILE = ROOT / "app" / "scripts" / ".smoke_prefs_test.json"
+    _tmp_dir = ROOT / "app" / "scripts" / ".smoke_cfg_test"
+    _tmp_file = _tmp_dir / "config.json"
+    _orig_dir, _orig_file = _cfgmod.CONFIG_DIR, _cfgmod.CONFIG_FILE
+    _orig_legacy = _up._LEGACY_PREFS_FILE
+    _cfgmod.CONFIG_DIR = _tmp_dir
+    _cfgmod.CONFIG_FILE = _tmp_file
+    _up._LEGACY_PREFS_FILE = _tmp_dir / "preferences.json"  # nonexistent → no migration
     try:
+        _tmp_dir.mkdir(parents=True, exist_ok=True)
         if _up.save_prefs(prefs) and _up.load_prefs() == prefs:
             ok("user_prefs: save/load round-trip preserves values (incl. aliases)")
         else:
             fail("user_prefs round-trip mismatch", repr(_up.load_prefs()))
-        _up.PREFS_FILE.write_text('{"terminal_length": "junk", "unknown_key": 1, "aliases": "junk"}')
+        # Malformed preferences block + unknown keys must be tolerated.
+        _tmp_file.write_text(_json.dumps({"preferences": {
+            "terminal_length": "junk", "unknown_key": 1, "aliases": "junk"}}))
         loaded = _up.load_prefs()
         if loaded.terminal_length == 0 and loaded.spinner is True and loaded.aliases == {}:
             ok("user_prefs: malformed values and unknown keys tolerated")
         else:
             fail("user_prefs did not tolerate malformed file", repr(loaded))
     finally:
-        _up.PREFS_FILE.unlink(missing_ok=True)
-        _up.PREFS_FILE = original_file
+        try:
+            _tmp_file.unlink(missing_ok=True)
+            _tmp_dir.rmdir()
+        except OSError:
+            pass
+        _cfgmod.CONFIG_DIR, _cfgmod.CONFIG_FILE = _orig_dir, _orig_file
+        _up._LEGACY_PREFS_FILE = _orig_legacy
 
     bad, error = parse_output_filters("frobnicate x")
     if bad is None and "unknown filter" in error:
@@ -1534,6 +1579,258 @@ def test_configure_flow() -> None:
         fail("cd .. context-aware navigation", str(exc))
 
 
+def test_gui_endpoints() -> None:
+    """Section 14 — Browser-console endpoint coverage (offline, no SCM).
+
+    Starts BOTH consoles against a REAL shell but with every file path the
+    servers write redirected to a throwaway temp tree, then exercises every
+    route over HTTP:
+      * All GET routes return 200 + expected keys (read-only, exercises every
+        getter/section builder — e.g. status, theme, prefs, config, branding,
+        sources, and the feature server's nav/areas/features/domains/files/
+        aliases/builtins/structure/theme).
+      * POST endpoints reject invalid-but-dispatching payloads with a clean 400
+        (this is what catches a route handler dispatching to a missing/broken
+        method — the class of bug that silently 500'd POST /api/feature).
+      * A few real arc-console round-trips (theme/prefs/branding/sources/
+        auth-pref) persist to the temp tree and read back.
+    Also asserts the session's new commands are still wired.
+    """
+    section("14. Browser-console endpoints  (offline, no SCM)")
+
+    import contextlib
+    import io
+    import json as _json
+    import shutil
+    import tempfile
+    import threading
+    import time
+    import urllib.error
+    import urllib.request
+
+    tmp = Path(tempfile.mkdtemp(prefix="arc-smoke-gui-"))
+    patched: list = []  # (module, attr, original)
+
+    def _patch(mod, attr, value):
+        patched.append((mod, attr, getattr(mod, attr)))
+        setattr(mod, attr, value)
+
+    server_a = server_f = None
+    try:
+        import app.config as _cfg
+        import app.paths as _paths
+        from app.settings import user_prefs as _up
+
+        # Redirect config.json + prefs to temp; redirect the settings files the
+        # arc console writes (branding/sources) to temp COPIES of the real ones.
+        _patch(_cfg, "CONFIG_DIR", tmp)
+        _patch(_cfg, "CONFIG_FILE", tmp / "config.json")
+        _patch(_up, "_LEGACY_PREFS_FILE", tmp / "nonexistent-prefs.json")
+        for attr, real in (("BANNER_FILE", _paths.BANNER_FILE),
+                           ("GOODBYE_FILE", _paths.GOODBYE_FILE),
+                           ("APP_VARIABLES_JSON", _paths.APP_VARIABLES_JSON),
+                           ("PANOS_SOURCES_FILE", _paths.PANOS_SOURCES_FILE),
+                           ("SCM_SOURCES_FILE", _paths.SCM_SOURCES_FILE)):
+            dest = tmp / Path(real).name
+            try:
+                shutil.copyfile(real, dest)
+            except OSError:
+                dest.write_text("{}\n" if str(real).endswith(".json") else "")
+            _patch(_paths, attr, dest)
+
+        # Build a real shell (no creds → _scm stays None); suppress its banner.
+        with contextlib.redirect_stdout(io.StringIO()):
+            from app.shell import ArcShell
+            shell = ArcShell(_cfg.load_config())
+
+        from app.web.arc_server import ArcGuiServer
+        from app.web.feature_server import FeatureGuiServer
+        server_a = ArcGuiServer(shell, port=4744)
+        server_f = FeatureGuiServer(shell, port=4745)
+        threading.Thread(target=server_a.serve, daemon=True).start()
+        threading.Thread(target=server_f.serve, daemon=True).start()
+        time.sleep(0.5)
+
+        def _req(port, path, body=None):
+            url = f"http://127.0.0.1:{port}{path}"
+            if body is None:
+                req = urllib.request.Request(url)
+            else:
+                req = urllib.request.Request(
+                    url, data=_json.dumps(body).encode(),
+                    headers={"Content-Type": "application/json"}, method="POST")
+            try:
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    return resp.status, _json.loads(resp.read() or b"{}")
+            except urllib.error.HTTPError as exc:
+                try:
+                    payload = _json.loads(exc.read() or b"{}")
+                except Exception:  # noqa: BLE001
+                    payload = {}
+                return exc.code, payload
+
+        # --- ARC console GET routes (read-only) ---
+        arc_gets = {
+            "/api/nav": "sections", "/api/theme": "active", "/api/status": "scm_connected",
+            "/api/prefs": "spinner", "/api/config": "default_folder",
+            "/api/credentials": "scm", "/api/branding": "banner",
+            "/api/sources?which=panos": "pages", "/api/sources?which=scm": "specs",
+        }
+        arc_get_fail = []
+        for path, key in arc_gets.items():
+            st, data = _req(4744, path)
+            if st != 200 or key not in data:
+                arc_get_fail.append(f"{path} (status={st})")
+        if arc_get_fail:
+            fail("ARC console GET routes", "; ".join(arc_get_fail))
+        else:
+            ok(f"ARC console: all {len(arc_gets)} GET routes return 200 + expected keys")
+
+        # --- Feature console GET routes (read-only) ---
+        feat_gets = {
+            "/api/nav": None, "/api/areas": None, "/api/features": None,
+            "/api/domains": None, "/api/files": None, "/api/aliases": None,
+            "/api/builtins": None, "/api/structure/list": None, "/api/theme": "active",
+        }
+        feat_get_fail = []
+        for path, key in feat_gets.items():
+            st, data = _req(4745, path)
+            if st != 200 or (key is not None and key not in data):
+                feat_get_fail.append(f"{path} (status={st})")
+        if feat_get_fail:
+            fail("Feature console GET routes", "; ".join(feat_get_fail))
+        else:
+            ok(f"Feature console: all {len(feat_gets)} GET routes return 200")
+
+        # --- POST dispatch guard: invalid-but-dispatching payloads → clean 400
+        # (a missing/broken handler would surface as 500 here). ---
+        bad_posts = [
+            (4745, "/api/feature", {"flag": "show_address", "state": "bogus"}),
+            (4745, "/api/scope", {"command": "show address", "scope": "bogus"}),
+            (4745, "/api/theme", {"base": "NoSuchTheme", "overrides": {}}),
+            (4744, "/api/theme", {"base": "NoSuchTheme", "overrides": {}}),
+            (4744, "/api/auth-pref", {"method": "bogus"}),
+            (4744, "/api/sources", {"which": "bogus"}),
+            (4744, "/api/config", {"features_gui": {"port": 4444}, "arc_gui": {"port": 4444}}),
+        ]
+        dispatch_fail = []
+        for port, path, body in bad_posts:
+            st, _ = _req(port, path, body)
+            if st != 400:
+                dispatch_fail.append(f"{path} → {st} (expected 400)")
+        if dispatch_fail:
+            fail("POST handlers must dispatch + validate (no 500s)", "; ".join(dispatch_fail))
+        else:
+            ok(f"all {len(bad_posts)} POST endpoints dispatch to a real handler (400 on bad input, no 500)")
+
+        # --- Real ARC-console round-trips persisting to the temp tree ---
+        rt_fail = []
+        st, data = _req(4744, "/api/theme", {"base": "Ocean", "overrides": {"--bg": "#010203"}})
+        if st != 200 or data.get("base") != "Ocean":
+            rt_fail.append(f"theme save ({st})")
+        st, data = _req(4744, "/api/prefs", {"terminal_length": 42, "spinner": False})
+        if st != 200 or data.get("terminal_length") != 42:
+            rt_fail.append(f"prefs save ({st})")
+        st, data = _req(4744, "/api/auth-pref", {"method": "user"})
+        if st != 200 or data.get("preferred_auth") != "user":
+            rt_fail.append(f"auth-pref save ({st})")
+        st, data = _req(4744, "/api/branding",
+                        {"goodbye_header": "## h", "goodbye_lines": ["bye one", "bye two"],
+                         "app_variables": [{"key": "app_name", "value": "ARC"}]})
+        if st != 200 or "bye one" not in (data.get("goodbye_lines") or []):
+            rt_fail.append(f"branding save ({st})")
+        st, data = _req(4744, "/api/sources",
+                        {"which": "panos", "site": "x",
+                         "pages": [{"key": "k", "url": "https://e.x", "kind": "added", "version": "1"}]})
+        if st != 200 or not data.get("pages"):
+            rt_fail.append(f"sources save ({st})")
+        # unified theme actually persisted to config.json preferences block
+        saved = _json.loads((tmp / "config.json").read_text())
+        if saved.get("preferences", {}).get("gui_theme", {}).get("base") != "Ocean":
+            rt_fail.append("gui_theme not persisted to config.json")
+        if rt_fail:
+            fail("ARC console POST round-trips", "; ".join(rt_fail))
+        else:
+            ok("ARC console: theme/prefs/auth-pref/branding/sources round-trip to temp files")
+
+        # --- Feature toggle applies to the LIVE shell (no restart) ---
+        try:
+            key = "show address"
+            from app.commands.registry import COMMANDS as _CMDS
+            cd = _CMDS.get(key)
+            if cd is not None:
+                _req(4745, "/api/area", {"area": cd.category, "disabled": False})
+                st, _ = _req(4745, "/api/feature", {"flag": cd.feature_flag, "state": "on"})
+                if st == 200 and shell._is_command_visible(key, cd):
+                    ok("feature enable via GUI applies to the live shell (no restart)")
+                else:
+                    fail("live feature enable", f"status={st}, visible={shell._is_command_visible(key, cd)}")
+        except Exception as exc:  # noqa: BLE001
+            fail("live feature enable", str(exc))
+
+        # --- Tab-lifecycle: heartbeat keeps alive, /api/close releases CLI ---
+        try:
+            st, _ = _req(4744, "/api/ping", {})
+            before = server_a._last_ping
+            time.sleep(0.02)
+            _req(4744, "/api/ping", {})
+            pinged = server_a._last_ping > before
+            st_c, _ = _req(4745, "/api/close", {})
+            closed = server_f._closed.wait(2.0)
+            if st == 200 and pinged and st_c == 200 and closed:
+                ok("heartbeat ping + /api/close release the blocked CLI")
+            else:
+                fail("tab lifecycle",
+                     f"ping={st}/{pinged} close={st_c}/{closed}")
+        except Exception as exc:  # noqa: BLE001
+            fail("tab lifecycle", str(exc))
+
+    except Exception as exc:  # noqa: BLE001
+        fail("GUI endpoint coverage", traceback.format_exc(limit=4).strip())
+    finally:
+        for srv in (server_a, server_f):
+            if srv is not None:
+                try:
+                    srv.stop()
+                except Exception:  # noqa: BLE001
+                    pass
+        for mod, attr, orig in reversed(patched):
+            setattr(mod, attr, orig)
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def test_new_commands() -> None:
+    """Section 14b — the session's new features stay wired (registry + builtins)."""
+    # Folded into section 14 output but a distinct set of assertions.
+    from app.commands.registry import COMMANDS
+    from app.shell import _SHELL_BUILTINS
+
+    # clone command registered + feature-flagged
+    clone = COMMANDS.get("clone")
+    if clone is not None and clone.feature_flag:
+        ok(f"clone command registered (flag: {clone.feature_flag})")
+    else:
+        fail("clone command missing or not feature-flagged")
+
+    # cd snippet navigation reachable (handled by the cd builtin)
+    if "cd" in _SHELL_BUILTINS:
+        ok("cd builtin present (cd snippet navigation reachable)")
+    else:
+        fail("cd builtin missing")
+
+    # login builtin present
+    if "login" in _SHELL_BUILTINS:
+        ok("login builtin present")
+    else:
+        fail("login builtin missing from settings/builtin-commands.json")
+
+
+def _test_gui_and_commands() -> None:
+    """Section 14 driver — GUI endpoint coverage + new-command wiring."""
+    test_gui_endpoints()
+    test_new_commands()
+
+
 # Maps section number to (function, short label)
 _SECTION_MAP = [
     (1,  test_syntax,               "Syntax"),
@@ -1549,6 +1846,7 @@ _SECTION_MAP = [
     (11, test_code_map,             "Code map freshness"),
     (12, test_command_visibility,   "Command visibility"),
     (13, test_configure_flow,       "Configure/commit flow"),
+    (14, _test_gui_and_commands,    "Browser consoles + new commands"),
 ]
 
 

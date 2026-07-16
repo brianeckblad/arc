@@ -18,7 +18,7 @@ feature show on|off|dev|hidden   List only flags in one state
 feature show <name>          List flags/commands matching a name fragment
 show feature on              Alias for feature show on
 show feature <name>          Alias for feature show <name>
-feature gui                  Open the browser feature editor (see below)
+feature gui-configure                  Open the browser feature editor (see below)
 feature area                 List areas + which are enabled/disabled
 feature area <name> enable|disable   Turn a whole area on/off (name or key)
 feature info <flag>          Describe a flag (human name + area) + its gated commands
@@ -42,9 +42,9 @@ alias                        List personal aliases  (alias <name> <expansion> to
 dev                          Toggle development mode (reveal DEV commands)
 ```
 
-## Browser editor — `feature gui`
+## Browser editor — `feature gui-configure`
 
-`feature gui` starts a small local web server (127.0.0.1, port from
+`feature gui-configure` starts a small local web server (127.0.0.1, port from
 `features_gui.port` in config.json — default **4445**), opens your browser, and
 **waits** while you edit. Click **Done** in the page (or press **Ctrl-C** in the
 shell) to close it and return to the prompt. Nothing runs after you close it.
@@ -200,7 +200,7 @@ Aliases let you type a short word instead of a full command. Two kinds:
 | Kind | Stored in | Edited by |
 |---|---|---|
 | **System** (shared) | `settings/command-aliases.json` | GUI **Aliases** tab, or hand-edit |
-| **Personal** (per-user) | `config/<user>/preferences.json` | GUI **Aliases** tab, or the `alias` builtin |
+| **Personal** (per-user) | `config/<user>/config.json` | GUI **Aliases** tab, or the `alias` builtin |
 
 ```text
 alias                    List your personal aliases

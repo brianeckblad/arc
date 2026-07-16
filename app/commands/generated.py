@@ -161,11 +161,18 @@ def _fill_path(path: str, path_params: list[str], args: dict) -> str:
 
 
 def _query(entry: dict, ctx: ExecutionContext, args: dict) -> dict:
-    """Populate known query params from context first, then command args."""
+    """Populate known query params from context first, then command args.
+
+    Folder-scoped resources are placed in the active container: a snippet
+    (``?snippet=``) when a snippet context is active, otherwise the active
+    folder (``?folder=``).  The two are mutually exclusive, so a ``folder``
+    query slot is satisfied by the snippet when one is set.
+    """
+    cparam, cvalue = ctx.container
     query: dict[str, Any] = {}
     for name in entry.get("query_params") or []:
         if name == "folder":
-            query[name] = ctx.folder
+            query[cparam] = cvalue
         elif name == "device" and ctx.target:
             query[name] = ctx.target
         elif name in args:
@@ -184,11 +191,19 @@ def _make_handler(entry: dict) -> Callable[[ExecutionContext, dict], Any]:
             if method == "POST" and field_entry:
                 # Flat resource with spec-derived field syntax — build the
                 # payload from parsed CLI fields (validates before staging).
-                # A body-level folder falls back to the active folder context.
+                # The body-level container falls back to the active container
+                # (snippet when one is set, otherwise the active folder).  The
+                # ?folder=/?snippet= query param (see _query) is authoritative;
+                # we keep the body container consistent so SCM never sees two
+                # conflicting containers.
+                cparam, cvalue = ctx.container
                 body = _payload_from_fields(
                     entry["command"], field_entry, args,
-                    defaults={"folder": ctx.folder},
+                    defaults={"folder": cvalue},
                 )
+                if cparam == "snippet" and "folder" in body:
+                    body.pop("folder", None)
+                    body["snippet"] = body.get("snippet") or cvalue
             else:
                 body = _json_payload(args)
         else:

@@ -54,6 +54,11 @@ class PromptMixin:
         if self._state.device and getattr(self._state, "attached", False):
             attach_seg = "<sep> </sep><ssh>[ssh]</ssh>"
 
+        # Snippet container — when active it supersedes the folder for object
+        # reads/writes, so it is shown as an explicit prompt segment.
+        snip = self._state.snippet
+        snip_seg = f"<sep>:</sep><snippet>{snip}</snippet>" if snip else ""
+
         if self._state.device:
             name = device_display_name(self._state.device)
             if at_shared:
@@ -62,6 +67,7 @@ class PromptMixin:
                     f"<arc>arc</arc>"
                     f"<sep>:</sep><device>{name}</device>"
                     f"<sep>:</sep><ctx>device</ctx>"
+                    f"{snip_seg}"
                     f"{dev_seg}"
                     f"{confirm_seg}"
                     f"{attach_seg}"
@@ -73,6 +79,7 @@ class PromptMixin:
                 f"<arc>arc</arc>"
                 f"<sep>:</sep><device>{name}</device>"
                 f"<sep>:</sep><folder>{folder}</folder>"
+                f"{snip_seg}"
                 f"{dev_seg}"
                 f"{confirm_seg}"
                 f"{attach_seg}"
@@ -81,10 +88,12 @@ class PromptMixin:
             )
 
         if at_shared:
-            # No device, no specific folder — global context
+            # No device, no specific folder — global context (or snippet)
+            ctx_seg = "<sep>:</sep><ctx>global</ctx>" if not snip else ""
             return HTML(
                 f"<arc>arc</arc>"
-                f"<sep>:</sep><ctx>global</ctx>"
+                f"{ctx_seg}"
+                f"{snip_seg}"
                 f"{dev_seg}"
                 f"{confirm_seg}"
                 f"{noscm_seg}"
@@ -95,6 +104,7 @@ class PromptMixin:
         return HTML(
             f"<arc>arc</arc>"
             f"<sep>:</sep><folder>{folder}</folder>"
+            f"{snip_seg}"
             f"{dev_seg}"
             f"{confirm_seg}"
             f"{noscm_seg}"

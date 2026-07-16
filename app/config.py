@@ -27,6 +27,7 @@ import json
 import logging
 import os
 import stat
+import threading
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -34,6 +35,12 @@ import keyring
 import keyring.errors
 
 logger = logging.getLogger(__name__)
+
+# Serializes read-modify-write access to config.json.  Both save_config() and
+# save_prefs() (and delete_profile()) mutate the same file; this lock makes each
+# read-modify-write atomic w.r.t. the others so concurrent writers (e.g. the
+# threaded GUI server) can't clobber each other's blocks.
+_CONFIG_WRITE_LOCK = threading.RLock()
 
 # ---------------------------------------------------------------------------
 # Config path — <project_root>/config/<os_username>/config.json
@@ -211,10 +218,10 @@ class SSHConfig:
 
 @dataclass
 class FeaturesGuiConfig:
-    """Settings for the browser-based feature-flag editor (`feature gui`).
+    """Settings for the browser-based feature-flag editor (`feature gui-configure`).
 
     Non-sensitive; stored at the top level of config.json (not per-profile).
-      enabled — whether the `feature gui` command is allowed to launch.
+      enabled — whether the `feature gui-configure` command is allowed to launch.
       port    — local port the on-demand HTTP server listens on (127.0.0.1).
     """
 
@@ -223,10 +230,24 @@ class FeaturesGuiConfig:
 
 
 @dataclass
+class ArcGuiConfig:
+    """Settings for the browser-based ARC settings console (`arc gui-configure`).
+
+    Non-sensitive; stored at the top level of config.json (not per-profile).
+      enabled — whether the `arc gui-configure` command is allowed to launch.
+      port    — local port the on-demand HTTP server listens on (127.0.0.1).
+    """
+
+    enabled: bool = True
+    port: int = 4444
+
+
+@dataclass
 class ArcConfig:
     scm: SCMConfig = field(default_factory=SCMConfig)
     ssh: SSHConfig = field(default_factory=SSHConfig)
     features_gui: FeaturesGuiConfig = field(default_factory=FeaturesGuiConfig)
+    arc_gui: ArcGuiConfig = field(default_factory=ArcGuiConfig)
     debug: bool = False
     default_folder: str = "Shared"
     # Which named profile was loaded.  Set automatically by load_config().
@@ -260,15 +281,35 @@ def _read_config_file() -> dict:
 
 
 def _write_config_file(raw: dict) -> None:
-    """Atomically write *raw* to CONFIG_FILE with mode 0600."""
-    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-    CONFIG_DIR.chmod(stat.S_IRWXU)
-    flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
-    fd = os.open(CONFIG_FILE, flags, 0o600)
-    with os.fdopen(fd, "w", encoding="utf-8") as handle:
-        json.dump(raw, handle, indent=2)
-        handle.write("\n")
-    CONFIG_FILE.chmod(stat.S_IRUSR | stat.S_IWUSR)
+    """Write *raw* to CONFIG_FILE atomically, with mode 0600.
+
+    Writes to a temporary file in the same directory, flushes+fsyncs it, then
+    atomically replaces CONFIG_FILE via ``os.replace``.  A crash mid-write can
+    therefore never leave a truncated/corrupt config.json — readers see either
+    the old file or the complete new one.  Serialized by ``_CONFIG_WRITE_LOCK``.
+    """
+    import tempfile
+
+    with _CONFIG_WRITE_LOCK:
+        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        CONFIG_DIR.chmod(stat.S_IRWXU)
+        fd, tmp_path = tempfile.mkstemp(dir=str(CONFIG_DIR), prefix=".config-", suffix=".tmp")
+        try:
+            os.chmod(tmp_path, 0o600)
+            with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                json.dump(raw, handle, indent=2)
+                handle.write("\n")
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(tmp_path, CONFIG_FILE)
+        except BaseException:
+            # Best-effort cleanup of the temp file on any failure.
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+            raise
+        CONFIG_FILE.chmod(stat.S_IRUSR | stat.S_IWUSR)
 
 
 def _to_new_format(raw: dict) -> dict:
@@ -301,6 +342,10 @@ def _to_new_format(raw: dict) -> dict:
     # Preserve top-level (non-profile) settings across migration.
     if "features_gui" in raw:
         migrated["features_gui"] = raw["features_gui"]
+    if "arc_gui" in raw:
+        migrated["arc_gui"] = raw["arc_gui"]
+    if "preferences" in raw:
+        migrated["preferences"] = raw["preferences"]
     return migrated
 
 
@@ -468,6 +513,15 @@ def load_config(profile: str | None = None) -> ArcConfig:
         except (TypeError, ValueError):
             cfg.features_gui.port = 4445
 
+    # --- arc_gui: top-level (non-profile) block ---
+    arc_raw = raw.get("arc_gui", {}) if isinstance(raw, dict) else {}
+    if isinstance(arc_raw, dict):
+        cfg.arc_gui.enabled = bool(arc_raw.get("enabled", True))
+        try:
+            cfg.arc_gui.port = int(arc_raw.get("port", 4444))
+        except (TypeError, ValueError):
+            cfg.arc_gui.port = 4444
+
     return cfg
 
 
@@ -528,12 +582,26 @@ def save_config(cfg: ArcConfig, profile: str | None = None) -> None:
     }
 
     # Read existing config (to preserve other profiles), migrate if needed.
-    raw = _to_new_format(_read_config_file())
-    raw.setdefault("active_profile", target)
-    raw.setdefault("profiles", {})
-    raw["profiles"][target] = profile_data
+    # The whole read-modify-write runs under the config lock so a concurrent
+    # save_prefs() can't clobber the blocks we don't touch here.
+    with _CONFIG_WRITE_LOCK:
+        raw = _to_new_format(_read_config_file())
+        raw.setdefault("active_profile", target)
+        raw.setdefault("profiles", {})
+        raw["profiles"][target] = profile_data
 
-    _write_config_file(raw)
+        # Persist the top-level (non-profile) GUI blocks from cfg so port/enabled
+        # edits round-trip. Both GUIs read these back in load_config().
+        raw["features_gui"] = {
+            "enabled": cfg.features_gui.enabled,
+            "port": cfg.features_gui.port,
+        }
+        raw["arc_gui"] = {
+            "enabled": cfg.arc_gui.enabled,
+            "port": cfg.arc_gui.port,
+        }
+
+        _write_config_file(raw)
 
     if failed_secret_keys:
         failed = ", ".join(failed_secret_keys)
@@ -554,17 +622,18 @@ def delete_profile(name: str) -> None:
     if name == _DEFAULT_PROFILE:
         raise ValueError("Cannot delete the 'default' profile.")
 
-    raw = _to_new_format(_read_config_file())
-    if name not in raw.get("profiles", {}):
-        raise ValueError(f"Profile '{name}' does not exist.")
+    with _CONFIG_WRITE_LOCK:
+        raw = _to_new_format(_read_config_file())
+        if name not in raw.get("profiles", {}):
+            raise ValueError(f"Profile '{name}' does not exist.")
 
-    del raw["profiles"][name]
+        del raw["profiles"][name]
 
-    # If the deleted profile was active, fall back to default.
-    if raw.get("active_profile") == name:
-        raw["active_profile"] = _DEFAULT_PROFILE
+        # If the deleted profile was active, fall back to default.
+        if raw.get("active_profile") == name:
+            raw["active_profile"] = _DEFAULT_PROFILE
 
-    _write_config_file(raw)
+        _write_config_file(raw)
 
     # Remove profile-scoped keychain entries (new and legacy key names).
     for base in (_KEY_SCM_BEARER, _KEY_SCM_SECRET, _KEY_SSH_USER, _KEY_SSH_PASSWORD):

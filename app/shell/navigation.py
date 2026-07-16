@@ -15,14 +15,17 @@ class NavigationMixin:
         return time.monotonic() - loaded_at > _CACHE_MAX_AGE_S
 
     def _cmd_cd(self, args: list[str]) -> None:
-        """Change device or folder context (navigation only).
+        """Change device, folder, or snippet context (navigation only).
 
         Usage:
           cd device <name>   — set device context (Tab -> device list)
           cd folder <name>   — set folder context (Tab -> folder list)
           cd folder ..       — reset folder to Shared
-          cd ..  |  cd /     — context-aware back: clears device if set,
-                               resets folder to Shared if no device set
+          cd snippet <name>  — enter a snippet container (Tab -> snippet list);
+                               object set/show/clone then target the snippet
+          cd snippet ..      — leave the snippet, back to folder context
+          cd ..  |  cd /     — context-aware back: leaves snippet, else clears
+                               device, else resets folder to Shared
           cd <name>          — shorthand for 'cd device <name>' (backward compat)
           cd                 — show current context
 
@@ -32,26 +35,34 @@ class NavigationMixin:
         if not args:
             dev = self._state.device
             folder = self._state.folder
+            snippet = self._state.snippet
+            container = (
+                f"[cyan]snippet:[/cyan] [bold magenta]{snippet}[/bold magenta]"
+                if snippet
+                else f"[cyan]folder:[/cyan] [bold green]{folder}[/bold green]"
+            )
             if dev:
                 name = device_display_name(dev, "?")
-                console.print(
-                    f"[cyan]device:[/cyan] [bold]{name}[/bold]  "
-                    f"[cyan]folder:[/cyan] [bold green]{folder}[/bold green]"
-                )
+                console.print(f"[cyan]device:[/cyan] [bold]{name}[/bold]  {container}")
             else:
-                console.print(
-                    f"[cyan]context:[/cyan] global  "
-                    f"[cyan]folder:[/cyan] [bold green]{folder}[/bold green]"
-                )
-            console.print("[dim]  cd device <name>  |  cd folder <name>  |  cd .. → back (device → folder → global)[/dim]")
+                console.print(f"[cyan]context:[/cyan] global  {container}")
+            console.print("[dim]  cd device <name>  |  cd folder <name>  |  cd snippet <name>  |  cd .. → back (snippet → device → folder → global)[/dim]")
             return
 
         # cd ..  or  cd /  — context-aware navigation:
+        #   • snippet is set → exit snippet (return to folder context)
         #   • device is set → clear device (return to folder-only context)
         #   • no device, folder is set → reset folder to Shared (return to global)
         #   • already global → no-op with a hint
         if args[0] in ("..", "/"):
-            if self._state.device:
+            if self._state.snippet:
+                prev = self._state.snippet
+                self._state.snippet = None
+                console.print(
+                    f"[cyan]Left snippet[/cyan] [bold]{prev}[/bold]  "
+                    f"[dim](folder context: {self._state.folder})[/dim]"
+                )
+            elif self._state.device:
                 self._state.device = None
                 self._state.attached = False
                 console.print(_cd_hint("clear"))
@@ -80,9 +91,23 @@ class NavigationMixin:
             target = rest[0]
             if target in ("..", "/"):
                 self._state.folder = "Shared"
+                self._state.snippet = None
                 console.print("[cyan]SCM folder reset to:[/cyan] [bold]Shared[/bold]")
             else:
                 self._switch_folder(" ".join(rest))
+            return
+
+        if sub == "snippet":
+            if not rest:
+                console.print("[yellow]Usage:[/yellow] cd snippet <name>  (Tab to list snippets)")
+                return
+            target = rest[0]
+            if target in ("..", "/"):
+                self._state.snippet = None
+                console.print("[cyan]Left snippet context[/cyan]  [dim](folder: "
+                              f"{self._state.folder})[/dim]")
+            else:
+                self._switch_snippet(" ".join(rest))
             return
 
         # Backward compat: `cd <name>` with no subcommand keyword → device
@@ -254,6 +279,11 @@ class NavigationMixin:
             f"[bold cyan]SCM folder:[/bold cyan] [bold green]{self._state.folder}[/bold green]"
             "  [dim](all API calls scoped to this folder — change with 'folder <name>')[/dim]"
         )
+        if self._state.snippet:
+            console.print(
+                f"[bold cyan]SCM snippet:[/bold cyan] [bold magenta]{self._state.snippet}[/bold magenta]"
+                "  [dim](object set/show/clone target this snippet instead of the folder — cd .. to leave)[/dim]"
+            )
         active_tsg = self._state.tsg_id or "(root / config default)"
         console.print(f"[bold cyan]TSG:[/bold cyan] [cyan]{active_tsg}[/cyan]")
 
@@ -285,6 +315,7 @@ class NavigationMixin:
                 return
 
         self._state.folder = new_folder
+        self._state.snippet = None
         if self._state.device:
             device_name = device_display_name(self._state.device)
             self._state.device = None
@@ -296,6 +327,51 @@ class NavigationMixin:
         else:
             console.print(f"[cyan]SCM folder set to:[/cyan] [bold]{new_folder}[/bold]")
 
+    def _switch_snippet(self, new_snippet: str) -> None:
+        """Validate and apply a snippet context change — called by `cd snippet <name>`.
+
+        A snippet is a config container that is mutually exclusive with a folder:
+        while a snippet context is active, object reads/writes target it via
+        ?snippet= instead of the active folder.  `cd ..` (or `cd snippet ..`)
+        leaves the snippet and returns to the folder context.
+        """
+        if not self._state.snippets_cache or self._cache_stale(self._state.snippets_loaded_at):
+            self._refresh_snippets(silent=True)
+        names = self._state.snippets_cache
+        if names and new_snippet not in names:
+            match = next((n for n in names if n.lower() == new_snippet.lower()), None)
+            if match:
+                new_snippet = match
+            else:
+                active_tsg = active_tsg_label(self._state, self._config)
+                console.print(
+                    f"[red]Snippet '{new_snippet}' not found in TSG {active_tsg}.[/red]\n"
+                    f"  [dim]Available snippets: {', '.join(sorted(names)[:20])}"
+                    f"{' …' if len(names) > 20 else ''}\n"
+                    "  Tab after 'cd snippet ' to complete, or 'show snippets global' to list.[/dim]"
+                )
+                return
+        self._state.snippet = new_snippet
+        console.print(
+            f"[cyan]SCM snippet context:[/cyan] [bold magenta]{new_snippet}[/bold magenta]  "
+            f"[dim](object set/show/clone now target this snippet — cd .. to leave)[/dim]"
+        )
+
+    def _refresh_snippets(self, silent: bool = False) -> None:
+        """Fetch SCM snippet names and populate the cache used by 'cd snippet' completion."""
+        if not self._scm:
+            return
+        self._state.snippets_loaded_at = time.monotonic()
+        try:
+            snippets = self._scm.get_snippets()
+            if snippets:
+                self._state.snippets_cache = [
+                    s.get("name") for s in snippets if isinstance(s, dict) and s.get("name")
+                ]
+        except Exception as exc:
+            if not silent:
+                console.print(f"[yellow]Could not refresh snippet list: {exc}[/yellow]")
+
     def _cmd_folder(self, args: list[str]) -> None:
         """Manage SCM folders — list available folders or create a new one.
 
@@ -304,6 +380,8 @@ class NavigationMixin:
         Usage:
           folder                  — list available folders and show the active one
           folder create <name>    — create a new folder (interactive parent selection)
+          folder attach-snippet <snippet>   — attach a snippet to the active folder
+          folder detach-snippet <snippet>   — detach a snippet from the active folder
         """
         if not self._state.configure_mode:
             console.print(
@@ -319,12 +397,19 @@ class NavigationMixin:
             self._cmd_folder_create(folder_name)
             return
 
+        # Subcommand: folder attach-snippet / detach-snippet <snippet>
+        if args and args[0].lower() in ("attach-snippet", "detach-snippet"):
+            attach = args[0].lower() == "attach-snippet"
+            snippet_name = " ".join(args[1:]).strip()
+            self._cmd_folder_snippet(snippet_name, attach=attach)
+            return
+
         # Redirect switch attempts
         if args and args[0] not in ("create",):
             console.print(
                 "[yellow]Use 'cd folder <name>' to switch folders.[/yellow]\n"
-                "  [dim]'folder' manages folders (list, create). "
-                "'cd folder <name>' changes your active folder.[/dim]"
+                "  [dim]'folder' manages folders (list, create, attach-snippet, "
+                "detach-snippet). 'cd folder <name>' changes your active folder.[/dim]"
             )
             return
 
@@ -473,6 +558,73 @@ class NavigationMixin:
         console.print(
             f"[dim]Folder list refreshed — {total} folder(s) total.  "
             f"Use [bold]folder {created_name}[/bold] to switch into it.[/dim]"
+        )
+
+    def _cmd_folder_snippet(self, snippet_name: str, *, attach: bool) -> None:
+        """Attach or detach a snippet on the active folder (edits folder.snippets[]).
+
+        Operates on the current folder context (``cd folder <name>`` first).
+        SCM stores folder→snippet membership as the folder record's ``snippets``
+        list, so this reads the folder record, adds/removes the snippet, and
+        PUTs the updated record back.
+        """
+        verb = "attach" if attach else "detach"
+        if not snippet_name:
+            console.print(
+                f"[yellow]Usage:[/yellow] folder {verb}-snippet <snippet>\n"
+                "  [dim]Attaches to the active folder — use 'cd folder <name>' first.[/dim]"
+            )
+            return
+        if not self._scm:
+            console.print("[red]SCM is not configured.[/red]")
+            return
+        folder = self._state.folder
+        if folder.lower() == "shared":
+            console.print(
+                "[yellow]Switch to a specific folder first[/yellow] — "
+                "[bold]cd folder <name>[/bold]  [dim](cannot edit the Shared root's snippets).[/dim]"
+            )
+            return
+        record = self._scm.get_folder_record(folder)
+        if record is None:
+            console.print(f"[red]Folder '{folder}' not found in SCM.[/red]")
+            return
+        # Validate the snippet exists (case-insensitive), using the canonical name.
+        if not self._state.snippets_cache or self._cache_stale(self._state.snippets_loaded_at):
+            self._refresh_snippets(silent=True)
+        canonical = next(
+            (n for n in self._state.snippets_cache if n.lower() == snippet_name.lower()),
+            snippet_name,
+        )
+        current = list(record.get("snippets") or [])
+        present = any(s.lower() == canonical.lower() for s in current)
+        if attach and present:
+            console.print(f"[dim]Snippet '{canonical}' is already attached to '{folder}'.[/dim]")
+            return
+        if not attach and not present:
+            console.print(f"[dim]Snippet '{canonical}' is not attached to '{folder}'.[/dim]")
+            return
+        if attach:
+            current.append(canonical)
+        else:
+            current = [s for s in current if s.lower() != canonical.lower()]
+
+        payload = {k: v for k, v in record.items() if not str(k).startswith("@")}
+        payload["snippets"] = current
+        folder_id = record.get("id")
+        if not folder_id:
+            console.print(f"[red]Folder '{folder}' has no id — cannot update.[/red]")
+            return
+        try:
+            self._scm.update_folder(folder_id, payload)
+        except Exception as exc:  # noqa: BLE001
+            console.print(f"[red]Failed to {verb} snippet: {exc}[/red]")
+            return
+        arrow = "attached to" if attach else "detached from"
+        console.print(
+            f"[green]✓[/green] Snippet [bold magenta]{canonical}[/bold magenta] "
+            f"{arrow} folder [bold green]{folder}[/bold green]  "
+            f"[dim](now: {', '.join(current) or 'none'})[/dim]"
         )
 
     def _reset_tenant_context(self, new_tsg: str) -> None:

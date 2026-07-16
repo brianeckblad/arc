@@ -199,6 +199,7 @@ PROMPT_STYLE = Style.from_dict({
     "arc":     "bold ansicyan",
     "device":  "bold ansiyellow",
     "folder":  "bold ansigreen",
+    "snippet": "bold ansimagenta",    # active snippet container (cd snippet)
     "ctx":     "ansicyan dim",        # context-tier label (:global, :device)
     "sep":     "ansicyan",
     "arrow":   "bold ansicyan",
@@ -293,6 +294,10 @@ def _make_key_bindings(shell=None) -> KeyBindings:
 class ShellState:
     device: Optional[dict] = None
     folder: str = "Shared"
+    # Active SCM snippet container. When set, object reads/writes target this
+    # snippet (?snippet=) instead of the active folder — the two are mutually
+    # exclusive containers. Entered via `cd snippet <name>`.
+    snippet: Optional[str] = None
     configure_mode: bool = False
     # Configure-mode writes staged LOCALLY — nothing is sent to SCM until
     # `commit` replays these operations. Each entry:
@@ -307,11 +312,14 @@ class ShellState:
     devices_cache: list[dict] = field(default_factory=list)
     # SCM folder names cached at startup for tab completion
     folders_cache: list[str] = field(default_factory=lambda: ["Shared", "Global"])
+    # SCM snippet names cached for `cd snippet` tab completion
+    snippets_cache: list[str] = field(default_factory=list)
     # monotonic timestamps of the last cache refresh — a cd/folder miss on a
     # stale cache triggers one silent re-fetch before hard-erroring, so a
     # device onboarded an hour into the session is still found.
     devices_loaded_at: float = 0.0
     folders_loaded_at: float = 0.0
+    snippets_loaded_at: float = 0.0
     # TSG entries fetched from /iam/v1/tenants — each dict has 'id' and 'display_name'
     tsgs_cache: list[dict] = field(default_factory=list)
     # Dev shell mode — entered via `dev` command, exited with `exit`.

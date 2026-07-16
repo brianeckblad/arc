@@ -791,6 +791,10 @@ class DispatchMixin:
             self._cmd_arc(tokens[1:])
             return False
 
+        if cmd == "login":
+            self._cmd_login(tokens[1:])
+            return False
+
         # Hidden command — not advertised in ? or tab completion.  Reveals
         # commands whose feature flag is "dev" (work-in-progress).
         if cmd == "dev":

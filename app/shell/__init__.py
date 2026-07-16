@@ -82,7 +82,7 @@ class ArcShell(
         # Load CLI theme (colours for ? help, banner, etc.)
         self._theme: ArcTheme = load_theme()
 
-        # Per-user preferences (config/<user>/preferences.json) — pager length,
+        # Per-user preferences (config/<user>/config.json (preferences block)) — pager length,
         # render width, spinner. Changed at runtime via the `terminal` command.
         self._prefs: UserPrefs = load_prefs()
         set_page_length(self._prefs.terminal_length)

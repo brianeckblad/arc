@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARC · Settings Console</title>
+  <link rel="stylesheet" href="/assets/gui.css" />
+  <style>
+    /* ARC-console nav (rest of the styling is shared in gui.css) */
+    .side .navi{display:flex;align-items:center;gap:.6rem;padding:9px 11px;border-radius:var(--radius);
+      color:var(--text-2);font-size:13.5px;margin-bottom:2px;cursor:pointer;}
+    .side .navi:hover{background:var(--bg-hover);color:var(--text);}
+    .side .navi.active{background:var(--bg-active);color:var(--text);font-weight:600;}
+    .side .navi .ic{width:20px;text-align:center;opacity:.85;}
+    .intro{color:var(--text-2);font-size:13px;margin:-.3rem 0 1.2rem;max-width:82ch;line-height:1.55;}
+    .rowcard{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:.6rem .7rem;margin-bottom:.5rem;
+      display:grid;grid-template-columns:1.2fr 3fr 1fr .8fr auto;gap:.5rem;align-items:center;}
+    .rowcard input{background:var(--bg-code);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:6px 8px;font-size:12.5px;outline:none;}
+    .rowcard input:focus{border-color:var(--brand);}
+    .adv{margin-top:.6rem;}
+    .adv summary{cursor:pointer;color:var(--text-2);font-size:13px;font-weight:600;padding:.3rem 0;}
+  </style>
+</head>
+<body>
+  <header class="hdr">
+    <div class="logo"><b>ARC</b><span>Settings Console</span></div>
+    <div class="grow"></div>
+    <button class="btn primary" id="done" type="button">✓ Save &amp; Exit</button>
+  </header>
+  <div class="body">
+    <aside class="side" id="side"></aside>
+    <main class="main" id="main"></main>
+  </div>
+  <div class="toast" id="toast"></div>
+  <div class="modal-bg" id="modal"><div class="modal"><button class="mclose" id="mclose" type="button">×</button><div id="mbody"></div></div></div>
+  <div class="closed" id="closedv"><h1>✓ Settings closed</h1><p>You can return to the ARC shell now — this tab can be closed.</p></div>
+
+<script src="/assets/gui.js"></script>
+<script>
+let SECTIONS=[], cur={section:"dashboard"};
+
+/* ---- shared GUI theme (arc console owns it; both consoles apply it) ---- */
+let themeData=null, themeWork={base:"Default",overrides:{}};
+function themeColors(base){const t=(themeData.themes||[]).find(t=>t.name===base);return t?t.colors:{};}
+function effColor(tk){return themeWork.overrides[tk]||themeColors(themeWork.base)[tk]||"";}
+function applyWorking(){const r=document.documentElement;(themeData.tokens||[]).forEach(tk=>{const v=effColor(tk);if(v)r.style.setProperty(tk,v);});}
+async function loadTheme(){themeData=await api("/api/theme");
+  themeWork={base:themeData.active.base||"Default",overrides:Object.assign({},themeData.active.overrides||{})};applyWorking();}
+const TOKEN_LABELS={"--bg":"Page background","--bg-sidebar":"Sidebar background","--bg-card":"Card background",
+  "--bg-hover":"Hover background","--bg-active":"Active / selected","--bg-code":"Code / inset","--header-bg":"Header background","--overlay":"Modal overlay",
+  "--text":"Primary text","--text-2":"Secondary text","--text-3":"Dim text & links","--border":"Borders",
+  "--brand":"Accent / buttons","--brand-hover":"Accent hover","--green":"OK / success","--yellow":"Warning","--red":"Danger","--purple":"Info alt","--teal":"Links / SSH"};
+const TOKEN_GROUPS=[["Backgrounds",["--bg","--bg-sidebar","--bg-card","--bg-hover","--bg-active","--bg-code","--header-bg","--overlay"]],
+  ["Text, links & borders",["--text","--text-2","--text-3","--border"]],
+  ["Accents & status",["--brand","--brand-hover","--green","--yellow","--red","--purple","--teal"]]];
+function isHex(v){return /^#[0-9a-fA-F]{3,8}$/.test(String(v).trim());}
+
+/* ---- routing / nav ---- */
+function go(section){location.hash=section;}
+function parseHash(){return decodeURIComponent(location.hash.slice(1))||"dashboard";}
+window.addEventListener("hashchange",route);
+async function buildNav(){
+  const d=await api("/api/nav");SECTIONS=d.sections||[];
+  const side=document.getElementById("side");side.innerHTML='<div class="stitle">Settings</div>';
+  SECTIONS.forEach(s=>{const n=el("div","navi");n.dataset.k=s.key;
+    n.innerHTML=`<span class="ic">${s.icon||"•"}</span><span>${esc(s.label)}</span>`;
+    n.onclick=()=>go(s.key);side.appendChild(n);});
+  syncNav();
+}
+function syncNav(){document.querySelectorAll(".side .navi").forEach(n=>n.classList.toggle("active",n.dataset.k===cur.section));}
+function intro(txt){const d=el("div","intro");d.innerHTML=txt;return d;}
+
+async function route(){
+  cur.section=parseHash();syncNav();
+  const main=document.getElementById("main");main.innerHTML="";
+  try{
+    const fn={dashboard:mainDashboard,theme:mainTheme,preferences:mainPreferences,
+      connection:mainConnection,credentials:mainCredentials,authentication:mainAuthentication,
+      branding:mainBranding,sources:mainSources,maintenance:mainMaintenance}[cur.section];
+    if(fn)return fn(main);
+    return mainStub(main);
+  }catch(e){main.appendChild(el("div","empty","Error: "+esc(e.message)));}
+}
+
+/* ---- Dashboard ---- */
+async function mainDashboard(main){
+  main.appendChild(pageHead("Dashboard","dashboard"));
+  const s=await api("/api/status");
+  const st=(b)=>b?"ok":"bad";
+  const cards=[
+    statCard("SCM connection",s.scm_connected?"Connected":"Not connected",{status:st(s.scm_connected)}),
+    statCard("Configured",s.scm_configured?esc(s.auth_method):"Not configured",{status:s.scm_configured?"ok":"warn"}),
+    statCard("OS keychain",s.keychain_available?"Available":"Unavailable",{status:st(s.keychain_available)}),
+    statCard("Active profile",esc(s.profile),{status:"ok"}),
+    statCard("Tenant Service Group (TSG)",s.tsg?esc(s.tsg):"root / config default",
+      {status:s.tsg?"ok":"warn",big:true,sub:"The SCM tenant your token is scoped to. Switch tenants in the shell with <code>tsg &lt;id&gt;</code>."}),
+    statCard("Active folder",esc(s.folder)+(s.device?" · device attached":""),{status:"ok"}),
+    statCard("Debug logging",s.debug?"On":"Off",{status:s.debug?"warn":"ok"}),
+    statCard("Browser GUI ports",
+      `Settings console — port ${s.arc_gui_port}<br>Feature editor — port ${s.features_gui_port}`,
+      {big:true,status:"ok",sub:"Local loopback ports for the two consoles. Change them under Connection / config.json."}),
+  ];
+  main.appendChild(statGrid(cards));
+  main.appendChild(intro("Use the left navigation to manage credentials, authentication, config, preferences, appearance, branding, API sources, and maintenance. Every change here writes to the same settings files and <code>config.json</code> the CLI uses."));
+}
+
+/* ---- Appearance / Theme ---- */
+async function mainTheme(main){
+  if(!themeData)await loadTheme();
+  main.appendChild(pageHead("Appearance / Theme","theme"));
+  main.appendChild(intro("Pick a base palette, then tweak colours. Applies to BOTH ARC browser consoles and saves to your config.json."));
+  const sample=panel("Live preview");
+  sample.insertAdjacentHTML("beforeend",`<div class="stat"><div class="k">Sample card</div><div class="v"><span class="d ok"></span>Primary text</div>
+    <div style="color:var(--text-2);font-size:12.5px">Secondary text · <span style="color:var(--teal)">link</span></div>
+    <div style="display:flex;gap:.5rem;margin-top:.5rem"><button class="btn primary">Primary</button><button class="btn sm">Secondary</button><span class="badge">badge</span></div></div>`);
+  main.appendChild(sample);
+
+  const pick=panel("Base theme");
+  const grid=el("div");grid.style.cssText="display:flex;flex-wrap:wrap;gap:.6rem";
+  (themeData.themes||[]).forEach(t=>{const c=t.colors,sel=themeWork.base===t.name;
+    const card=el("div");card.style.cssText=`cursor:pointer;border:2px solid ${sel?'var(--brand)':'var(--border)'};border-radius:10px;overflow:hidden;width:150px;background:${c["--bg"]}`;
+    card.innerHTML=`<div style="padding:.5rem .6rem"><div style="font-size:12.5px;font-weight:700;color:${c["--text"]}">${esc(t.name)}</div>
+      <div style="display:flex;gap:4px;margin-top:.4rem">${["--brand","--green","--yellow","--red","--purple","--teal"].map(k=>`<span style="width:16px;height:16px;border-radius:4px;background:${c[k]};border:1px solid ${c["--border"]}"></span>`).join("")}</div></div>`;
+    card.onclick=()=>{themeWork.base=t.name;themeWork.overrides={};applyWorking();mainThemeRefresh();};
+    grid.appendChild(card);});
+  pick.appendChild(grid);main.appendChild(pick);
+
+  const edit=panel("Customize colours");
+  TOKEN_GROUPS.forEach(([label,tokens])=>{
+    const lbl=el("div","kv-label",label);edit.appendChild(lbl);
+    tokens.forEach(tk=>{const cval=effColor(tk),overridden=tk in themeWork.overrides,hex=isHex(cval);
+      const row=el("div","field-row");
+      row.innerHTML=`<div class="field-label" style="width:230px">${TOKEN_LABELS[tk]||tk}<span class="field-hint mono">${tk}</span></div>
+        <div class="field-input">${hex?`<input type="color" class="ci" value="${cval}" style="width:42px;height:28px;padding:0;border-radius:5px;cursor:pointer">`:""}
+        <input type="text" class="ct w-txt" value="${escA(cval)}" style="max-width:220px" placeholder="#hex or rgba(...)"/>
+        <span class="swatch" style="width:26px;height:26px;border-radius:5px;border:1px solid var(--border);background:${escA(cval)}"></span>
+        <button class="btn sm rst" type="button">${overridden?"reset":"&nbsp;"}</button></div>`;
+      const ct=row.querySelector(".ct"),ci=row.querySelector(".ci"),sw=row.querySelector(".swatch"),rst=row.querySelector(".rst");
+      function setVal(v){themeWork.overrides[tk]=v;sw.style.background=v;if(ci&&isHex(v))ci.value=v;applyWorking();rst.innerHTML="reset";}
+      ct.oninput=e=>setVal(e.target.value.trim());
+      if(ci)ci.oninput=e=>{ct.value=e.target.value;setVal(e.target.value);};
+      rst.onclick=()=>{delete themeWork.overrides[tk];const b=themeColors(themeWork.base)[tk]||"";ct.value=b;if(ci&&isHex(b))ci.value=b;sw.style.background=b;applyWorking();rst.innerHTML="&nbsp;";};
+      edit.appendChild(row);});
+  });
+  main.appendChild(edit);
+  const bar=saveBar(saveTheme,"Save theme");
+  const reset=el("button","btn sm","Reset all to base");reset.type="button";reset.onclick=()=>{themeWork.overrides={};applyWorking();mainThemeRefresh();};
+  bar.appendChild(reset);main.appendChild(bar);
+}
+function mainThemeRefresh(){const m=document.getElementById("main");m.innerHTML="";mainTheme(m);}
+async function saveTheme(){try{const r=await post("/api/theme",{base:themeWork.base,overrides:themeWork.overrides});
+  themeData.active={base:r.base,overrides:r.overrides};themeWork={base:r.base,overrides:Object.assign({},r.overrides)};
+  applyWorking();toast("Theme saved — applies to both consoles");}catch(e){toast("Error: "+e.message,true);}}
+
+/* ---- Preferences ---- */
+async function mainPreferences(main){
+  main.appendChild(pageHead("Preferences",null));
+  const p=await api("/api/prefs");
+  const box=panel("Terminal");
+  box.appendChild(fieldRow("Paging length",numInput("pl",p.terminal_length),{hint:"0 = paging disabled",help:"item.terminal_length"}));
+  box.appendChild(fieldRow("Width",numInput("pw",p.terminal_width),{hint:"0 = auto-detect",help:"item.terminal_width"}));
+  box.appendChild(fieldRow("Height",numInput("ph",p.terminal_height),{hint:"0 = auto-detect",help:"item.terminal_height"}));
+  box.appendChild(fieldRow("Spinner while querying SCM",toggleHtml("psp",p.spinner),{help:"item.spinner"}));
+  main.appendChild(box);wireToggle("psp");
+  main.appendChild(saveBar(async()=>{try{await post("/api/prefs",{terminal_length:+document.getElementById("pl").value,
+    terminal_width:+document.getElementById("pw").value,terminal_height:+document.getElementById("ph").value,spinner:toggleVal("psp")});
+    toast("Preferences saved");}catch(e){toast("Error: "+e.message,true);}}));
+}
+
+/* ---- Connection / config.json ---- */
+async function mainConnection(main){
+  main.appendChild(pageHead("Connection / config.json","connection"));
+  const c=await api("/api/config");
+  const box=panel("General");
+  box.appendChild(fieldRow("Active profile",`<span class="badge">${esc(c.profile)}</span> <span class="muted">${(c.profiles||[]).length} profile(s)</span>`,{hint:"Switch/create in the shell: account"}));
+  box.appendChild(fieldRow("Default folder",txtInput("cf",c.default_folder),{help:"item.default_folder"}));
+  box.appendChild(fieldRow("Debug logging",toggleHtml("cdg",c.debug),{help:"item.debug"}));
+  main.appendChild(box);
+  const gbox=panel("Browser GUI ports","connection");
+  gbox.appendChild(fieldRow("Feature editor",toggleHtml("fge",c.features_gui.enabled)+' <span class="muted" style="margin-left:.4rem">port</span> '+numInput("fgp",c.features_gui.port),{hint:"feature gui-configure",help:"item.ports"}));
+  gbox.appendChild(fieldRow("Settings console",toggleHtml("age",c.arc_gui.enabled)+' <span class="muted" style="margin-left:.4rem">port</span> '+numInput("agp",c.arc_gui.port),{hint:"arc gui-configure (this window)",help:"item.ports"}));
+  main.appendChild(gbox);["cdg","fge","age"].forEach(id=>wireToggle(id));
+  main.appendChild(saveBar(async()=>{try{await post("/api/config",{default_folder:document.getElementById("cf").value,debug:toggleVal("cdg"),
+    features_gui:{enabled:toggleVal("fge"),port:+document.getElementById("fgp").value},
+    arc_gui:{enabled:toggleVal("age"),port:+document.getElementById("agp").value}});
+    toast("config.json saved (port changes apply next launch)");}catch(e){toast("Error: "+e.message,true);}}));
+}
+
+/* ---- Credentials & Keychain ---- */
+async function mainCredentials(main){
+  main.appendChild(pageHead("Credentials & Keychain",null));
+  const c=await api("/api/credentials");
+  if(!c.keychain_available)main.appendChild(intro('<span style="color:var(--yellow)">⚠ OS keychain unavailable — secrets cannot be stored. Use environment variables until keychain access is available.</span>'));
+  const scmBox=panel("SCM — Service Account");
+  scmBox.appendChild(fieldRow("Client ID",txtInput("sc-id",c.scm.client_id),{help:"item.client_id"}));
+  scmBox.appendChild(fieldRow("TSG ID",txtInput("sc-tsg",c.scm.tsg_id),{help:"item.tsg_id"}));
+  scmBox.appendChild(fieldRow("Client secret",secInput("sc-secret",c.scm.has_secret?"•••• stored — type to replace":"not set"),{hint:"OS keychain",help:"item.client_secret"}));
+  scmBox.appendChild(fieldRow("Bearer token",secInput("sc-bearer",c.scm.has_bearer?"•••• stored — type to replace":"not set"),{hint:"overrides service account",help:"item.bearer"}));
+  main.appendChild(scmBox);
+  const sshBox=panel("Device SSH");
+  sshBox.appendChild(fieldRow("SSH user",txtInput("sh-user",c.ssh.user)));
+  sshBox.appendChild(fieldRow("Use SSH key",toggleHtml("sh-keyen",c.ssh.key_enabled),{hint:"off = password auth",help:"item.ssh_key_enabled"}));
+  const keyRow=fieldRow("SSH key path",txtInput("sh-key",c.ssh.key_path),{help:"item.ssh_key_path"});
+  keyRow.id="sh-keyrow";keyRow.style.display=c.ssh.key_enabled?"":"none";sshBox.appendChild(keyRow);
+  sshBox.appendChild(fieldRow("SSH port",numInput("sh-port",c.ssh.port)));
+  sshBox.appendChild(fieldRow("SSH password",secInput("sh-pass",c.ssh.has_password?"•••• stored — type to replace":"not set"),{hint:"OS keychain",help:"item.ssh_password"}));
+  main.appendChild(sshBox);
+  wireToggle("sh-keyen",on=>{document.getElementById("sh-keyrow").style.display=on?"":"none";});
+  const bar=saveBar(async()=>{try{await post("/api/credentials",{
+    scm:{client_id:document.getElementById("sc-id").value,tsg_id:document.getElementById("sc-tsg").value,
+      client_secret:document.getElementById("sc-secret").value,bearer_token:document.getElementById("sc-bearer").value},
+    ssh:{user:document.getElementById("sh-user").value,key_enabled:toggleVal("sh-keyen"),
+      key_path:document.getElementById("sh-key").value,port:+document.getElementById("sh-port").value,
+      password:document.getElementById("sh-pass").value}});
+    toast("Credentials saved");route();}catch(e){toast("Error: "+e.message,true);}},"Save credentials");
+  const test=el("button","btn","Test SCM auth");test.type="button";test.onclick=testAuth;bar.appendChild(test);
+  main.appendChild(bar);
+}
+async function testAuth(){toast("Testing SCM authentication…");try{const r=await post("/api/test-auth",{});toast(r.message,!r.ok);}catch(e){toast("Error: "+e.message,true);}}
+
+/* ---- Authentication ---- */
+async function mainAuthentication(main){
+  main.appendChild(pageHead("Authentication",null));
+  const c=await api("/api/credentials");
+  const sel=panel("Preferred method","");
+  sel.querySelector(".panel-head").appendChild(qmark("topic=item.auth_method"));
+  const seg=segmented("authseg",[{v:"service",label:"Service Account"},{v:"user",label:"User Account"}],c.preferred_auth,async v=>{
+    try{await post("/api/auth-pref",{method:v});toast("Preferred auth: "+v);renderAuthPanel(v);}catch(e){toast("Error: "+e.message,true);}});
+  sel.appendChild(seg);
+  const tb=el("button","btn","Test SCM auth");tb.type="button";tb.style.marginLeft=".6rem";tb.onclick=testAuth;sel.appendChild(tb);
+  main.appendChild(sel);
+  const holder=el("div");holder.id="authpanel";main.appendChild(holder);
+  renderAuthPanel(c.preferred_auth);
+}
+function renderAuthPanel(method){
+  const h=document.getElementById("authpanel");h.innerHTML="";
+  if(method==="service"){
+    const p=panel("Service Account (recommended)");
+    p.appendChild(intro("OAuth client-credentials — the standard, fully-supported SCM API auth. Set the Client ID, TSG ID and Client secret under Credentials & Keychain."));
+    const b=el("button","btn sm","Go to Credentials");b.type="button";b.onclick=()=>go("credentials");p.appendChild(b);
+    h.appendChild(p);
+  }else{
+    const p=panel("User Account (experimental)");
+    p.appendChild(intro("Interactive browser login (OAuth authorization-code + PKCE). SCM has no public browser flow that mints an API token for user accounts, so this is <b>experimental</b> and needs <code>ARC_OAUTH_AUTH_URL</code>, <code>ARC_OAUTH_TOKEN_URL</code> and <code>ARC_OAUTH_CLIENT_ID</code>. Once configured, run <code>login</code> in the ARC shell."));
+    const badge=el("span","badge override","experimental");p.appendChild(badge);
+    h.appendChild(p);
+  }
+}
+
+/* ---- Branding & Variables ---- */
+async function mainBranding(main){
+  main.appendChild(pageHead("Branding & Variables",null));
+  const d=await api("/api/branding");
+  const bBox=panel("Banner","item.banner");
+  bBox.insertAdjacentHTML("beforeend",txtArea("br-banner",d.banner,10));
+  main.appendChild(bBox);
+  const gBox=panel("Goodbye lines","item.goodbye");
+  const gEditor=lineListEditor({items:d.goodbye_lines,placeholder:"Goodbye line…",addLabel:"Add goodbye line"});
+  gBox.appendChild(gEditor);main.appendChild(gBox);
+  const vBox=panel("App variables","item.app_variables");
+  const vEditor=kvListEditor({entries:d.app_variables.map(e=>({key:e.key,value:e.value})),addable:true,addLabel:"Add variable"});
+  vBox.appendChild(vEditor);main.appendChild(vBox);
+  main.appendChild(saveBar(async()=>{try{await post("/api/branding",{banner:document.getElementById("br-banner").value,
+    goodbye_header:d.goodbye_header,goodbye_lines:gEditor.getItems(),
+    app_variables:vEditor.getEntries().filter(e=>e.key)});toast("Branding saved");}catch(e){toast("Error: "+e.message,true);}}));
+}
+
+/* ---- API Sources ---- */
+async function mainSources(main){
+  main.appendChild(pageHead("API Sources",null));
+  main.appendChild(intro("Source registries used by <code>docsupdate</code> / <code>panosupdate</code>. SCM sources are mostly self-healing (specs are auto-discovered)."));
+  await sourcesPanos(main);
+  await sourcesScm(main);
+}
+async function sourcesPanos(main){
+  const d=await api("/api/sources?which=panos");
+  const box=panel("PAN-OS sources","item.panos_sources");
+  box.appendChild(fieldRow("Site",txtInput("pn-site",d.site)));
+  const list=el("div");list.id="pn-pages";let pages=d.pages.slice();
+  function render(){list.innerHTML="";pages.forEach((p,i)=>{const row=el("div","rowcard");
+    row.innerHTML=`<input data-f="key" value="${escA(p.key||"")}" placeholder="key"/>
+      <input data-f="url" value="${escA(p.url||"")}" placeholder="https://…"/>
+      <input data-f="kind" value="${escA(p.kind||"")}" placeholder="kind"/>
+      <input data-f="version" value="${escA(p.version||"")}" placeholder="ver"/>
+      <button class="btn sm ll-del" type="button" title="Remove">✕</button>`;
+    row.querySelectorAll("input").forEach(inp=>inp.oninput=()=>{p[inp.dataset.f]=inp.value;});
+    row.querySelector(".ll-del").onclick=()=>{pages.splice(i,1);render();};list.appendChild(row);});
+    const add=el("button","btn sm ll-add","+ Add page");add.type="button";add.onclick=()=>{pages.push({key:"",url:"",kind:"",version:""});render();};list.appendChild(add);}
+  render();box.appendChild(list);
+  const b=el("button","btn primary","Save PAN-OS sources");b.type="button";b.style.marginTop=".7rem";
+  b.onclick=async()=>{try{await post("/api/sources",{which:"panos",site:document.getElementById("pn-site").value,pages:pages});toast("PAN-OS sources saved");}catch(e){toast("Error: "+e.message,true);}};
+  box.appendChild(b);main.appendChild(box);
+}
+async function sourcesScm(main){
+  const d=await api("/api/sources?which=scm");
+  const box=panel("SCM sources","item.scm_sources");
+  box.appendChild(fieldRow("Repo",txtInput("sm-repo",d.repo)));
+  box.appendChild(fieldRow("Branch",txtInput("sm-branch",d.branch)));
+  box.appendChild(fieldRow("Specs root",txtInput("sm-specsroot",d.settings.specs_root)));
+  box.appendChild(fieldRow("Guides root",txtInput("sm-guidesroot",d.settings.guides_root)));
+  box.appendChild(fieldRow("Mirror all specs",toggleHtml("sm-mas",d.settings.mirror_all_specs)));
+  box.appendChild(fieldRow("Mirror all guides",toggleHtml("sm-mag",d.settings.mirror_all_guides)));
+  ["sm-mas","sm-mag"].forEach(id=>wireToggle(id));
+  const specsLbl=el("div","kv-label","Spec paths (key → path)");box.appendChild(specsLbl);
+  const specsEd=kvListEditor({entries:Object.entries(d.specs).map(([k,v])=>({key:k,value:v})),addable:true,addLabel:"Add spec"});box.appendChild(specsEd);
+  const guidesLbl=el("div","kv-label","Guide paths (key → path)");box.appendChild(guidesLbl);
+  const guidesEd=kvListEditor({entries:Object.entries(d.guides).map(([k,v])=>({key:k,value:v})),addable:true,addLabel:"Add guide"});box.appendChild(guidesEd);
+  const adv=el("details","adv");adv.innerHTML="<summary>Advanced — raw JSON</summary>";
+  adv.insertAdjacentHTML("beforeend",txtArea("sm-raw",d.raw,14));
+  const rawBtn=el("button","btn sm","Save raw JSON (overrides everything)");rawBtn.type="button";rawBtn.style.marginTop=".5rem";
+  rawBtn.onclick=async()=>{try{await post("/api/sources",{which:"scm",raw:document.getElementById("sm-raw").value});toast("SCM sources saved (raw)");route();}catch(e){toast("Error: "+e.message,true);}};
+  adv.appendChild(rawBtn);box.appendChild(adv);
+  const b=el("button","btn primary","Save SCM sources");b.type="button";b.style.marginTop=".7rem";
+  b.onclick=async()=>{try{const specs={};specsEd.getEntries().forEach(e=>{if(e.key)specs[e.key]=e.value;});
+    const guides={};guidesEd.getEntries().forEach(e=>{if(e.key)guides[e.key]=e.value;});
+    await post("/api/sources",{which:"scm",repo:document.getElementById("sm-repo").value,branch:document.getElementById("sm-branch").value,
+      settings:{specs_root:document.getElementById("sm-specsroot").value,guides_root:document.getElementById("sm-guidesroot").value,
+        mirror_all_specs:toggleVal("sm-mas"),mirror_all_guides:toggleVal("sm-mag")},specs:specs,guides:guides});
+    toast("SCM sources saved");}catch(e){toast("Error: "+e.message,true);}};
+  box.appendChild(b);main.appendChild(box);
+}
+
+/* ---- Maintenance ---- */
+async function mainMaintenance(main){
+  main.appendChild(pageHead("Maintenance",null));
+  main.appendChild(intro("Refresh ARC's generated docs, command help specs, and catalogs from the pan.dev API specs. These pull from the network and may take a few minutes."));
+  const out=el("pre");out.id="maint-out";out.style.cssText="background:var(--bg-code);border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem;font-size:12px;max-height:340px;overflow:auto;white-space:pre-wrap;display:none;margin-top:1rem";
+  const run=async(action,label,btn)=>{const o=document.getElementById("maint-out");o.style.display="block";o.textContent="Running "+label+"… (can take a few minutes)";
+    btn.disabled=true;try{const r=await post("/api/maintenance",{action:action});o.textContent=r.output||"(no output)";toast(r.ok?label+" complete":label+" failed",!r.ok);}catch(e){o.textContent="Error: "+e.message;toast("Error: "+e.message,true);}btn.disabled=false;};
+  const bar=el("div");bar.style.cssText="display:flex;gap:.6rem;flex-wrap:wrap";
+  const b1=el("button","btn primary","Update Docs & Commands");b1.type="button";b1.onclick=()=>run("update-all","Docs & Commands update",b1);
+  const b2=el("button","btn","Update Docs only");b2.type="button";b2.onclick=()=>run("docs","Docs update",b2);
+  const b3=el("button","btn","Rebuild catalog");b3.type="button";b3.onclick=()=>run("rebuild","Catalog rebuild",b3);
+  bar.appendChild(b1);bar.appendChild(b2);bar.appendChild(b3);main.appendChild(bar);main.appendChild(out);
+}
+
+function mainStub(main){const s=SECTIONS.find(x=>x.key===cur.section)||{label:cur.section};
+  main.appendChild(pageHead(s.label,null));main.appendChild(el("div","stub","This section is coming soon."));}
+
+/* ---- boot ---- */
+wireModal();
+document.getElementById("done").onclick=saveExit;
+document.getElementById("modal").onclick=e=>{if(e.target.id==="modal")e.currentTarget.classList.remove("show");};
+window.addEventListener("keydown",e=>{if(e.key==="Escape"){const m=document.getElementById("modal");if(m.classList.contains("show"))m.classList.remove("show");else saveExit();}});
+(async()=>{await loadTheme().catch(()=>{});await buildNav();if(!location.hash)location.hash="dashboard";route();})();
+</script>
+</body>
+</html>

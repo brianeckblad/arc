@@ -16,7 +16,7 @@ nothing here owns data except the generated `field_catalog.py`.
 | `command_structure.py` | `settings/command-structure.json` + `field_catalog` | Field-order walker driving greedy `set <object>` parsing + slot completion |
 | `field_catalog.py` | — (**AUTO-GENERATED**) | CLI field specs + payload metadata per generated `set` command, from POST schemas |
 | `command_help.py` | `docs/commands/*.md` front-matter | Per-command description/usage overrides for `?` and `help` |
-| `user_prefs.py` | `config/<user>/preferences.json` | Terminal length/width/spinner + aliases — personal, not repo-committed |
+| `user_prefs.py` | `config/<user>/config.json` (preferences block) | Terminal length/width/spinner + aliases + GUI theme — personal, not repo-committed |
 
 ## How the pieces relate
 

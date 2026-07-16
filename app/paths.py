@@ -57,7 +57,7 @@ COMMAND_STRUCTURE_JSON = SETTINGS_DIR / "command-structure.json"
 COMMAND_STRUCTURE_GENERATED_JSON = SETTINGS_DIR / "command-structure-generated.json"
 
 # System command aliases — shorthand input → canonical dispatch line.
-# User-defined aliases live in config/<user>/preferences.json.
+# User-defined aliases live in config/<user>/config.json (preferences block).
 COMMAND_ALIASES_JSON = SETTINGS_DIR / "command-aliases.json"
 
 # Human-readable names for the feature editor (GUI + CLI) — area/acronym labels.

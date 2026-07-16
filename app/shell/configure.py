@@ -8,12 +8,12 @@ from app.shell._base import *  # noqa: F401,F403  (shared spine namespace)
 
 
 def _prefs_file_label() -> str:
-    """Repo-relative path of the preferences file, for display."""
-    from app.settings.user_prefs import PREFS_FILE
+    """Repo-relative path of the config file (holds preferences), for display."""
+    from app.config import CONFIG_FILE
     try:
-        return str(PREFS_FILE.relative_to(PREFS_FILE.parents[2]))
+        return str(CONFIG_FILE.relative_to(CONFIG_FILE.parents[2]))
     except (ValueError, IndexError):
-        return str(PREFS_FILE)
+        return str(CONFIG_FILE)
 
 
 def capture_write_ops(scm, handler, ctx, args) -> list[dict]:
@@ -42,10 +42,13 @@ def capture_write_ops(scm, handler, ctx, args) -> list[dict]:
         return {"id": "(staged)", "name": "(staged)"}
 
     scm._request = _recording
+    _cparam = ctx.container[0] if ctx is not None else "folder"
+    scm._container_override = ctx.container if (ctx is not None and _cparam == "snippet") else None
     try:
         handler(ctx, args)
     finally:
         scm._request = real_request
+        scm._container_override = None
     return captured
 
 
@@ -93,7 +96,8 @@ class ConfigureMixin:
         detail = str(args.get("name") or (args.get("_positional") or [""])[0] or "").strip()
         # args are kept so `commit check` can re-run validation later.
         self._state.staged_ops.append(
-            {"command": key, "detail": detail, "folder": ctx.folder, "args": args, "ops": ops}
+            {"command": key, "detail": detail, "folder": ctx.folder,
+             "snippet": ctx.snippet, "args": args, "ops": ops}
         )
         shown = f"{key} {detail}".strip()
         n = len(self._state.staged_ops)
@@ -117,7 +121,7 @@ class ConfigureMixin:
             {
                 "#": str(index),
                 "command": f"{entry['command']} {entry['detail']}".strip(),
-                "folder": entry["folder"],
+                "folder": (f"snippet:{entry['snippet']}" if entry.get("snippet") else entry["folder"]),
                 "api": "; ".join(f"{op['method']} {op['path']}" for op in entry["ops"]),
             }
             for index, entry in enumerate(staged, 1)
@@ -404,6 +408,7 @@ class ConfigureMixin:
             ctx = ExecutionContext(
                 scm=self._scm, ssh=self._ssh, config=self._config,
                 device=self._state.device, folder=entry["folder"],
+                snippet=entry.get("snippet"),
                 tsg_id=self._state.tsg_id,
             )
             try:
@@ -485,7 +490,7 @@ class ConfigureMixin:
             console.print("[dim]Type commit, abandon, or cancel.[/dim]")
 
     def _cmd_terminal(self, args: list[str]) -> None:
-        """Per-user terminal preferences — persisted to config/<user>/preferences.json.
+        """Per-user terminal preferences — persisted to config/<user>/config.json (preferences block).
 
         terminal                     show current settings and how to change them
         terminal length <n>          page long output after n lines (0 = never page)
@@ -616,7 +621,7 @@ class ConfigureMixin:
             return
 
         saved = save_prefs(p)
-        suffix = "" if saved else "  [yellow](preferences.json not writable — applies to this session only)[/yellow]"
+        suffix = "" if saved else "  [yellow](config.json not writable — applies to this session only)[/yellow]"
         console.print(f"[green]✓[/green] {note}{suffix}")
 
     def _cmd_cli(self, args: list[str]) -> None:
@@ -703,7 +708,7 @@ class ConfigureMixin:
             console.print(f"  [cyan]feature show[/cyan]           List all flags grouped ON / DEV / OFF / HIDDEN")
             console.print(f"  [cyan]feature show on|off|dev|hidden[/cyan]  List only flags in one state")
             console.print(f"  [cyan]feature show <name>[/cyan]    Show matching feature flag(s)")
-            console.print(f"  [cyan]feature gui[/cyan]            Open the browser feature editor")
+            console.print(f"  [cyan]feature gui-configure[/cyan]   Open the browser feature editor")
             console.print(f"  [cyan]feature area[/cyan]           List areas + which are enabled/disabled")
             console.print(f"  [cyan]feature area <name> enable|disable[/cyan]  Turn a whole area on/off")
             console.print(f"  [cyan]feature info <flag>[/cyan]    Show what a flag does + its gated commands")
@@ -721,8 +726,9 @@ class ConfigureMixin:
             console.print()
             return
 
-        # ── gui — launch the browser feature editor (blocks until closed) ─────
-        if sub == "gui":
+        # ── gui-configure — launch the browser feature editor (blocks until closed) ─
+        # `feature gui` stays as a hidden back-compat alias.
+        if sub in ("gui-configure", "gui"):
             self._cmd_feature_gui()
             return
 
@@ -984,7 +990,7 @@ class ConfigureMixin:
 
         console.print(
             f"[yellow]Unknown feature subcommand:[/yellow] {sub!r}\n"
-            "  Usage: feature show [on|off|dev|hidden|<name>] | feature gui | feature info <flag> |\n"
+            "  Usage: feature show [on|off|dev|hidden|<name>] | feature gui-configure | feature info <flag> |\n"
             "         feature enable|disable|dev|hidden <flag> | feature area [<name> show|hide] |\n"
             "         feature scope <cmd> <global|folder|device|remote|reset> |\n"
             "         feature default <domain> <on|dev|off> | feature carry <domain> <on|off>"
@@ -1247,9 +1253,9 @@ class ConfigureMixin:
         """Launch the browser-based feature editor and block until it closes.
 
         Starts a local HTTP server (127.0.0.1:<port> from config.features_gui),
-        opens the default browser, and waits until the user clicks Done in the
-        page (or presses Ctrl-C here).  Saves go through the same helper as
-        `feature enable`, so changes persist to each flag's settings/features/
+        opens the default browser, and waits until the user clicks Save & Exit
+        in the page (or presses Ctrl-C here).  Saves go through the same helper
+        as `feature enable`, so changes persist to each flag's settings/features/
         file and apply to this running shell live.
         """
         gui_cfg = getattr(self._config, "features_gui", None)
@@ -1270,7 +1276,7 @@ class ConfigureMixin:
         console.print(
             f"\n[green]Feature editor running[/green] → [bold]{server.url}[/bold]\n"
             "  [dim]Toggle flags in the browser (changes save + apply live). "
-            "Click [bold]Done[/bold] there, or press [bold]Ctrl-C[/bold] here, to return.[/dim]\n"
+            "Click [bold]Save & Exit[/bold] there, or press [bold]Ctrl-C[/bold] here, to return.[/dim]\n"
         )
         try:
             status = server.serve()
@@ -1278,6 +1284,102 @@ class ConfigureMixin:
             server.stop()
             status = "Feature editor closed."
         console.print(f"[cyan]{status}[/cyan]")
+
+    def _cmd_arc_gui(self) -> None:
+        """Launch the browser-based ARC settings console and block until closed.
+
+        Mirrors `_cmd_feature_gui`: starts a local HTTP server on
+        127.0.0.1:<port> (from config.arc_gui), opens the browser, and waits
+        until the user clicks Save & Exit (or presses Ctrl-C here).  Every
+        change made in the console goes through the same settings/config/
+        keychain helpers the CLI uses.
+        """
+        gui_cfg = getattr(self._config, "arc_gui", None)
+        if gui_cfg is not None and not gui_cfg.enabled:
+            console.print(
+                "[yellow]The ARC settings console is disabled.[/yellow]\n"
+                "  Set [bold]arc_gui.enabled = true[/bold] in your config.json "
+                "(see [bold]arc show paths[/bold] for its location)."
+            )
+            return
+
+        port = gui_cfg.port if gui_cfg is not None else 4444
+
+        from app.web.arc_server import ArcGuiServer
+
+        server = ArcGuiServer(self, port=port)
+        console.print(
+            f"\n[green]ARC settings console running[/green] → [bold]{server.url}[/bold]\n"
+            "  [dim]Manage credentials, config, preferences, appearance, branding, "
+            "sources and maintenance in the browser. Click [bold]Save & Exit[/bold] "
+            "there, or press [bold]Ctrl-C[/bold] here, to return.[/dim]\n"
+        )
+        try:
+            status = server.serve()
+        except KeyboardInterrupt:
+            server.stop()
+            status = "ARC settings console closed."
+        console.print(f"[cyan]{status}[/cyan]")
+
+    def _cmd_login(self, args: list[str]) -> None:
+        """Log in to SCM with a user account via the browser (experimental).
+
+        Runs the OAuth authorization-code + PKCE loopback flow (see
+        app/auth/user_login.py).  On success the bearer token is stored in the
+        OS keychain and its expiry recorded in preferences, and the live SCM
+        client is re-initialised.  Requires ARC_OAUTH_* configuration.
+        """
+        if args and args[0] in ("?", "help"):
+            console.print(
+                "[bold]login[/bold] — SCM user-account browser login (experimental)\n"
+                "  Opens your browser to authenticate, then stores the returned token.\n"
+                "  Requires [bold]ARC_OAUTH_AUTH_URL[/bold], [bold]ARC_OAUTH_TOKEN_URL[/bold], "
+                "[bold]ARC_OAUTH_CLIENT_ID[/bold].\n"
+                "  For service accounts use [bold]arc auth configure[/bold] instead."
+            )
+            return
+
+        from app.auth.user_login import LoginError, run_user_login
+
+        console.print("[dim]Opening browser for SCM login…[/dim]")
+        try:
+            token, expires_in = run_user_login()
+        except LoginError as exc:
+            console.print(
+                f"[yellow]Login unavailable:[/yellow] {exc}\n"
+                "  [dim]This is an experimental flow. Service-account auth "
+                "([bold]arc auth configure[/bold]) is the supported path.[/dim]"
+            )
+            return
+        except Exception as exc:  # noqa: BLE001
+            console.print(f"[red]Login failed:[/red] {exc}")
+            return
+
+        import time as _time
+
+        from app.config import ConfigSecurityError, save_config
+
+        self._config.scm.bearer_token = token
+        try:
+            save_config(self._config)
+        except ConfigSecurityError as exc:
+            console.print(f"[yellow]Token obtained but not stored in keychain:[/yellow] {exc}")
+        prefs = getattr(self, "_prefs", None)
+        if prefs is not None:
+            prefs.scm_token_expiry = int(_time.time()) + max(0, expires_in)
+            save_prefs(prefs)
+        # Re-initialise the live SCM client with the new token.
+        try:
+            from app.api.client import SCMClient
+            self._scm = SCMClient(self._config.scm)
+        except Exception as exc:  # noqa: BLE001
+            console.print(f"[yellow]Token stored, but SCM client re-init failed:[/yellow] {exc}")
+            return
+        mins = max(0, expires_in) // 60
+        console.print(
+            f"[green]✓[/green] Logged in — token valid for ~{mins} min. "
+            "[dim](stored in keychain; expiry in preferences)[/dim]"
+        )
 
 
     # ------------------------------------------------------------------
@@ -2270,10 +2372,15 @@ class ConfigureMixin:
         arc show commands     — command counts and feature flag stats
         arc show settings     — settings file inventory
         arc show session      — active profile, TSG, folder, device, mode
+        arc gui-configure     — open the browser settings console
         arc ?                 — list sub-commands
         """
         sub = args[0].lower() if args else "?"
         section = args[1].lower() if len(args) > 1 else "all"
+
+        if sub == "gui-configure":
+            self._cmd_arc_gui()
+            return
 
         _SECTIONS = {
             "version":  self._arc_show_version,
@@ -2332,6 +2439,7 @@ class ConfigureMixin:
             ("arc show commands", "Command counts and feature flag stats"),
             ("arc show settings", "Settings file inventory"),
             ("arc show session",  "Active profile, TSG, folder, device, mode"),
+            ("arc gui-configure", "Open the browser settings console"),
         ]
         for cmd, desc in rows:
             console.print(

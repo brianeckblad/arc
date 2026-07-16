@@ -18,7 +18,8 @@
 | `builtin` (SHELL help rows, visibility) | `settings/builtin-commands.json`, `app/settings/commands.py` | `settings/builtin-commands.json` | `--only 8,9,12` |
 | `builtin editor` (visibility/display/help via GUI) | `set_builtin_field` in `app/settings/commands.py`, `app/web/feature_server.py` | same | `--only 1,2,12` |
 | `feature` / `flag <name>` | `settings/features/` (`local.json` = user overrides, never regenerated) | owning file + `CommandDef.feature_flag` | `--only 1,2,3` |
-| `feature editor` / `feature gui` (browser) | `app/web/feature_server.py`, `app/web/feature_gui.html` | same | `--only 1,2,3` |
+| `feature editor` / `feature gui-configure` (browser) | `app/web/gui_base.py`, `app/web/feature_server.py`, `app/web/feature_gui.html` | same | `--only 1,2,3` |
+| `arc settings console` / `arc gui-configure` (browser) | `app/web/gui_base.py`, `app/web/arc_server.py`, `app/web/arc_gui.html` | same | `--only 1,2,3` |
 | `feature names` / human labels (GUI **and** CLI) | `app/settings/feature_labels.py`, `settings/feature-labels.json` | same (labels file is user-editable + auto-augmented) | `--only 1,2,3` |
 | `feature scope` / `hidden` / `area` (CLI subcommands) | `_cmd_feature*` in `app/shell/configure.py`, helpers in `app/settings/features.py` | same | `--only 1,2,3,12` |
 | `verb visibility` (bare `?` COMMANDS section) | `settings/cli-structure.yaml` (`visible:` field), `app/settings/cli_structure.py` | `settings/cli-structure.yaml` | `--only 9,12` |
@@ -26,6 +27,8 @@
 | `terminal` / prefs | `app/settings/user_prefs.py`, `_cmd_terminal` in `app/shell/configure.py` | same | `--only 4` |
 | `argspec` (greedy `set` parsing, slot completion) | `settings/command-structure.json` (hand-curated), `app/settings/field_catalog.py` (AUTO-GENERATED), `app/settings/command_structure.py` | hand file or `python app/scripts/generate_field_library.py` | `--only 4` |
 | `auth` | `app/config.py`, `app/cli.py` (auth group) | same | `--file app/config.py` |
+| `login` (experimental OAuth user auth) | `app/auth/user_login.py` (ARC_OAUTH_* env), `docs/commands/login.md` | same | `--only 1,2` |
+| `clone` / `cd snippet` (object clone + snippet container) | `app/commands/clone.py`, `app/shell/navigation.py` | same | `--only 1,2,3` |
 | `scm-api` / `endpoint` | `app/scripts/API_INDEX.md`; `docs/scm-api/specs/<cat>.md` | `app/api/client.py` | full suite |
 | `docsupdate` / `scm-sources` | `app/scripts/DOCS_AGENT.md`, `settings/scm-sources.json` | `settings/scm-sources.json` or `python app/scripts/docsupdate.py` | `--self-test` |
 | `commandupdate` | — | `python app/scripts/commandupdate.py` | `--only 1,2,4` |
@@ -63,7 +66,7 @@ arc/
 │   ├── panos-sources.json         ← PAN-OS CLI docs pages (docs.paloaltonetworks.com)
 │   ├── scm-sources.json           ← SCM / pan.dev OpenAPI spec + guide registry
 │   ├── feature-labels.json        ← human names for the feature editor (GUI + CLI)
-├── config/<os_username>/          ← gitignored: config.json + preferences.json
+├── config/<os_username>/          ← gitignored: config.json (incl. preferences block)
 ├── docs/                          ← user-facing Markdown (help <topic>)
 │   ├── commands/                  ← hand-written pages only (no generated stubs)
 │   └── scm-api/                   ← pulled pan.dev specs (docsupdate)
@@ -73,7 +76,13 @@ arc/
     ├── config.py                  ← ArcConfig + profiles + keychain
     ├── docs.py                    ← help renderer + synthesize_command_help
     ├── api/client.py              ← SCMClient: _request() + per-domain wrappers
+    ├── auth/user_login.py         ← experimental OAuth PKCE user login (`login`)
     ├── ssh/manager.py             ← paramiko pool
+    ├── web/                       ← browser consoles (loopback-only HTTP):
+    │   ├── gui_base.py            ← BaseGuiServer: shared server + Host guard
+    │   ├── feature_server.py / feature_gui.html   ← `feature gui-configure`
+    │   ├── arc_server.py / arc_gui.html           ← `arc gui-configure`
+    │   └── assets/gui.css, gui.js ← shared styling + widget library
     ├── shell/                     ← REPL mixins (one concern per file):
     │   ├── _base.py               ← spine: imports/constants/ShellState
     │   ├── dispatch.py            ← route every input line
@@ -93,7 +102,7 @@ arc/
     │   ├── resource_catalog.py    ← AUTO-GENERATED (do not edit)
     │   └── generated.py           ← catalog entry → feature-gated command
     ├── scripts/                   ← generators + smoke suite
-    │   ├── smoke_test.py          ← 12-section test suite
+    │   ├── smoke_test.py          ← 14-section test suite
     │   ├── CODE_MAP.md            ← method → line ranges (auto-regenerated)
     │   └── generate_*.py / docsupdate.py / panosupdate.py / commandupdate.py
     └── utils/formatter.py         ← Rich renderers
@@ -145,13 +154,14 @@ Every OpenAPI operation → feature-gated command via `resource_catalog.py` + `g
 
 ### Feature-editor sync guarantee (keep this true)
 
-The feature editor (browser `feature gui`) and the `feature`/`alias` CLI are **sync-by-construction** — new features flow into both with no editor changes:
+The feature editor (browser `feature gui-configure`) and the `feature`/`alias` CLI are **sync-by-construction** — new features flow into both with no editor changes:
 - **Flags/commands:** `app/web/feature_server.py` and the CLI both read the live registry (`COMMANDS`) + `settings/features/*.json` at request time. Anything `docsupdate`/`commandupdate` adds appears in both surfaces automatically.
 - **Human labels:** `generate_feature_flags.py` (in the `catalog rebuild` chain that `docsupdate` auto-runs) calls `augment_feature_labels()` to add any newly-discovered area to `settings/feature-labels.json` with a best-guess name, **preserving existing human edits** (edit-safe, like `_carry`). The shared `app/settings/feature_labels.py` renders those names in **both** the CLI (`feature show`/`info`/`area`) and the GUI.
 - **Command structure:** `commandupdate`/`command-structure update` regenerate non-override entries; GUI/CLI read them live. User `override:true` entries (from the GUI editor) are preserved.
-- **Storage:** everything the editor writes lives in `settings/` — `feature-labels.json`, `features/*.json`, `features/local.json` (`_scope_overrides`, `_disabled_areas`), `command-aliases.json`, `command-structure.json`, `builtin-commands.json` (personal aliases stay in per-user `preferences.json`). Every capability has a shared helper used by GUI **and** CLI **and** manual edits — never add a capability to only one surface.
+- **Storage:** everything the editor writes lives in `settings/` — `feature-labels.json`, `features/*.json`, `features/local.json` (`_scope_overrides`, `_disabled_areas`), `command-aliases.json`, `command-structure.json`, `builtin-commands.json` (personal aliases stay in the per-user `config.json` preferences block). Every capability has a shared helper used by GUI **and** CLI **and** manual edits — never add a capability to only one surface.
 - **Area disable is a real gate:** `_disabled_areas` (local.json) turns a whole category OFF — `_is_command_visible` (help.py) and the dispatch executability gate both check `cmd_def.category in shell._disabled_areas`, so disabled-area commands vanish from `?`/completion/help AND are unrunnable, and every editor section (Features, Command Structure, Advanced) excludes them. It is a master gate above per-feature flags (values preserved). Managed by `feature area <name> enable|disable`, the GUI Areas tab, or hand-editing — all via `load_disabled_areas`/`set_area_disabled`.
-- **Unified GUI:** `feature gui` is one consistent SPA — top tabs (Features · Command Structure · Aliases · Built-ins · Advanced), a left sidebar of groups per section, a main pane of items, `#section/group` hash routing. Built-in visibility is edited through the same `load_command_visibility` the shell's `?`/dispatch use; file/area names come from the shared `feature_labels` layer (human-readable in GUI and CLI).
+- **Shared GUI base:** both browser consoles extend `BaseGuiServer` (`app/web/gui_base.py`) and share `/assets/gui.css` + `/assets/gui.js`. `arc gui-configure` manages preferences, config.json, credentials/keychain, auth, branding, API sources, appearance and maintenance.
+- **Unified GUI:** `feature gui-configure` is one consistent SPA — top tabs (Features · Command Structure · Aliases · Built-ins · Advanced), a left sidebar of groups per section, a main pane of items, `#section/group` hash routing. Built-in visibility is edited through the same `load_command_visibility` the shell's `?`/dispatch use; file/area names come from the shared `feature_labels` layer (human-readable in GUI and CLI).
 
 ---
 

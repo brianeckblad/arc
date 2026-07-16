@@ -1,6 +1,6 @@
 # terminal
 
-Per-user terminal preferences. Stored in `config/<user>/preferences.json`
+Per-user terminal preferences. Stored in `config/<user>/config.json`
 (personal — not the shared `settings/` folder) and loaded at every launch.
 
 ```text

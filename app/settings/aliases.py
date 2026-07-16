@@ -6,7 +6,7 @@ Two kinds of aliases:
   by all users (e.g. ``sh`` -> ``show``).  Read via
   ``app.settings.commands.load_builtin_aliases``; written here so the GUI and a
   hand-edit produce the same file.
-* **Personal aliases** — ``config/<user>/preferences.json``: per-user, managed by
+* **Personal aliases** — ``config/<user>/config.json (preferences block)``: per-user, managed by
   the ``alias`` builtin (and the GUI, via ``shell._prefs``).  Not handled here —
   the shell owns the prefs object.
 

@@ -21,6 +21,24 @@ from app.commands.base import (
 )
 
 
+def _container_field(ctx: ExecutionContext) -> dict:
+    """Body-level container for object create payloads.
+
+    Objects live in exactly one container: a folder or a snippet (mutually
+    exclusive).  Returns ``{"snippet": name}`` when a snippet context is active,
+    otherwise ``{"folder": name}`` — so ``set``/clone writes land in whichever
+    container the operator has navigated into (``cd snippet`` / ``cd folder``).
+    """
+    param, value = ctx.container
+    return {param: value}
+
+
+def _container_label(ctx: ExecutionContext) -> str:
+    """Human label for the active container, e.g. 'snippet dmz' or 'folder Shared'."""
+    param, value = ctx.container
+    return f"{param} {value}"
+
+
 def _check_concurrent_modification(original: dict, fresh_item: dict | None, name: str) -> None:
     """Warn if the object was modified between GET and PUT.
 
@@ -367,7 +385,7 @@ def _set_address(ctx: ExecutionContext, args: dict) -> Any:
     if not addr_val:
         raise ValueError(f"Missing value after {addr_type!r}")
     kv = parse_kv_tail(pos, 3)
-    payload: dict = {"name": name, "folder": ctx.folder, _ADDR_TYPE_MAP[addr_type]: addr_val}
+    payload: dict = {"name": name, **_container_field(ctx), _ADDR_TYPE_MAP[addr_type]: addr_val}
     if args.get("description") or kv.get("description"):
         payload["description"] = args.get("description") or kv["description"]
     tags = []
@@ -380,7 +398,7 @@ def _set_address(ctx: ExecutionContext, args: dict) -> Any:
     result = scm.create_address(payload)
     return (
         f"[green]✓[/green] Address [bold]{name}[/bold] ({addr_type}: {addr_val}) created\n"
-        f"  folder: {ctx.folder}  id: {(result or {}).get('id', '?')}"
+        f"  {_container_label(ctx)}  id: {(result or {}).get('id', '?')}"
     )
 
 
@@ -431,7 +449,7 @@ def _set_address_group(ctx: ExecutionContext, args: dict) -> Any:
             "  set address-group <name> dynamic filter '<expression>'"
         )
     mode = pos[1].lower() if len(pos) > 1 else ""
-    payload: dict = {"name": name, "folder": ctx.folder}
+    payload: dict = {"name": name, **_container_field(ctx)}
     if mode == "static":
         _KW = {"description", "tag"}
         members, kv_start = [], len(pos)
@@ -461,7 +479,7 @@ def _set_address_group(ctx: ExecutionContext, args: dict) -> Any:
     result = scm.create_address_group(payload)
     return (
         f"[green]✓[/green] Address group [bold]{name}[/bold] ({mode}) created\n"
-        f"  folder: {ctx.folder}  id: {(result or {}).get('id', '?')}"
+        f"  {_container_label(ctx)}  id: {(result or {}).get('id', '?')}"
     )
 
 
@@ -524,7 +542,7 @@ def _set_service(ctx: ExecutionContext, args: dict) -> Any:
     i = 0
     while i + 1 < len(kv_tokens):
         kv[kv_tokens[i].lower()] = kv_tokens[i + 1]; i += 2
-    payload: dict = {"name": name, "folder": ctx.folder, "protocol": {proto: proto_block}}
+    payload: dict = {"name": name, **_container_field(ctx), "protocol": {proto: proto_block}}
     if args.get("description") or kv.get("description"):
         payload["description"] = args.get("description") or kv["description"]
     tags = [t for t in [args.get("tag"), kv.get("tag")] if t]
@@ -534,7 +552,7 @@ def _set_service(ctx: ExecutionContext, args: dict) -> Any:
     src_info = f"  source-port: {proto_block['source_port']}" if "source_port" in proto_block else ""
     return (
         f"[green]✓[/green] Service [bold]{name}[/bold] ({proto}/{dst_port}{src_info}) created\n"
-        f"  folder: {ctx.folder}  id: {(result or {}).get('id', '?')}"
+        f"  {_container_label(ctx)}  id: {(result or {}).get('id', '?')}"
     )
 
 
@@ -574,7 +592,7 @@ def _set_service_group(ctx: ExecutionContext, args: dict) -> Any:
     if not members:
         raise ValueError("At least one service member required.")
     kv = parse_kv_tail(pos, kv_start)
-    payload: dict = {"name": name, "folder": ctx.folder, "members": members}
+    payload: dict = {"name": name, **_container_field(ctx), "members": members}
     if args.get("description") or kv.get("description"):
         payload["description"] = args.get("description") or kv["description"]
     tags = [t for t in [args.get("tag"), kv.get("tag")] if t]
@@ -583,7 +601,7 @@ def _set_service_group(ctx: ExecutionContext, args: dict) -> Any:
     result = scm.create_service_group(payload)
     return (
         f"[green]✓[/green] Service group [bold]{name}[/bold] ({len(members)} members: {', '.join(members)}) created\n"
-        f"  folder: {ctx.folder}  id: {(result or {}).get('id', '?')}"
+        f"  {_container_label(ctx)}  id: {(result or {}).get('id', '?')}"
     )
 
 
@@ -618,7 +636,7 @@ def _set_tag(ctx: ExecutionContext, args: dict) -> Any:
     if not name:
         raise ValueError("Usage: set tag <name> [color <color>] [comments <text>]")
     kv = parse_kv_tail(pos, 1)
-    payload: dict = {"name": name, "folder": ctx.folder}
+    payload: dict = {"name": name, **_container_field(ctx)}
     color = args.get("color") or kv.get("color") or ""
     if color:
         norm = color.lower()
@@ -637,7 +655,7 @@ def _set_tag(ctx: ExecutionContext, args: dict) -> Any:
     color_info = f" color: {color}" if color else ""
     return (
         f"[green]✓[/green] Tag [bold]{name}[/bold] created{color_info}\n"
-        f"  folder: {ctx.folder}  id: {(result or {}).get('id', '?')}"
+        f"  {_container_label(ctx)}  id: {(result or {}).get('id', '?')}"
     )
 
 
@@ -709,7 +727,7 @@ def _set_external_dynamic_list(ctx: ExecutionContext, args: dict) -> Any:
             type_block["recurring"] = {freq: {}}
     except ValueError:
         pass
-    payload: dict = {"name": name, "folder": ctx.folder, "type": {edl_type: type_block}}
+    payload: dict = {"name": name, **_container_field(ctx), "type": {edl_type: type_block}}
     kv = parse_kv_tail(pos, url_idx + 2) if url_idx + 2 < len(pos) else {}
     if args.get("description") or kv.get("description"):
         payload["description"] = args.get("description") or kv["description"]
@@ -719,7 +737,7 @@ def _set_external_dynamic_list(ctx: ExecutionContext, args: dict) -> Any:
     result = scm.create_external_dynamic_list(payload)
     return (
         f"[green]✓[/green] EDL [bold]{name}[/bold] (type: {edl_type}) created\n"
-        f"  url: {fetch_url}  folder: {ctx.folder}  id: {(result or {}).get('id', '?')}"
+        f"  url: {fetch_url}  {_container_label(ctx)}  id: {(result or {}).get('id', '?')}"
     )
 
 

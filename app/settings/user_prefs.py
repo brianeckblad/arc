@@ -1,22 +1,21 @@
-"""Per-user shell preferences — ``config/<os_username>/preferences.json``.
+"""Per-user shell preferences — stored in ``config/<os_username>/config.json``.
 
-Unlike ``settings/`` (repo-committed, shared by the whole team), preferences
-are personal and live next to the user's credentials file. They are loaded at
-every shell launch and written whenever a ``terminal …`` command changes one.
+Preferences are personal (not shared with the team like ``settings/``) and now
+live inside the same ``config.json`` as the rest of the per-user config, under a
+top-level ``"preferences"`` block.  Earlier versions used a separate
+``preferences.json``; it is migrated into ``config.json`` automatically on first
+load and then removed.
 
 Current keys:
     terminal_length   int   Lines per page for long help/docs output.
-                            0 = paging disabled (default — full output,
-                            use your terminal's scrollback). `terminal length 24`
-                            gives the classic vendor-CLI pager.
-    terminal_width    int   Force a render width in columns. 0 = auto-detect
-                            from the terminal (default).
+                            0 = paging disabled (default).
+    terminal_width    int   Force a render width in columns. 0 = auto-detect.
+    terminal_height   int   Force a render height. 0 = auto-detect.
     spinner           bool  Show the "querying SCM…" spinner during API calls.
-    aliases           dict  User-defined command aliases (`alias <name> <expansion>`).
-                            Expanded once per input line — never recursively.
-
-Room to grow (add a field + a `terminal`/future subcommand, nothing else):
-output format defaults, confirmation prompts, history size.
+    aliases           dict  User-defined command aliases.
+    gui_theme         dict  Shared browser-GUI theme (both consoles).
+    preferred_auth    str   Preferred SCM auth method: "service" | "user".
+    scm_token_expiry  int   Epoch when the stored bearer token expires (0 = none).
 """
 
 from __future__ import annotations
@@ -26,11 +25,19 @@ import logging
 from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 
-from app.config import CONFIG_DIR
+from app.config import (
+    CONFIG_DIR,
+    CONFIG_FILE,
+    _CONFIG_WRITE_LOCK,
+    _read_config_file,
+    _to_new_format,
+    _write_config_file,
+)
 
 logger = logging.getLogger(__name__)
 
-PREFS_FILE: Path = CONFIG_DIR / "preferences.json"
+# Legacy standalone prefs file (migrated into config.json on first load).
+_LEGACY_PREFS_FILE: Path = CONFIG_DIR / "preferences.json"
 
 
 @dataclass
@@ -40,62 +47,105 @@ class UserPrefs:
     terminal_height: int = 0    # 0 = auto-detect (terminal height for rich tables)
     spinner: bool = True
     aliases: dict[str, str] = field(default_factory=dict)
-    # Feature-editor (browser GUI) theme: {"base": <name>, "overrides": {"--token": "#hex"}}.
-    # Per-user only; never affects the terminal shell theme (settings/theme.json).
-    feature_gui_theme: dict = field(default_factory=dict)
+    # Shared browser-GUI theme (both the feature editor and ARC console):
+    # {"base": <name>, "overrides": {"--token": "#hex"}}.  Per-user only; never
+    # affects the terminal shell theme (settings/theme.json).
+    gui_theme: dict = field(default_factory=dict)
+    # Preferred SCM auth method surfaced in the ARC console: "service" | "user".
+    preferred_auth: str = "service"
+    # Epoch seconds when the stored SCM bearer token expires (0 = unknown/none).
+    # Set by the experimental user-account `login` flow.
+    scm_token_expiry: int = 0
 
 
-def load_prefs() -> UserPrefs:
-    """Read preferences.json, tolerating a missing or malformed file."""
-    try:
-        raw = json.loads(PREFS_FILE.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return UserPrefs()
-    if not isinstance(raw, dict):
-        return UserPrefs()
-    known = {f.name: f.type for f in fields(UserPrefs)}
-    prefs = UserPrefs()
+_THEME_KEYS = ("gui_theme",)
+
+
+def _coerce(prefs: "UserPrefs", raw: dict) -> "UserPrefs":
+    """Populate *prefs* from a raw dict, tolerating bad/unknown values."""
+    known = {f.name for f in fields(UserPrefs)}
     for key, value in raw.items():
         if key not in known:
             continue  # forward-compat: ignore keys from newer versions
         try:
-            if isinstance(getattr(prefs, key), bool):
+            current = getattr(prefs, key)
+            if isinstance(current, bool):
                 setattr(prefs, key, bool(value))
-            elif isinstance(getattr(prefs, key), int):
+            elif isinstance(current, int):
                 setattr(prefs, key, max(0, int(value)))
-            elif isinstance(getattr(prefs, key), dict):
-                if isinstance(value, dict):
-                    if key == "feature_gui_theme":
-                        # Nested structure: {"base": str, "overrides": {str: str}}.
-                        # An empty object stays empty (matches the default) so a
-                        # never-customized theme round-trips cleanly.
-                        if not value:
-                            setattr(prefs, key, {})
-                        else:
-                            base = str(value.get("base", ""))
-                            ov = value.get("overrides", {})
-                            overrides = (
-                                {str(k): str(v) for k, v in ov.items()}
-                                if isinstance(ov, dict) else {}
-                            )
-                            setattr(prefs, key, {"base": base, "overrides": overrides})
+            elif isinstance(current, dict):
+                if not isinstance(value, dict):
+                    continue
+                if key in _THEME_KEYS:
+                    # {"base": str, "overrides": {str: str}}; empty stays empty.
+                    if not value:
+                        setattr(prefs, key, {})
                     else:
-                        setattr(prefs, key, {str(k): str(v) for k, v in value.items()})
+                        ov = value.get("overrides", {})
+                        setattr(prefs, key, {
+                            "base": str(value.get("base", "")),
+                            "overrides": ({str(k): str(v) for k, v in ov.items()}
+                                          if isinstance(ov, dict) else {}),
+                        })
                 else:
-                    logger.debug("preferences.json: %s must be an object, got %r", key, value)
+                    setattr(prefs, key, {str(k): str(v) for k, v in value.items()})
             else:
-                setattr(prefs, key, value)
+                setattr(prefs, key, str(value) if value is not None else current)
         except (TypeError, ValueError):
-            logger.debug("preferences.json: ignoring bad value for %s: %r", key, value)
+            logger.debug("preferences: ignoring bad value for %s: %r", key, value)
+    return prefs
+
+
+def _migrate_legacy() -> dict | None:
+    """Read a legacy preferences.json (if present) and return its dict, else None."""
+    if not _LEGACY_PREFS_FILE.exists():
+        return None
+    try:
+        data = json.loads(_LEGACY_PREFS_FILE.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else None
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def load_prefs() -> UserPrefs:
+    """Read preferences from config.json (migrating a legacy preferences.json)."""
+    raw = _to_new_format(_read_config_file())
+    block = raw.get("preferences")
+    if not isinstance(block, dict):
+        block = None
+
+    legacy = None
+    if block is None:
+        legacy = _migrate_legacy()
+
+    prefs = UserPrefs()
+    source = block if block is not None else (legacy or {})
+    # Legacy theme keys → unified gui_theme (prefer arc console's theme).
+    if "gui_theme" not in source:
+        for old in ("arc_gui_theme", "feature_gui_theme"):
+            if isinstance(source.get(old), dict) and source.get(old):
+                source = {**source, "gui_theme": source[old]}
+                break
+    _coerce(prefs, source)
+
+    # Persist the migration (write the preferences block, drop the legacy file).
+    if block is None and (legacy is not None):
+        save_prefs(prefs)
+        try:
+            _LEGACY_PREFS_FILE.unlink()
+        except OSError:
+            pass
     return prefs
 
 
 def save_prefs(prefs: UserPrefs) -> bool:
-    """Persist preferences; returns False (with a debug log) on failure."""
+    """Persist preferences into the config.json ``preferences`` block."""
     try:
-        PREFS_FILE.parent.mkdir(parents=True, exist_ok=True)
-        PREFS_FILE.write_text(json.dumps(asdict(prefs), indent=2) + "\n", encoding="utf-8")
+        with _CONFIG_WRITE_LOCK:
+            raw = _to_new_format(_read_config_file())
+            raw["preferences"] = asdict(prefs)
+            _write_config_file(raw)
         return True
     except OSError as exc:
-        logger.debug("Could not write %s: %s", PREFS_FILE, exc)
+        logger.debug("Could not write preferences to %s: %s", CONFIG_FILE, exc)
         return False

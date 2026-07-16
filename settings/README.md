@@ -128,5 +128,5 @@ tombstones, never silent removals.
 Credentials (API tokens, SSH passwords) are **never** stored in this folder.
 They live in the OS keychain + `config/<your-username>/config.json`
 (non-sensitive values only). Run `arc auth configure` to set them. Personal
-terminal preferences and aliases live in `config/<your-username>/preferences.json`
+terminal preferences and aliases live in `config/<your-username>/config.json`
 via the `terminal` and `alias` commands.

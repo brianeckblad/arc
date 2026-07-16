@@ -25,12 +25,27 @@ class ExecutionContext:
     config: Optional["ArcConfig"] = None
     device: Optional[dict] = None
     folder: str = "Shared"
+    snippet: Optional[str] = None
     tsg_id: str = ""
 
     @property
     def target(self) -> Optional[str]:
         """Selected device serial, when known."""
         return self.device.get("serial") if self.device else None
+
+    @property
+    def container(self) -> tuple[str, str]:
+        """Active config container as a (param_name, value) pair.
+
+        SCM's config APIs place objects in exactly one container: a folder OR a
+        snippet (mutually exclusive).  When a snippet context is active it wins;
+        otherwise the active folder is used.  Callers inject this as the query
+        parameter (``?folder=`` / ``?snippet=``) and as the body-level container
+        default so every read/write targets the right place.
+        """
+        if self.snippet:
+            return ("snippet", self.snippet)
+        return ("folder", self.folder)
 
     @property
     def device_host(self) -> Optional[str]:
@@ -165,12 +180,13 @@ def show_handler(scm_method: str, *, folder_scoped: bool = True) -> Callable:
     def handler(ctx: ExecutionContext, args: dict):
         scm = require_scm(ctx)
         method = getattr(scm, scm_method)
+        cparam, cvalue = ctx.container
         if folder_scoped:
             results = method(folder=ctx.folder)
         else:
             results = method()
-        # Inject active folder so formatters can mark inherited objects
-        active_folder = ctx.folder if folder_scoped else None
+        # Inject active container so formatters can mark inherited objects
+        active_folder = cvalue if folder_scoped else None
         if isinstance(results, list) and active_folder:
             for obj in results:
                 if isinstance(obj, dict):
@@ -187,7 +203,7 @@ def show_handler(scm_method: str, *, folder_scoped: bool = True) -> Callable:
                        and r.get("name", "").lower().startswith(name_filter.lower())]
             if partial:
                 return partial
-            raise ValueError(f"No object named '{name_filter}' in folder '{ctx.folder}'.")
+            raise ValueError(f"No object named '{name_filter}' in {cparam} '{cvalue}'.")
         return results
     return handler
 
@@ -210,10 +226,11 @@ def delete_handler(resource_label: str, get_method: str, delete_method: str, *, 
         name = (args.get("name") or "").strip()
         if not name:
             raise ValueError(usage)
-        items  = getattr(scm, get_method)(folder=ctx.folder)
+        cparam, cvalue = ctx.container
+        items = getattr(scm, get_method)(folder=ctx.folder)
         obj_id = scm._find_id_by_name(items, name)
         if not obj_id:
-            raise ValueError(f"{resource_label} '{name}' not found in folder '{ctx.folder}'")
+            raise ValueError(f"{resource_label} '{name}' not found in {cparam} '{cvalue}'")
         getattr(scm, delete_method)(obj_id)
         return f"[green]✓[/green] {resource_label} [bold]{name}[/bold] deleted."
     return handler

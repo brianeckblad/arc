@@ -72,7 +72,7 @@ class ExecutionMixin:
             # against a recording client (GETs pass through for validation;
             # mutations are captured). `commit` replays them; `abandon` drops
             # them. SCM is untouched until commit.
-            if key.startswith(("set ", "delete ", "update ")):
+            if key.split(" ", 1)[0] in ("set", "delete", "update", "clone"):
                 self._stage_write(key, cmd_def, ctx, args)
                 return
 
@@ -85,22 +85,35 @@ class ExecutionMixin:
                 and not getattr(self, "_piping", False)
                 and getattr(getattr(self, "_prefs", None), "spinner", True)
             )
-            if use_spinner:
-                status_ctx = console.status("[dim]querying SCM…[/dim]", spinner="dots")
-                # Attach a progress reporter so paginated fetches update the
-                # spinner text as each page arrives, keeping the operator informed.
-                if self._scm is not None:
-                    def _on_page(fetched: int, total: int) -> None:
-                        status_ctx.update(f"[dim]fetching… {fetched}/{total}[/dim]")
-                    self._scm._page_reporter = _on_page
-                try:
-                    with status_ctx:
-                        data = cmd_def.api_handler(ctx, args)
-                finally:
+            # Reads inherit the active container: when a snippet context is
+            # active, folder-scoped list getters target ?snippet= instead of
+            # ?folder= (see SCMClient._apply_container). Set centrally so every
+            # handler — explicit or generated — is snippet-aware without change.
+            _cparam, _ = ctx.container
+            if self._scm is not None:
+                self._scm._container_override = (
+                    ctx.container if _cparam == "snippet" else None
+                )
+            try:
+                if use_spinner:
+                    status_ctx = console.status("[dim]querying SCM…[/dim]", spinner="dots")
+                    # Attach a progress reporter so paginated fetches update the
+                    # spinner text as each page arrives, keeping the operator informed.
                     if self._scm is not None:
-                        self._scm._page_reporter = None
-            else:
-                data = cmd_def.api_handler(ctx, args)
+                        def _on_page(fetched: int, total: int) -> None:
+                            status_ctx.update(f"[dim]fetching… {fetched}/{total}[/dim]")
+                        self._scm._page_reporter = _on_page
+                    try:
+                        with status_ctx:
+                            data = cmd_def.api_handler(ctx, args)
+                    finally:
+                        if self._scm is not None:
+                            self._scm._page_reporter = None
+                else:
+                    data = cmd_def.api_handler(ctx, args)
+            finally:
+                if self._scm is not None:
+                    self._scm._container_override = None
             self._render(key, cmd_def, data)
         except httpx.HTTPStatusError as exc:
             status = exc.response.status_code
@@ -369,5 +382,6 @@ class ExecutionMixin:
             config=self._config,
             device=self._state.device,
             folder=self._state.folder,
+            snippet=self._state.snippet,
             tsg_id=self._state.tsg_id,
         )

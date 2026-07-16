@@ -97,6 +97,11 @@ class SCMClient:
         # fetches so the spinner text updates as pages arrive.  Signature:
         #   _page_reporter(fetched_so_far: int, total: int) -> None
         self._page_reporter: Optional[callable] = None
+        # Active config-container override. When set to ("snippet", name) the
+        # folder-scoped list getters rewrite their ?folder= param to ?snippet=
+        # so reads target the active snippet instead of a folder. The execution
+        # layer sets this around a call and always resets it in a finally block.
+        self._container_override: Optional[tuple[str, str]] = None
 
         # Auth priority:
         #   1. OAuth client credentials (client_id + client_secret + tsg_id) — always
@@ -269,8 +274,26 @@ class SCMClient:
             )
         return items
 
+    def _apply_container(self, params: Optional[dict]) -> Optional[dict]:
+        """Rewrite a ?folder= param to the active container when one is set.
+
+        Folder and snippet are mutually-exclusive SCM containers.  When
+        ``_container_override`` is ("snippet", name), any folder-scoped list
+        param is swapped to ?snippet= so the read targets the active snippet.
+        """
+        override = self._container_override
+        if not override or not params or "folder" not in params:
+            return params
+        key, value = override
+        if key == "folder":
+            return params
+        rewritten = {k: v for k, v in params.items() if k != "folder"}
+        rewritten[key] = value
+        return rewritten
+
     def _list(self, base_url: str, path: str, params: Optional[dict] = None) -> list[dict]:
         """GET a collection, following limit/offset pagination to fetch ALL items."""
+        params = self._apply_container(params)
         # First request deliberately adds no limit/offset — some endpoints
         # reject them; pagination params only appear on follow-up pages.
         first = self._request("GET", base_url, path, params=params)
@@ -708,6 +731,26 @@ class SCMClient:
         403 permission denied).
         """
         return self._post_setup("/folders", json={"name": name, "parent": parent})
+
+    def get_folder_record(self, name: str) -> Optional[dict]:
+        """Return the full folder record for *name* (including its snippets list).
+
+        pan.dev: GET /config/setup/v1/folders
+        Returns None when no folder with that name exists.
+        """
+        for f in self.get_folders_full():
+            if (f.get("name") or "").lower() == name.lower():
+                return f
+        return None
+
+    def update_folder(self, folder_id: str, payload: dict) -> dict:
+        """Replace a folder record (used to change its attached snippet list).
+
+        pan.dev: PUT /config/setup/v1/folders/{id}
+        The payload must be the full folder object with the desired ``snippets``
+        list; SCM replaces the record with what is sent.
+        """
+        return self._request("PUT", self.SETUP_URL, f"/folders/{folder_id}", json=payload)
 
     # ------------------------------------------------------------------
     # Objects  (api.strata.paloaltonetworks.com/config/objects/v1)

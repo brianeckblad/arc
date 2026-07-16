@@ -19,40 +19,20 @@ each flag's owning glossary file via ``feature_file_for``.
 
 from __future__ import annotations
 
-import json
 import logging
-import threading
-import webbrowser
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+
+from app.web.gui_base import BaseGuiServer
 
 logger = logging.getLogger(__name__)
 
 _HTML_FILE = Path(__file__).with_name("feature_gui.html")
 
 
-class _QuietThreadingHTTPServer(ThreadingHTTPServer):
-    """ThreadingHTTPServer that ignores client-disconnect errors.
-
-    Browsers routinely cancel in-flight requests (fast navigation, refresh,
-    duplicate fetches); the resulting BrokenPipe/ConnectionReset is harmless but
-    the default handler prints a full traceback to stderr, spamming the shell.
-    """
-
-    daemon_threads = True
-
-    def handle_error(self, request, client_address):  # noqa: D102
-        import sys
-        exc = sys.exc_info()[1]
-        if isinstance(exc, (BrokenPipeError, ConnectionResetError, ConnectionError)):
-            return  # client went away — nothing to report
-        super().handle_error(request, client_address)
-
-
 # ---------------------------------------------------------------------------
 # Feature-editor themes.  These style the browser GUI only (never the terminal
 # shell, which uses settings/theme.json).  The user's choice + per-token tweaks
-# live in config/<user>/preferences.json under `feature_gui_theme`.
+# live in config/<user>/config.json under the shared `gui_theme` (preferences block).
 # ---------------------------------------------------------------------------
 
 # The color CSS variables the GUI uses (layout tokens like --radius are fixed).
@@ -158,9 +138,17 @@ _GUI_THEMES: dict[str, dict[str, str]] = {
 
 
 def build_theme(shell) -> dict:
-    """Return the built-in palettes + the user's active selection."""
-    prefs = getattr(shell, "_prefs", None)
-    active = getattr(prefs, "feature_gui_theme", None) or {}
+    """Return the built-in palettes + the user's active selection.
+
+    Reads fresh from disk so a theme saved in the ARC console shows up here on
+    the next launch without restarting ARC (both consoles share ``gui_theme``).
+    """
+    from app.settings.user_prefs import load_prefs
+
+    prefs = load_prefs()
+    if getattr(shell, "_prefs", None) is not None:
+        shell._prefs.gui_theme = prefs.gui_theme
+    active = getattr(prefs, "gui_theme", None) or {}
     base = active.get("base") if isinstance(active, dict) else None
     overrides = active.get("overrides") if isinstance(active, dict) else {}
     if base not in _GUI_THEMES:
@@ -691,7 +679,7 @@ _SECTION_HELP = {
         "<h3>Settings · Theme</h3><p>Personalize the editor's colors. Pick a base "
         "theme (macOS-Terminal inspired) then tweak individual colors — changes "
         "preview live. <strong>Save</strong> writes to your "
-        "<code>config/&lt;user&gt;/preferences.json</code> and styles this "
+        "<code>config/&lt;user&gt;/config.json</code> and styles this "
         "browser editor only (never the ARC terminal, which uses "
         "<code>settings/theme.json</code>).</p>"
     ),
@@ -744,36 +732,104 @@ def _flag_help_html(shell, flag: str) -> str:
     return "\n".join(parts)
 
 
-class FeatureGuiServer:
+class FeatureGuiServer(BaseGuiServer):
     """A blocking, on-demand HTTP server for the feature-flag editor.
 
-    Lifetime is scoped to a single ``serve()`` call: it binds, opens the
-    browser, blocks until the editor signals close (or Ctrl-C), then shuts
-    down.  A lock serializes state mutations so concurrent browser requests
-    can't corrupt the shared shell state.
+    Lifetime is scoped to a single ``serve()`` call (see BaseGuiServer): it
+    binds, opens the browser, blocks until the editor signals close (or
+    Ctrl-C), then shuts down.  A lock serializes state mutations so concurrent
+    browser requests can't corrupt the shared shell state.
     """
 
+    HTML_FILE = _HTML_FILE
+    LABEL = "Feature editor"
+
     def __init__(self, shell, port: int = 4445, host: str = "127.0.0.1") -> None:
-        self._shell = shell
-        self._port = port
-        self._host = host
-        self._lock = threading.Lock()
-        self._closed = threading.Event()
-        self._httpd: ThreadingHTTPServer | None = None
-        self._html = self._load_html()
+        super().__init__(shell, port=port, host=host)
 
-    # -- helpers -----------------------------------------------------------
+    # -- routing -----------------------------------------------------------
 
-    @staticmethod
-    def _load_html() -> bytes:
-        try:
-            return _HTML_FILE.read_bytes()
-        except OSError as exc:  # pragma: no cover - packaging safety net
-            logger.error("feature GUI HTML missing: %s", exc)
-            return (
-                b"<!doctype html><meta charset=utf-8>"
-                b"<h1>feature_gui.html not found</h1>"
-            )
+    _GET_SECTIONS = {
+        "/api/nav": "nav",
+        "/api/areas": "areas",
+        "/api/features": "features",
+        "/api/features/header": "features-header",
+        "/api/domains": "domains",
+        "/api/files": "files",
+        "/api/aliases": "aliases",
+        "/api/builtins": "builtins",
+        "/api/structure/list": "structure-list",
+        "/api/structure/area": "structure-area",
+        "/api/structure/item": "structure",
+        "/api/structure": "structure",
+        "/api/theme": "theme",
+    }
+
+    def route_get(self, path, qs):
+        if path == "/api/help":
+            return self._help(qs)
+        if path in self._GET_SECTIONS:
+            return self._section(self._GET_SECTIONS[path], qs)
+        return None
+
+    def route_post(self, path, data):
+        if path == "/api/feature":
+            flag = str(data.get("flag", "")).strip()
+            state = str(data.get("state", "")).strip().lower()
+            if not flag:
+                raise ValueError("missing flag")
+            return self._apply_change(flag, state)
+        if path == "/api/scope":
+            command = str(data.get("command", "")).strip()
+            scope = data.get("scope")
+            scope = None if scope is None else str(scope).strip().lower()
+            if not command:
+                raise ValueError("missing command")
+            return self._apply_scope(command, scope)
+        if path == "/api/meta":
+            domain = str(data.get("domain", "")).strip()
+            default = data.get("default")
+            carry = data.get("carry")
+            if default is not None:
+                default = str(default).strip().lower()
+            if carry is not None:
+                carry = bool(carry)
+            if not domain:
+                raise ValueError("missing domain")
+            return self._apply_meta(domain, default, carry)
+        if path == "/api/area":
+            area = str(data.get("area", "")).strip()
+            disabled = bool(data.get("disabled", False))
+            if not area:
+                raise ValueError("missing area")
+            return self._apply_area(area, disabled)
+        if path == "/api/alias":
+            scope = str(data.get("scope", "")).strip().lower()
+            name = str(data.get("name", "")).strip()
+            expansion = data.get("expansion")
+            if expansion is not None:
+                expansion = str(expansion)
+            return self._apply_alias(scope, name, expansion)
+        if path == "/api/builtin":
+            name = str(data.get("name", "")).strip()
+            field = str(data.get("field", "")).strip()
+            value = data.get("value")
+            if not name or not field:
+                raise ValueError("missing name/field")
+            return self._apply_builtin(name, field, value)
+        if path == "/api/theme":
+            base = str(data.get("base", "")).strip()
+            overrides = data.get("overrides") or {}
+            if not isinstance(overrides, dict):
+                overrides = {}
+            return self._apply_theme(base, overrides)
+        if path == "/api/structure":
+            command = str(data.get("command", "")).strip()
+            fields = data.get("fields") or []
+            if not command:
+                raise ValueError("missing command")
+            return self._apply_structure(command, fields)
+        return None
 
     def _apply_change(self, flag: str, state: str) -> dict:
         """Persist a flag change and update live shell state (thread-safe)."""
@@ -878,7 +934,7 @@ class FeatureGuiServer:
         if prefs is None:
             raise RuntimeError("preferences unavailable (no prefs)")
         with self._lock:
-            prefs.feature_gui_theme = {"base": base, "overrides": clean}
+            prefs.gui_theme = {"base": base, "overrides": clean}
             save_prefs(prefs)
         return {"base": base, "overrides": clean}
 
@@ -971,213 +1027,3 @@ class FeatureGuiServer:
         return {"error": "no help for that target"}
 
 
-    # -- lifecycle ---------------------------------------------------------
-
-    def serve(self) -> str:
-        """Start the server, open the browser, and BLOCK until the editor
-        closes.  Returns a short status string for the caller to print.
-
-        On a bind failure (port already in use) returns immediately without
-        blocking so the shell stays responsive.
-        """
-        server = self  # captured by the handler
-
-        class _Handler(BaseHTTPRequestHandler):
-            # Silence the default stderr request logging.
-            def log_message(self, *_args) -> None:  # noqa: N802
-                pass
-
-            def _send(self, code: int, body: bytes, ctype: str) -> None:
-                # The browser may cancel a request mid-flight (fast navigation,
-                # refresh, duplicate fetch) — that surfaces as BrokenPipe/
-                # ConnectionReset while writing. It's harmless; swallow it so it
-                # doesn't spam the shell with tracebacks.
-                try:
-                    self.send_response(code)
-                    self.send_header("Content-Type", ctype)
-                    self.send_header("Content-Length", str(len(body)))
-                    self.send_header("Cache-Control", "no-store")
-                    self.end_headers()
-                    self.wfile.write(body)
-                except (BrokenPipeError, ConnectionResetError, ConnectionError):
-                    pass
-
-            def _send_json(self, obj: dict, code: int = 200) -> None:
-                self._send(code, json.dumps(obj).encode("utf-8"), "application/json")
-
-            def do_GET(self) -> None:  # noqa: N802
-                from urllib.parse import parse_qs, urlparse
-
-                parsed = urlparse(self.path)
-                path = parsed.path
-                qs = parse_qs(parsed.query)
-                if path in ("/", "/index.html"):
-                    self._send(200, server._html, "text/html; charset=utf-8")
-                    return
-                if path == "/api/help":
-                    try:
-                        self._send_json(server._help(qs))
-                    except Exception as exc:  # pragma: no cover
-                        self._send_json({"error": str(exc)}, 500)
-                    return
-                # Section data endpoints.
-                _sections = {
-                    "/api/nav": "nav",
-                    "/api/areas": "areas",
-                    "/api/features": "features",
-                    "/api/features/header": "features-header",
-                    "/api/domains": "domains",
-                    "/api/files": "files",
-                    "/api/aliases": "aliases",
-                    "/api/builtins": "builtins",
-                    "/api/structure/list": "structure-list",
-                    "/api/structure/area": "structure-area",
-                    "/api/structure/item": "structure",
-                    "/api/structure": "structure",
-                    "/api/theme": "theme",
-                }
-                if path in _sections:
-                    try:
-                        self._send_json(server._section(_sections[path], qs))
-                    except Exception as exc:  # pragma: no cover
-                        self._send_json({"error": str(exc)}, 500)
-                    return
-                self._send(404, b"not found", "text/plain")
-
-            def do_POST(self) -> None:  # noqa: N802
-                path = self.path.split("?", 1)[0]
-                if path == "/api/close":
-                    self._send_json({"ok": True, "closing": True})
-                    server._closed.set()
-                    return
-
-                mutation_paths = (
-                    "/api/feature", "/api/scope", "/api/meta",
-                    "/api/area", "/api/alias", "/api/structure", "/api/builtin",
-                    "/api/theme",
-                )
-                if path in mutation_paths:
-                    try:
-                        length = int(self.headers.get("Content-Length", 0))
-                        raw = self.rfile.read(length) if length else b"{}"
-                        data = json.loads(raw or b"{}")
-                    except Exception as exc:
-                        self._send_json({"error": f"bad request: {exc}"}, 400)
-                        return
-                    try:
-                        if path == "/api/feature":
-                            flag = str(data.get("flag", "")).strip()
-                            state = str(data.get("state", "")).strip().lower()
-                            if not flag:
-                                self._send_json({"error": "missing flag"}, 400)
-                                return
-                            result = server._apply_change(flag, state)
-                        elif path == "/api/scope":
-                            command = str(data.get("command", "")).strip()
-                            scope = data.get("scope")
-                            scope = None if scope is None else str(scope).strip().lower()
-                            if not command:
-                                self._send_json({"error": "missing command"}, 400)
-                                return
-                            result = server._apply_scope(command, scope)
-                        elif path == "/api/meta":
-                            domain = str(data.get("domain", "")).strip()
-                            default = data.get("default")
-                            carry = data.get("carry")
-                            if default is not None:
-                                default = str(default).strip().lower()
-                            if carry is not None:
-                                carry = bool(carry)
-                            if not domain:
-                                self._send_json({"error": "missing domain"}, 400)
-                                return
-                            result = server._apply_meta(domain, default, carry)
-                        elif path == "/api/area":
-                            area = str(data.get("area", "")).strip()
-                            disabled = bool(data.get("disabled", False))
-                            if not area:
-                                self._send_json({"error": "missing area"}, 400)
-                                return
-                            result = server._apply_area(area, disabled)
-                        elif path == "/api/alias":
-                            scope = str(data.get("scope", "")).strip().lower()
-                            name = str(data.get("name", "")).strip()
-                            expansion = data.get("expansion")
-                            if expansion is not None:
-                                expansion = str(expansion)
-                            result = server._apply_alias(scope, name, expansion)
-                        elif path == "/api/builtin":
-                            name = str(data.get("name", "")).strip()
-                            field = str(data.get("field", "")).strip()
-                            value = data.get("value")
-                            if not name or not field:
-                                self._send_json({"error": "missing name/field"}, 400)
-                                return
-                            result = server._apply_builtin(name, field, value)
-                        elif path == "/api/theme":
-                            base = str(data.get("base", "")).strip()
-                            overrides = data.get("overrides") or {}
-                            if not isinstance(overrides, dict):
-                                overrides = {}
-                            result = server._apply_theme(base, overrides)
-                        else:  # /api/structure
-                            command = str(data.get("command", "")).strip()
-                            fields = data.get("fields") or []
-                            if not command:
-                                self._send_json({"error": "missing command"}, 400)
-                                return
-                            result = server._apply_structure(command, fields)
-                        self._send_json({"ok": True, **result})
-                    except ValueError as exc:
-                        self._send_json({"error": str(exc)}, 400)
-                    except RuntimeError as exc:
-                        self._send_json({"error": str(exc)}, 500)
-                    except Exception as exc:  # pragma: no cover
-                        self._send_json({"error": str(exc)}, 500)
-                    return
-                self._send(404, b"not found", "text/plain")
-
-        try:
-            self._httpd = _QuietThreadingHTTPServer((self._host, self._port), _Handler)
-        except OSError as exc:
-            return (
-                f"[error] Could not start feature editor on "
-                f"{self._host}:{self._port} — {exc}. "
-                f"Is another editor already running, or the port in use?"
-            )
-
-        thread = threading.Thread(target=self._httpd.serve_forever, daemon=True)
-        thread.start()
-
-        # Cache-bust the URL per launch so the browser opens a FRESH page (and
-        # re-fetches saved prefs/theme) instead of re-focusing a stale tab from a
-        # previous `feature gui` in the same session.
-        import time as _time
-        url = f"http://{self._host}:{self._port}/?v={int(_time.time())}"
-        try:
-            webbrowser.open(url)
-        except Exception:  # pragma: no cover - headless safety net
-            pass
-
-        # Block the shell here until the editor is closed or Ctrl-C.
-        try:
-            self._closed.wait()
-        except KeyboardInterrupt:
-            pass
-        finally:
-            self.stop()
-        return f"Feature editor closed — {url}"
-
-    def stop(self) -> None:
-        if self._httpd is not None:
-            try:
-                self._httpd.shutdown()
-                self._httpd.server_close()
-            except Exception:  # pragma: no cover
-                pass
-            self._httpd = None
-        self._closed.set()
-
-    @property
-    def url(self) -> str:
-        return f"http://{self._host}:{self._port}/"

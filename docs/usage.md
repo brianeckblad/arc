@@ -112,7 +112,7 @@ history | match address      # find that command you typed an hour ago
 
 ## Aliases — `alias`
 
-Junos-style personal shortcuts, stored in `config/<user>/preferences.json`
+Junos-style personal shortcuts, stored in `config/<user>/config.json`
 and loaded at every launch:
 
 ```text
@@ -129,7 +129,7 @@ Alias names that collide with shell builtins or command words
 
 ## Terminal preferences — pager, width, spinner
 
-Per-user settings stored in `config/<user>/preferences.json` and loaded at
+Per-user settings stored in `config/<user>/config.json` and loaded at
 every launch:
 
 ```text
