@@ -459,7 +459,7 @@ class DispatchMixin                      108-938
   ._show_command_not_found()             414-510        Show a helpful message when a command is not recognized.
   ._dispatch()                           512-938        Process one input line.  Returns True when the user wants to exit ARC.
 
-## `app/cli.py`  (928 lines)
+## `app/cli.py`  (939 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -474,11 +474,11 @@ auth_delete_profile()                    420-445        Delete a named credentia
 auth_test()                              449-677        Test connectivity using stored credentials.
 config_generate()                        717-751        Generate a starter config.json with annotated placeholders and mode 06
 _ensure_vendor_files()                   769-789        Download vendor JS/CSS to docs/vendor/ if not already present.
-_build_docs_bundle()                     792-845        Embed every doc page into docs/docs-bundle.js.
-_do_cliup()                              848-868        Core cliup logic — rebuild the offline browser docs bundle.
-cliup()                                  872-891        Rebuild the offline browser docs bundle.
-scm_get()                                903-915        Perform a raw GET request against the SCM API.
-run()                                    922-923        
+_build_docs_bundle()                     792-856        Embed every doc page into docs/docs-bundle.js.
+_do_cliup()                              859-879        Core cliup logic — rebuild the offline browser docs bundle.
+cliup()                                  883-902        Rebuild the offline browser docs bundle.
+scm_get()                                914-926        Perform a raw GET request against the SCM API.
+run()                                    933-934        
 
 ## `app/shell/navigation.py`  (876 lines)
 
@@ -755,6 +755,33 @@ render()                                 435-436
 main()                                   439-479        
 augment_feature_labels()                 482-538        Add newly-discovered areas to settings/feature-labels.json, edit-safe.
 
+## `app/docs.py`  (526 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+slugify()                                72-76          Return the docs filename slug for a shell command or topic.
+available_help_topics()                  79-84          Return topics that can be completed after ``help ``.
+doc_path_for_topic()                     87-111         Return the Markdown path for a help topic, if one exists.
+synthesize_command_help()                114-141        Build a Markdown help page for a command straight from the registry.
+synthesize_builtin_help()                150-177        Build a Markdown help page for a shell builtin from its metadata.
+set_page_length()                        186-189        Set the pager threshold (0 disables paging). Called from shell startup
+page_length()                            192-194        Current pager threshold in lines (0 = paging disabled).
+class _PagingFile                        197-278        A sys.stdout wrapper that pauses output every *page_size* lines.
+  .__init__()                            205-215        
+  .isatty()                              218-219        
+  .fileno()                              221-222        
+  .write()                               224-242        
+  .flush()                               244-245        
+  ._getch()                              247-258        
+  ._show_more()                          260-278        Print --More-- prompt; return False if user quits.
+paging_stdout()                          289-305        Context manager: wrap sys.stdout with line-based paging.
+cisco_pager()                            308-380        Cisco IOS-style --More-- interactive pager.
+render_help_topic()                      383-434        Render a Markdown help topic inside the ARC shell.
+os_setup_doc()                           447-449        Return the platform doc filename for an OS key (or None if unknown).
+render_doc_file()                        452-477        Render a Markdown file from the docs root by filename (front-matter st
+topic_to_page_path()                     484-504        Convert a help topic string to a relative docs page path.
+open_docs_in_browser()                   507-525        Open docs/index.html in the default browser using a file:// URL.
+
 ## `app/settings/features.py`  (504 lines)
 
 Symbol                                   Lines          Purpose
@@ -778,32 +805,6 @@ feature_state()                          453-461        Return the raw state of 
 is_enabled()                             464-479        Return True when *flag_name* is executable in the current mode.
 is_feature_visible()                     482-498        Return True when a command should appear in ``?`` / tab completion.
 dev_mode_from_env()                      501-503        Return True when ARC_DEV_MODE is set to a truthy value (CI/CD hook).
-
-## `app/docs.py`  (487 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-slugify()                                72-76          Return the docs filename slug for a shell command or topic.
-available_help_topics()                  79-84          Return topics that can be completed after ``help ``.
-doc_path_for_topic()                     87-111         Return the Markdown path for a help topic, if one exists.
-synthesize_command_help()                114-141        Build a Markdown help page for a command straight from the registry.
-set_page_length()                        155-158        Set the pager threshold (0 disables paging). Called from shell startup
-page_length()                            161-163        Current pager threshold in lines (0 = paging disabled).
-class _PagingFile                        166-247        A sys.stdout wrapper that pauses output every *page_size* lines.
-  .__init__()                            174-184        
-  .isatty()                              187-188        
-  .fileno()                              190-191        
-  .write()                               193-211        
-  .flush()                               213-214        
-  ._getch()                              216-227        
-  ._show_more()                          229-247        Print --More-- prompt; return False if user quits.
-paging_stdout()                          258-274        Context manager: wrap sys.stdout with line-based paging.
-cisco_pager()                            277-349        Cisco IOS-style --More-- interactive pager.
-render_help_topic()                      352-395        Render a Markdown help topic inside the ARC shell.
-os_setup_doc()                           408-410        Return the platform doc filename for an OS key (or None if unknown).
-render_doc_file()                        413-438        Render a Markdown file from the docs root by filename (front-matter st
-topic_to_page_path()                     445-465        Convert a help topic string to a relative docs page path.
-open_docs_in_browser()                   468-486        Open docs/index.html in the default browser using a file:// URL.
 
 ## `app/scripts/generate_field_library.py`  (461 lines)
 
@@ -1018,7 +1019,7 @@ class FakeHTTP                           77-97          Scripted stand-in for ht
   .post()                                95-97          
 make_client()                            100-105        
 
-## `app/settings/commands.py`  (304 lines)
+## `app/settings/commands.py`  (320 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -1027,12 +1028,13 @@ _load_raw()                              45-53          Read and parse builtin-c
 _coerce_visibility()                     56-73          Normalise a raw visibility value to STATE_VISIBLE/DEV/HIDDEN/BLOCKED.
 load_command_visibility()                76-83          Return {key: state} for all builtin commands.
 load_shell_builtins()                    86-89          Return all builtin command keys (for dispatch + completion).
-set_builtin_field()                      110-154        Set one field on a builtin entry in settings/builtin-commands.json.
-load_builtins_full()                     157-178        Return {name: {visible,display,help,configure_only,...}} for the edito
-load_shell_help_rows()                   181-215        Return ShellBuiltinHelp rows for entries that have a 'help' field.
-is_command_visible()                     218-230        Return True when command_key should appear in ? / tab completion.
-is_command_executable()                  233-247        Return True when command_key is allowed to run.
-load_builtin_aliases()                   250-262        Load system aliases from settings/command-aliases.json.
-shell_help_rows()                        265-279        Return SHELL help rows visible in the current shell mode.
-shell_help_names()                       282-284        Return all builtin help display names in order (used by smoke tests).
-load_startup_hints()                     287-303        Return ``[(display, hint), …]`` for entries with ``onlogin: true``.
+load_builtin_docs()                      92-105         Return ``{name: {"display": str, "help": str}}`` for every shell built
+set_builtin_field()                      126-170        Set one field on a builtin entry in settings/builtin-commands.json.
+load_builtins_full()                     173-194        Return {name: {visible,display,help,configure_only,...}} for the edito
+load_shell_help_rows()                   197-231        Return ShellBuiltinHelp rows for entries that have a 'help' field.
+is_command_visible()                     234-246        Return True when command_key should appear in ? / tab completion.
+is_command_executable()                  249-263        Return True when command_key is allowed to run.
+load_builtin_aliases()                   266-278        Load system aliases from settings/command-aliases.json.
+shell_help_rows()                        281-295        Return SHELL help rows visible in the current shell mode.
+shell_help_names()                       298-300        Return all builtin help display names in order (used by smoke tests).
+load_startup_hints()                     303-319        Return ``[(display, hint), …]`` for entries with ``onlogin: true``.

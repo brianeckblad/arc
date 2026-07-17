@@ -89,6 +89,22 @@ def load_shell_builtins() -> Tuple[str, ...]:
     return tuple(key for key in raw if not key.startswith("_"))
 
 
+def load_builtin_docs() -> dict:
+    """Return ``{name: {"display": str, "help": str}}`` for every shell builtin.
+
+    Excludes the ``_``-prefixed meta entries.  Used to synthesize documentation
+    pages for builtins (the docs-update pipeline + in-shell ``help <builtin>``)
+    so every shell command is documented, mirroring the registry-synthesized
+    pages generated commands get.
+    """
+    raw = _load_raw()
+    return {
+        key: {"display": entry.get("display") or key, "help": entry.get("help") or ""}
+        for key, entry in raw.items()
+        if not key.startswith("_")
+    }
+
+
 # Fields the GUI/CLI may edit on a builtin entry (others are preserved on write).
 _BUILTIN_EDITABLE = {
     "visible": "state",   # true | "dev" | "hidden" | false

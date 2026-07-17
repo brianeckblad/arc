@@ -45,8 +45,8 @@ import urllib.request
 from html.parser import HTMLParser
 from pathlib import Path
 
-DEV_DIR = Path(__file__).resolve().parent
-REPO_ROOT = DEV_DIR.parent
+DEV_DIR = Path(__file__).resolve().parent      # app/scripts/
+REPO_ROOT = DEV_DIR.parent.parent              # app/scripts -> app -> repo root
 sys.path.insert(0, str(REPO_ROOT))
 
 SOURCES_FILE = REPO_ROOT / "settings" / "panos-sources.json"  # user-editable URL registry

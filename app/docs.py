@@ -144,6 +144,37 @@ def synthesize_command_help(key: str) -> str:
 # Per-session cache for synthesized command help pages.  The registry is
 # immutable at runtime so we never need to invalidate this.
 _synthesis_cache: dict[str, str] = {}
+_builtin_synthesis_cache: dict[str, str] = {}
+
+
+def synthesize_builtin_help(name: str) -> str:
+    """Build a Markdown help page for a shell builtin from its metadata.
+
+    Shell builtins (``cd``, ``commit``, ``feature``, ``watch``, …) live in
+    ``settings/builtin-commands.json``, not the command registry — so most have
+    no hand-written doc file and, before this, no help page at all.  Like
+    generated commands, we synthesize a page from the builtin's display/help
+    fields.  Returns "" if *name* isn't a known builtin; a hand-written
+    ``docs/commands/<slug>.md`` still takes precedence.
+    """
+    cached = _builtin_synthesis_cache.get(name)
+    if cached is not None:
+        return cached
+    from app.settings.commands import load_builtin_docs
+    meta = load_builtin_docs().get(name)
+    if not meta:
+        return ""
+    display, help_text = meta["display"], meta["help"]
+    lines = [
+        f"# {display}", "",
+        help_text or "_ARC shell builtin._", "",
+        "- **Type:** shell builtin", "",
+        f"_Type_ `{name} ?` _in the shell for its sub-commands and options._",
+        "_Synthesized from settings/builtin-commands.json — no hand-written page exists._",
+    ]
+    result = "\n".join(lines)
+    _builtin_synthesis_cache[name] = result
+    return result
 
 
 # Pager behavior — set once at shell startup from the user's preferences file
@@ -367,6 +398,14 @@ def render_help_topic(console: Console, topic: str, use_pager: bool = True) -> b
             markdown_text = synthesize_command_help(normalized)
             console.print()
             console.print(Panel(Markdown(markdown_text), title=f"Help: {normalized}", border_style="cyan"))
+            console.print()
+            return True
+        # Shell builtins (cd, feature, watch, …) without a doc file get a
+        # metadata-synthesized page too, so every shell command is documented.
+        builtin_md = synthesize_builtin_help(normalized)
+        if builtin_md:
+            console.print()
+            console.print(Panel(Markdown(builtin_md), title=f"Help: {normalized}", border_style="cyan"))
             console.print()
             return True
         return False

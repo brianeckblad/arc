@@ -825,12 +825,23 @@ def _build_docs_bundle() -> int:
     # command and see the feature flag they'd enable to use it.  No stub files
     # are created on disk; the synthesized Markdown lives only in this bundle.
     from app.commands.registry import COMMANDS
-    from app.docs import slugify, synthesize_command_help
+    from app.docs import slugify, synthesize_command_help, synthesize_builtin_help
     for key in COMMANDS:
         rel = f"commands/{slugify(key)}.md"
         if rel in pages:
             continue  # a hand-written file already covers this command
         pages[rel] = synthesize_command_help(key)
+
+    # Shell builtins (cd, feature, watch, …) live outside the registry; synthesize
+    # a page for each so the offline portal documents every shell command too.
+    from app.settings.commands import load_builtin_docs
+    for name in load_builtin_docs():
+        rel = f"commands/{slugify(name)}.md"
+        if rel in pages:
+            continue  # hand-written or already synthesized
+        page = synthesize_builtin_help(name)
+        if page:
+            pages[rel] = page
 
     js_entries = ",\n".join(
         f"  {json.dumps(key)}: {json.dumps(value)}"
