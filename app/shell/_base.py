@@ -52,7 +52,6 @@ except ImportError:
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.application import run_in_terminal
-from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.history import FileHistory
@@ -339,8 +338,8 @@ __all__ = [
     "time", "traceback", "ET", "Path", "Optional",
     # third-party re-exports
     "httpx", "termios", "tty", "_TTY_AVAILABLE",
-    "PromptSession", "run_in_terminal", "AutoSuggestFromHistory",
-    "Completer", "Completion", "HTML", "FileHistory", "KeyBindings", "Style",
+    "PromptSession", "run_in_terminal", "FileHistory",
+    "Completer", "Completion", "HTML", "KeyBindings", "Style",
     "Console", "Panel", "platformdirs",
     # app imports
     "SCMClient", "__version__", "_BANNER_FILE", "_GOODBYE_FILE",

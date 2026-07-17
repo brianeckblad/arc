@@ -1498,25 +1498,25 @@ def test_command_visibility() -> None:
     # ------------------------------------------------------------------
     real_vis = load_command_visibility()
     arc_state = real_vis.get("arc")
-    if arc_state != STATE_HIDDEN:
-        fail(f"settings/builtin-commands.json: 'arc' should be hidden, got {arc_state!r}")
+    if arc_state != STATE_VISIBLE:
+        fail(f"settings/builtin-commands.json: 'arc' should be visible, got {arc_state!r}")
     else:
-        ok("settings/builtin-commands.json: 'arc' is marked hidden")
+        ok("settings/builtin-commands.json: 'arc' is visible")
 
     normal_rows = shell_help_rows(configure_mode=False, dev_mode=False)
     dev_rows    = shell_help_rows(configure_mode=False, dev_mode=True)
     normal_names = {r.name for r in normal_rows}
     dev_names    = {r.name for r in dev_rows}
 
-    if "arc" in normal_names:
-        fail("shell_help_rows(dev_mode=False) leaks hidden builtin 'arc' into ?")
+    if "arc" not in normal_names:
+        fail("shell_help_rows(dev_mode=False) is missing visible builtin 'arc'")
     else:
-        ok("shell_help_rows(dev_mode=False) correctly hides 'arc'")
+        ok("shell_help_rows(dev_mode=False) includes visible builtin 'arc'")
 
     if "arc" not in dev_names:
-        fail("shell_help_rows(dev_mode=True) does not reveal hidden builtin 'arc'")
+        fail("shell_help_rows(dev_mode=True) is missing builtin 'arc'")
     else:
-        ok("shell_help_rows(dev_mode=True) correctly reveals 'arc'")
+        ok("shell_help_rows(dev_mode=True) includes builtin 'arc'")
 
     if not any(r.name.startswith("cd") for r in normal_rows):
         fail("shell_help_rows(dev_mode=False) is missing visible builtin 'cd'")

@@ -104,6 +104,9 @@ directory. `save` must be the **last** op in the chain.
 
 ## Command history — `history [n]`
 
+Up-arrow recalls previous commands (persisted across sessions). There is **no**
+grey inline auto-suggestion — the prompt never predicts what you're about to type.
+
 ```text
 history                      # last 20 commands, numbered
 history 50                   # last 50

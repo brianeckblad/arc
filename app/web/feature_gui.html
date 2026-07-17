@@ -33,7 +33,7 @@ const SECTIONS=[
   {key:"advanced",label:"Advanced"},
 ];
 const HELP_TOPIC={areas:"areas",features:"features",structure:"structure",aliases:"aliases",builtins:"builtins",advanced:"files"};
-let cur={section:"features",group:null};
+let cur={section:"areas",group:null};
 let filter="";
 // Monotonic render token: every loadMain() bumps it.  Serialized + latest-wins
 // so overlapping async renders (fast typing in the filter box) can't both append
@@ -48,7 +48,7 @@ let _renderChain=Promise.resolve();
 // ---- router ----
 function go(section,group){location.hash=section+(group?("/"+encodeURIComponent(group)):"");}
 function parseHash(){const h=decodeURIComponent(location.hash.slice(1));const [s,g]=h.split("/");
-  return {section:SECTIONS.some(x=>x.key===s)?s:"features",group:g||null};}
+  return {section:SECTIONS.some(x=>x.key===s)?s:"areas",group:g||null};}
 async function route(){
   cur=parseHash();filter="";document.getElementById("search").value="";
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.k===cur.section));

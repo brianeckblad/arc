@@ -37,7 +37,7 @@
     "startup_hint": ""
   },
   "arc": {
-    "visible": "hidden",
+    "visible": true,
     "display": "arc",
     "help": "Application info  (arc show | arc show version | arc show session | arc ?)",
     "configure_only": false,

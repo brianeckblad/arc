@@ -953,18 +953,18 @@ _set_url_category()                      299-321        Create a custom URL cate
 _WRITE_COMMANDS                          324-368        command registry dict
 COMMANDS.update(…)                       370-370        merge additional commands into registry
 
-## `app/shell/_base.py`  (371 lines)
+## `app/shell/_base.py`  (370 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
-device_display_name()                    126-141        Best human-readable name for a device inventory entry.
-device_ssh_host()                        144-148        Address ARC should SSH to for a device entry (IP wins over hostname).
-tsg_display()                            151-155        Return ``(tsg_id, display_name)`` for a tenant-service-group entry.
-active_tsg_label()                       158-160        The TSG identifier to show in user-facing messages.
-_expand_unambiguous_prefix()             163-195        Expand command-token prefixes when they resolve to exactly one phrase.
-tokenize()                               213-224        Split a command line into tokens, honouring single/double quotes.
-_make_key_bindings()                     227-290        Return key bindings for the ARC shell.
-class ShellState                         294-330        
+device_display_name()                    125-140        Best human-readable name for a device inventory entry.
+device_ssh_host()                        143-147        Address ARC should SSH to for a device entry (IP wins over hostname).
+tsg_display()                            150-154        Return ``(tsg_id, display_name)`` for a tenant-service-group entry.
+active_tsg_label()                       157-159        The TSG identifier to show in user-facing messages.
+_expand_unambiguous_prefix()             162-194        Expand command-token prefixes when they resolve to exactly one phrase.
+tokenize()                               212-223        Split a command line into tokens, honouring single/double quotes.
+_make_key_bindings()                     226-289        Return key bindings for the ARC shell.
+class ShellState                         293-329        
 
 ## `app/scripts/generate_resource_catalog.py`  (348 lines)
 

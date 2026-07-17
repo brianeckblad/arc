@@ -96,11 +96,12 @@ class ArcShell(
         self._print_startup_help()
         self._init_clients()
 
-        # Prompt session
+        # Prompt session — up-arrow history recall is on; the grey inline
+        # auto-suggestion is intentionally OFF (no auto_suggest) so the prompt
+        # never predicts what you're about to type. Completion is TAB-only.
         os.makedirs(os.path.dirname(HISTORY_FILE), exist_ok=True)
         self._session: PromptSession = PromptSession(
             history=FileHistory(HISTORY_FILE),
-            auto_suggest=AutoSuggestFromHistory(),
             completer=ArcCompleter(self),
             complete_while_typing=False,
             key_bindings=_make_key_bindings(self),
