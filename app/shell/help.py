@@ -130,14 +130,10 @@ class HelpMixin:
                     "pwd", "docs", "help", "clear", "exit", "quit",
                 }
                 if prefix in _builtin_names:
-                    # Special handling for setup - show config help
-                    if prefix == "setup":
-                        self._show_command_not_found([prefix])
-                    else:
-                        console.print(
-                            f"\n  {self._styled(prefix, t.command_name)}  is a shell built-in.  "
-                            f"Type [bold]{prefix} help[/bold] for full docs.\n"
-                        )
+                    console.print(
+                        f"\n  {self._styled(prefix, t.command_name)}  is a shell built-in.  "
+                        f"Type [bold]{prefix} help[/bold] for full docs.\n"
+                    )
                 else:
                     # Prefix-only input (not an exact command) — show which next
                     # words exist in the registry, regardless of current context.

@@ -24,50 +24,46 @@ storing those credentials safely for your platform.
 | An **SSH key file** | [SSH key setup](#ssh-key) |
 | A **password** | [SSH password setup](#ssh-password) |
 
-> **Tip:** Type `setup` inside ARC for an interactive wizard that detects your
-> OS and walks through the questions above step-by-step.
+> **Tip:** Run `arc setup` in your terminal (before launching the ARC shell) for
+> a guided menu that detects your OS and links the wizard and per-OS guides.
 
 ---
 
 ## One-command wizard (recommended)
 
+`arc setup scm` runs from your terminal (outside the ARC shell) and comes in two
+flavors — pick based on whether you want anything stored on the machine:
+
 ```
-setup scm
+arc setup scm            # session-only env vars (no keychain) — set by hand or wizard
+arc setup scm wizard     # the env-var wizard directly
+arc setup scm keystore   # store in the OS keychain (persistent)  — = arc auth configure
 ```
 
-`setup scm` is an **interactive configurator** — it asks a few questions, saves
-your answers, authenticates, and shows who you are. Nothing is written until the
-end, and typing **`x`** at any prompt exits without saving.
+**Env-var mode (`arc setup scm` / `arc setup scm wizard`)** — for operators who
+don't want the OS keychain. Because a program can't set variables in its parent
+shell, the wizard *prints* the `export` commands; you apply them by pasting, or
+in one step with `eval "$(arc setup scm --export)"` (PowerShell:
+`arc setup scm --export | iex`). The variables live only in that terminal session
+and are gone when you close it or reboot. It offers two auth choices:
 
-**Q1 — SCM credentials**
+- **Static bearer token** — paste a pre-issued token → sets `SCM_BEARER_TOKEN`.
+- **Log in now** — enter a service account (client ID + secret + TSG); the wizard
+  mints a **short-lived token** and sets `SCM_BEARER_TOKEN` only. The client
+  secret is used once and **never** written to the environment or disk. When the
+  token expires, re-run the wizard.
 
-| Choice | What happens |
-|--------|--------------|
-| **1. Bearer token** | Prompts for a pre-issued token |
-| **2. Client ID + secret** (service account) | Prompts for client id / secret / TSG (both remembered), then authenticates — auto-reconnects on every launch |
-| **3. Sign in manually now** | Prompts for username (client id) / password (client secret) / TSG, mints a token immediately, and stores the **token + its real expiry + TSG + username** in `auth.json`. The token is reused across restarts until it expires; the **password is never written to disk**. TSG and username are remembered so you don't retype them. |
-| **4. Create a service account first** | Prints the portal steps and exits |
-| **x. Exit** | Aborts — nothing saved |
+**Keychain mode (`arc setup scm keystore`)** — the persistent path. Prompts for
+your service account (client ID, secret, TSG), an optional bearer token, and SSH
+defaults, then verifies with a live token request. **Secrets** go to the **OS
+keychain** by default; non-secret values to `config.json` (mode 0600). To keep
+secrets in a plaintext `auth.json` instead (opt-in, insecure), set
+`ARC_AUTH_STORAGE=file` or `auth.storage: "file"`. For a second environment, use
+a named profile: `arc auth configure --profile <name>`
+(see [Profiles](#profiles-multiple-accounts)).
 
-**Secret storage** — for choices 1 and 2 you then choose where secrets are kept
-(choice 3 always stores its ephemeral token in `auth.json`, so it skips this):
-
-| Mode | Where secrets go |
-|------|------------------|
-| **keychain** (default, secure) | OS keychain (macOS Keychain / libsecret / Windows Credential Manager) |
-| **file** (insecure, opt-in) | plaintext `config/<user>/auth.json` (0600) — **you must type `yes` to confirm** |
-
-**Manual sign-in vs. service account:** both use the same client-credentials
-grant against `POST /auth/v1/oauth2/access_token`. A **service account** (choice 2)
-saves your client secret so ARC mints fresh tokens automatically forever. **Manual
-sign-in** (choice 3) never stores the secret — it mints one token now and reuses
-it until it expires (typically minutes to hours), then prompts you to sign in
-again. Use manual sign-in when you don't want a long-lived secret on the machine.
-
-**Q2 — Device SSH:** key file, password, skip, or exit.
-
-Everything can also be set in the browser: **`arc gui-configure` → Credentials &
-Keychain** (same storage-mode toggle, full parity with the CLI).
+Any wizard: **Enter** keeps an existing value; **Ctrl-C** aborts without saving.
+Once configured, run `login` inside ARC to authenticate and confirm your identity.
 
 ---
 
@@ -179,7 +175,7 @@ Two documented SCM endpoints are used:
 - `POST /auth/v1/oauth2/userinfo` — identity claims for the token.
   [pan.dev](https://pan.dev/scm/api/auth/post-auth-v-1-oauth-2-userinfo/)
 
-If no credentials are set yet, `login` points you at `setup scm`.
+If no credentials are set yet, `login` points you at `arc setup scm`.
 
 ---
 
@@ -293,11 +289,11 @@ account lab
 
 ## Platform-specific full guides
 
-- `setup osx`     — macOS (Keychain, Touch ID)
-- `setup linux`     — Linux (libsecret / Secret Service / env vars)
-- `setup win`     — Windows (Credential Manager / PowerShell)
-- `help config generate` — generate a starter config file
-- `help configuration`  — full configuration reference
+- `arc setup osx`     — macOS (Keychain, Touch ID)
+- `arc setup linux`   — Linux (libsecret / Secret Service / env vars)
+- `arc setup win`     — Windows (Credential Manager / PowerShell)
+- `arc setup shell`   — make an unquoted `arc ?` work (zsh globs `?`; adds a one-line alias)
+- `arc help configuration`  — full configuration reference
 
 ---
 

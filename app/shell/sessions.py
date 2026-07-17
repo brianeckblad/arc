@@ -78,8 +78,8 @@ class SessionsMixin:
                 "  Trying SSH agent and default key files — if those are absent\n"
                 "  you will be prompted during the keyboard-interactive exchange.\n"
                 "  Run [bold]arc auth configure[/bold] to store credentials so they\n"
-                "  auto-fill next time, or see [bold]setup osx[/bold] / "
-                "[bold]setup win[/bold] / [bold]setup linux[/bold].\n"
+                "  auto-fill next time, or see [bold]arc setup osx[/bold] / "
+                "[bold]arc setup win[/bold] / [bold]arc setup linux[/bold].\n"
                 "  [dim]Tip: prefer SSH agent ([bold]ssh-add[/bold]) over stored keys —\n"
                 "  agent-based auth never writes private key material to ARC config.[/dim]\n"
             )

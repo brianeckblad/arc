@@ -1,16 +1,23 @@
-# Configuration — Linux
+# Set up ARC — Linux / WSL
+
+All commands below run in your terminal, **before** you launch the ARC shell.
 
 ## Quick start
 
+Pick one of two ways to hold credentials:
+
 ```bash
-# 1. Generate a starter config file (0600, annotated with what to fill in)
-arc config generate
+# 1. Install ARC (see "Install ARC" below).
 
-# 2. Edit the file — replace non-secret REPLACE_WITH_* placeholders
-${EDITOR:-nano} ~/.config/arc/config.json
+# 2a. Session-only environment variables (no keychain — gone on reboot):
+arc setup scm            # prints the export commands, then offers a wizard
+#     one step: eval "$(arc setup scm --export)"
 
-# 3. Run the wizard — migrates secrets to Secret Service, writes safe values to disk
-arc auth configure
+# 2b. — or — store them in the Secret Service (persistent, encrypted):
+arc setup scm keystore   # same wizard as: arc auth configure
+
+# 3. Confirm everything is set (secrets masked)
+arc auth show
 ```
 
 ## Install ARC
@@ -28,12 +35,12 @@ pip install -e .
 
 ## Store credentials (Secret Service)
 
-Run the interactive wizard — on a desktop Linux system with GNOME Keyring or
+Run the keychain wizard — on a desktop Linux system with GNOME Keyring or
 KWallet running, secrets are stored in the **Secret Service** (encrypted wallet),
 not as plaintext on disk:
 
 ```bash
-arc auth configure
+arc setup scm keystore   # same as: arc auth configure
 ```
 
 ARC stores three entries under the service name `arc`:
@@ -112,23 +119,23 @@ sudo apt install gnome-keyring libsecret-tools   # Debian/Ubuntu
 sudo dnf install gnome-keyring libsecret         # Fedora/RHEL
 ```
 
-## Generate a starter config file
+## Environment variables (session-only, no keychain)
+
+Environment variables override keychain and config values and live only in the
+current terminal — they vanish when you close it or reboot. This is the "no
+keychain" path (also ideal for headless / CI). Let ARC build them for you:
 
 ```bash
-arc config generate          # creates config file with annotated placeholders
-arc config generate --force  # overwrite an existing config file
+arc setup scm            # prints the export commands, then offers a wizard
+arc setup scm wizard     # go straight to the wizard
+eval "$(arc setup scm --export)"   # run the wizard and set them in one step
 ```
 
-The generated file has `_note` fields explaining each section.
-Edit only non-secret `REPLACE_WITH_*` values, then run `arc auth configure` to
-enter secrets securely and store them in Secret Service.
-
-## Environment variables (temporary override)
-
-Environment variables override keychain and config values. Use them for a
-single terminal session, a wrapper script that reads from a secret manager, or
-CI jobs. Do **not** put long-lived secrets in `~/.bashrc`, `~/.zshrc`, or
-`~/.profile`; those files are plaintext and often backed up or synced.
+The wizard offers a static bearer token or a "log in now" that mints a
+short-lived token — it only ever sets `SCM_BEARER_TOKEN`, never your client
+secret. Do **not** put long-lived secrets in `~/.bashrc`, `~/.zshrc`, or
+`~/.profile`; those files are plaintext and often backed up or synced. To set
+the variables by hand:
 
 ```bash
 # SCM — bearer token takes precedence over OAuth credentials
@@ -204,8 +211,6 @@ chmod 644 ~/.ssh/panos_key.pub
 
 ## See Also
 
-- `help config`             — general configuration overview
-- `help config generate`    — generate a starter config file
-- `setup osx`         — macOS setup
-- `setup win`         — Windows setup
-- `help configuration`      — full configuration reference
+- `arc setup osx`           — macOS setup
+- `arc setup win`           — Windows setup
+- `arc help configuration`  — full configuration reference

@@ -13,7 +13,7 @@ from app.shell._base import *  # noqa: F401,F403  (shared spine namespace)
 # Commands that own the terminal (interactive sessions, screen control) —
 # capturing their output for a pipe filter would break them.
 _PIPE_UNSUPPORTED = {
-    "connect", "configure", "conf", "setup",
+    "connect", "configure", "conf",
     "clear", "docs", "exit", "quit", "dev",
 }
 
@@ -426,18 +426,15 @@ class DispatchMixin:
             console.print(
                 f"\n[yellow]No command:[/yellow] [bold]{cmd_text}[/bold]\n\n"
                 "[cyan]Looking for setup/configuration help?[/cyan]\n\n"
-                "  [bold]Guided setup:[/bold]\n"
-                "    • [cyan]setup[/cyan]            — menu (detects your OS)\n"
-                "    • [cyan]setup scm[/cyan]        — interactive credential wizard\n"
-                "    • [cyan]setup osx[/cyan]        — macOS (Keychain, Touch ID)\n"
-                "    • [cyan]setup linux[/cyan]      — Linux (libsecret / Secret Service)\n"
-                "    • [cyan]setup win[/cyan]        — Windows (Credential Manager)\n\n"
-                "  [bold]Reference:[/bold]\n"
+                "  [bold]Guided setup[/bold] runs from your terminal (outside ARC):\n"
+                "    • [cyan]arc setup[/cyan]            — menu (detects your OS)\n"
+                "    • [cyan]arc setup scm[/cyan]        — interactive credential wizard\n"
+                "    • [cyan]arc setup osx[/cyan]        — macOS (Keychain, Touch ID)\n"
+                "    • [cyan]arc setup linux[/cyan]      — Linux (libsecret / Secret Service)\n"
+                "    • [cyan]arc setup win[/cyan]        — Windows (Credential Manager)\n"
+                "    • [cyan]arc auth configure[/cyan]   — credential wizard (direct)\n\n"
+                "  [bold]Reference (in-shell):[/bold]\n"
                 "    • [cyan]help configuration[/cyan]   — full configuration reference\n"
-                "    • [cyan]help config generate[/cyan] — generate a starter config file\n\n"
-                "  [bold]Other:[/bold]\n"
-                "    • [cyan]arc gui-configure[/cyan]    — browser settings console\n"
-                "    • [cyan]arc auth configure[/cyan]   — (outside shell) credential setup wizard\n"
             )
             return
         
@@ -786,10 +783,6 @@ class DispatchMixin:
             self._cmd_feature(tokens[1:])
             return False
 
-        if cmd == "setup":
-            self._cmd_setup(tokens[1:])
-            return False
-
         if cmd == "arc":
             self._cmd_arc(tokens[1:])
             return False
@@ -864,12 +857,6 @@ class DispatchMixin:
             elif rest:
                 # "help <topic>" — render docs page for the topic
                 topic_text = " ".join(rest).lower()
-                # Special case: if the topic matches a builtin like "setup",
-                # and it's asking for help, show the setup wizard help
-                if topic_text == "setup":
-                    from app.docs import render_help_topic
-                    render_help_topic(console, "setup")
-                    return False
                 self._cmd_help_docs(topic_text)
             else:
                 # Bare "help" or "?" — Cisco-style compact inline listing

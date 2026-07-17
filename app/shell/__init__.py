@@ -166,8 +166,8 @@ class ArcShell(
         if not self._scm:
             console.print(
                 "[red]✗[/red] [bold red]SCM not connected.[/bold red]  "
-                "Type [bold cyan]setup[/bold cyan] for a guided credential wizard, "
-                "or [bold cyan]help setup[/bold cyan] to browse setup steps.\n"
+                "Run [bold cyan]arc setup scm[/bold cyan] from your terminal for the credential "
+                "wizard, or [bold cyan]help configuration[/bold cyan] to read the setup steps.\n"
             )
             return
 

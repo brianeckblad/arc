@@ -52,12 +52,12 @@ GENERAL_TOPICS = {
     "architecture":     "architecture.md",
     "configuration":    "configuration.md",
     "config":           "configuration.md",
-    "config generate":  "config-generate.md",
     "commands":         "commands/index.md",
     # API reference — complete mapping of API resources to ARC commands
     "api-reference":    "commands/api-reference.md",
     "api":              "commands/api-reference.md",
-    # Guided credential setup — also reachable via the `setup` shell builtin
+    # Guided credential setup — the actionable flow lives at the `arc setup`
+    # launcher command; this topic is the reference reading.
     "setup":            "setup.md",
     "getting-started":  "setup.md",
     # Device access & auth planes (SCM API vs SCM proxy vs SSH/2FA)
@@ -311,7 +311,7 @@ class _PagingFile:
 # Commands that take over the terminal (interactive PTY, screen redraws, etc.)
 # — paging must not be installed for these.
 _PAGING_EXEMPT = frozenset({
-    "connect", "configure", "conf", "setup", "watch", "clear", "docs",
+    "connect", "configure", "conf", "watch", "clear", "docs",
 })
 
 
@@ -472,8 +472,8 @@ def render_help_topic(console: Console, topic: str, use_pager: bool = True) -> b
     return True
 
 
-# OS-key → platform doc.  Rendered by the `setup <os>` subcommands (these guides
-# used to be reachable as `help config <os>` topics; they now live under setup).
+# OS-key → platform doc.  Rendered by the `arc setup osx|linux|win` launcher
+# commands (run from your terminal, outside the interactive shell).
 _OS_SETUP_DOCS = {
     "osx": "setup-osx.md", "mac": "setup-osx.md", "macos": "setup-osx.md",
     "darwin": "setup-osx.md",
@@ -492,7 +492,7 @@ def render_doc_file(console: Console, filename: str, title: str | None = None,
     """Render a Markdown file from the docs root by filename (front-matter stripped).
 
     Used for guides that are no longer registered as `help` topics (e.g. the
-    per-OS `setup osx|linux|win` pages).  Returns True when rendered.
+    per-OS `arc setup osx|linux|win` pages).  Returns True when rendered.
     """
     path = DOCS_ROOT / filename
     if not path.exists() or not path.is_file():

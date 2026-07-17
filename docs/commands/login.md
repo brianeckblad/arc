@@ -36,11 +36,11 @@ ARC already authenticates automatically on startup; `login` is an explicit
 (Client ID + Client Secret + TSG ID) or a pre-issued bearer token. Set them with:
 
 ```
-setup scm            # in-shell guided wizard
-arc auth configure   # outside the shell
+arc setup scm        # guided credential wizard (run from your terminal)
+arc auth configure   # the same wizard, invoked directly
 ```
 
-If no credentials are present, `login` tells you and points at `setup scm`.
+If no credentials are present, `login` tells you and points at `arc setup scm`.
 
 ## Usage
 
@@ -61,6 +61,6 @@ still succeeds (the token is valid) and simply notes that claims were unavailabl
 
 ## See also
 
-- `setup scm` — guided credential setup
+- `arc setup scm` — guided credential setup
 - `arc auth configure` — configure a service account (outside the shell)
 - `arc gui-configure` → Authentication — manage auth in the browser console

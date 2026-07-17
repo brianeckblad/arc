@@ -1,16 +1,24 @@
- rc # Configuration — macOS
+# Set up ARC — macOS
+
+All commands below run in your terminal (Terminal.app / iTerm), **before** you
+launch the ARC shell.
 
 ## Quick start
 
+Pick one of two ways to hold credentials:
+
 ```bash
-# 1. Generate a starter config file (0600, annotated with what to fill in)
-arc config generate
+# 1. Install ARC (see "Install ARC" below).
 
-# 2. Edit the file — replace non-secret REPLACE_WITH_* placeholders
-open "$(arc auth show 2>&1 | grep 'Config file:' | awk '{print $3}')"
+# 2a. Session-only environment variables (no keychain — gone on reboot):
+arc setup scm            # prints the export commands, then offers a wizard
+#     one step: eval "$(arc setup scm --export)"
 
-# 3. Run the wizard — migrates secrets to macOS Keychain, writes safe values to disk
-arc auth configure
+# 2b. — or — store them in the macOS Keychain (persistent, secure):
+arc setup scm keystore   # same wizard as: arc auth configure
+
+# 3. Confirm everything is set (secrets masked)
+arc auth show
 ```
 
 ## Install ARC
@@ -27,11 +35,11 @@ pip install -e .
 
 ## Store credentials (macOS Keychain)
 
-Run the interactive wizard — secrets are written directly to **macOS Keychain**,
+Run the keychain wizard — secrets are written directly to **macOS Keychain**,
 not to disk:
 
 ```bash
-arc auth configure
+arc setup scm keystore   # same as: arc auth configure
 ```
 
 ARC stores four items in the keychain under the service name `arc`:
@@ -118,23 +126,22 @@ macOS Keychain is unlocked by your login password and, on supported hardware,
 by Touch ID or Apple Watch. ARC reads credentials silently once the session
 is unlocked — no password prompt on every `arc` invocation.
 
-## Generate a starter config file
+## Environment variables (session-only, no keychain)
+
+Environment variables override keychain and config values and live only in the
+current terminal — they vanish when you close it or reboot. This is the "no
+keychain" path. Let ARC build them for you:
 
 ```bash
-arc config generate          # creates config file with annotated placeholders
-arc config generate --force  # overwrite an existing config file
+arc setup scm            # prints the export commands, then offers a wizard
+arc setup scm wizard     # go straight to the wizard
+eval "$(arc setup scm --export)"   # run the wizard and set them in one step
 ```
 
-The generated file has `_note` fields explaining each section.
-Edit only non-secret `REPLACE_WITH_*` values, then run `arc auth configure` to
-enter secrets securely and store them in the Keychain.
-
-## Environment variables (temporary override)
-
-Environment variables override keychain and config values. Use them for a
-single terminal session or automation. Do **not** put long-lived secrets in
-`~/.zshrc` or `~/.zprofile`; those files are plaintext and often backed up or
-synced. Prefer Keychain via `arc auth configure` for local development.
+The wizard offers a static bearer token or a "log in now" that mints a
+short-lived token — it only ever sets `SCM_BEARER_TOKEN`, never your client
+secret. Do **not** put long-lived secrets in `~/.zshrc` or `~/.zprofile`; those
+files are plaintext and often backed up or synced. To set the variables by hand:
 
 ```bash
 # SCM — bearer token takes precedence over OAuth credentials
@@ -192,8 +199,6 @@ arc auth configure --ssh-key ~/.ssh/panos_key
 
 ## See Also
 
-- `help config`             — general configuration overview
-- `help config generate`    — generate a starter config file
-- `setup win`         — Windows setup
-- `setup linux`         — Linux setup
-- `help configuration`      — full configuration reference
+- `arc setup win`           — Windows setup
+- `arc setup linux`         — Linux setup
+- `arc help configuration`  — full configuration reference

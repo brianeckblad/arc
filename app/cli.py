@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import getpass
 import json
+import os
+import shlex
 import stat
-from typing import Optional
+from typing import List, Optional
 
 import httpx
 
@@ -39,6 +41,89 @@ app = typer.Typer(
 )
 
 console = Console()
+err_console = Console(stderr=True)
+
+
+# ---------------------------------------------------------------------------
+# Wizard helpers — shared by the credential wizards (keychain + env-var)
+# ---------------------------------------------------------------------------
+
+class _WizardCancelled(Exception):
+    """Raised inside a wizard prompt when the user hits Ctrl-C / Ctrl-D."""
+
+
+def _wizard_prompt(
+    label: str,
+    current: str = "",
+    *,
+    secret: bool = False,
+    hint: str = "",
+    out: "Console | None" = None,
+) -> str:
+    """Prompt for a value. Enter keeps the existing value; Ctrl-C/Ctrl-D aborts.
+
+    ``out`` is the Console the label is printed to — pass the stderr console in
+    --export mode so stdout carries only the export lines.
+    """
+    out = out or console
+    display_current = "****" if (secret and current) else (current or "")
+    display_hint = f" [dim][{display_current}][/dim]" if display_current else ""
+    extra_hint = f"\n    [dim]{hint}[/dim]" if hint else ""
+    out.print(f"  {label}{display_hint}{extra_hint}: ", end="")
+    try:
+        val = getpass.getpass("") if secret else input()
+    except (EOFError, KeyboardInterrupt):
+        raise _WizardCancelled()
+    # Empty input = keep existing value
+    return val.strip() or current
+
+
+def _wizard_confirm(prompt: str, *, out: "Console | None" = None) -> bool:
+    """Yes/No prompt (default No). Ctrl-C/Ctrl-D aborts the wizard."""
+    out = out or console
+    out.print(f"  {prompt} [dim][y/N][/dim]: ", end="")
+    try:
+        ans = input()
+    except (EOFError, KeyboardInterrupt):
+        raise _WizardCancelled()
+    return ans.strip().lower() in ("y", "yes")
+
+
+def _run_wizard_guarded(fn, *args, **kwargs) -> None:
+    """Run a wizard function, turning a Ctrl-C/Ctrl-D abort into a clean exit."""
+    try:
+        fn(*args, **kwargs)
+    except _WizardCancelled:
+        err_console.print("\n[yellow]Cancelled — nothing saved.[/yellow]")
+        raise typer.Exit(130)
+
+
+def _detect_shell_style() -> str:
+    """Return 'powershell' or 'posix' for the invoking shell."""
+    import os as _os
+    import platform as _platform
+
+    if _os.environ.get("PSModulePath"):
+        return "powershell"
+    if _platform.system() == "Windows" and not _os.environ.get("SHELL"):
+        return "powershell"
+    return "posix"
+
+
+def _export_line(name: str, value: str, style: str) -> str:
+    """Render a single environment-variable assignment for the target shell."""
+    if style == "powershell":
+        return f'$env:{name} = "{value}"'
+    return f"export {name}={shlex.quote(value)}"
+
+
+def _identity_name(claims: dict) -> str:
+    """Best display name from userinfo claims (mirrors the in-shell helper)."""
+    for key in ("name", "email", "preferred_username", "sub"):
+        val = claims.get(key)
+        if val:
+            return str(val)
+    return ""
 
 
 # ---------------------------------------------------------------------------
@@ -74,6 +159,365 @@ def open_docs(
     console.print(f"[green]Docs opened:[/green] {url}")
 
 
+@app.command("help")
+def show_help(
+    topic: Optional[List[str]] = typer.Argument(
+        None, help="Help topic (e.g. configuration) or command name. Omit to list topics."
+    ),
+) -> None:
+    """Show ARC help topics in the terminal (configuration, setup, command help).
+
+    Renders the same pages the in-shell `help` command shows — e.g.
+    `arc help configuration`.  Use `arc docs [topic]` for the browser reference.
+    """
+    from app.docs import render_help_topic
+
+    topic_str = " ".join(topic).strip() if topic else ""
+    if not topic_str:
+        console.print(
+            "\n[bold cyan]ARC commands[/bold cyan]  [dim](run from your terminal)[/dim]\n"
+            "  [cyan]arc[/cyan]                 launch the interactive shell\n"
+            "  [cyan]arc setup[/cyan]           guided setup — credentials + per-OS guides\n"
+            "  [cyan]arc auth[/cyan]            manage credentials (configure/show/test/clear)\n"
+            "  [cyan]arc config[/cyan]          manage the config file\n"
+            "  [cyan]arc docs[/cyan]            open the browser docs portal\n"
+            "  [cyan]arc scm[/cyan]             raw SCM API passthrough\n"
+            "  [cyan]arc help[/cyan]            this list + help topics\n"
+        )
+        console.print(
+            "\n[bold cyan]Help topics[/bold cyan]\n"
+            "  [cyan]arc help configuration[/cyan]   full configuration reference\n"
+            "  [cyan]arc help setup[/cyan]           getting-started overview\n"
+            "  [cyan]arc help device-access[/cyan]   device auth planes (SCM proxy vs SSH/2FA)\n"
+            "  [cyan]arc help <command>[/cyan]        help for any ARC command\n"
+        )
+        console.print(
+            "\n  [dim]Full CLI usage: [bold]arc --help[/bold]  ·  browser reference: [bold]arc docs[/bold]\n"
+            "  Want unquoted [bold]arc ?[/bold] to work? In zsh it's a shell wildcard — run "
+            "[bold]arc setup shell[/bold] to add the one-line fix.[/dim]\n"
+        )
+        return
+    if not render_help_topic(console, topic_str, use_pager=False):
+        console.print(
+            f"[yellow]No help topic:[/yellow] [bold]{topic_str}[/bold]\n"
+            "  Run [bold]arc help[/bold] to list topics, or [bold]arc docs[/bold] "
+            "for the full browser reference."
+        )
+        raise typer.Exit(1)
+
+
+# ---------------------------------------------------------------------------
+# setup group — guided onboarding, run from the terminal (outside the shell)
+# ---------------------------------------------------------------------------
+
+setup_app = typer.Typer(help="Set up ARC — credential wizard and per-OS guides.")
+app.add_typer(setup_app, name="setup")
+
+_OS_GUIDE_LABELS = {"osx": "macOS", "linux": "Linux / WSL", "win": "Windows"}
+
+
+@setup_app.callback(invoke_without_command=True)
+def setup_menu(ctx: typer.Context) -> None:
+    """Guided setup overview — the credential wizard and per-OS guides.
+
+    Run `arc setup scm` for the credential wizard, or
+    `arc setup osx|linux|win` for a platform walkthrough.
+    """
+    if ctx.invoked_subcommand is not None:
+        return
+
+    import platform as _platform
+
+    os_name = _platform.system()  # "Darwin" | "Linux" | "Windows"
+    detected = {"Darwin": "osx", "Linux": "linux", "Windows": "win"}.get(os_name, "")
+    os_label = {"Darwin": "macOS", "Linux": "Linux / WSL", "Windows": "Windows"}.get(os_name, os_name)
+
+    console.print("\n[bold cyan]ARC Setup[/bold cyan]")
+    console.print(f"[dim]Detected platform: {os_label}[/dim]\n")
+    console.print("  Choose what to set up:\n")
+    rows = [
+        ("arc setup scm", "Credentials as session env vars (no keychain) — set by hand or wizard"),
+        ("arc setup scm keystore", "Credentials in the OS keychain (persistent, secure)"),
+        ("arc setup osx", "macOS step-by-step guide (Keychain, Touch ID)"),
+        ("arc setup linux", "Linux / WSL guide (libsecret / Secret Service / env vars)"),
+        ("arc setup win", "Windows guide (Credential Manager / PowerShell)"),
+        ("arc setup shell", "Make an unquoted `arc ?` work in your terminal (zsh)"),
+    ]
+    for cmd, desc in rows:
+        mark = "  [green]◀ your platform[/green]" if detected and cmd.endswith(detected) else ""
+        console.print(f"  [cyan]{cmd:<24}[/cyan] {desc}{mark}")
+    console.print()
+    console.print(
+        "  [dim]Full reference: [bold]arc help configuration[/bold][/dim]"
+    )
+    if detected:
+        console.print(
+            f"\n  [dim]Tip: start with [bold]arc setup {detected}[/bold] or [bold]arc setup scm[/bold].[/dim]"
+        )
+    console.print()
+
+
+scm_app = typer.Typer(
+    help="Set up SCM credentials — session env vars (default) or the OS keychain."
+)
+setup_app.add_typer(scm_app, name="scm")
+
+
+@scm_app.callback(invoke_without_command=True)
+def setup_scm(
+    ctx: typer.Context,
+    export: bool = typer.Option(
+        False, "--export", "-e",
+        help='Print only export lines to stdout (for: eval "$(arc setup scm --export)").',
+    ),
+) -> None:
+    """Set up SCM credentials as session-only environment variables (no keychain).
+
+    Bare: prints the export commands to set by hand, then offers a guided wizard.
+    `--export`: runs the wizard and emits only the export lines (eval-ready).
+    For OS-keychain storage instead, run `arc setup scm keystore`.
+    """
+    if ctx.invoked_subcommand is not None:
+        return
+    if export:
+        _run_wizard_guarded(_run_env_wizard, export_mode=True)
+        return
+    _run_wizard_guarded(_scm_manual_and_offer)
+
+
+@scm_app.command("wizard")
+def setup_scm_wizard(
+    export: bool = typer.Option(
+        False, "--export", "-e",
+        help='Print only export lines to stdout (for: eval "$(arc setup scm wizard --export)").',
+    ),
+) -> None:
+    """Guided wizard that builds session-only SCM env vars (no keychain)."""
+    _run_wizard_guarded(_run_env_wizard, export_mode=export)
+
+
+@scm_app.command("keystore")
+def setup_scm_keystore() -> None:
+    """Store SCM/SSH credentials in the OS keychain (persistent, secure)."""
+    _run_wizard_guarded(_run_auth_configure)
+
+
+def _scm_manual_and_offer() -> None:
+    """Print the manual export commands for the detected shell, then offer the wizard."""
+    style = _detect_shell_style()
+    one = 'eval "$(arc setup scm --export)"' if style != "powershell" else "arc setup scm --export | iex"
+
+    console.print("\n[bold cyan]Set up SCM — environment variables (no keychain)[/bold cyan]")
+    console.print(
+        "  [dim]Session-only: these live in the current terminal and are gone when\n"
+        "  you close it or reboot. Set them by hand below, or let the wizard build them.[/dim]\n"
+    )
+    console.print("[yellow]─ Option A: a token (recommended — no secret on the machine) ─[/yellow]")
+    console.print("    " + _export_line("SCM_BEARER_TOKEN", "<your-token>", style))
+    console.print("    " + _export_line("SCM_TSG_ID", "<tsg-id>", style) + "   [dim](optional)[/dim]")
+    console.print("\n[yellow]─ Option B: a service account (ARC mints fresh tokens each launch) ─[/yellow]")
+    console.print(
+        "  [dim]This puts the client secret in your environment — prefer "
+        "[bold]arc setup scm keystore[/bold] for that.[/dim]"
+    )
+    for name, val in (("SCM_CLIENT_ID", "<client-id>"),
+                      ("SCM_CLIENT_SECRET", "<client-secret>"),
+                      ("SCM_TSG_ID", "<tsg-id>")):
+        console.print("    " + _export_line(name, val, style))
+    console.print("\n[yellow]─ Optional device SSH ─[/yellow]")
+    for name, val in (("ARC_SSH_USER", "admin"), ("ARC_SSH_KEY", "~/.ssh/panos_key")):
+        console.print("    " + _export_line(name, val, style))
+    console.print(
+        f"\n  [dim]One-step: [bold]{one}[/bold] runs the wizard and sets the vars for you.\n"
+        "  Keychain instead? [bold]arc setup scm keystore[/bold][/dim]\n"
+    )
+
+    if _wizard_confirm("Build these with a guided wizard now?"):
+        _run_env_wizard(export_mode=False)
+
+
+def _run_env_wizard(*, export_mode: bool) -> None:
+    """Collect SCM/SSH credentials and emit shell `export` lines (writes nothing)."""
+    from app.api._auth import fetch_userinfo, oauth_token
+
+    style = _detect_shell_style()
+    ui = err_console if export_mode else console  # prompts/status never touch stdout in export mode
+
+    ui.print("\n[bold cyan]ARC SCM env-var setup[/bold cyan]  [dim](session-only, no keychain)[/dim]")
+    ui.print(
+        "  [bold]1[/bold]  Paste a static SCM bearer token\n"
+        "  [bold]2[/bold]  Log in now — mint a temporary token from a service account\n"
+    )
+    choice = _wizard_prompt("Choose 1 or 2", "1", out=ui)
+
+    pairs: "list[tuple[str, str]]" = []
+
+    if choice == "2":
+        client_id = _wizard_prompt("Client ID", out=ui,
+                                   hint="service account email from the SCM portal")
+        client_secret = _wizard_prompt("Client Secret", secret=True, out=ui,
+                                       hint="used once to mint a token — never stored")
+        tsg = _wizard_prompt("TSG ID", os.environ.get("SCM_TSG_ID", ""), out=ui,
+                             hint="your Tenant Services Group ID")
+        if not (client_id and client_secret and tsg):
+            ui.print("[yellow]Client ID, secret, and TSG are all required to mint a token.[/yellow]")
+            raise typer.Exit(1)
+        ui.print("[dim]Minting token…[/dim]")
+        try:
+            with httpx.Client(timeout=30) as http:
+                token, expires_in = oauth_token(http, client_id, client_secret, tsg)
+                claims = fetch_userinfo(http, token)
+        except Exception as exc:  # noqa: BLE001
+            ui.print(f"[red]Login failed:[/red] {exc}")
+            raise typer.Exit(1)
+        who = _identity_name(claims)
+        mins = f" (~{expires_in // 60} min)" if expires_in else ""
+        ui.print(f"[green]✓[/green] Token minted{mins}."
+                 + (f"  Signed in as [bold]{who}[/bold]." if who else ""))
+        pairs.append(("SCM_BEARER_TOKEN", token))
+        pairs.append(("SCM_TSG_ID", tsg))
+    else:
+        token = _wizard_prompt("Bearer token", secret=True, out=ui,
+                               hint="paste a pre-issued SCM token")
+        if not token:
+            ui.print("[yellow]No token entered.[/yellow]")
+            raise typer.Exit(1)
+        pairs.append(("SCM_BEARER_TOKEN", token))
+        tsg = _wizard_prompt("TSG ID", os.environ.get("SCM_TSG_ID", ""), out=ui, hint="optional")
+        if tsg:
+            pairs.append(("SCM_TSG_ID", tsg))
+
+    # Optional device SSH
+    ssh_user = _wizard_prompt("SSH username", os.environ.get("ARC_SSH_USER", ""), out=ui,
+                              hint="optional — device SSH")
+    if ssh_user:
+        pairs.append(("ARC_SSH_USER", ssh_user))
+    ssh_key = _wizard_prompt("SSH key path", os.environ.get("ARC_SSH_KEY", ""), out=ui, hint="optional")
+    if ssh_key:
+        # Expand ~ now so the exported value is a literal path (quoting would
+        # otherwise stop the shell from expanding the tilde).
+        pairs.append(("ARC_SSH_KEY", os.path.expanduser(ssh_key)))
+
+    lines = [_export_line(name, val, style) for name, val in pairs]
+
+    if export_mode:
+        for line in lines:
+            print(line)  # stdout only — eval-ready
+        ui.print("\n[dim]Set for this shell. Verify with: arc auth test[/dim]")
+        return
+
+    console.print("\n[bold]Run these in your terminal[/bold] "
+                  "[dim](session-only — gone on close/reboot)[/dim]:\n")
+    for line in lines:
+        console.print(f"  [green]{line}[/green]")
+    one = 'eval "$(arc setup scm --export)"' if style != "powershell" else "arc setup scm --export | iex"
+    console.print(
+        f"\n  [dim]Or set them in one step: [bold]{one}[/bold]\n"
+        "  Then verify: [bold]arc auth test[/bold][/dim]\n"
+    )
+
+
+def _render_os_guide(os_key: str) -> None:
+    """Print the 'three ways to configure' header, then the platform guide."""
+    from app.docs import os_setup_doc, render_doc_file
+
+    doc = os_setup_doc(os_key)
+    label = _OS_GUIDE_LABELS.get(os_key, os_key)
+    console.print(
+        f"\n[bold cyan]Set up ARC on {label} — three ways[/bold cyan]\n"
+        "  [bold]1. Session env vars[/bold]  → [cyan]arc setup scm[/cyan]  (no keychain; gone on reboot)\n"
+        "  [bold]2. OS keychain[/bold]       → [cyan]arc setup scm keystore[/cyan]  (persistent, secure)\n"
+        "  [bold]3. Manual[/bold]            → follow the platform steps below"
+    )
+    if not doc or not render_doc_file(console, doc, title=f"Set up ARC — {label}", use_pager=False):
+        console.print(
+            f"\n[yellow]Guide not found for {label}.[/yellow] "
+            "Try [bold]arc setup scm[/bold] or [bold]arc setup scm keystore[/bold].\n"
+        )
+
+
+@setup_app.command("osx")
+def setup_osx() -> None:
+    """macOS setup guide (Keychain, Touch ID)."""
+    _render_os_guide("osx")
+
+
+@setup_app.command("linux")
+def setup_linux() -> None:
+    """Linux / WSL setup guide (libsecret / Secret Service / env vars)."""
+    _render_os_guide("linux")
+
+
+@setup_app.command("win")
+def setup_win() -> None:
+    """Windows setup guide (Credential Manager / PowerShell)."""
+    _render_os_guide("win")
+
+
+@setup_app.command("shell")
+def setup_shell(
+    apply: bool = typer.Option(
+        False, "--apply", help="Append the alias to your shell rc file (default: show it only)."
+    ),
+) -> None:
+    """Make an unquoted `arc ?` work in your terminal.
+
+    In zsh, `?` is a filename wildcard, so the shell errors on `arc ?` before
+    arc ever runs. A one-line alias (`alias arc='noglob arc'`) suppresses that
+    so arc receives `?` and shows help. bash, fish, and PowerShell already pass
+    an unquoted `?` through, so nothing is needed there.
+    """
+    shell = os.path.basename(os.environ.get("SHELL", "")).lower()
+    home = os.path.expanduser("~")
+
+    if shell == "zsh":
+        rc = os.path.join(home, ".zshrc")
+        alias_line = "alias arc='noglob arc'"
+        marker = "# ARC: let an unquoted `arc ?` reach arc (zsh globs ? otherwise)"
+        try:
+            existing = open(rc, encoding="utf-8").read()
+        except FileNotFoundError:
+            existing = ""
+        if "noglob arc" in existing:
+            console.print(
+                f"[green]✓[/green] Already configured in [bold]{rc}[/bold].\n"
+                "  Reload with [bold]source ~/.zshrc[/bold] (or open a new terminal), "
+                "then [bold]arc ?[/bold] works."
+            )
+            return
+        if apply:
+            with open(rc, "a", encoding="utf-8") as fh:
+                fh.write(f"\n{marker}\n{alias_line}\n")
+            console.print(
+                f"\n[green]✓[/green] Added to [bold]{rc}[/bold]:\n    [cyan]{alias_line}[/cyan]\n\n"
+                "  Reload: [bold]source ~/.zshrc[/bold] (or open a new terminal), "
+                "then [bold]arc ?[/bold] shows help.\n"
+            )
+        else:
+            console.print(
+                "\n[bold cyan]zsh detected[/bold cyan] — an unquoted [bold]arc ?[/bold] is eaten by "
+                "the shell's [bold]?[/bold] wildcard.\n"
+                "  Add this one line to fix it:\n"
+                f"    [cyan]{alias_line}[/cyan]\n\n"
+                f"  Auto-add it: [bold]arc setup shell --apply[/bold]  [dim](writes to {rc})[/dim]\n"
+                "  Then: [bold]source ~/.zshrc[/bold] (or open a new terminal).\n"
+                "  [dim]Until then, [bold]arc '?'[/bold] (quoted) and [bold]arc help[/bold] work as-is.[/dim]\n"
+            )
+    elif shell == "bash":
+        console.print(
+            "\n[green]✓[/green] bash passes an unquoted [bold]?[/bold] through unchanged — "
+            "[bold]arc ?[/bold] already works (it maps to --help).\n"
+        )
+    else:
+        label = shell or "your shell"
+        console.print(
+            f"\n[bold cyan]{label}[/bold cyan]: most shells (bash, fish, PowerShell) pass an "
+            "unquoted [bold]?[/bold] through, so [bold]arc ?[/bold] already works.\n"
+            "  If yours globs [bold]?[/bold] like zsh, alias arc to suppress it, e.g. "
+            "[cyan]alias arc='noglob arc'[/cyan].\n"
+        )
+
+
 # ---------------------------------------------------------------------------
 # auth sub-command
 # ---------------------------------------------------------------------------
@@ -103,6 +547,31 @@ def auth_configure(
 
     Press Enter to keep any value that is already stored.
     """
+    _run_wizard_guarded(
+        _run_auth_configure,
+        scm_bearer_token=scm_bearer_token,
+        scm_client_id=scm_client_id,
+        scm_secret=scm_secret,
+        scm_tsg=scm_tsg,
+        ssh_user=ssh_user,
+        ssh_key=ssh_key,
+        profile=profile,
+    )
+
+
+def _run_auth_configure(
+    *,
+    scm_bearer_token: Optional[str] = None,
+    scm_client_id: Optional[str] = None,
+    scm_secret: Optional[str] = None,
+    scm_tsg: Optional[str] = None,
+    ssh_user: Optional[str] = None,
+    ssh_key: Optional[str] = None,
+    profile: str = "default",
+) -> None:
+    """Interactive credential wizard body — shared by `arc auth configure`
+    and `arc setup scm` so there is a single implementation.
+    """
     cfg = load_config(profile=profile)
     kc = keychain_available()
 
@@ -124,18 +593,7 @@ def auth_configure(
             "  Use environment variables for secrets until keychain access is available.\n"
         )
 
-    def _prompt(label: str, current: str, secret: bool = False, hint: str = "") -> str:
-        """Prompt for a value.  Returns the existing value unchanged if the user presses Enter."""
-        display_current = "****" if (secret and current) else (current or "")
-        display_hint = f" [dim][{display_current}][/dim]" if display_current else ""
-        extra_hint = f"\n    [dim]{hint}[/dim]" if hint else ""
-        console.print(f"  {label}{display_hint}{extra_hint}: ", end="")
-        try:
-            val = getpass.getpass("") if secret else input()
-        except (EOFError, KeyboardInterrupt):
-            val = ""
-        # Empty input = keep existing value
-        return val.strip() or current
+    _prompt = _wizard_prompt
 
     # ── SCM service account (primary auth method) ────────────────────────────
     console.print("[yellow]─ Strata Cloud Manager — Service Account ─[/yellow]")
@@ -691,7 +1149,7 @@ app.add_typer(config_app, name="config")
 _CONFIG_TEMPLATE = {
     "_note": (
         "ARC config.json — NON-secret, sectioned. Auth values live in auth.json "
-        "(run: setup scm  — or  arc auth configure). Secrets go to the OS keychain "
+        "(run: arc setup scm  — or  arc auth configure). Secrets go to the OS keychain "
         "unless auth.storage is set to 'file'."
     ),
     "preferences": {
@@ -743,11 +1201,11 @@ def config_generate(
     )
     console.print(
         "[bold]Next steps:[/bold]\n"
-        "  1. Run [bold]setup scm[/bold] inside ARC (or [bold]arc auth configure[/bold]) to enter\n"
+        "  1. Run [bold]arc setup scm[/bold] (or [bold]arc auth configure[/bold]) to enter\n"
         "     credentials — they're saved to auth.json (secrets → keychain by default).\n"
         "  2. Run [bold]arc auth show[/bold] — confirm everything is configured.\n\n"
-        "  Platform steps: inside ARC run [bold]setup osx[/bold] / [bold]setup win[/bold] / "
-        "[bold]setup linux[/bold]."
+        "  Platform steps: [bold]arc setup osx[/bold] / [bold]arc setup win[/bold] / "
+        "[bold]arc setup linux[/bold]."
     )
 
 
@@ -943,6 +1401,11 @@ def scm_get(
 # ---------------------------------------------------------------------------
 
 def run() -> None:
+    # Cisco-style: treat a bare `?` token as `--help` so `arc ?`,
+    # `arc setup ?`, `arc auth ?` all print Typer help.
+    import sys
+
+    sys.argv[1:] = ["--help" if a == "?" else a for a in sys.argv[1:]]
     app()
 
 

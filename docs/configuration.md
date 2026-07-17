@@ -18,15 +18,15 @@ ARC stores configuration in two files under `config/<your-username>/` (both mode
 | `keychain` (default) | OS keychain (macOS Keychain / libsecret / Windows Credential Manager) | secure, recommended |
 | `file` | plaintext `auth.json` (0600) | opt-in only, with warnings — anyone who can read the file gets your credentials |
 
-Set the mode in **`setup scm`** or **`arc gui-configure` → Credentials & Keychain**
-(both write through the same store — full parity). Real token expiry from the SCM
-`access_token` response is recorded in `auth.json`; expired tokens are purged at
-startup.
+Set the mode in **`arc gui-configure` → Credentials & Keychain** (inside the ARC
+shell), or via the `ARC_AUTH_STORAGE` env var / `auth.storage` in config.json.
+Real token expiry from the SCM `access_token` response is recorded in `auth.json`;
+expired tokens are purged at startup.
 
-> **Platform-specific setup guides:**
-> - `setup osx` — macOS (Keychain, zshrc, Touch ID)
-> - `setup win` — Windows (Credential Manager, PowerShell)
-> - `setup linux` — Linux (Secret Service, bashrc, headless/CI)
+> **Platform-specific setup guides** (run from your terminal):
+> - `arc setup osx` — macOS (Keychain, zshrc, Touch ID)
+> - `arc setup win` — Windows (Credential Manager, PowerShell)
+> - `arc setup linux` — Linux (Secret Service, bashrc, headless/CI)
 
 ## SCM service account field mapping
 
@@ -45,13 +45,13 @@ account. For the standard service account flow, leave `bearer_token` blank and s
 ## Credential setup
 
 ```bash
-setup scm           # in-shell interactive wizard (recommended)
-arc auth configure  # non-interactive / CLI equivalent
+arc setup scm       # interactive credential wizard (recommended)
+arc auth configure  # the same wizard, invoked directly
 arc auth show       # display current config (secrets masked)
 arc auth clear      # remove ARC secrets from the OS keychain
 ```
 
-`setup scm` / `arc auth configure` route secrets to the keychain by default
+`arc setup scm` / `arc auth configure` route secrets to the keychain by default
 (macOS Keychain, Linux Secret Service, or Windows Credential Manager) and
 writes only non-sensitive values to the config file.
 
@@ -100,7 +100,7 @@ credentials in `auth.json` (plaintext, `0600`).
 
 ## Migration from an older config.json
 
-The first `save_config` (via `setup scm`, `arc auth configure`, `login`, or the
+The first `save_config` (via `arc setup scm`, `arc auth configure`, `login`, or the
 GUI) migrates an older single- or multi-profile `config.json` automatically:
 top-level `scm`/`ssh` blocks become the `default` profile in `auth.json`,
 `features_gui`/`arc_gui` move under `config.json` → `gui`, and `active_profile`

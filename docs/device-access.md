@@ -69,4 +69,4 @@ session. Selecting a different device with `cd` clears the marker.
 
 - `help connect` · `help remote` — interactive/one-off SSH
 - `help features` — scope, `feature scope`, and the feature editor
-- `setup osx` / `setup win` / `setup linux` — storing SSH credentials
+- `arc setup osx` / `arc setup win` / `arc setup linux` — storing SSH credentials

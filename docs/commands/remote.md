@@ -65,5 +65,5 @@ If you have no stored credentials, you'll be prompted during the keyboard-intera
 ## See Also
 
 - `help connect` — SSH to the current `cd` device
-- `setup osx` / `setup win` / `setup linux` — credential storage
+- `arc setup osx` / `arc setup win` / `arc setup linux` — credential storage
 - `help cd` — change device context without connecting

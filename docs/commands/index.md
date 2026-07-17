@@ -4902,7 +4902,6 @@ Use `help <command>` to open detailed docs for a command.
 - `pwd` — Show device, folder, TSG, and active account
 - `quit` — Exit ARC (or leave configure mode)
 - `set` — Create configuration  (configure mode)  — set ? for sub-commands
-- `setup` — Guided setup: menu, credential wizard (setup scm), or OS step-by-step guide
 - `show config` — List staged changes pending commit  (local — not yet in SCM)
 - `show connections` — List active SSH connections in the pool  (close connection <host> to drop one)
 - `status` — Dev health dashboard  (docs age, feature counts, help coverage, git)

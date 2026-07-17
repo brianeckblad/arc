@@ -64,6 +64,6 @@ Endpoints (pan.dev):
 - `POST /auth/v1/oauth2/userinfo` — identity claims for the token.
   [Docs](https://pan.dev/scm/api/auth/post-auth-v-1-oauth-2-userinfo/)
 
-`login` needs SCM credentials configured first (`setup scm` / `arc auth
-configure`). If none are present, it points you at `setup scm`. Service-account
+`login` needs SCM credentials configured first (`arc setup scm` / `arc auth
+configure`). If none are present, it points you at `arc setup scm`. Service-account
 credentials remain the supported, fully-featured auth path.

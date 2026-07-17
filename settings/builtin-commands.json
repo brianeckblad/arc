@@ -225,15 +225,6 @@
     "onlogin": false,
     "startup_hint": ""
   },
-  "setup": {
-    "visible": true,
-    "display": "setup <scm|osx|linux|win>",
-    "help": "Guided setup: menu, credential wizard (setup scm), or OS step-by-step guide",
-    "configure_only": false,
-    "hide_in_configure": false,
-    "onlogin": false,
-    "startup_hint": ""
-  },
   "status": {
     "visible": "dev",
     "display": "status",

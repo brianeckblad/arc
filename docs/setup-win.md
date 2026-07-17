@@ -1,15 +1,23 @@
-# Configuration — Windows
+# Set up ARC — Windows
+
+All commands below run in PowerShell, **before** you launch the ARC shell.
+
 ## Quick start
 
+Pick one of two ways to hold credentials:
+
 ```powershell
-# 1. Generate a starter config file (annotated with what to fill in)
-arc config generate
+# 1. Install ARC (see "Install ARC" below).
 
-# 2. Edit the file — replace non-secret REPLACE_WITH_* placeholders
-notepad "$env:APPDATA\arc\config.json"
+# 2a. Session-only environment variables (no keychain — gone on reboot):
+arc setup scm            # prints the $env: commands, then offers a wizard
+#     one step: arc setup scm --export | iex
 
-# 3. Run the wizard — migrates secrets to Credential Manager, writes safe values to disk
-arc auth configure
+# 2b. — or — store them in Windows Credential Manager (persistent, secure):
+arc setup scm keystore   # same wizard as: arc auth configure
+
+# 3. Confirm everything is set (secrets masked)
+arc auth show
 ```
 
 ## Install ARC
@@ -30,11 +38,11 @@ pip install -e .
 
 ## Store credentials (Windows Credential Manager)
 
-Run the interactive wizard — secrets are written to **Windows Credential Manager**,
+Run the keychain wizard — secrets are written to **Windows Credential Manager**,
 not to disk as plaintext:
 
 ```powershell
-arc auth configure
+arc setup scm keystore   # same as: arc auth configure
 ```
 
 ARC stores entries with target `arc/<item>` in Credential Manager:
@@ -96,24 +104,23 @@ arc auth clear   # remove all ARC entries from Credential Manager
 Open **Control Panel → Credential Manager → Windows Credentials** and search
 for entries starting with `arc/` to verify visually.
 
-## Generate a starter config file
+## Environment variables (session-only, no keychain)
+
+Environment variables override Credential Manager and config values and live
+only in the current PowerShell session — they vanish when you close it or
+reboot. This is the "no keychain" path. Let ARC build them for you:
 
 ```powershell
-arc config generate          # creates config file with annotated placeholders
-arc config generate --force  # overwrite an existing config file
+arc setup scm            # prints the $env: commands, then offers a wizard
+arc setup scm wizard     # go straight to the wizard
+arc setup scm --export | iex   # run the wizard and set them in one step
 ```
 
-The generated file has `_note` fields explaining each section.
-Edit only non-secret `REPLACE_WITH_*` values, then run `arc auth configure` to
-enter secrets securely and store them in Credential Manager.
-
-## Environment variables (temporary override)
-
-Environment variables override Credential Manager and config values. Use them
-for the current PowerShell session or CI jobs. Do **not** store long-lived
-secrets permanently in Windows user environment variables or PowerShell
-profiles; those values are plaintext from ARC's perspective and easier to leak
-than Credential Manager entries.
+The wizard offers a static bearer token or a "log in now" that mints a
+short-lived token — it only ever sets `SCM_BEARER_TOKEN`, never your client
+secret. Do **not** store long-lived secrets permanently in Windows user
+environment variables or PowerShell profiles; those values are plaintext from
+ARC's perspective. To set the variables by hand:
 
 ```powershell
 # SCM — bearer token takes precedence over OAuth credentials
@@ -172,8 +179,6 @@ arc auth configure --ssh-key "$env:USERPROFILE\.ssh\panos_key"
 
 ## See Also
 
-- `help config`             — general configuration overview
-- `help config generate`    — generate a starter config file
-- `setup osx`         — macOS setup
-- `setup linux`         — Linux setup
-- `help configuration`      — full configuration reference
+- `arc setup osx`           — macOS setup
+- `arc setup linux`         — Linux setup
+- `arc help configuration`  — full configuration reference

@@ -51,5 +51,5 @@ If you have no stored credentials, you'll be prompted during the keyboard-intera
 ## See Also
 
 - `help remote` — SSH to a named device (also sets device context)
-- `setup osx` / `setup win` / `setup linux` — credential storage
+- `arc setup osx` / `arc setup win` / `arc setup linux` — credential storage
 - `help cd` — change device context

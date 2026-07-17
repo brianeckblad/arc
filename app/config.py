@@ -759,7 +759,8 @@ def save_session_token(
 ) -> None:
     """Persist a manually-minted SESSION token to auth.json — non-destructively.
 
-    Used by ``setup scm`` manual sign-in.  The ephemeral bearer token (like
+    Persists an ephemeral, already-minted bearer token (as opposed to a stored
+    client secret).  The ephemeral bearer token (like
     ``token_expiry``) is session state, so it is written to auth.json regardless
     of the storage mode and read back by ``load_config``'s auth.json fallback.
 

@@ -532,18 +532,6 @@ class ArcCompleter(Completer):
                     yield Completion(name, start_position=0)
             return
 
-        # ---- setup → subcommand completion (scm | osx | linux | win) ----
-        if first == "setup" and has_arg_space and len(parts) <= 2:
-            for sub, meta in (
-                ("scm", "interactive credential wizard"),
-                ("osx", "macOS step-by-step guide"),
-                ("linux", "Linux / WSL guide"),
-                ("win", "Windows guide"),
-            ):
-                if sub.startswith(partial_arg.lower()):
-                    yield Completion(sub, start_position=-len(partial_arg), display_meta=meta)
-            return
-
         # ---- no-argument builtins → only offer `?` (no stray registry hits) ----
         if first in ("status", "login", "abandon", "pwd", "clear",
                      "history", "logout") and has_arg_space and len(parts) <= 2:
