@@ -1,6 +1,24 @@
 ---
 command: "set service-group"
 description: "Create service group — set service-group <name> members <svc1> [svc2 ...]"
+feature_flag: create_service_group
+category: objects
+scope: folder
+api: "POST /config/objects/v1/service-groups"
+---
+
+---
+command: "set service-group"
+description: "Create service group — set service-group <name> members <svc1> [svc2 ...]"
+feature_flag: create_service_group
+category: objects
+scope: folder
+api: "POST /config/objects/v1/service-groups"
+---
+
+---
+command: "set service-group"
+description: "Create service group — set service-group <name> members <svc1> [svc2 ...]"
 usage: "set service-group <name> members <svc1> [svc2 ...] [tag <name>]"
 feature_flag: create_service_group
 category: objects

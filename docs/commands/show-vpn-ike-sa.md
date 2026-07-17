@@ -4,6 +4,24 @@ description: "Show live IKE security associations from device — use --remote"
 feature_flag: ipsec_vpn
 category: network
 scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "show vpn ike-sa"
+description: "Show live IKE security associations from device — use --remote"
+feature_flag: ipsec_vpn
+category: network
+scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "show vpn ike-sa"
+description: "Show live IKE security associations from device — use --remote"
+feature_flag: ipsec_vpn
+category: network
+scope: device
 api: "(live device state — SSH via --remote)"
 ---
 

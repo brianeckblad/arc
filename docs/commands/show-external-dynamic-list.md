@@ -1,6 +1,26 @@
 ---
 command: "show external-dynamic-list"
 description: "Show external dynamic lists (EDLs) in the active folder"
+usage: "show external-dynamic-list [<name>]"
+feature_flag: show_external_dynamic_list
+category: objects
+scope: folder
+api: "GET /config/objects/v1/external-dynamic-lists"
+---
+
+---
+command: "show external-dynamic-list"
+description: "Show external dynamic lists (EDLs) in the active folder"
+usage: "show external-dynamic-list [<name>]"
+feature_flag: show_external_dynamic_list
+category: objects
+scope: folder
+api: "GET /config/objects/v1/external-dynamic-lists"
+---
+
+---
+command: "show external-dynamic-list"
+description: "Show external dynamic lists (EDLs) in the active folder"
 feature_flag: show_external_dynamic_list
 category: objects
 scope: folder

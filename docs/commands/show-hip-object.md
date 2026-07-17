@@ -7,6 +7,24 @@ scope: folder
 api: "GET /config/objects/v1/hip-objects"
 ---
 
+---
+command: "show hip-object"
+description: "Show GlobalProtect HIP objects in the active folder"
+feature_flag: hip
+category: objects
+scope: folder
+api: "GET /config/objects/v1/hip-objects"
+---
+
+---
+command: "show hip-object"
+description: "Show GlobalProtect HIP objects in the active folder"
+feature_flag: hip
+category: objects
+scope: folder
+api: "GET /config/objects/v1/hip-objects"
+---
+
 # show hip-object
 
 **Category:** objects

@@ -4,6 +4,24 @@ description: "Show live VPN tunnel state from device — use --remote"
 feature_flag: ipsec_vpn
 category: network
 scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "show vpn tunnel"
+description: "Show live VPN tunnel state from device — use --remote"
+feature_flag: ipsec_vpn
+category: network
+scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "show vpn tunnel"
+description: "Show live VPN tunnel state from device — use --remote"
+feature_flag: ipsec_vpn
+category: network
+scope: device
 api: "(live device state — SSH via --remote)"
 ---
 

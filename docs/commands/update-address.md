@@ -1,6 +1,24 @@
 ---
 command: "update address"
 description: "Update address — update address <name> ip-netmask|fqdn|ip-range|ip-wildcard|description|tag <value>"
+feature_flag: update_objects
+category: objects
+scope: folder
+api: "PUT /config/objects/v1/addresses/{id}"
+---
+
+---
+command: "update address"
+description: "Update address — update address <name> ip-netmask|fqdn|ip-range|ip-wildcard|description|tag <value>"
+feature_flag: update_objects
+category: objects
+scope: folder
+api: "PUT /config/objects/v1/addresses/{id}"
+---
+
+---
+command: "update address"
+description: "Update address — update address <name> ip-netmask|fqdn|ip-range|ip-wildcard|description|tag <value>"
 usage: "update address <name> ip-netmask|ip-range|ip-wildcard|fqdn|description|tag <value>"
 feature_flag: update_objects
 category: objects

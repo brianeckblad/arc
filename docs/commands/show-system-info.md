@@ -7,6 +7,24 @@ scope: device
 api: "GET /config/setup/v1/devices/{id}"
 ---
 
+---
+command: "show system info"
+description: "Show device info from SCM (model, serial, SW version, IP, status…)"
+feature_flag: show_system_info
+category: operations
+scope: device
+api: "GET /config/setup/v1/devices/{id}"
+---
+
+---
+command: "show system info"
+description: "Show device info from SCM (model, serial, SW version, IP, status…)"
+feature_flag: show_system_info
+category: operations
+scope: device
+api: "GET /config/setup/v1/devices/{id}"
+---
+
 # show system info
 
 Show system information (hostname, model, SW version, uptime...)

@@ -7,6 +7,24 @@ scope: folder
 api: "GET /config/security/v1/decryption-rules"
 ---
 
+---
+command: "show decryption-rules"
+description: "Show decryption rules in the active folder"
+feature_flag: decryption_policy
+category: security
+scope: folder
+api: "GET /config/security/v1/decryption-rules"
+---
+
+---
+command: "show decryption-rules"
+description: "Show decryption rules in the active folder"
+feature_flag: decryption_policy
+category: security
+scope: folder
+api: "GET /config/security/v1/decryption-rules"
+---
+
 # show decryption-rules
 
 **Category:** security

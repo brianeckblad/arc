@@ -1,3 +1,19 @@
+---
+command: "delete nat-rule"
+description: "Delete a NAT rule — delete nat-rule <name>"
+feature_flag: nat_rules
+category: network
+scope: folder
+---
+
+---
+command: "delete nat-rule"
+description: "Delete a NAT rule — delete nat-rule <name>"
+feature_flag: nat_rules
+category: network
+scope: folder
+---
+
 # delete nat-rule
 
 Delete a **nat-rule** object by name from the active SCM folder.

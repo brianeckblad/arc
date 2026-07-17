@@ -1,6 +1,26 @@
 ---
 command: "show address"
 description: "Show address objects in the active folder"
+usage: "show address [<name>]"
+feature_flag: show_address
+category: objects
+scope: folder
+api: "GET /config/objects/v1/addresses"
+---
+
+---
+command: "show address"
+description: "Show address objects in the active folder"
+usage: "show address [<name>]"
+feature_flag: show_address
+category: objects
+scope: folder
+api: "GET /config/objects/v1/addresses"
+---
+
+---
+command: "show address"
+description: "Show address objects in the active folder"
 feature_flag: show_address
 category: objects
 scope: folder

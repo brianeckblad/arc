@@ -7,6 +7,24 @@ scope: folder
 api: "GET /config/objects/v1/log-forwarding-profiles"
 ---
 
+---
+command: "show log-forwarding-profile"
+description: "Show log forwarding profiles in the active folder"
+feature_flag: log_profiles
+category: objects
+scope: folder
+api: "GET /config/objects/v1/log-forwarding-profiles"
+---
+
+---
+command: "show log-forwarding-profile"
+description: "Show log forwarding profiles in the active folder"
+feature_flag: log_profiles
+category: objects
+scope: folder
+api: "GET /config/objects/v1/log-forwarding-profiles"
+---
+
 # show log-forwarding-profile
 
 **Category:** objects

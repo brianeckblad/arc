@@ -478,7 +478,7 @@ registry. Regenerate with `python app/scripts/generate_command_docs.py` (runs on
 | `delete device-context-segment-association id` | global | `device_context_segment_association_write` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/device-context-segment-association/{id} |
 | `delete device-redistribution-collector` | global | `device_redistribution_collector_write` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/device-redistribution-collector/{id} |
 | `delete general-settings` | global | `general_settings_write` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/general-settings/{id} |
-| `delete ha-configurations` | global | `ha_configurations_write` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations |
+| `delete ha-configurations` | device | `ha_configurations_write` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations |
 | `delete management-interface` | global | `management_interface_write` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/management-interface/{id} |
 | `delete motd-banner-settings` | global | `motd_banner_settings_write` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/motd-banner-settings/{id} |
 | `delete service-route` | global | `service_route_write` | DELETE https://api.strata.paloaltonetworks.com/config/device/v1/service-route/{id} |
@@ -518,7 +518,7 @@ registry. Regenerate with `python app/scripts/generate_command_docs.py` (runs on
 | `show device-redistribution-collector id` | global | `device_redistribution_collector_read` | GET https://api.strata.paloaltonetworks.com/config/device/v1/device-redistribution-collector/{id} |
 | `show general-settings` | global | `general_settings_read` | GET https://api.strata.paloaltonetworks.com/config/device/v1/general-settings |
 | `show general-settings id` | global | `general_settings_read` | GET https://api.strata.paloaltonetworks.com/config/device/v1/general-settings/{id} |
-| `show ha-configurations` | global | `ha_configurations_read` | GET https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations |
+| `show ha-configurations` | device | `ha_configurations_read` | GET https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations |
 | `show ha-configurations-gateways` | global | `ha_configurations_gateways_read` | GET https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations-gateways |
 | `show ha-configurations-ip-addresses` | global | `ha_configurations_ip_addresses_read` | GET https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations-ip-addresses |
 | `show ha-configurations-netmasks` | global | `ha_configurations_netmasks_read` | GET https://api.strata.paloaltonetworks.com/config/device/v1/ha-configurations-netmasks |
@@ -598,6 +598,10 @@ registry. Regenerate with `python app/scripts/generate_command_docs.py` (runs on
 
 | Command | Scope | Feature flag | SCM API |
 |---|---|---|---|
+| `delete authentication-profile` | folder | `authentication` | — |
+| `delete local-user` | folder | `local_users` | — |
+| `set authentication-profile` | folder | `authentication` | — |
+| `set local-user` | folder | `local_users` | — |
 | `show authentication-profile` | folder | `authentication` | GET /config/identity/v1/authentication-profiles |
 | `show authentication-rules` | folder | `authentication` | GET /config/identity/v1/authentication-rules |
 | `show certificate-profile` | folder | `certificates` | GET /config/identity/v1/certificate-profiles |
@@ -606,7 +610,7 @@ registry. Regenerate with `python app/scripts/generate_command_docs.py` (runs on
 | `show mfa-server` | folder | `authentication` | GET /config/identity/v1/mfa-servers |
 | `show radius-server` | folder | `authentication` | GET /config/identity/v1/radius-server-profiles |
 | `show tls-service-profile` | folder | `certificates` | GET /config/identity/v1/tls-service-profiles |
-| `show user ip-user-mapping` | device | `local_users` | (live device state — SSH via --remote) |
+| `show user ip-user-mapping` | device | `local_users` | (live device state — via the SCM device tunnel; no SSH/2FA) |
 
 ## Incidents
 
@@ -645,6 +649,7 @@ registry. Regenerate with `python app/scripts/generate_command_docs.py` (runs on
 | `delete lldp-profiles` | global | `lldp_profiles_write` | DELETE https://api.strata.paloaltonetworks.com/config/network/v1/lldp-profiles/{id} |
 | `delete logical-routers` | global | `logical_routers_write` | DELETE https://api.strata.paloaltonetworks.com/config/network/v1/logical-routers/{id} |
 | `delete loopback-interfaces` | global | `loopback_interfaces_write` | DELETE https://api.strata.paloaltonetworks.com/config/network/v1/loopback-interfaces/{id} |
+| `delete nat-rule` | folder | `nat_rules` | — |
 | `delete nat-rules` | global | `nat_rules_write` | DELETE https://api.strata.paloaltonetworks.com/config/network/v1/nat-rules/{id} |
 | `delete npb-profiles` | global | `npb_profiles_write` | DELETE https://api.strata.paloaltonetworks.com/config/network/v1/network_packet_broker_profiles/{id} |
 | `delete npb-rules` | global | `npb_rules_write` | DELETE https://api.strata.paloaltonetworks.com/config/network/v1/network_packet_broker_rules/{id} |
@@ -719,7 +724,7 @@ registry. Regenerate with `python app/scripts/generate_command_docs.py` (runs on
 | `set zones` | global | `zones_write` | POST https://api.strata.paloaltonetworks.com/config/network/v1/zones |
 | `show aggregate-interfaces` | global | `aggregate_interfaces_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/aggregate-interfaces |
 | `show aggregate-interfaces id` | global | `aggregate_interfaces_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/aggregate-interfaces/{id} |
-| `show arp` | device | `show_arp` | (live device state — SSH via --remote) |
+| `show arp` | device | `show_arp` | (live device state — via the SCM device tunnel; no SSH/2FA) |
 | `show auto-vpn-clusters` | global | `auto_vpn_clusters_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/auto-vpn-clusters |
 | `show auto-vpn-clusters id` | global | `auto_vpn_clusters_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/auto-vpn-clusters/{id} |
 | `show auto-vpn-monitor` | global | `auto_vpn_monitor_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/auto-vpn-monitor |
@@ -798,7 +803,7 @@ registry. Regenerate with `python app/scripts/generate_command_docs.py` (runs on
 | `show route-path-acls id` | global | `route_path_acls_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/route-path-access-lists/{id} |
 | `show route-prefix-lists` | global | `route_prefix_lists_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/route-prefix-lists |
 | `show route-prefix-lists id` | global | `route_prefix_lists_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/route-prefix-lists/{id} |
-| `show routing bgp` | device | `bgp_routing` | (live device state — SSH via --remote) |
+| `show routing bgp` | device | `bgp_routing` | (live device state — via the SCM device tunnel; no SSH/2FA) |
 | `show routing route` | folder | `show_routing` | GET /config/network/v1/routing/static-routes |
 | `show routing summary` | folder | `show_routing` | GET /config/network/v1/virtual-routers |
 | `show sdwan-error-profiles` | global | `sdwan_error_profiles_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/sdwan-error-correction-profiles |
@@ -811,7 +816,7 @@ registry. Regenerate with `python app/scripts/generate_command_docs.py` (runs on
 | `show sdwan-saas-profiles id` | global | `sdwan_saas_profiles_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/sdwan-saas-quality-profiles/{id} |
 | `show sdwan-traffic-profiles` | global | `sdwan_traffic_profiles_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/sdwan-traffic-distribution-profiles |
 | `show sdwan-traffic-profiles id` | global | `sdwan_traffic_profiles_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/sdwan-traffic-distribution-profiles/{id} |
-| `show session all` | device | `show_sessions` | (live device state — SSH via --remote) |
+| `show session all` | device | `show_sessions` | (live device state — via the SCM device tunnel; no SSH/2FA) |
 | `show system-match-list` | global | `system_match_list_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/system-match-list |
 | `show system-match-list id` | global | `system_match_list_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/system-match-list/{id} |
 | `show tunnel-interfaces` | global | `tunnel_interfaces_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/tunnel-interfaces |
@@ -820,15 +825,15 @@ registry. Regenerate with `python app/scripts/generate_command_docs.py` (runs on
 | `show userid-match-list id` | global | `userid_match_list_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/userid-match-list/{id} |
 | `show vlan-interfaces` | global | `vlan_interfaces_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/vlan-interfaces |
 | `show vlan-interfaces id` | global | `vlan_interfaces_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/vlan-interfaces/{id} |
-| `show vpn ike-sa` | device | `ipsec_vpn` | (live device state — SSH via --remote) |
-| `show vpn tunnel` | device | `ipsec_vpn` | (live device state — SSH via --remote) |
+| `show vpn ike-sa` | device | `ipsec_vpn` | (live device state — via the SCM device tunnel; no SSH/2FA) |
+| `show vpn tunnel` | device | `ipsec_vpn` | (live device state — via the SCM device tunnel; no SSH/2FA) |
 | `show zone` | folder | `show_zone` | GET /config/network/v1/zones |
 | `show zone-profiles` | global | `zone_profiles_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/zone-protection-profiles |
 | `show zone-profiles id` | global | `zone_profiles_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/zone-protection-profiles/{id} |
 | `show zones id` | global | `zones_read` | GET https://api.strata.paloaltonetworks.com/config/network/v1/zones/{id} |
-| `test nat-policy-match` | device | `test_nat` | (live device state — SSH via --remote) |
-| `test url` | device | `test_url` | (live device state — SSH via --remote) |
-| `traceroute host` | device | `traceroute` | (live device state — SSH via --remote) |
+| `test nat-policy-match` | device | `test_nat` | (live device state — via the SCM device tunnel; no SSH/2FA) |
+| `test url` | device | `test_url` | (live device state — via the SCM device tunnel; no SSH/2FA) |
+| `traceroute host` | device | `traceroute` | (live device state — via the SCM device tunnel; no SSH/2FA) |
 | `update aggregate-interfaces` | global | `aggregate_interfaces_write` | PUT https://api.strata.paloaltonetworks.com/config/network/v1/aggregate-interfaces/{id} |
 | `update auto-vpn-clusters` | global | `auto_vpn_clusters_write` | PUT https://api.strata.paloaltonetworks.com/config/network/v1/auto-vpn-clusters/{id} |
 | `update auto-vpn-settings` | global | `auto_vpn_settings_write` | PUT https://api.strata.paloaltonetworks.com/config/network/v1/auto-vpn-settings |
@@ -856,6 +861,7 @@ registry. Regenerate with `python app/scripts/generate_command_docs.py` (runs on
 | `update lldp-profiles` | global | `lldp_profiles_write` | PUT https://api.strata.paloaltonetworks.com/config/network/v1/lldp-profiles/{id} |
 | `update logical-routers` | global | `logical_routers_write` | PUT https://api.strata.paloaltonetworks.com/config/network/v1/logical-routers/{id} |
 | `update loopback-interfaces` | global | `loopback_interfaces_write` | PUT https://api.strata.paloaltonetworks.com/config/network/v1/loopback-interfaces/{id} |
+| `update nat-rule` | folder | `nat_rules` | — |
 | `update nat-rules` | global | `nat_rules_write` | PUT https://api.strata.paloaltonetworks.com/config/network/v1/nat-rules/{id} |
 | `update npb-profiles` | global | `npb_profiles_write` | PUT https://api.strata.paloaltonetworks.com/config/network/v1/network_packet_broker_profiles/{id} |
 | `update npb-rules` | global | `npb_rules_write` | PUT https://api.strata.paloaltonetworks.com/config/network/v1/network_packet_broker_rules/{id} |
@@ -1035,6 +1041,7 @@ registry. Regenerate with `python app/scripts/generate_command_docs.py` (runs on
 
 | Command | Scope | Feature flag | SCM API |
 |---|---|---|---|
+| `clone` | folder | `clone_object` | — |
 | `delete address` | folder | `delete_objects` | DELETE /config/objects/v1/addresses/{id} |
 | `delete address-group` | folder | `delete_objects` | DELETE /config/objects/v1/address-groups/{id} |
 | `delete external-dynamic-list` | folder | `delete_objects` | DELETE /config/objects/v1/external-dynamic-lists/{id} |
@@ -1048,6 +1055,8 @@ registry. Regenerate with `python app/scripts/generate_command_docs.py` (runs on
 | `set service-group` | folder | `create_service_group` | POST /config/objects/v1/service-groups |
 | `set tag` | folder | `create_tag` | POST /config/objects/v1/tags |
 | `show address` | folder | `show_address` | GET /config/objects/v1/addresses |
+| `show address search` | folder | `show_address` | — |
+| `show address tag` | folder | `show_address` | — |
 | `show address-group` | folder | `show_address_group` | GET /config/objects/v1/address-groups |
 | `show application-filter` | folder | `app_groups` | GET /config/objects/v1/application-filters |
 | `show application-group` | folder | `app_groups` | GET /config/objects/v1/application-groups |
@@ -1058,9 +1067,11 @@ registry. Regenerate with `python app/scripts/generate_command_docs.py` (runs on
 | `show region` | global | `regions` | GET /config/objects/v1/regions |
 | `show schedule` | folder | `schedules` | GET /config/objects/v1/schedules |
 | `show service` | folder | `show_service` | GET /config/objects/v1/services |
+| `show service search` | folder | `show_service` | — |
 | `show service-group` | folder | `service_groups` | GET /config/objects/v1/service-groups |
 | `show tag` | folder | `show_tag` | GET /config/objects/v1/tags |
 | `update address` | folder | `update_objects` | PUT /config/objects/v1/addresses/{id} |
+| `update address bulk` | folder | `update_objects` | — |
 | `update address-group` | folder | `update_objects` | PUT /config/objects/v1/address-groups/{id} |
 | `update external-dynamic-list` | folder | `update_objects` | PUT /config/objects/v1/external-dynamic-lists/{id} |
 | `update service` | folder | `update_objects` | PUT /config/objects/v1/services/{id} |
@@ -1071,12 +1082,14 @@ registry. Regenerate with `python app/scripts/generate_command_docs.py` (runs on
 
 | Command | Scope | Feature flag | SCM API |
 |---|---|---|---|
+| `clear session all` | device | `show_session` | (live device state — via the SCM device tunnel; no SSH/2FA) |
+| `clear session id` | device | `show_session` | (live device state — via the SCM device tunnel; no SSH/2FA) |
 | `commit` | folder | — | POST /config/setup/v1/config-versions/candidate:push |
 | `load config version` | global | `config_rollback` | — |
-| `ping host` | device | `ping` | (live device state — SSH via --remote) |
-| `request system reboot` | device | `request_system_reboot` | (live device state — SSH via --remote) |
-| `request system shutdown` | device | `request_system_reboot` | (live device state — SSH via --remote) |
-| `request system software check` | device | `request_system_software` | (live device state — SSH via --remote) |
+| `ping host` | device | `ping` | (live device state — via the SCM device tunnel; no SSH/2FA) |
+| `request system reboot` | device | `request_system_reboot` | (live device state — via the SCM device tunnel; no SSH/2FA) |
+| `request system shutdown` | device | `request_system_reboot` | (live device state — via the SCM device tunnel; no SSH/2FA) |
+| `request system software check` | device | `request_system_software` | (live device state — via the SCM device tunnel; no SSH/2FA) |
 | `set jobs bgp-policy-export` | global | `jobs_bgp_policy_export_write` | POST https://api.strata.paloaltonetworks.com/operations/v1/jobs/bgp-policy-export |
 | `set jobs device-interfaces` | global | `jobs_device_interfaces_write` | POST https://api.strata.paloaltonetworks.com/operations/v1/jobs/device-interfaces |
 | `set jobs device-rules` | global | `jobs_device_rules_write` | POST https://api.strata.paloaltonetworks.com/operations/v1/jobs/device-rules |
@@ -1088,3725 +1101,3740 @@ registry. Regenerate with `python app/scripts/generate_command_docs.py` (runs on
 | `show config running` | folder | `config_view` | (live device state — SSH via --remote) |
 | `show config versions` | global | `config_view` | — |
 | `show device jobs id` | global | `device_jobs_read` | GET https://api.strata.paloaltonetworks.com/operations/v1/device/jobs/{id} |
+| `show diff` | global | `config_view` | — |
 | `show jobs all` | global | `show_jobs` | GET /config/setup/v1/jobs |
 | `show jobs id` | global | `show_jobs` | GET /config/setup/v1/jobs/{id} |
-| `show local-config download` | global | `local_config_download_read` | GET https://api.strata.paloaltonetworks.com/operations/v1/local-config/download |
-| `show local-config versions` | global | `local_config_versions_read` | GET https://api.strata.paloaltonetworks.com/operations/v1/local-config/versions |
+| `show local-config download` | device | `local_config_download_read` | GET https://api.strata.paloaltonetworks.com/operations/v1/local-config/download |
+| `show local-config versions` | device | `local_config_versions_read` | GET https://api.strata.paloaltonetworks.com/operations/v1/local-config/versions |
 | `show log detail` | global | `sls_logs` | — |
 | `show log system` | global | `sls_logs` | (live device state — SSH via --remote) |
 | `show log threat` | global | `sls_logs` | (live device state — SSH via --remote) |
 | `show log traffic` | global | `sls_logs` | (live device state — SSH via --remote) |
-| `show system disk-space` | device | `show_system_disk_space` | (live device state — SSH via --remote) |
+| `show system disk-space` | device | `show_system_disk_space` | (live device state — via the SCM device tunnel; no SSH/2FA) |
 | `show system info` | device | `show_system_info` | GET /config/setup/v1/devices/{id} |
-| `show system resources` | device | `show_system_resources` | (live device state — SSH via --remote) |
+| `show system resources` | device | `show_system_resources` | (live device state — via the SCM device tunnel; no SSH/2FA) |
 
 ## Panos-Config
 
 | Command | Scope | Feature flag | SCM API |
 |---|---|---|---|
-| `check data-access-passwd system` | device | `panos_config_check` | (live device state — SSH via --remote) |
-| `check full-commit-required` | device | `panos_config_check` | (live device state — SSH via --remote) |
-| `check pending-changes` | device | `panos_config_check` | (live device state — SSH via --remote) |
-| `commit description` | device | `panos_config_commit` | (live device state — SSH via --remote) |
-| `load config key` | device | `panos_config_load` | (live device state — SSH via --remote) |
-| `load device-state` | device | `panos_config_load` | (live device state — SSH via --remote) |
-| `save config to` | device | `panos_config_save` | (live device state — SSH via --remote) |
-| `save device-state` | device | `panos_config_save` | (live device state — SSH via --remote) |
-| `set deviceconfig` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig high-availability` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig high-availability enabled` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting autofocus` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting autofocus autofocus-url` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting autofocus enabled` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting autofocus query-timeout` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting cloud-userid` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting cloud-userid address` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting cloud-userid disabled` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting cloud-userid segment-assignment` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting cloudapp` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting cloudapp cloudapp-srvr-addr` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting cloudapp cloudapp-srvr-addr address` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting cloudapp disable` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting custom-logo` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting iot` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting iot edge` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting iot edge address` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management admin-lockout` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management admin-session` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management admin-session max-session-count` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management admin-session max-session-time` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management api` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management api key` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management api key certificate` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management api key lifetime` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management appusage-lifetime` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management audit-tracking` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management audit-tracking op-commands` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management audit-tracking send-syslog` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management audit-tracking ui-actions` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management browse-activity-report-setting` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management browse-activity-report-setting average-browse-time` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management browse-activity-report-setting page-load-threshold` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management common-criteria self-test-schedule` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management common-criteria self-test-schedule crypto start-time` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management common-criteria self-test-schedule software-integrity start-time` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management disable-predefined-correlation-objs` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management disable-predefined-reports` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management hostname-type-in-syslog` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management idle-timeout` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management max-audit-versions` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management max-rows-in-csv-export` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management max-rows-in-pdf-report` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management panorama-ssl-send-retries` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management panorama-tcp-receive-timeout` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management panorama-tcp-send-timeout` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management quota-settings` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management report-expiration-period` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management report-run-time` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management rule-audit-comment-regex` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management secure-conn-client` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management secure-conn-client certificate-type local certificate` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management secure-conn-client certificate-type local certificate-profile` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management secure-conn-client certificate-type scep certificate-profile` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management secure-conn-client certificate-type scep scep-profile` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management secure-conn-server` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management secure-conn-server certificate-profile` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management secure-conn-server enable-secure-user-id-communication` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting management secure-conn-server ssl-tls-service-profile` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig setting session offload` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting session packet-buffer-protection-use-buffer` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting session persistent-dipp-alert-enable` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting session-tracking` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting session-tracking disable` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting session-tracking user-re-authentication` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting session-tracking user-re-authentication disable` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig setting ssl-decrypt use-mp-sess-cache` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig system auto-renew-mkey-lifetime` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system device-telemetry` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system device-telemetry device-health-performance` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system device-telemetry product-usage` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system device-telemetry region` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system device-telemetry threat-prevention` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system dns-security-server` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system dns-setting servers` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig system dns-setting servers primary` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig system dns-setting servers secondary` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig system geo-location` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system geo-location latitude` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system geo-location longitude` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system hsm-settings` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system hsm-settings provider` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system hsm-settings provider ciphertrust-manager hsm-server` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system hsm-settings provider ncipher-nshield-connect hsm-server` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system hsm-settings provider ncipher-nshield-connect rfs-address` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system hsm-settings provider safenet-network ha` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system hsm-settings provider safenet-network ha auto-recovery-retry` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system hsm-settings provider safenet-network ha ha-group-name` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system hsm-settings provider safenet-network hsm-server` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system inline-cloud-proxy` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system locale` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system log-link` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system motd-and-banner` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system motd-and-banner message` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system motd-and-banner severity` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system mtu` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ntp-servers` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ntp-servers primary-ntp-server authentication-type` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key algorithm` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key algorithm md5 authentication-key` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key algorithm sha1 authentication-key` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key key-id` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ntp-servers primary-ntp-server ntp-server-address` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ntp-servers secondary-ntp-server authentication-type` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ntp-servers secondary-ntp-server authentication-type symmetric-key algorithm` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ntp-servers secondary-ntp-server authentication-type symmetric-key algorithm md5 authentication-key` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ntp-servers secondary-ntp-server authentication-type symmetric-key algorithm sha1 authentication-key` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ntp-servers secondary-ntp-server authentication-type symmetric-key key-id` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ntp-servers secondary-ntp-server ntp-server-address` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system panorama local-panorama panorama-server` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig system permitted-ip` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system secure-proxy-port` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system service` | device | `panos_config_recovery` | (live device state — SSH via --remote) |
-| `set deviceconfig system snmp-setting` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system snmp-setting access-setting version` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system snmp-setting access-setting version v2c snmp-community-string` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system snmp-setting access-setting version v3 users` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system snmp-setting access-setting version v3 views` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system snmp-setting snmp-system contact` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system snmp-setting snmp-system location` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system snmp-setting snmp-system send-event-specific-traps` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ssh` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ssh ha ha-profile` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ssh mgmt server-profile` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ssh profiles ha-profiles` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ssh profiles mgmt-profiles` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ssh profiles mgmt-profiles server-profiles` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ssh regenerate-hostkeys ha` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ssh regenerate-hostkeys ha key-type` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ssh regenerate-hostkeys ha key-type ecdsa key-length` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ssh regenerate-hostkeys ha key-type rsa key-length` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ssh regenerate-hostkeys mgmt` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ssh regenerate-hostkeys mgmt key-type` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ssh regenerate-hostkeys mgmt key-type ecdsa key-length` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system ssh regenerate-hostkeys mgmt key-type rsa key-length` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system timezone` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system type` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system type dhcp-client` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system type static` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule anti-virus` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule anti-virus recurring` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule anti-virus recurring daily` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule anti-virus recurring daily action` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule anti-virus recurring daily at` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule anti-virus recurring hourly` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule anti-virus recurring hourly action` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule anti-virus recurring hourly at` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule anti-virus recurring none` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule anti-virus recurring sync-to-peer` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule anti-virus recurring threshold` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule anti-virus recurring weekly` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule anti-virus recurring weekly action` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule anti-virus recurring weekly at` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule anti-virus recurring weekly day-of-week` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring daily` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring daily action` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring daily at` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring daily disable-new-content` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring every-30-mins` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring every-30-mins action` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring every-30-mins at` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring every-30-mins disable-new-content` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring hourly` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring hourly action` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring hourly at` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring hourly disable-new-content` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring new-app-threshold` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring none` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring sync-to-peer` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring threshold` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring weekly` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring weekly action` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring weekly at` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring weekly day-of-week` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule threats recurring weekly disable-new-content` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wf-private` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wf-private recurring` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wf-private recurring every-15-mins` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wf-private recurring every-15-mins action` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wf-private recurring every-15-mins at` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wf-private recurring every-30-mins` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wf-private recurring every-30-mins action` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wf-private recurring every-30-mins at` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wf-private recurring every-5-mins` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wf-private recurring every-5-mins action` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wf-private recurring every-5-mins at` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wf-private recurring every-hour` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wf-private recurring every-hour action` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wf-private recurring every-hour at` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wf-private recurring none` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wf-private recurring sync-to-peer` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wildfire` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wildfire recurring` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wildfire recurring every-15-mins action` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wildfire recurring every-15-mins at` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wildfire recurring every-15-mins sync-to-peer` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wildfire recurring every-30-mins action` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wildfire recurring every-30-mins at` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wildfire recurring every-30-mins sync-to-peer` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wildfire recurring every-hour action` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wildfire recurring every-hour at` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wildfire recurring every-hour sync-to-peer` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wildfire recurring every-min action` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set deviceconfig system update-schedule wildfire recurring every-min sync-to-peer` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `set mgt-config` | device | `panos_config_mgt_config` | (live device state — SSH via --remote) |
-| `set mgt-config password-complexity` | device | `panos_config_mgt_config` | (live device state — SSH via --remote) |
-| `set mgt-config password-complexity block-username-inclusion` | device | `panos_config_mgt_config` | (live device state — SSH via --remote) |
-| `set mgt-config password-complexity enabled` | device | `panos_config_mgt_config` | (live device state — SSH via --remote) |
-| `set mgt-config password-complexity minimum-length` | device | `panos_config_mgt_config` | (live device state — SSH via --remote) |
-| `set mgt-config password-complexity password-change` | device | `panos_config_mgt_config` | (live device state — SSH via --remote) |
-| `set mgt-config password-complexity password-change-on-first-login` | device | `panos_config_mgt_config` | (live device state — SSH via --remote) |
-| `set mgt-config password-complexity password-change-period-block` | device | `panos_config_mgt_config` | (live device state — SSH via --remote) |
-| `set mgt-config password-complexity password-history-count` | device | `panos_config_mgt_config` | (live device state — SSH via --remote) |
-| `set mgt-config password-profile` | device | `panos_config_mgt_config` | (live device state — SSH via --remote) |
-| `set shared` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `set shared email-scheduler` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `set shared log-settings` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `set shared pdf-summary-report` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `set shared report-group` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `set shared response-page remote-browser-isolation` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `set shared response-page url-reply` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show application` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show application-tag` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show authentication-object` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show captive-portal` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show captive-portal mode` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show captive-portal mode redirect session-cookie` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show cloud-identity-engine` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show device-object` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show deviceconfig` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability cluster` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability cluster cluster-members` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability group` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability group election-option timers` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability group mode active-active` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability group mode active-active network-configuration` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability group mode active-active network-configuration sync` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability group mode active-active session-owner-selection` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability group mode active-active session-owner-selection first-packet session-setup` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability group mode active-active virtual-address` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability group mode active-passive` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability group monitoring link-monitoring` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability group monitoring link-monitoring link-group` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability group monitoring path-monitoring` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability group monitoring path-monitoring path-group` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability group state-synchronization ha2-keep-alive` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability interface` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability interface ha1` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability interface ha1 encryption` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting application` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting application traceroute` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting cloudapp` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting cloudapp cloudapp-srvr-addr` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting custom-logo` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting dhcp-syslog-server` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting iot` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting iot edge` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting logging` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting logging enhanced-application-logging disable-application` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting logging enhanced-application-logging disable-global` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting management` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting management api` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting management api key` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting management common-criteria` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting management common-criteria self-test-schedule` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting management common-criteria-alarm-generation` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting management quota-settings` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting management secure-conn-client` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting management secure-conn-client certificate-type` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting session-tracking` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting session-tracking user-re-authentication` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting vpn` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting vpn ikev2` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting wildfire` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting wildfire cloud-inline-wf-session-info-select` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting wildfire cloud-inline-wildfire` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting wildfire cloud-inline-wildfire file-size-limit` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting wildfire file-size-limit` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting wildfire session-info-select` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system dns-setting` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system dns-setting servers` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system dns-setting servers encrypted-dns` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system dns-setting servers encrypted-dns connection-type` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system hsm-settings` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system hsm-settings provider` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system hsm-settings provider ciphertrust-manager hsm-server` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system hsm-settings provider ncipher-nshield-connect hsm-server` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system hsm-settings provider safenet-network ha` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system hsm-settings provider safenet-network hsm-server` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system ipv6-gw-type` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system ipv6-type` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system log-export-schedule` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system log-link` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system ntp-servers` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system ntp-servers primary-ntp-server authentication-type` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key algorithm` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system ntp-servers secondary-ntp-server authentication-type` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system ntp-servers secondary-ntp-server authentication-type symmetric-key algorithm` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system panorama` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system permitted-ip` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system route` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system route destination` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system route service` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system snmp-setting` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system snmp-setting access-setting version` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system snmp-setting access-setting version v3 users` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system snmp-setting access-setting version v3 views` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system ssh` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system ssh profiles ha-profiles` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system ssh profiles mgmt-profiles` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system ssh profiles mgmt-profiles server-profiles` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system ssh regenerate-hostkeys ha` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system ssh regenerate-hostkeys ha key-type` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system ssh regenerate-hostkeys mgmt` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system ssh regenerate-hostkeys mgmt key-type` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system type` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system update-schedule` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system update-schedule anti-virus recurring` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system update-schedule app-profile recurring` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system update-schedule global-protect-clientless-vpn recurring` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system update-schedule global-protect-datafile recurring` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system update-schedule threats recurring` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system update-schedule wf-private recurring` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system update-schedule wildfire recurring` | device | `panos_config_deviceconfig` | (live device state — SSH via --remote) |
-| `show disable-inspect` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show display-name` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show dynamic-user-group` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show email-scheduler` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show external-list` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show global-protect global-protect-gateway` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show global-protect global-protect-portal` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show group-mapping` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show import` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show iptag-include-exclude-list` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show iptag-include-exclude-list include-exclude-network` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show ipuser-include-exclude-list` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show ipuser-include-exclude-list include-exclude-network` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show mgt-config` | device | `panos_config_mgt_config` | (live device state — SSH via --remote) |
-| `show mgt-config access-domain` | device | `panos_config_mgt_config` | (live device state — SSH via --remote) |
-| `show mgt-config password-complexity` | device | `panos_config_mgt_config` | (live device state — SSH via --remote) |
-| `show mgt-config password-complexity password-change` | device | `panos_config_mgt_config` | (live device state — SSH via --remote) |
-| `show mgt-config password-profile` | device | `panos_config_mgt_config` | (live device state — SSH via --remote) |
-| `show mgt-config users` | device | `panos_config_mgt_config` | (live device state — SSH via --remote) |
-| `show network` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network dhcp` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network dhcp interface` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network dns-proxy` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network ike` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network ike crypto-profiles` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network ike crypto-profiles global-protect-app-crypto-profiles` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network ike crypto-profiles ike-crypto-profiles` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network ike crypto-profiles ipsec-crypto-profiles` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network ike gateway` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface aggregate-ethernet` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface ethernet` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface loopback` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface loopback adjust-tcp-mss` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface loopback ip` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface loopback ipv6` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface loopback ipv6 address` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface loopback units` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface sdwan` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface sdwan units` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface tunnel` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface tunnel ip` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface tunnel ipv6` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface tunnel ipv6 address` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface tunnel units` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan adjust-tcp-mss` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan arp` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ddns-config` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ddns-config ddns-vendor-config` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan dhcp-client` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan dhcp-client send-hostname` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ip` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 address` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 dhcp-client` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 dhcp-client neighbor-discovery dns-server` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 dhcp-client neighbor-discovery dns-server source` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 dhcp-client neighbor-discovery dns-server source manual server` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 dhcp-client neighbor-discovery dns-suffix` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 dhcp-client neighbor-discovery dns-suffix source` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 dhcp-client neighbor-discovery dns-suffix source manual suffix` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 dhcp-client neighbor-discovery neighbor` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 dhcp-client prefix-delegation enable` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 dhcp-client v6-options enable` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 inherited` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 inherited assign-addr` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 inherited neighbor-discovery` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 inherited neighbor-discovery dns-server` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 inherited neighbor-discovery dns-server source` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 inherited neighbor-discovery dns-server source manual server` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 inherited neighbor-discovery dns-suffix` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 inherited neighbor-discovery dns-suffix source` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 inherited neighbor-discovery dns-suffix source manual suffix` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 inherited neighbor-discovery neighbor` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 inherited neighbor-discovery router-advertisement` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 neighbor-discovery` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 neighbor-discovery neighbor` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 neighbor-discovery router-advertisement` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 neighbor-discovery router-advertisement dns-support` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 neighbor-discovery router-advertisement dns-support server` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 neighbor-discovery router-advertisement dns-support suffix` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 pppoe` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 pppoe dhcpv6 prefix-delegation` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 pppoe dhcpv6 prefix-delegation enable` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 pppoe dhcpv6 v6-options` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 pppoe dhcpv6 v6-options enable` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 pppoe neighbor-discovery dns-server` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 pppoe neighbor-discovery dns-server source` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 pppoe neighbor-discovery dns-server source manual server` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 pppoe neighbor-discovery dns-suffix` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 pppoe neighbor-discovery dns-suffix source` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 pppoe neighbor-discovery dns-suffix source manual suffix` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ipv6 pppoe neighbor-discovery neighbor` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ndp-proxy` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan ndp-proxy address` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network interface vlan units` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network lldp` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network logical-router` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network macsec` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network macsec crypto-profiles` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network macsec interfaces` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network macsec pre-shared-key-profiles` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network profiles` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network profiles bfd-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network profiles interface-management-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network profiles lldp-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network profiles monitor-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network profiles zone-protection-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network qos` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network qos interface` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network qos profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile bfd` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile bgp` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile bgp address-family-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile bgp auth-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile bgp dampening-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile bgp filtering-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile bgp redistribution-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile bgp timer-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile filters` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile filters access-list` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile filters as-path-access-list` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile filters community-list` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile filters prefix-list` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile filters route-maps` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile filters route-maps bgp bgp-entry` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile filters route-maps redistribution redist-entry` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile multicast` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile ospf` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile ospf auth-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile ospf if-timer-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile ospf redistribution-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile ospf spf-timer-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile ospfv3` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile ospfv3 auth-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile ospfv3 if-timer-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile ospfv3 redistribution-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile ospfv3 spf-timer-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile rip` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile rip auth-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile rip global-timer-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network routing-profile rip redistribution-profile` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network tunnel` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network tunnel global-protect-gateway` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network tunnel global-protect-site-to-site` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network tunnel gre` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network tunnel ipsec` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network underlay-net` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network underlay-net ip-mapping` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network virtual-router` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network virtual-wire` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show network vlan` | device | `panos_config_network` | (live device state — SSH via --remote) |
-| `show pdf-summary-report` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show profiles` | device | `panos_config_profiles` | (live device state — SSH via --remote) |
-| `show profiles data-filtering` | device | `panos_config_profiles` | (live device state — SSH via --remote) |
-| `show profiles data-objects` | device | `panos_config_profiles` | (live device state — SSH via --remote) |
-| `show profiles decryption` | device | `panos_config_profiles` | (live device state — SSH via --remote) |
-| `show profiles dos-protection` | device | `panos_config_profiles` | (live device state — SSH via --remote) |
-| `show profiles file-blocking` | device | `panos_config_profiles` | (live device state — SSH via --remote) |
-| `show profiles hip-objects` | device | `panos_config_profiles` | (live device state — SSH via --remote) |
-| `show profiles packet-broker` | device | `panos_config_profiles` | (live device state — SSH via --remote) |
-| `show profiles sdwan-error-correction` | device | `panos_config_profiles` | (live device state — SSH via --remote) |
-| `show profiles sdwan-path-quality` | device | `panos_config_profiles` | (live device state — SSH via --remote) |
-| `show profiles sdwan-saas-quality` | device | `panos_config_profiles` | (live device state — SSH via --remote) |
-| `show profiles sdwan-traffic-distribution` | device | `panos_config_profiles` | (live device state — SSH via --remote) |
-| `show profiles spyware` | device | `panos_config_profiles` | (live device state — SSH via --remote) |
-| `show profiles url-filtering` | device | `panos_config_profiles` | (live device state — SSH via --remote) |
-| `show profiles virus` | device | `panos_config_profiles` | (live device state — SSH via --remote) |
-| `show profiles vulnerability` | device | `panos_config_profiles` | (live device state — SSH via --remote) |
-| `show profiles wildfire-analysis` | device | `panos_config_profiles` | (live device state — SSH via --remote) |
-| `show redistribution-agent` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show redistribution-collector` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show redistribution-collector setting` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show report-group` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show reports` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show route` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show route service` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show rulebase` | device | `panos_config_rulebase` | (live device state — SSH via --remote) |
-| `show rulebase application-override rules` | device | `panos_config_rulebase` | (live device state — SSH via --remote) |
-| `show rulebase authentication rules` | device | `panos_config_rulebase` | (live device state — SSH via --remote) |
-| `show rulebase decryption rules` | device | `panos_config_rulebase` | (live device state — SSH via --remote) |
-| `show rulebase default-security-rules rules` | device | `panos_config_rulebase` | (live device state — SSH via --remote) |
-| `show rulebase dos rules` | device | `panos_config_rulebase` | (live device state — SSH via --remote) |
-| `show rulebase nat rules` | device | `panos_config_rulebase` | (live device state — SSH via --remote) |
-| `show rulebase network-packet-broker rules` | device | `panos_config_rulebase` | (live device state — SSH via --remote) |
-| `show rulebase pbf rules` | device | `panos_config_rulebase` | (live device state — SSH via --remote) |
-| `show rulebase qos rules` | device | `panos_config_rulebase` | (live device state — SSH via --remote) |
-| `show rulebase sdwan rules` | device | `panos_config_rulebase` | (live device state — SSH via --remote) |
-| `show rulebase security rules` | device | `panos_config_rulebase` | (live device state — SSH via --remote) |
-| `show rulebase tunnel-inspect rules` | device | `panos_config_rulebase` | (live device state — SSH via --remote) |
-| `show sdwan-interface-profile` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show setting` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show shared` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared admin-role` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared alg-override` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared alg-override application` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared authentication-profile` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared botnet` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared botnet configuration http` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared botnet configuration other-applications` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared botnet configuration unknown-applications` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared botnet configuration unknown-applications unknown-tcp session-length` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared botnet configuration unknown-applications unknown-udp session-length` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared certificate-profile` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared email-scheduler` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared local-user-database` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared local-user-database user` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared local-user-database user-group` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared log-settings` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared log-settings config` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared log-settings config match-list` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared log-settings email` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared log-settings http` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared log-settings profiles` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared log-settings snmptrap` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared log-settings syslog` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared log-settings system` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared log-settings system match-list` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared override` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared override application` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared pdf-summary-report` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared report-group` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared reports` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared response-page` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared scep` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared server-profile` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared server-profile kerberos` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared server-profile ldap` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared server-profile mfa-server-profile` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared server-profile netflow` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared server-profile radius` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared server-profile saml-idp` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared server-profile scp` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared server-profile tacplus` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared ssl-decrypt` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared ssl-decrypt forward-trust-certificate` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared ssl-decrypt forward-untrust-certificate` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared ssl-decrypt ssl-exclude-cert` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared ssl-tls-service-profile` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show shared user-id-hub` | device | `panos_config_shared` | (live device state — SSH via --remote) |
-| `show threats` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show threats spyware` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show threats vulnerability` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show ts-agent` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show url-admin-override` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show url-admin-override mode` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show user-context-segment` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show user-context-segment assignments` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show user-id-collector` | device | `panos_config_user_id_collector` | (live device state — SSH via --remote) |
-| `show user-id-collector include-exclude-network` | device | `panos_config_user_id_collector` | (live device state — SSH via --remote) |
-| `show user-id-collector include-exclude-network-sequence` | device | `panos_config_user_id_collector` | (live device state — SSH via --remote) |
-| `show user-id-collector server-monitor` | device | `panos_config_user_id_collector` | (live device state — SSH via --remote) |
-| `show user-id-collector setting` | device | `panos_config_user_id_collector` | (live device state — SSH via --remote) |
-| `show user-id-collector syslog-parse-profile` | device | `panos_config_user_id_collector` | (live device state — SSH via --remote) |
-| `show user-id-ssl-auth` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show vm-info-source` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `show x-authenticated-user` | device | `panos_config_misc` | (live device state — SSH via --remote) |
-| `validate full` | device | `panos_config_validate` | (live device state — SSH via --remote) |
-| `validate partial device-and-network` | device | `panos_config_validate` | (live device state — SSH via --remote) |
+| `check data-access-passwd system` | remote | `panos_config_check` | (live device state — SSH via --remote; expect device 2FA) |
+| `check full-commit-required` | remote | `panos_config_check` | (live device state — SSH via --remote; expect device 2FA) |
+| `check pending-changes` | remote | `panos_config_check` | (live device state — SSH via --remote; expect device 2FA) |
+| `commit description` | remote | `panos_config_commit` | (live device state — SSH via --remote; expect device 2FA) |
+| `load config key` | remote | `panos_config_load` | (live device state — SSH via --remote; expect device 2FA) |
+| `load device-state` | remote | `panos_config_load` | (live device state — SSH via --remote; expect device 2FA) |
+| `save config to` | remote | `panos_config_save` | (live device state — SSH via --remote; expect device 2FA) |
+| `save device-state` | remote | `panos_config_save` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig high-availability` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig high-availability enabled` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting autofocus` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting autofocus autofocus-url` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting autofocus enabled` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting autofocus query-timeout` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting cloud-userid` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting cloud-userid address` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting cloud-userid disabled` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting cloud-userid segment-assignment` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting cloudapp` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting cloudapp cloudapp-srvr-addr` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting cloudapp cloudapp-srvr-addr address` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting cloudapp disable` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting custom-logo` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting iot` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting iot edge` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting iot edge address` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management admin-lockout` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management admin-session` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management admin-session max-session-count` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management admin-session max-session-time` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management api` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management api key` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management api key certificate` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management api key lifetime` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management appusage-lifetime` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management audit-tracking` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management audit-tracking op-commands` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management audit-tracking send-syslog` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management audit-tracking ui-actions` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management browse-activity-report-setting` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management browse-activity-report-setting average-browse-time` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management browse-activity-report-setting page-load-threshold` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management common-criteria self-test-schedule` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management common-criteria self-test-schedule crypto start-time` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management common-criteria self-test-schedule software-integrity start-time` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management disable-predefined-correlation-objs` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management disable-predefined-reports` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management hostname-type-in-syslog` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management idle-timeout` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management max-audit-versions` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management max-rows-in-csv-export` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management max-rows-in-pdf-report` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management panorama-ssl-send-retries` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management panorama-tcp-receive-timeout` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management panorama-tcp-send-timeout` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management quota-settings` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management report-expiration-period` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management report-run-time` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management rule-audit-comment-regex` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management secure-conn-client` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management secure-conn-client certificate-type local certificate` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management secure-conn-client certificate-type local certificate-profile` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management secure-conn-client certificate-type scep certificate-profile` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management secure-conn-client certificate-type scep scep-profile` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management secure-conn-server` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management secure-conn-server certificate-profile` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management secure-conn-server enable-secure-user-id-communication` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting management secure-conn-server ssl-tls-service-profile` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting session offload` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting session packet-buffer-protection-use-buffer` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting session persistent-dipp-alert-enable` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting session-tracking` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting session-tracking disable` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting session-tracking user-re-authentication` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting session-tracking user-re-authentication disable` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig setting ssl-decrypt use-mp-sess-cache` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system auto-renew-mkey-lifetime` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system device-telemetry` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system device-telemetry device-health-performance` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system device-telemetry product-usage` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system device-telemetry region` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system device-telemetry threat-prevention` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system dns-security-server` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system dns-setting servers` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system dns-setting servers primary` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system dns-setting servers secondary` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system geo-location` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system geo-location latitude` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system geo-location longitude` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system hsm-settings` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system hsm-settings provider` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system hsm-settings provider ciphertrust-manager hsm-server` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system hsm-settings provider ncipher-nshield-connect hsm-server` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system hsm-settings provider ncipher-nshield-connect rfs-address` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system hsm-settings provider safenet-network ha` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system hsm-settings provider safenet-network ha auto-recovery-retry` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system hsm-settings provider safenet-network ha ha-group-name` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system hsm-settings provider safenet-network hsm-server` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system inline-cloud-proxy` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system locale` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system log-link` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system motd-and-banner` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system motd-and-banner message` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system motd-and-banner severity` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system mtu` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ntp-servers` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ntp-servers primary-ntp-server authentication-type` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key algorithm` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key algorithm md5 authentication-key` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key algorithm sha1 authentication-key` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key key-id` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ntp-servers primary-ntp-server ntp-server-address` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ntp-servers secondary-ntp-server authentication-type` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ntp-servers secondary-ntp-server authentication-type symmetric-key algorithm` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ntp-servers secondary-ntp-server authentication-type symmetric-key algorithm md5 authentication-key` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ntp-servers secondary-ntp-server authentication-type symmetric-key algorithm sha1 authentication-key` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ntp-servers secondary-ntp-server authentication-type symmetric-key key-id` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ntp-servers secondary-ntp-server ntp-server-address` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system panorama local-panorama panorama-server` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system permitted-ip` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system secure-proxy-port` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system service` | remote | `panos_config_recovery` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system snmp-setting` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system snmp-setting access-setting version` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system snmp-setting access-setting version v2c snmp-community-string` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system snmp-setting access-setting version v3 users` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system snmp-setting access-setting version v3 views` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system snmp-setting snmp-system contact` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system snmp-setting snmp-system location` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system snmp-setting snmp-system send-event-specific-traps` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ssh` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ssh ha ha-profile` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ssh mgmt server-profile` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ssh profiles ha-profiles` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ssh profiles mgmt-profiles` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ssh profiles mgmt-profiles server-profiles` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ssh regenerate-hostkeys ha` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ssh regenerate-hostkeys ha key-type` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ssh regenerate-hostkeys ha key-type ecdsa key-length` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ssh regenerate-hostkeys ha key-type rsa key-length` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ssh regenerate-hostkeys mgmt` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ssh regenerate-hostkeys mgmt key-type` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ssh regenerate-hostkeys mgmt key-type ecdsa key-length` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system ssh regenerate-hostkeys mgmt key-type rsa key-length` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system timezone` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system type` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system type dhcp-client` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system type static` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule anti-virus` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule anti-virus recurring` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule anti-virus recurring daily` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule anti-virus recurring daily action` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule anti-virus recurring daily at` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule anti-virus recurring hourly` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule anti-virus recurring hourly action` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule anti-virus recurring hourly at` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule anti-virus recurring none` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule anti-virus recurring sync-to-peer` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule anti-virus recurring threshold` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule anti-virus recurring weekly` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule anti-virus recurring weekly action` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule anti-virus recurring weekly at` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule anti-virus recurring weekly day-of-week` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring daily` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring daily action` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring daily at` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring daily disable-new-content` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring every-30-mins` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring every-30-mins action` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring every-30-mins at` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring every-30-mins disable-new-content` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring hourly` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring hourly action` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring hourly at` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring hourly disable-new-content` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring new-app-threshold` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring none` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring sync-to-peer` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring threshold` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring weekly` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring weekly action` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring weekly at` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring weekly day-of-week` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule threats recurring weekly disable-new-content` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wf-private` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wf-private recurring` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wf-private recurring every-15-mins` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wf-private recurring every-15-mins action` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wf-private recurring every-15-mins at` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wf-private recurring every-30-mins` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wf-private recurring every-30-mins action` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wf-private recurring every-30-mins at` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wf-private recurring every-5-mins` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wf-private recurring every-5-mins action` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wf-private recurring every-5-mins at` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wf-private recurring every-hour` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wf-private recurring every-hour action` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wf-private recurring every-hour at` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wf-private recurring none` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wf-private recurring sync-to-peer` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wildfire` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wildfire recurring` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wildfire recurring every-15-mins action` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wildfire recurring every-15-mins at` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wildfire recurring every-15-mins sync-to-peer` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wildfire recurring every-30-mins action` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wildfire recurring every-30-mins at` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wildfire recurring every-30-mins sync-to-peer` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wildfire recurring every-hour action` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wildfire recurring every-hour at` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wildfire recurring every-hour sync-to-peer` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wildfire recurring every-min action` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set deviceconfig system update-schedule wildfire recurring every-min sync-to-peer` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `set mgt-config` | remote | `panos_config_mgt_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `set mgt-config password-complexity` | remote | `panos_config_mgt_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `set mgt-config password-complexity block-username-inclusion` | remote | `panos_config_mgt_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `set mgt-config password-complexity enabled` | remote | `panos_config_mgt_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `set mgt-config password-complexity minimum-length` | remote | `panos_config_mgt_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `set mgt-config password-complexity password-change` | remote | `panos_config_mgt_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `set mgt-config password-complexity password-change-on-first-login` | remote | `panos_config_mgt_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `set mgt-config password-complexity password-change-period-block` | remote | `panos_config_mgt_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `set mgt-config password-complexity password-history-count` | remote | `panos_config_mgt_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `set mgt-config password-profile` | remote | `panos_config_mgt_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `set shared` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `set shared email-scheduler` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `set shared log-settings` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `set shared pdf-summary-report` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `set shared report-group` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `set shared response-page remote-browser-isolation` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `set shared response-page url-reply` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show application` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show application-tag` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show authentication-object` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show captive-portal` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show captive-portal mode` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show captive-portal mode redirect session-cookie` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-identity-engine` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show device-object` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability cluster` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability cluster cluster-members` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability group` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability group election-option timers` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability group mode active-active` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability group mode active-active network-configuration` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability group mode active-active network-configuration sync` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability group mode active-active session-owner-selection` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability group mode active-active session-owner-selection first-packet session-setup` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability group mode active-active virtual-address` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability group mode active-passive` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability group monitoring link-monitoring` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability group monitoring link-monitoring link-group` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability group monitoring path-monitoring` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability group monitoring path-monitoring path-group` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability group state-synchronization ha2-keep-alive` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability interface` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability interface ha1` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability interface ha1 encryption` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting application` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting application traceroute` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting cloudapp` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting cloudapp cloudapp-srvr-addr` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting custom-logo` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting dhcp-syslog-server` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting iot` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting iot edge` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting logging` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting logging enhanced-application-logging disable-application` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting logging enhanced-application-logging disable-global` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting management` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting management api` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting management api key` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting management common-criteria` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting management common-criteria self-test-schedule` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting management common-criteria-alarm-generation` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting management quota-settings` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting management secure-conn-client` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting management secure-conn-client certificate-type` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting session-tracking` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting session-tracking user-re-authentication` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting vpn` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting vpn ikev2` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting wildfire` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting wildfire cloud-inline-wf-session-info-select` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting wildfire cloud-inline-wildfire` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting wildfire cloud-inline-wildfire file-size-limit` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting wildfire file-size-limit` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting wildfire session-info-select` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system dns-setting` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system dns-setting servers` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system dns-setting servers encrypted-dns` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system dns-setting servers encrypted-dns connection-type` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system hsm-settings` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system hsm-settings provider` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system hsm-settings provider ciphertrust-manager hsm-server` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system hsm-settings provider ncipher-nshield-connect hsm-server` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system hsm-settings provider safenet-network ha` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system hsm-settings provider safenet-network hsm-server` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system ipv6-gw-type` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system ipv6-type` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system log-export-schedule` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system log-link` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system ntp-servers` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system ntp-servers primary-ntp-server authentication-type` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key algorithm` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system ntp-servers secondary-ntp-server authentication-type` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system ntp-servers secondary-ntp-server authentication-type symmetric-key algorithm` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system panorama` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system permitted-ip` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system route` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system route destination` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system route service` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system snmp-setting` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system snmp-setting access-setting version` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system snmp-setting access-setting version v3 users` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system snmp-setting access-setting version v3 views` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system ssh` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system ssh profiles ha-profiles` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system ssh profiles mgmt-profiles` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system ssh profiles mgmt-profiles server-profiles` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system ssh regenerate-hostkeys ha` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system ssh regenerate-hostkeys ha key-type` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system ssh regenerate-hostkeys mgmt` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system ssh regenerate-hostkeys mgmt key-type` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system type` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system update-schedule` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system update-schedule anti-virus recurring` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system update-schedule app-profile recurring` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system update-schedule global-protect-clientless-vpn recurring` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system update-schedule global-protect-datafile recurring` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system update-schedule threats recurring` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system update-schedule wf-private recurring` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system update-schedule wildfire recurring` | remote | `panos_config_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show disable-inspect` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show display-name` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dynamic-user-group` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show email-scheduler` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show external-list` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect global-protect-gateway` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect global-protect-portal` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show group-mapping` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show import` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iptag-include-exclude-list` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iptag-include-exclude-list include-exclude-network` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show ipuser-include-exclude-list` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show ipuser-include-exclude-list include-exclude-network` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show mgt-config` | remote | `panos_config_mgt_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show mgt-config access-domain` | remote | `panos_config_mgt_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show mgt-config password-complexity` | remote | `panos_config_mgt_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show mgt-config password-complexity password-change` | remote | `panos_config_mgt_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show mgt-config password-profile` | remote | `panos_config_mgt_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show mgt-config users` | remote | `panos_config_mgt_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network dhcp` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network dhcp interface` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network dns-proxy` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network ike` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network ike crypto-profiles` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network ike crypto-profiles global-protect-app-crypto-profiles` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network ike crypto-profiles ike-crypto-profiles` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network ike crypto-profiles ipsec-crypto-profiles` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network ike gateway` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface aggregate-ethernet` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface ethernet` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface loopback` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface loopback adjust-tcp-mss` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface loopback ip` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface loopback ipv6` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface loopback ipv6 address` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface loopback units` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface sdwan` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface sdwan units` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface tunnel` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface tunnel ip` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface tunnel ipv6` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface tunnel ipv6 address` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface tunnel units` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan adjust-tcp-mss` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan arp` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ddns-config` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ddns-config ddns-vendor-config` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan dhcp-client` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan dhcp-client send-hostname` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ip` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 address` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 dhcp-client` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 dhcp-client neighbor-discovery dns-server` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 dhcp-client neighbor-discovery dns-server source` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 dhcp-client neighbor-discovery dns-server source manual server` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 dhcp-client neighbor-discovery dns-suffix` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 dhcp-client neighbor-discovery dns-suffix source` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 dhcp-client neighbor-discovery dns-suffix source manual suffix` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 dhcp-client neighbor-discovery neighbor` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 dhcp-client prefix-delegation enable` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 dhcp-client v6-options enable` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 inherited` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 inherited assign-addr` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 inherited neighbor-discovery` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 inherited neighbor-discovery dns-server` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 inherited neighbor-discovery dns-server source` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 inherited neighbor-discovery dns-server source manual server` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 inherited neighbor-discovery dns-suffix` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 inherited neighbor-discovery dns-suffix source` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 inherited neighbor-discovery dns-suffix source manual suffix` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 inherited neighbor-discovery neighbor` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 inherited neighbor-discovery router-advertisement` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 neighbor-discovery` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 neighbor-discovery neighbor` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 neighbor-discovery router-advertisement` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 neighbor-discovery router-advertisement dns-support` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 neighbor-discovery router-advertisement dns-support server` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 neighbor-discovery router-advertisement dns-support suffix` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 pppoe` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 pppoe dhcpv6 prefix-delegation` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 pppoe dhcpv6 prefix-delegation enable` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 pppoe dhcpv6 v6-options` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 pppoe dhcpv6 v6-options enable` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 pppoe neighbor-discovery dns-server` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 pppoe neighbor-discovery dns-server source` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 pppoe neighbor-discovery dns-server source manual server` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 pppoe neighbor-discovery dns-suffix` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 pppoe neighbor-discovery dns-suffix source` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 pppoe neighbor-discovery dns-suffix source manual suffix` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ipv6 pppoe neighbor-discovery neighbor` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ndp-proxy` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan ndp-proxy address` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network interface vlan units` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network lldp` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network logical-router` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network macsec` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network macsec crypto-profiles` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network macsec interfaces` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network macsec pre-shared-key-profiles` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network profiles` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network profiles bfd-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network profiles interface-management-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network profiles lldp-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network profiles monitor-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network profiles zone-protection-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network qos` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network qos interface` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network qos profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile bfd` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile bgp` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile bgp address-family-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile bgp auth-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile bgp dampening-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile bgp filtering-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile bgp redistribution-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile bgp timer-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile filters` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile filters access-list` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile filters as-path-access-list` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile filters community-list` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile filters prefix-list` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile filters route-maps` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile filters route-maps bgp bgp-entry` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile filters route-maps redistribution redist-entry` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile multicast` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile ospf` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile ospf auth-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile ospf if-timer-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile ospf redistribution-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile ospf spf-timer-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile ospfv3` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile ospfv3 auth-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile ospfv3 if-timer-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile ospfv3 redistribution-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile ospfv3 spf-timer-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile rip` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile rip auth-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile rip global-timer-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network routing-profile rip redistribution-profile` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network tunnel` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network tunnel global-protect-gateway` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network tunnel global-protect-site-to-site` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network tunnel gre` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network tunnel ipsec` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network underlay-net` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network underlay-net ip-mapping` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network virtual-router` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network virtual-wire` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show network vlan` | remote | `panos_config_network` | (live device state — SSH via --remote; expect device 2FA) |
+| `show pdf-summary-report` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show profiles` | remote | `panos_config_profiles` | (live device state — SSH via --remote; expect device 2FA) |
+| `show profiles data-filtering` | remote | `panos_config_profiles` | (live device state — SSH via --remote; expect device 2FA) |
+| `show profiles data-objects` | remote | `panos_config_profiles` | (live device state — SSH via --remote; expect device 2FA) |
+| `show profiles decryption` | remote | `panos_config_profiles` | (live device state — SSH via --remote; expect device 2FA) |
+| `show profiles dos-protection` | remote | `panos_config_profiles` | (live device state — SSH via --remote; expect device 2FA) |
+| `show profiles file-blocking` | remote | `panos_config_profiles` | (live device state — SSH via --remote; expect device 2FA) |
+| `show profiles hip-objects` | remote | `panos_config_profiles` | (live device state — SSH via --remote; expect device 2FA) |
+| `show profiles packet-broker` | remote | `panos_config_profiles` | (live device state — SSH via --remote; expect device 2FA) |
+| `show profiles sdwan-error-correction` | remote | `panos_config_profiles` | (live device state — SSH via --remote; expect device 2FA) |
+| `show profiles sdwan-path-quality` | remote | `panos_config_profiles` | (live device state — SSH via --remote; expect device 2FA) |
+| `show profiles sdwan-saas-quality` | remote | `panos_config_profiles` | (live device state — SSH via --remote; expect device 2FA) |
+| `show profiles sdwan-traffic-distribution` | remote | `panos_config_profiles` | (live device state — SSH via --remote; expect device 2FA) |
+| `show profiles spyware` | remote | `panos_config_profiles` | (live device state — SSH via --remote; expect device 2FA) |
+| `show profiles url-filtering` | remote | `panos_config_profiles` | (live device state — SSH via --remote; expect device 2FA) |
+| `show profiles virus` | remote | `panos_config_profiles` | (live device state — SSH via --remote; expect device 2FA) |
+| `show profiles vulnerability` | remote | `panos_config_profiles` | (live device state — SSH via --remote; expect device 2FA) |
+| `show profiles wildfire-analysis` | remote | `panos_config_profiles` | (live device state — SSH via --remote; expect device 2FA) |
+| `show redistribution-agent` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show redistribution-collector` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show redistribution-collector setting` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show report-group` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show reports` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show route` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show route service` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show rulebase` | remote | `panos_config_rulebase` | (live device state — SSH via --remote; expect device 2FA) |
+| `show rulebase application-override rules` | remote | `panos_config_rulebase` | (live device state — SSH via --remote; expect device 2FA) |
+| `show rulebase authentication rules` | remote | `panos_config_rulebase` | (live device state — SSH via --remote; expect device 2FA) |
+| `show rulebase decryption rules` | remote | `panos_config_rulebase` | (live device state — SSH via --remote; expect device 2FA) |
+| `show rulebase default-security-rules rules` | remote | `panos_config_rulebase` | (live device state — SSH via --remote; expect device 2FA) |
+| `show rulebase dos rules` | remote | `panos_config_rulebase` | (live device state — SSH via --remote; expect device 2FA) |
+| `show rulebase nat rules` | remote | `panos_config_rulebase` | (live device state — SSH via --remote; expect device 2FA) |
+| `show rulebase network-packet-broker rules` | remote | `panos_config_rulebase` | (live device state — SSH via --remote; expect device 2FA) |
+| `show rulebase pbf rules` | remote | `panos_config_rulebase` | (live device state — SSH via --remote; expect device 2FA) |
+| `show rulebase qos rules` | remote | `panos_config_rulebase` | (live device state — SSH via --remote; expect device 2FA) |
+| `show rulebase sdwan rules` | remote | `panos_config_rulebase` | (live device state — SSH via --remote; expect device 2FA) |
+| `show rulebase security rules` | remote | `panos_config_rulebase` | (live device state — SSH via --remote; expect device 2FA) |
+| `show rulebase tunnel-inspect rules` | remote | `panos_config_rulebase` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan-interface-profile` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show setting` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared admin-role` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared alg-override` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared alg-override application` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared authentication-profile` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared botnet` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared botnet configuration http` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared botnet configuration other-applications` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared botnet configuration unknown-applications` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared botnet configuration unknown-applications unknown-tcp session-length` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared botnet configuration unknown-applications unknown-udp session-length` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared certificate-profile` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared email-scheduler` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared local-user-database` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared local-user-database user` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared local-user-database user-group` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared log-settings` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared log-settings config` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared log-settings config match-list` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared log-settings email` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared log-settings http` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared log-settings profiles` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared log-settings snmptrap` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared log-settings syslog` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared log-settings system` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared log-settings system match-list` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared override` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared override application` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared pdf-summary-report` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared report-group` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared reports` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared response-page` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared scep` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared server-profile` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared server-profile kerberos` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared server-profile ldap` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared server-profile mfa-server-profile` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared server-profile netflow` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared server-profile radius` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared server-profile saml-idp` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared server-profile scp` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared server-profile tacplus` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared ssl-decrypt` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared ssl-decrypt forward-trust-certificate` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared ssl-decrypt forward-untrust-certificate` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared ssl-decrypt ssl-exclude-cert` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared ssl-tls-service-profile` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared user-id-hub` | remote | `panos_config_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show threats` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show threats spyware` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show threats vulnerability` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show ts-agent` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show url-admin-override` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show url-admin-override mode` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user-context-segment` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user-context-segment assignments` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user-id-collector` | remote | `panos_config_user_id_collector` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user-id-collector include-exclude-network` | remote | `panos_config_user_id_collector` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user-id-collector include-exclude-network-sequence` | remote | `panos_config_user_id_collector` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user-id-collector server-monitor` | remote | `panos_config_user_id_collector` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user-id-collector setting` | remote | `panos_config_user_id_collector` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user-id-collector syslog-parse-profile` | remote | `panos_config_user_id_collector` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user-id-ssl-auth` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show vm-info-source` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show x-authenticated-user` | remote | `panos_config_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `validate full` | remote | `panos_config_validate` | (live device state — SSH via --remote; expect device 2FA) |
+| `validate partial device-and-network` | remote | `panos_config_validate` | (live device state — SSH via --remote; expect device 2FA) |
 
 ## Panos-Ops
 
 | Command | Scope | Feature flag | SCM API |
 |---|---|---|---|
-| `clear advanced-routing bfd counters session-id` | device | `panos_clear_advanced_routing` | (live device state — SSH via --remote) |
-| `clear advanced-routing bfd session-state session-id` | device | `panos_clear_advanced_routing` | (live device state — SSH via --remote) |
-| `clear advanced-routing bgp logical-router` | device | `panos_clear_advanced_routing` | (live device state — SSH via --remote) |
-| `clear advanced-routing multicast igmp membership logical-router` | device | `panos_clear_advanced_routing` | (live device state — SSH via --remote) |
-| `clear advanced-routing multicast igmp statistics logical-router` | device | `panos_clear_advanced_routing` | (live device state — SSH via --remote) |
-| `clear advanced-routing multicast mroute logical-router` | device | `panos_clear_advanced_routing` | (live device state — SSH via --remote) |
-| `clear advanced-routing multicast msdp sa logical-router` | device | `panos_clear_advanced_routing` | (live device state — SSH via --remote) |
-| `clear advanced-routing multicast msdp statistics logical-router` | device | `panos_clear_advanced_routing` | (live device state — SSH via --remote) |
-| `clear advanced-routing multicast pim statistics logical-router` | device | `panos_clear_advanced_routing` | (live device state — SSH via --remote) |
-| `clear application-signature statistics` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear arp interface` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear audit-comment xpath` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear auto-tag vsys` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear bonjour interface` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear cluster-flow all` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear cluster-flow id` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear cookie-surrogate-cache all` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear cookie-surrogate-cache username` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear counter all` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear counter global filter category` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear counter global name` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear counter interface` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear device-cache-mp all` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear device-cache-mp ip` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear dhcp lease all expired-only` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear dhcp lease interface` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear dns-proxy cache all domain-name` | device | `panos_clear_dns_proxy` | (live device state — SSH via --remote) |
-| `clear dns-proxy cache name` | device | `panos_clear_dns_proxy` | (live device state — SSH via --remote) |
-| `clear dns-proxy dns-signature cache fqdn` | device | `panos_clear_dns_proxy` | (live device state — SSH via --remote) |
-| `clear dns-proxy dns-signature counters` | device | `panos_clear_dns_proxy` | (live device state — SSH via --remote) |
-| `clear dns-proxy encrypted-dns` | device | `panos_clear_dns_proxy` | (live device state — SSH via --remote) |
-| `clear dns-proxy statistics all` | device | `panos_clear_dns_proxy` | (live device state — SSH via --remote) |
-| `clear dns-proxy statistics name` | device | `panos_clear_dns_proxy` | (live device state — SSH via --remote) |
-| `clear dos-block-table all filter source-ip` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear dos-block-table drop-counter` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear dos-protection rule` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear dos-protection zone` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear global-protect redirect location` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear global-protect-portal statistics portal` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear high-availability cluster statistics` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear high-availability control-link statistics` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear high-availability transitions` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear job id` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear lacp counters aggregate-ethernet` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear lldp counters all` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear lldp counters interface` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear log` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear logrcvr offline-logpurger` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear mac` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear nat-rule-cache rule` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear neighbor interface` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear neighbor ndp-monitor` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear net-inspection filter` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear pbf return-mac all` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear pbf return-mac name` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear pbf rule all` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear pbf rule name` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear policy-app-usage-data ruleuuid` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear pppoe interface` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear pppoe ipv6 interface` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear query all-by-session` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear query id` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear report all-by-session` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear report cache` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear report id` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear resiliency statistics` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear routing bfd counters session-id` | device | `panos_clear_routing` | (live device state — SSH via --remote) |
-| `clear routing bfd session-state session-id` | device | `panos_clear_routing` | (live device state — SSH via --remote) |
-| `clear routing bgp virtual-router` | device | `panos_clear_routing` | (live device state — SSH via --remote) |
-| `clear routing multicast igmp statistics virtual-router` | device | `panos_clear_routing` | (live device state — SSH via --remote) |
-| `clear routing multicast pim statistics virtual-router` | device | `panos_clear_routing` | (live device state — SSH via --remote) |
-| `clear rule-hit-count vsys` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear sdwan event` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear sdwan pool unsuccess` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear session all filter nat` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear session id` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear snmpd refresh-timer-period` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear ssl-cert-cn` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear ssl-decrypt exclude-cache server` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear statistics` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear uappid-filtergroup-mapping all` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear uappid-filtergroup-mapping id` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear uappid-policy-cache all` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear uappid-policy-cache id` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear ueip address` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear ueip all` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear uid-cache all` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear uid-cache uid` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear uid-map-cache all` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear uid-map-cache uid` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear url-cache all` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear url-cache url` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear user-cache all type` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear user-cache ip` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear user-cache-mp all type` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear user-cache-mp ip` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear user-policy-cache all` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear user-policy-cache uid` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear vpn flow tunnel-id` | device | `panos_clear_vpn` | (live device state — SSH via --remote) |
-| `clear vpn ike-hashurl` | device | `panos_clear_vpn` | (live device state — SSH via --remote) |
-| `clear vpn ike-preferred-version gateway` | device | `panos_clear_vpn` | (live device state — SSH via --remote) |
-| `clear vpn ike-sa gateway` | device | `panos_clear_vpn` | (live device state — SSH via --remote) |
-| `clear vpn ipsec-sa tunnel` | device | `panos_clear_vpn` | (live device state — SSH via --remote) |
-| `clear wildfire counters` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear xml-api multiusersystem cloud` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `clear zone-protection zone` | device | `panos_clear_misc` | (live device state — SSH via --remote) |
-| `debug advanced-routing` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing bgp` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing bgp updates in peer-name` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing bgp updates out peer-name` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing daemon-status logical-router` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing fib check` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing fib clear logical-router` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing fib flush` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing fib stats` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing fqdn display logical-router` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing global off` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing global on` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing global show` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing mpf offload` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing mpf stats` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing ospfv3 logical-router` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing path-monitor id` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing pcap` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing pcap show` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing qtrace disable afi` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing qtrace enable afi` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing qtrace flush-log` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing qtrace show afi` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing restart` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing zebra events enable` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing zebra fpm enable` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing zebra kernel msgdump logical-router` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing zebra nht detailed` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing zebra packet logical-router` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug advanced-routing zebra rib detailed` | device | `panos_debug_advanced_routing` | (live device state — SSH via --remote) |
-| `debug authentication` | device | `panos_debug_authentication` | (live device state — SSH via --remote) |
-| `debug authentication api-key-show key` | device | `panos_debug_authentication` | (live device state — SSH via --remote) |
-| `debug authentication connection-debug-off protocol-type` | device | `panos_debug_authentication` | (live device state — SSH via --remote) |
-| `debug authentication connection-debug-on protocol-type` | device | `panos_debug_authentication` | (live device state — SSH via --remote) |
-| `debug authentication connection-show protocol-type` | device | `panos_debug_authentication` | (live device state — SSH via --remote) |
-| `debug authentication on` | device | `panos_debug_authentication` | (live device state — SSH via --remote) |
-| `debug authentication set-tacacs-acct-task-q-size qsize` | device | `panos_debug_authentication` | (live device state — SSH via --remote) |
-| `debug authentication test-tacacs-acct-server-connection address` | device | `panos_debug_authentication` | (live device state — SSH via --remote) |
-| `debug bfd global off` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug bfd global on` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug bfd global show` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug cli` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug cloud-appid ace-server` | device | `panos_debug_cloud_appid` | (live device state — SSH via --remote) |
-| `debug cloud-appid cloud-manual-pull` | device | `panos_debug_cloud_appid` | (live device state — SSH via --remote) |
-| `debug cloud-appid delete-signature-data app-name` | device | `panos_debug_cloud_appid` | (live device state — SSH via --remote) |
-| `debug cloud-appid delete-signature-data appid` | device | `panos_debug_cloud_appid` | (live device state — SSH via --remote) |
-| `debug cloud-appid delete-signature-data filter-signature-id` | device | `panos_debug_cloud_appid` | (live device state — SSH via --remote) |
-| `debug cloud-appid dump config` | device | `panos_debug_cloud_appid` | (live device state — SSH via --remote) |
-| `debug cloud-appid keep-task-file` | device | `panos_debug_cloud_appid` | (live device state — SSH via --remote) |
-| `debug cloud-appid reset` | device | `panos_debug_cloud_appid` | (live device state — SSH via --remote) |
-| `debug cloud-appid reset signature-dp option` | device | `panos_debug_cloud_appid` | (live device state — SSH via --remote) |
-| `debug cloud-appid set config` | device | `panos_debug_cloud_appid` | (live device state — SSH via --remote) |
-| `debug cloud-appid unknown-signature-query app-name` | device | `panos_debug_cloud_appid` | (live device state — SSH via --remote) |
-| `debug cloud-appid unknown-signature-query appid` | device | `panos_debug_cloud_appid` | (live device state — SSH via --remote) |
-| `debug cloud-appid unknown-signature-query filter-sig-id` | device | `panos_debug_cloud_appid` | (live device state — SSH via --remote) |
-| `debug cloud-userid clear-cookie type` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug cloud-userid reset-connection` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug cloud-userid reset-counters` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug contentd status` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug cord corr-mgr off` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord corr-mgr on` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord corr-mgr show back-query status` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord corr-mgr show brief` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord corr-mgr show failed` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord corr-mgr show filter search object` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord corr-mgr show instance search category` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord corr-mgr show instance summary` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord corr-mgr show object id` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord corr-mgr show object list` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord corr-mgr stats clear object` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord corr-mgr stats show object` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord delete db` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord delete events objectname` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord delete instances match` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord object-stats clear` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord object-stats set` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord object-stats show` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord object-stats show-setting` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord off` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord on` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord show` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cord stats` | device | `panos_debug_cord` | (live device state — SSH via --remote) |
-| `debug cryptod clear hsm-key-cache` | device | `panos_debug_cryptod` | (live device state — SSH via --remote) |
-| `debug cryptod global off` | device | `panos_debug_cryptod` | (live device state — SSH via --remote) |
-| `debug cryptod global on` | device | `panos_debug_cryptod` | (live device state — SSH via --remote) |
-| `debug cryptod global show` | device | `panos_debug_cryptod` | (live device state — SSH via --remote) |
-| `debug cryptod show counters` | device | `panos_debug_cryptod` | (live device state — SSH via --remote) |
-| `debug cryptod show hsm-thread all` | device | `panos_debug_cryptod` | (live device state — SSH via --remote) |
-| `debug cryptod show hsm-thread index` | device | `panos_debug_cryptod` | (live device state — SSH via --remote) |
-| `debug dataplane appinfo clear` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane cloud-appid lookup filter-sig-id` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane cloud-appid lookup global-id` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane cloud-appid lookup local-id` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane cloud-appid lookup name` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane cloud-appid reset cache all` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane cloud-appid reset cache appid` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane cloud-appid reset cache hash-slot` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane cloud-appid set report-overlap` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane cloud-appid show` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane cloud-appid show app-sig type` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane cloud-appid show cache` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane cloud-appid show database details` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane cloud-appid show detection` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent adns-telemetry debug` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent adns-telemetry debug-log` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent adns-telemetry freeze` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent adns-telemetry set interval-ms` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent adns-telemetry set max-cache-entry` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent adns-telemetry show` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent adns-telemetry stop` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent clear all` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent config` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent device-cert` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent global off` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent global on` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent global show` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent license` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent reset security-client` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent session id` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent set ace-debug` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent set cloud-trace` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent set host` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent set port` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane ctd-agent set source` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane flow-control disable slot` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane flow-control enable slot` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane flush-log` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane fpga hw_aho offload-bytes-threshold` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane fpga hw_aho offload-request-threshold` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane fpga hw_dfa offload-bytes-threshold` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane fpga hw_dfa offload-request-threshold` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane fpga set sw_aho` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane fpga set sw_dfa` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane fpga state` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt abort` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt bcm counters` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt bcm lport shaper get lport` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt bcm show congestion` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt bcm show flow flow_id` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt bcm show port` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt bcm show queue` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt ce10 cip` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt ce10 dfa` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt ce10 dxaui info instance` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt ce10 dxge info instance` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt ce10 dxge stats instance` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt ce10 pbm status instance` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt ce10 rd instance` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt ce10 show` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt ce10 show-all` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 acl dump count` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 csr` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 csr rd addr` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 csr scan regex` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 csr wr_sem_ctrl_ctr_scan_dis value` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 csr wr_sem_fcr_max_upd_thresh_cfg_pkt_ctr value` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 ddr eye intf` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 debug check` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 dphy_reg rd dcfg` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 event dump count` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 event fetch offset` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 flow ctrs` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 flow dump offset` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 flow histo` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 flow lookup saddr` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 flow tbl_size` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 lag dump count` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 lef dump count` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 lif access table` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 lif dump count` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 lif lookup table` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 lif stats clear` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 lif tbl_size` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 mac dump offset` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 mem rd target_mem` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 nexthop dump type` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 nif check_port` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 nif pkt_cap disable intf` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 nif pkt_cap display intf` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 nif pkt_cap enable intf` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 nif pkt_cap help` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 predict dump count` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 qmap dump pt` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 rd offset` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 route dump pt` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 show config` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 show fc clear` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 show intr` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 show latency` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 show stats` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 show stats port port` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 show status` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 tmi check_port` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 tmi pkt_cap disable intf` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 tmi pkt_cap display intf` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 tmi pkt_cap enable intf` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 tmi pkt_cap help` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 traffic info` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 umctl2_reg rd dcfg` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt fe100 vsys dump count` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt nac aho dump instance` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt nac dfa dump instance` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt nac info instance` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt nac show-all` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt nac stats instance` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt oct bgx config bgx` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt oct bgx status bgx` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt oct bootmem` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt oct csr rd reg` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt oct fpa show` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt oct gmx stats port` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt oct ilk` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt oct pip stats port` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt oct pki dump` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt oct pki port_config port` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt oct pki stats` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt oct pko debug port` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt oct pko stats all` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt oct pko stats port` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt oct pko3` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt oct portmap show` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt oct pow debug all` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal pdt pci list` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal vif` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane internal vif route` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane memory dump bootmem delete file` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane memory dump bootmem disable` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane memory dump bootmem enable log_disk_percent` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane memory dump bootmem show` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane memory status` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica reset cache` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica reset request-meta-cache adns` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica reset rtt` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica set cache adns` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica set cache default` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica set cache disable` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica set cache enable` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica set cache tp` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica set cache url` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica set inwf-mlav-prefilter` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica set mlc2-http-ldl-prefilter` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica set mlc2-micaflag-prefilter` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica set request-meta-cache adns` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica set telemetry adns-interval` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica show cache adns` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica show cache tp` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica show cache url` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica show config` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica show request-meta-cache adns entries` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mica show rtt service` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg leakiller memory-pool enable` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg leakiller memory-pool show` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg leakiller swbuf-pool enable` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg leakiller swbuf-pool show` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg obj-trace ev_num_per_q set` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg obj-trace session level` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg obj-trace shared-pool-192 level` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg obj-trace shared-pool-24 level` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg obj-trace stop` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg obj-trace symbol lvl` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg obj-trace wqe delay-free` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg obj-trace wqe extra-trace` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg obj-trace wqe leak-dump num` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg obj-trace wqe level` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg obj-trace wqe trace-type` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg pool-debug overflow-check` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg pool-debug reuse-check` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg status` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane mmdbg watchpoint address s1dp0` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane monitor detail` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane nat static-mapping add from-ip` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane nat static-mapping del from-ip` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane nat static-mapping show` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane nat sync-ippool rule` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane netflow` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane oprofile opcontrol` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane oprofile opreport` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag aggregate-logs log_name` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear all` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear capture all` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear capture snaplen` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear capture stage` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear capture trigger` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear capture username` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear filter index` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear filter-marked-session all` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear filter-marked-session id` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear log counter` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear log feature` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear log feature all` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear log feature appid` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear log feature base` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear log feature cfg` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear log feature ctd` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear log feature flow` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear log feature misc` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear log feature module` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear log feature ssl` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear log feature tcp` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear log feature tdb` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear log feature tunnel` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear log feature url_trie` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag clear log log` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set capture off` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set capture on` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set capture snaplen` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set capture stage` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set capture stage clientless-vpn-client file` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set capture stage clientless-vpn-server file` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set capture trigger application from` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set capture username` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set filter index` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set filter match ingress-interface` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set filter off` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set filter offload` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set filter on` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set filter pre-parse-match` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set filter-marked-session id` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log buffer-threshold` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log counter` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log cpu-threshold` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log feature` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log feature all` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log feature appid` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log feature base` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log feature cfg` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log feature ctd` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log feature flow` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log feature misc` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log feature module` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log feature ssl` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log feature tcp` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log feature tdb` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log feature tunnel` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log feature url_trie` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log log-option throttle` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log off` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log on` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set log timeout` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag set tag` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-diag show` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-path-test counter` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane packet-path-test test proc` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane policy cache-usage-threshold` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane policy switch-cache` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool check hardware` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool check software` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool elastic delete profile name` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool elastic reset-defaults` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool elastic select-profile name` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool elastic set mode` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool elastic set profile name` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool elastic show config` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool elastic show profile active` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool elastic show profile all` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool elastic show profile capacity` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool elastic show profile name` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool mem file` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool memseg name common sz-pct` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool reset-max-usage` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool set` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool set off` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool set on name dthreat` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool set on name fptcp sessid-cid` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool set on name vcheck` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool show all top` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool show history top` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool show in-use top` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pool statistics` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pow performance all core` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pow performance core` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pow performance filter` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pow performance rx_tx_ltncy` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pow status filter worker` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pow status global-counters pretty` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pow status high-watermark reset` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pow status inflightonly reset` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pow status niconly brief` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pow status niconly filter worker` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pow status nonic reset` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pow status nosleep filter worker` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane process` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane process cmd off` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane process cmd on` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane process cmd show` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane process comm off` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane process comm on` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane process comm profile-cache` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane process comm show` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane process mprelay off` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane process mprelay on` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane process mprelay show` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane process task dynamic-filter` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane process task off` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane process task on` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane process task show` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane pvst sys-id-ext-rewrite` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset appid cache` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset appid statistics` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset appid unknown-cache destination` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset ctd` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset ctd dns-cache host` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset ctd feature-forward stats` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset ctd url-block-cache lockout` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset ctd wf-cache virus-pattern-type` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset dns-cache all` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset dns-cache fqdn` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset dos block-table` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset dos classification-table` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset dos rule` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset dos zone` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset ml-block-cache all` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset ml-block-cache url` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset ssl-decrypt` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane reset ssl-decrypt notify-cache source` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane set` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane set blocked-forward upload` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane set ctd autogen` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane set ctd ldl-model-enable` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane set ctd wildfire max` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane set ip6-mcast-fwd-check` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane set pbf-no-return-mac-learning` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane set pow no-desched` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane set qos-setting qos-param qlimit` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane set ssl-decrypt blk-send-reset` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane set ssl-decrypt ecdhe-aggressive-keying` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show app-filter-policy vsys` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show app-group-policy vsys` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd credential-enforcement domain-credential` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd credential-enforcement group-mapping vsys` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd dns-cache entries host` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd dns-cache stats` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd feature-forward` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd feature-forward forward-info session-id` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd ldl status` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd lscan app-sig type` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd lscan database context prefix` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd lscan database context-list` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd lscan database details` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd lscan sml-scope appid` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd lscan sml-token appid` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd regex-group dump` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd regex-stats dump` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd session` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd threat id` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd wf-cache virus-pattern-type` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd wif service-mapping` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ctd wildfire max` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show dns-cache print` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show dns-cache query fqdn` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show dns-cache statistics` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show dos block-table` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show dos classification-table` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show dos free-list` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show dos rule` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show dos zone` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show gtp session-qinfo` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show http2` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show http2 session` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show pow no-desched` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show qos-param qos-qlimit-sw` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ssl-decrypt bitmask-cipher` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ssl-decrypt bitmask-version` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ssl-decrypt dns-cache` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ssl-decrypt session` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show ssl-decrypt ssl-stats` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show uappid-filtergroup-mapping id` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show uappid-in-policy id` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show uappid-policy-cache uappid` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane show unknown-uappid-cache id` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane task-heartbeat` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane tcp state` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane test dump-nw-id-ebl-tble` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane test dump-nw-id-vsys-tble vsysid` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane test nat-policy-add from` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane test nat-policy-del from` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane test nw-id-lookup vsysid` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane test tunnel-tables` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane test uappid-filtergroup-mapping uappid` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane test uappid-policy-cache uappid` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane test url` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane test url-bloom` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug dataplane test url-from-file max-per-sec` | device | `panos_debug_dataplane` | (live device state — SSH via --remote) |
-| `debug device-server` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server clear` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump app-containers name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump app-filters vsys` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump app-groups vsys` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump apps vsys` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump com` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump dynamic-address-group vsys` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump fqdn type dnat vsys` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump fqdn type pbf vsys` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump fqdn type policy vsys` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr global` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr high-availability state` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type dns-proxy all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type dns-proxy id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type dns-proxy name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type edl-domain all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type edl-domain id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type edl-domain name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type edl-ip all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type edl-ip id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type edl-ip name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type hip-profile all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type hip-profile id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type hip-profile name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type http-header-insert-header-value-l all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type http-header-insert-header-value-l id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type http-header-insert-header-value-l name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type http-header-insert-header-value-s all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type http-header-insert-header-value-s id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type http-header-insert-header-value-s name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type interface-group all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type interface-group id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type interface-group name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type macl-rule all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type macl-rule id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type macl-rule name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type monitor-tag all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type monitor-tag id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type monitor-tag name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type ospfv3-virtual-link all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type ospfv3-virtual-link id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type ospfv3-virtual-link name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type sdwan-link-tag all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type sdwan-link-tag id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type sdwan-link-tag name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-app-signature all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-app-signature id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-app-signature name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-application-filter all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-application-filter id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-application-filter name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-application-group all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-application-group id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-application-group name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-bgp-aggr-address all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-bgp-aggr-address id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-bgp-aggr-address name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-bgp-peer all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-bgp-peer id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-bgp-peer name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-bgp-peergrp all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-bgp-peergrp id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-bgp-peergrp name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-qos-group all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-qos-group id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-qos-group name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-region all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-region id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-region name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-spyware all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-spyware id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-spyware name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-url-filtering all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-url-filtering id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type shared-url-filtering name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type tci-rule all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type tci-rule id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type tci-rule name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type vsys-app-signature all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type vsys-app-signature id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type vsys-app-signature name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type vsys-application-filter all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type vsys-application-filter id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type vsys-application-filter name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type vsys-application-group all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type vsys-application-group id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type vsys-application-group name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type vsys-region all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type vsys-region id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type vsys-region name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type vsys-spyware all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type vsys-spyware id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type vsys-spyware name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type vsys-url-filtering all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type vsys-url-filtering id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr redis type vsys-url-filtering name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type dns-proxy all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type dns-proxy id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type dns-proxy name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type edl-domain all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type edl-domain id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type edl-domain name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type edl-ip all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type edl-ip id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type edl-ip name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type hip-profile all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type hip-profile id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type hip-profile name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type http-header-insert-header-value-l all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type http-header-insert-header-value-l id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type http-header-insert-header-value-l name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type http-header-insert-header-value-s all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type http-header-insert-header-value-s id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type http-header-insert-header-value-s name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type interface-group all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type interface-group id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type interface-group name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type macl-rule all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type macl-rule id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type macl-rule name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type monitor-tag all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type monitor-tag id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type monitor-tag name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type ospfv3-virtual-link all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type ospfv3-virtual-link id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type ospfv3-virtual-link name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type sdwan-link-tag all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type sdwan-link-tag id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type sdwan-link-tag name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-app-signature all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-app-signature id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-app-signature name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-application-filter all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-application-filter id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-application-filter name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-application-group all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-application-group id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-application-group name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-bgp-aggr-address all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-bgp-aggr-address id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-bgp-aggr-address name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-bgp-peer all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-bgp-peer id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-bgp-peer name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-bgp-peergrp all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-bgp-peergrp id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-bgp-peergrp name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-qos-group all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-qos-group id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-qos-group name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-region all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-region id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-region name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-spyware all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-spyware id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-spyware name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-url-filtering all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-url-filtering id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type shared-url-filtering name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type tci-rule all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type tci-rule id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type tci-rule name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type vsys-app-signature all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type vsys-app-signature id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type vsys-app-signature name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type vsys-application-filter all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type vsys-application-filter id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type vsys-application-filter name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type vsys-application-group all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type vsys-application-group id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type vsys-application-group name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type vsys-region all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type vsys-region id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type vsys-region name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type vsys-spyware all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type vsys-spyware id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type vsys-spyware name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type vsys-url-filtering all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type vsys-url-filtering id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump idmgr type vsys-url-filtering name` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump logging statistics` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump memory` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump ml7-idblob-flatbuf statistics` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump pan-url-db statistics` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump regips ip` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump regips iprange` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump regips summary` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump regips tag` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server dump tag-table tag` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server ldl show status` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server mlav clear-cache` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server mlav revert-model filetype-id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server mlav set-cloud-url default` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server mlav set-cloud-url url` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server off` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server on` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server pan-url-db` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server pan-url-db db-backup back-duration` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server pcap` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server pcap logical-router on logicalrouter` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server pcap virtual-router on virtualrouter` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server reset com statistics` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server reset config` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server reset id-manager type` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server reset logging statistics` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server set all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server set base` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server set config` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server set misc` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server set mlav` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server set tdb` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server set third-party` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server set url` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server set url_trie` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server set wfrt` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server show` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server test admin-override-password` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server test botnet-domain` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server test dynamic-url cloud` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server test idmgr-change-max type` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server test idmgr-change-max type global-router new-max-id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server test idmgr-change-max type shared-custom-url-category new-max-id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server test idmgr-change-max type ssl-rule new-max-id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server test idmgr-change-max type vsys-application new-max-id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server test idmgr-change-max type vsys-custom-url-category new-max-id` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server test idmgr-restore-default-max type` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server test ldl-model path` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server test ml7-blob path` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server test nw_id options` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server test url-category` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server trigger addrobjrefresh` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server unset all` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server unset base` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server unset config` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server unset misc` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server unset mlav` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server unset tdb` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server unset third-party` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server unset url` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server unset url_trie` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-server unset wfrt` | device | `panos_debug_device_server` | (live device state — SSH via --remote) |
-| `debug device-telemetry` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug dhcpd cluster` | device | `panos_debug_dhcpd` | (live device state — SSH via --remote) |
-| `debug dhcpd downgrade convert-db` | device | `panos_debug_dhcpd` | (live device state — SSH via --remote) |
-| `debug dhcpd global off` | device | `panos_debug_dhcpd` | (live device state — SSH via --remote) |
-| `debug dhcpd global on` | device | `panos_debug_dhcpd` | (live device state — SSH via --remote) |
-| `debug dhcpd global show` | device | `panos_debug_dhcpd` | (live device state — SSH via --remote) |
-| `debug dhcpd high-availability ignore-config-sync` | device | `panos_debug_dhcpd` | (live device state — SSH via --remote) |
-| `debug dhcpd pcap` | device | `panos_debug_dhcpd` | (live device state — SSH via --remote) |
-| `debug dhcpd pcap logical-router on logicalrouter` | device | `panos_debug_dhcpd` | (live device state — SSH via --remote) |
-| `debug dhcpd pcap virtual-router on virtualrouter` | device | `panos_debug_dhcpd` | (live device state — SSH via --remote) |
-| `debug dhcpd show objects` | device | `panos_debug_dhcpd` | (live device state — SSH via --remote) |
-| `debug distributord dump relay` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord dump relay-ipc-iotd state` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord dump relay-ipc-useridd` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord hip-relay hip-report-dedup-cache-size set` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord hip-relay hip-report-dedup-cache-size show` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord hip-relay hip-report-in-cache-aging-interval set` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord hip-relay hip-report-in-cache-aging-interval show` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord hip-relay reset-hip-report-dedup-cache` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord max-handle-concurrent-clients set` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord max-handle-concurrent-clients show` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord off` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord on` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord redis-connection-pool ip-user set` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord redis-connection-pool ip-user show` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord redis-connection-pool other-data-types enable` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord redis-connection-pool other-data-types set` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord redis-connection-pool other-data-types show` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord relay relay-ipc-iotd set qsize` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord relay relay-ipc-iotd set relay-iotd-recv-cache-qsize` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord relay relay-ipc-iotd set relay-iotd-recv-read-batch-size` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord relay relay-ipc-iotd show` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord relay relay-ipc-useridd set qsize` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord relay relay-ipc-useridd set relay-useridd-recv-cache-qsize` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord relay relay-ipc-useridd set relay-useridd-recv-read-batch-size` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord relay relay-ipc-useridd show` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord relay relay-mode set-dcom-relay-mode-only` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord relay relay-mode show-dcom-relay-mode` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord reset redistribution-agent` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord reset relay-statistics` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord set agent` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord set client` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord set distribute` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord set relay` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord show` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord test debug-log-category` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord unset agent` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord unset client` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord unset distribute` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug distributord unset relay` | device | `panos_debug_distributord` | (live device state — SSH via --remote) |
-| `debug dnsproxyd` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd clear cache-statistics` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd clear fqdn counters` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd clear sys-stats` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd dns-signature allow-list download` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd dns-signature cache fqdn` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd dns-signature counters` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd dns-signature info` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd dns-signature query bypass-cache` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd dns-signature query_n bypass-cache` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd dns-signature response fqdn` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd dns-signature response_n` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd dns-signature response_n fqdns` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd dns-signature response_n match-subdomains` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd dns-signature threat-info fqdn` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd dns-signature ut threat-info-api api-query-domain fqdn` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd fqdn counters delta` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd fqdn dump brief` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd global off` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd global on` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd global show` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug dnsproxyd show` | device | `panos_debug_dnsproxyd` | (live device state — SSH via --remote) |
-| `debug evtmgr` | device | `panos_debug_evtmgr` | (live device state — SSH via --remote) |
-| `debug evtmgr ms` | device | `panos_debug_evtmgr` | (live device state — SSH via --remote) |
-| `debug evtmgr ms debug-log clfy` | device | `panos_debug_evtmgr` | (live device state — SSH via --remote) |
-| `debug evtmgr ms debug-log client` | device | `panos_debug_evtmgr` | (live device state — SSH via --remote) |
-| `debug evtmgr ms debug-log msg` | device | `panos_debug_evtmgr` | (live device state — SSH via --remote) |
-| `debug evtmgr ms debug-log multicast` | device | `panos_debug_evtmgr` | (live device state — SSH via --remote) |
-| `debug evtmgr ms msg-filter msg-class` | device | `panos_debug_evtmgr` | (live device state — SSH via --remote) |
-| `debug evtmgr ms show basic` | device | `panos_debug_evtmgr` | (live device state — SSH via --remote) |
-| `debug evtmgr ms show client-id` | device | `panos_debug_evtmgr` | (live device state — SSH via --remote) |
-| `debug evtmgr ms show detail` | device | `panos_debug_evtmgr` | (live device state — SSH via --remote) |
-| `debug evtmgr ms syslog-enabled` | device | `panos_debug_evtmgr` | (live device state — SSH via --remote) |
-| `debug external-list delete-file all` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug external-list delete-file type domain name` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug external-list delete-file type ip name` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug external-list delete-file type url name` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug global-protect hip set-dp-query-interval` | device | `panos_debug_global_protect` | (live device state — SSH via --remote) |
-| `debug global-protect hip show-dp-query-interval` | device | `panos_debug_global_protect` | (live device state — SSH via --remote) |
-| `debug global-protect portal clientlessvpn gzip-encoding` | device | `panos_debug_global_protect` | (live device state — SSH via --remote) |
-| `debug global-protect portal clientlessvpn host-match-referer` | device | `panos_debug_global_protect` | (live device state — SSH via --remote) |
-| `debug global-protect portal interval` | device | `panos_debug_global_protect` | (live device state — SSH via --remote) |
-| `debug global-protect portal off` | device | `panos_debug_global_protect` | (live device state — SSH via --remote) |
-| `debug global-protect portal on` | device | `panos_debug_global_protect` | (live device state — SSH via --remote) |
-| `debug global-protect portal show` | device | `panos_debug_global_protect` | (live device state — SSH via --remote) |
-| `debug gp-broker gpsvc key-value` | device | `panos_debug_gp_broker` | (live device state — SSH via --remote) |
-| `debug gp-broker gpsvc reload-template` | device | `panos_debug_gp_broker` | (live device state — SSH via --remote) |
-| `debug gp-broker gpsvc reset counter` | device | `panos_debug_gp_broker` | (live device state — SSH via --remote) |
-| `debug gp-broker gpsvc reset key-value` | device | `panos_debug_gp_broker` | (live device state — SSH via --remote) |
-| `debug gp-broker gpsvc task` | device | `panos_debug_gp_broker` | (live device state — SSH via --remote) |
-| `debug gp-broker gpsvc test rpc api-name` | device | `panos_debug_gp_broker` | (live device state — SSH via --remote) |
-| `debug gp-broker gpsvc trace add user` | device | `panos_debug_gp_broker` | (live device state — SSH via --remote) |
-| `debug gp-broker gpsvc trace clear` | device | `panos_debug_gp_broker` | (live device state — SSH via --remote) |
-| `debug gp-broker gpsvc trace delete user` | device | `panos_debug_gp_broker` | (live device state — SSH via --remote) |
-| `debug gp-broker gpsvc trace global-log` | device | `panos_debug_gp_broker` | (live device state — SSH via --remote) |
-| `debug gp-broker gpsvc trace show` | device | `panos_debug_gp_broker` | (live device state — SSH via --remote) |
-| `debug gp-broker off` | device | `panos_debug_gp_broker` | (live device state — SSH via --remote) |
-| `debug gp-broker on` | device | `panos_debug_gp_broker` | (live device state — SSH via --remote) |
-| `debug gp-broker show` | device | `panos_debug_gp_broker` | (live device state — SSH via --remote) |
-| `debug high-availability` | device | `panos_debug_high_availability` | (live device state — SSH via --remote) |
-| `debug high-availability flap-interface interface` | device | `panos_debug_high_availability` | (live device state — SSH via --remote) |
-| `debug high-availability knob set encrypt-init-hold-time` | device | `panos_debug_high_availability` | (live device state — SSH via --remote) |
-| `debug high-availability knob set init-hold-time` | device | `panos_debug_high_availability` | (live device state — SSH via --remote) |
-| `debug high-availability knob show` | device | `panos_debug_high_availability` | (live device state — SSH via --remote) |
-| `debug high-availability on` | device | `panos_debug_high_availability` | (live device state — SSH via --remote) |
-| `debug ifmgr dump-detail-history port` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug ifmgr dump-history port` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug ifmgr dump-portdb` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug ifmgr pstate port` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug ike gateway` | device | `panos_debug_ike` | (live device state — SSH via --remote) |
-| `debug ike global off` | device | `panos_debug_ike` | (live device state — SSH via --remote) |
-| `debug ike global on` | device | `panos_debug_ike` | (live device state — SSH via --remote) |
-| `debug ike global show` | device | `panos_debug_ike` | (live device state — SSH via --remote) |
-| `debug ike pcap` | device | `panos_debug_ike` | (live device state — SSH via --remote) |
-| `debug ike socket` | device | `panos_debug_ike` | (live device state — SSH via --remote) |
-| `debug ike stat` | device | `panos_debug_ike` | (live device state — SSH via --remote) |
-| `debug ike stat fqdn name` | device | `panos_debug_ike` | (live device state — SSH via --remote) |
-| `debug ike stat ipsec counter` | device | `panos_debug_ike` | (live device state — SSH via --remote) |
-| `debug ike stat isakmp counter` | device | `panos_debug_ike` | (live device state — SSH via --remote) |
-| `debug ike stat sched filter gwid` | device | `panos_debug_ike` | (live device state — SSH via --remote) |
-| `debug ike tunnel` | device | `panos_debug_ike` | (live device state — SSH via --remote) |
-| `debug iot clear-all type` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot disable-device-id` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot dump relay` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot dump relay-ipc-distributord state` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot eal cortex-server` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot eal key-value` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot eal on` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot eal reset aggregation-non-ack` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot eal reset aggregation-num` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot eal reset connection` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot eal reset counter` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot eal reset key-value` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot eal sending-format` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot eal test load-dpi` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot eal track` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot eal track filter add subtype` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot eal track filter clear` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot eal track filter show` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot eal validate-dpi` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot global counter` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot global off` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot global on` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot global show` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot icd key-value` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot icd on` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot icd reset connection` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot icd reset cookie` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot icd reset key-value` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot icd set-app-match-workers` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot icd trigger-app-match` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot icd verdict-server` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot memory` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot relay-ipc-distributord set qsize` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot relay-ipc-distributord set relay-distd-recv-cache-qsize` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot relay-ipc-distributord set relay-distd-recv-read-batch-size` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug iot relay-ipc-distributord show` | device | `panos_debug_iot` | (live device state — SSH via --remote) |
-| `debug keymgr gateway id` | device | `panos_debug_keymgr` | (live device state — SSH via --remote) |
-| `debug keymgr global off` | device | `panos_debug_keymgr` | (live device state — SSH via --remote) |
-| `debug keymgr global on` | device | `panos_debug_keymgr` | (live device state — SSH via --remote) |
-| `debug keymgr global show` | device | `panos_debug_keymgr` | (live device state — SSH via --remote) |
-| `debug keymgr list-sa` | device | `panos_debug_keymgr` | (live device state — SSH via --remote) |
-| `debug keymgr queue` | device | `panos_debug_keymgr` | (live device state — SSH via --remote) |
-| `debug keymgr socket` | device | `panos_debug_keymgr` | (live device state — SSH via --remote) |
-| `debug keymgr tunnel id` | device | `panos_debug_keymgr` | (live device state — SSH via --remote) |
-| `debug l2ctrld global off` | device | `panos_debug_l2ctrld` | (live device state — SSH via --remote) |
-| `debug l2ctrld global on` | device | `panos_debug_l2ctrld` | (live device state — SSH via --remote) |
-| `debug l2ctrld global show` | device | `panos_debug_l2ctrld` | (live device state — SSH via --remote) |
-| `debug l2ctrld lacp off` | device | `panos_debug_l2ctrld` | (live device state — SSH via --remote) |
-| `debug l2ctrld lacp on` | device | `panos_debug_l2ctrld` | (live device state — SSH via --remote) |
-| `debug l2ctrld lacp set hold-time aggregate-ethernet` | device | `panos_debug_l2ctrld` | (live device state — SSH via --remote) |
-| `debug l2ctrld lacp show` | device | `panos_debug_l2ctrld` | (live device state — SSH via --remote) |
-| `debug l2ctrld lldp delete neighbor` | device | `panos_debug_l2ctrld` | (live device state — SSH via --remote) |
-| `debug l2ctrld lldp off` | device | `panos_debug_l2ctrld` | (live device state — SSH via --remote) |
-| `debug l2ctrld lldp on` | device | `panos_debug_l2ctrld` | (live device state — SSH via --remote) |
-| `debug l2ctrld lldp pcap` | device | `panos_debug_l2ctrld` | (live device state — SSH via --remote) |
-| `debug l2ctrld lldp pcap logical-router on logicalrouter` | device | `panos_debug_l2ctrld` | (live device state — SSH via --remote) |
-| `debug l2ctrld lldp pcap virtual-router on virtualrouter` | device | `panos_debug_l2ctrld` | (live device state — SSH via --remote) |
-| `debug l2ctrld lldp set stagger-limit` | device | `panos_debug_l2ctrld` | (live device state — SSH via --remote) |
-| `debug l2ctrld lldp show` | device | `panos_debug_l2ctrld` | (live device state — SSH via --remote) |
-| `debug l3svc captive-portal kerberos-timeout interval` | device | `panos_debug_l3svc` | (live device state — SSH via --remote) |
-| `debug l3svc captive-portal kerberos-timeout off` | device | `panos_debug_l3svc` | (live device state — SSH via --remote) |
-| `debug l3svc captive-portal kerberos-timeout on` | device | `panos_debug_l3svc` | (live device state — SSH via --remote) |
-| `debug l3svc captive-portal kerberos-timeout show` | device | `panos_debug_l3svc` | (live device state — SSH via --remote) |
-| `debug l3svc clear` | device | `panos_debug_l3svc` | (live device state — SSH via --remote) |
-| `debug l3svc off` | device | `panos_debug_l3svc` | (live device state — SSH via --remote) |
-| `debug l3svc on` | device | `panos_debug_l3svc` | (live device state — SSH via --remote) |
-| `debug l3svc pcap` | device | `panos_debug_l3svc` | (live device state — SSH via --remote) |
-| `debug l3svc pcap logical-router on logicalrouter` | device | `panos_debug_l3svc` | (live device state — SSH via --remote) |
-| `debug l3svc pcap virtual-router on virtualrouter` | device | `panos_debug_l3svc` | (live device state — SSH via --remote) |
-| `debug l3svc reset user-cache` | device | `panos_debug_l3svc` | (live device state — SSH via --remote) |
-| `debug l3svc show user-cache` | device | `panos_debug_l3svc` | (live device state — SSH via --remote) |
-| `debug list-admin-history` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug list-blocked-partial-xpaths` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug log-output-need-utf8` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug log-receiver` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver container-page entries` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver container-page off` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver container-page on` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver container-page timeout` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver contmgr status` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver corr-mgr off` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver corr-mgr on` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver corr-mgr show back-query status` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver corr-mgr show brief` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver corr-mgr show failed` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver corr-mgr show filter search object` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver corr-mgr show instance search category` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver corr-mgr show instance summary` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver corr-mgr show object id` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver corr-mgr show object list` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver corr-mgr stats clear object` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver corr-mgr stats show object` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver correlation filters show` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver correlation stats show` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver counters filter delta` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver dag always-include-dag` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver dag disable-dag-logging` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver dag dump dag-id vsysid` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver dag dump id-dag dag-idx` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver dag dump ip-dag ip` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver dag dump rule-dag rule_uuid` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver dag off` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver dag on` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver dag show` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver dpi dump clear` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver dpi dump format` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver dpi dump off` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver dpi dump on` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver dump users all` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver dump users id` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver dumplog off` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver dumplog on count` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver edl disable-edl-logging` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver edl dump edl-id vsysid` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver edl dump id-edl edl-idx` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver edl dump ip-edl ip` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver edl dump rule-edl rule_uuid` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver edl off` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver edl on` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver edl show` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver fwd` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver ip-cache clear node-data vsysid` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver ip-cache clear vsys-data vsysid` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver log-flow counters` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver log-flow trace show` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver log-forwarding per-second-stats` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver log-forwarding status` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver log-forwarding-connections per-second-stats` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver log-forwarding-connections status` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver log-purger debug` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver logdb-writer-stats latest` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver memory info verbose` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver memory per-second-stats` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver memory trim` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver netflow` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver on` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver param-tuning rollup` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver param-tuning syslog-threads show` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver param-tuning syslog-threads size` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver param-tuning task-queue show` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver param-tuning task-queue size` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver per-second-stats off` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver per-second-stats on` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver rawlog_fwd clear hints-all` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver rawlog_fwd off` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver rawlog_fwd on` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver rawlog_fwd set hints-expiration-duration` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver rawlog_fwd set hints-max` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver rawlog_fwd show` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver rawlog_fwd show connmgr verbose` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver rawlog_fwd stats global clear` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver rawlog_fwd stats global show verbose` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver rawlog_fwd stats per-lc` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver rawlog_fwd_trial connmgr` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver rawlog_fwd_trial evtmgr` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver rawlog_fwd_trial stats global show verbose` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug log-receiver telemetry-triggers` | device | `panos_debug_log_receiver` | (live device state — SSH via --remote) |
-| `debug logdb-usage` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug logview role` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type edl-domain all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type edl-domain id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type edl-domain name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type edl-ip all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type edl-ip id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type edl-ip name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type hip-profile all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type hip-profile id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type hip-profile name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type interface-group all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type interface-group id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type interface-group name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type macl-rule all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type macl-rule id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type macl-rule name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type ospfv3-virtual-link all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type ospfv3-virtual-link id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type ospfv3-virtual-link name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type sdwan-link-tag all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type sdwan-link-tag id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type sdwan-link-tag name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-app-signature all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-app-signature id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-app-signature name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-bgp-aggr-address all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-bgp-aggr-address id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-bgp-aggr-address name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-bgp-peer all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-bgp-peer id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-bgp-peer name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-bgp-peergrp all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-bgp-peergrp id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-bgp-peergrp name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-qos-group all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-qos-group id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-qos-group name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-region all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-region id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-region name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-spyware all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-spyware id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-spyware name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-url-filtering all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-url-filtering id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type shared-url-filtering name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type tci-rule all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type tci-rule id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type tci-rule name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type vsys-app-signature all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type vsys-app-signature id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type vsys-app-signature name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type vsys-region all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type vsys-region id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type vsys-region name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type vsys-spyware all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type vsys-spyware id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type vsys-spyware name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type vsys-url-filtering all` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type vsys-url-filtering id` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd dump idmgr type vsys-url-filtering name` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug lpmgrd status` | device | `panos_debug_lpmgrd` | (live device state — SSH via --remote) |
-| `debug macsec global off` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug macsec global on` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug macsec global show` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug macsec pcap` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug management-interface dhcp client debug` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug management-interface dhcp client log` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug management-server` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server app-config-trigger` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server autofocus` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server client disable` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server client enable` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server configd-mem` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server contmgr status` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server corr-mgr off` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server corr-mgr on` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server corr-mgr show back-query status` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server corr-mgr show brief` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server corr-mgr show failed` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server corr-mgr show filter search object` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server corr-mgr show instance search category` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server corr-mgr show instance summary` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server corr-mgr show object id` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server corr-mgr show object list` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server corr-mgr stats clear object` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server corr-mgr stats show object` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server db-intervals start-time` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server db-rollup` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server device-monitoring enable` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server dg-ctxt vsys` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server disable-cms-conn-check` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server last-candidatecfg-audit diff base-version` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server last-candidatecfg-audit info` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server last-candidatecfg-audit show version` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server log-forwarding-congestion-ctrl set` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server log-forwarding-congestion-ctrl show` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server max-config-size set size` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server max-config-size show` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server memory` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server ml7 anti-virus install` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server ml7 content install` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server ml7 iot install` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server on` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server req-stats` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server rolledup-intervals start-time` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server rule-hit` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server secure-conn set scep-cert-renewal-time` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server secure-conn set scep-cert-retry-on-failure-interval` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server secure-conn show ha config file` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server secure-conn show mgmt config file` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server secure-conn show mgmt detail` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server secure-conn show scep-cert-renewal-time` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server secure-conn show scep-cert-retry-on-failure-interval` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server set` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server set all` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server snmp-memory-map` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server telemetry-triggers correlated-threat-log-limit` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server telemetry-triggers counters` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server telemetry-triggers per-signature-limit` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server telemetry-triggers raw-threat-log-limit` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server telemetry-triggers related-threat-log-limit` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server template dump-config from` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server toggle-ui-notification` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server unified-log` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server unset` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server unset all` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server user bitmap` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server user info name` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-server vld stats cc` | device | `panos_debug_management_server` | (live device state — SSH via --remote) |
-| `debug management-websrvr backend off` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug management-websrvr backend on` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug management-websrvr backend show` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug md-service internal-dump` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug md-service off` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug md-service on` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug md-service show` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug mprelay off` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug mprelay on` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug mprelay show` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug net-inspection packet-limit` | device | `panos_debug_net_inspection` | (live device state — SSH via --remote) |
-| `debug net-inspection reset` | device | `panos_debug_net_inspection` | (live device state — SSH via --remote) |
-| `debug net-inspection show` | device | `panos_debug_net_inspection` | (live device state — SSH via --remote) |
-| `debug net-inspection trace` | device | `panos_debug_net_inspection` | (live device state — SSH via --remote) |
-| `debug net-inspection trace-limit` | device | `panos_debug_net_inspection` | (live device state — SSH via --remote) |
-| `debug netconfig-agent off` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug netconfig-agent on` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug netconfig-agent show` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug object registered-ip` | device | `panos_debug_object` | (live device state — SSH via --remote) |
-| `debug object registered-ip clear all source-name` | device | `panos_debug_object` | (live device state — SSH via --remote) |
-| `debug object registered-ip redis-entry ip` | device | `panos_debug_object` | (live device state — SSH via --remote) |
-| `debug object registered-ip redis-entry iprange` | device | `panos_debug_object` | (live device state — SSH via --remote) |
-| `debug object registered-ip show tag-source tag` | device | `panos_debug_object` | (live device state — SSH via --remote) |
-| `debug object registered-ip test cuid-upload` | device | `panos_debug_object` | (live device state — SSH via --remote) |
-| `debug object registered-ip test download` | device | `panos_debug_object` | (live device state — SSH via --remote) |
-| `debug object registered-ip test download-mode` | device | `panos_debug_object` | (live device state — SSH via --remote) |
-| `debug object registered-ip test register tag` | device | `panos_debug_object` | (live device state — SSH via --remote) |
-| `debug object registered-ip test unregister tag` | device | `panos_debug_object` | (live device state — SSH via --remote) |
-| `debug object registered-user clear all tag-source` | device | `panos_debug_object` | (live device state — SSH via --remote) |
-| `debug object registered-user show tag-source user` | device | `panos_debug_object` | (live device state — SSH via --remote) |
-| `debug object registered-user test cuid-upload` | device | `panos_debug_object` | (live device state — SSH via --remote) |
-| `debug object registered-user test register user` | device | `panos_debug_object` | (live device state — SSH via --remote) |
-| `debug object registered-user test unregister user` | device | `panos_debug_object` | (live device state — SSH via --remote) |
-| `debug online diagnostics get execution-time` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug online diagnostics run` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug pancfg-directory-usage clean config saved` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug pancfg-directory-usage clean dynamic-updates anti-virus update` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug pancfg-directory-usage clean dynamic-updates content update` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug pancfg-directory-usage clean software-images version` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug pppoed global off` | device | `panos_debug_pppoed` | (live device state — SSH via --remote) |
-| `debug pppoed global on` | device | `panos_debug_pppoed` | (live device state — SSH via --remote) |
-| `debug pppoed global show` | device | `panos_debug_pppoed` | (live device state — SSH via --remote) |
-| `debug pppoed pcap` | device | `panos_debug_pppoed` | (live device state — SSH via --remote) |
-| `debug pppoed pcap on file_size` | device | `panos_debug_pppoed` | (live device state — SSH via --remote) |
-| `debug pppoed show config` | device | `panos_debug_pppoed` | (live device state — SSH via --remote) |
-| `debug pppoed show interface` | device | `panos_debug_pppoed` | (live device state — SSH via --remote) |
-| `debug predefined-report-default` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug preserve-prenat feature show` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug proxy discard-partial-client-hello enable` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug proxy discard-partial-client-hello show` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug proxy fast-session-delete enable` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug proxy-protocol debug-level` | device | `panos_debug_proxy_protocol` | (live device state — SSH via --remote) |
-| `debug proxy-protocol debug-mode normal` | device | `panos_debug_proxy_protocol` | (live device state — SSH via --remote) |
-| `debug proxy-protocol debug-mode session-limit` | device | `panos_debug_proxy_protocol` | (live device state — SSH via --remote) |
-| `debug proxy-protocol debug-mode trace-limit` | device | `panos_debug_proxy_protocol` | (live device state — SSH via --remote) |
-| `debug proxy-protocol feature enabled` | device | `panos_debug_proxy_protocol` | (live device state — SSH via --remote) |
-| `debug proxy-protocol feature hostid-subtlv-type` | device | `panos_debug_proxy_protocol` | (live device state — SSH via --remote) |
-| `debug proxy-protocol feature show` | device | `panos_debug_proxy_protocol` | (live device state — SSH via --remote) |
-| `debug proxy-protocol feature userid-subtlv-type` | device | `panos_debug_proxy_protocol` | (live device state — SSH via --remote) |
-| `debug proxy-protocol packet-dump-max-bytes` | device | `panos_debug_proxy_protocol` | (live device state — SSH via --remote) |
-| `debug rasmgr delay-nh-update` | device | `panos_debug_rasmgr` | (live device state — SSH via --remote) |
-| `debug rasmgr delay-nh-update reset` | device | `panos_debug_rasmgr` | (live device state — SSH via --remote) |
-| `debug rasmgr gateway` | device | `panos_debug_rasmgr` | (live device state — SSH via --remote) |
-| `debug rasmgr ippool reset-all` | device | `panos_debug_rasmgr` | (live device state — SSH via --remote) |
-| `debug rasmgr off` | device | `panos_debug_rasmgr` | (live device state — SSH via --remote) |
-| `debug rasmgr on` | device | `panos_debug_rasmgr` | (live device state — SSH via --remote) |
-| `debug rasmgr satellite` | device | `panos_debug_rasmgr` | (live device state — SSH via --remote) |
-| `debug rasmgr show` | device | `panos_debug_rasmgr` | (live device state — SSH via --remote) |
-| `debug rasmgr src-ip-trie gateway-name` | device | `panos_debug_rasmgr` | (live device state — SSH via --remote) |
-| `debug rasmgr statistics` | device | `panos_debug_rasmgr` | (live device state — SSH via --remote) |
-| `debug rasmgr user` | device | `panos_debug_rasmgr` | (live device state — SSH via --remote) |
-| `debug rawlog_fwd enable` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug reportd contmgr status` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug reportd corr-mgr off` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug reportd corr-mgr on` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug reportd corr-mgr show back-query status` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug reportd corr-mgr show brief` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug reportd corr-mgr show failed` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug reportd corr-mgr show filter search object` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug reportd corr-mgr show instance search category` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug reportd corr-mgr show instance summary` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug reportd corr-mgr show object id` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug reportd corr-mgr show object list` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug reportd corr-mgr stats clear object` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug reportd corr-mgr stats show object` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug reportd off` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug reportd on` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug reportd schedule-reports` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug reportd send-request-to-7k` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug reportd set-timeout` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug reportd show` | device | `panos_debug_reportd` | (live device state — SSH via --remote) |
-| `debug routing` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing dctrace both enable` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing dctrace ips enable` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing dctrace pd enable` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing dctrace show` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing fib clear virtual-router` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing fib flush` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing fib stats` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing fqdn display virtual-router` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing global off` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing global on` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing global show` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing mib` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing mpf offload` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing mpf stats` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing path-monitor id` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing pcap` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing pcap show` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing qtrace disable afi` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing qtrace enable afi` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing qtrace flush-log` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug routing qtrace show afi` | device | `panos_debug_routing` | (live device state — SSH via --remote) |
-| `debug run-panorama-predefined-report` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug satd dump certificate-pool global` | device | `panos_debug_satd` | (live device state — SSH via --remote) |
-| `debug satd dump certificate-pool satellite` | device | `panos_debug_satd` | (live device state — SSH via --remote) |
-| `debug satd failed-refresh-timeout satellite name` | device | `panos_debug_satd` | (live device state — SSH via --remote) |
-| `debug satd off` | device | `panos_debug_satd` | (live device state — SSH via --remote) |
-| `debug satd on` | device | `panos_debug_satd` | (live device state — SSH via --remote) |
-| `debug satd show` | device | `panos_debug_satd` | (live device state — SSH via --remote) |
-| `debug satd statistics` | device | `panos_debug_satd` | (live device state — SSH via --remote) |
-| `debug sdwand clear all` | device | `panos_debug_sdwand` | (live device state — SSH via --remote) |
-| `debug sdwand event-log filter delete all` | device | `panos_debug_sdwand` | (live device state — SSH via --remote) |
-| `debug sdwand event-log filter delete idx` | device | `panos_debug_sdwand` | (live device state — SSH via --remote) |
-| `debug sdwand event-log filter off` | device | `panos_debug_sdwand` | (live device state — SSH via --remote) |
-| `debug sdwand event-log filter on` | device | `panos_debug_sdwand` | (live device state — SSH via --remote) |
-| `debug sdwand event-log filter set index` | device | `panos_debug_sdwand` | (live device state — SSH via --remote) |
-| `debug sdwand event-log filter set match ingress-interface` | device | `panos_debug_sdwand` | (live device state — SSH via --remote) |
-| `debug sdwand event-log filter show` | device | `panos_debug_sdwand` | (live device state — SSH via --remote) |
-| `debug sdwand feature show` | device | `panos_debug_sdwand` | (live device state — SSH via --remote) |
-| `debug sdwand global off` | device | `panos_debug_sdwand` | (live device state — SSH via --remote) |
-| `debug sdwand global on` | device | `panos_debug_sdwand` | (live device state — SSH via --remote) |
-| `debug sdwand global show` | device | `panos_debug_sdwand` | (live device state — SSH via --remote) |
-| `debug sdwand path-monitor disable all` | device | `panos_debug_sdwand` | (live device state — SSH via --remote) |
-| `debug sdwand path-monitor disable tunnel-id` | device | `panos_debug_sdwand` | (live device state — SSH via --remote) |
-| `debug sdwand path-monitor enable all` | device | `panos_debug_sdwand` | (live device state — SSH via --remote) |
-| `debug sdwand path-monitor enable tunnel-id` | device | `panos_debug_sdwand` | (live device state — SSH via --remote) |
-| `debug sdwand saas branch interval` | device | `panos_debug_sdwand` | (live device state — SSH via --remote) |
-| `debug sdwand saas hub interval` | device | `panos_debug_sdwand` | (live device state — SSH via --remote) |
-| `debug set-content-download-retry attempts` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug snmpd async` | device | `panos_debug_snmpd` | (live device state — SSH via --remote) |
-| `debug snmpd clear_persistence` | device | `panos_debug_snmpd` | (live device state — SSH via --remote) |
-| `debug snmpd off` | device | `panos_debug_snmpd` | (live device state — SSH via --remote) |
-| `debug snmpd on debug` | device | `panos_debug_snmpd` | (live device state — SSH via --remote) |
-| `debug snmpd sysd-disable-retry` | device | `panos_debug_snmpd` | (live device state — SSH via --remote) |
-| `debug snmpd sysd-timeout` | device | `panos_debug_snmpd` | (live device state — SSH via --remote) |
-| `debug software` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software core` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software disk-usage aggressive-cleaning` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software disk-usage cleanup threshold` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software disk-usage dagger-fds-cleaning` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software disk-usage dangling-fds target-name` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software fd-limit service` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software generate-sar-report current-date` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software kernelcfg thp` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software kernelcfg zram-swap disable` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software kernelcfg zram-swap enable` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software kernelcfg zram-swap modify num-dev` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software kernelcfg zram-swap show` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software large-core show-reserved-space` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software logging-level set feature service` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software logging-level set level` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software logging-level show feature service` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software logging-level show feature-defs service` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software logging-level show level service` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software logging-size set ratio` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software logging-size show ratio service` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software memsize_tracked` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software monitor_smaps_threshold percentage` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software phy-limit service` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software resource subsystem` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software restart process` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software trace` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug software virt-limit service` | device | `panos_debug_software` | (live device state — SSH via --remote) |
-| `debug sslmgr clear log` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr delete crl` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr delete ocsp` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr delete ocsp-host` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr off` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr on` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr reset` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr save ocsp` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr set` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr set crl-background-download` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr set crl-recv-speed-limit` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr set disable-scep-auth-cookie` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr set max-crl-file-size` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr set max-inflated-crl-file-size` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr set ocsp-host-failure-threshold` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr set ocsp-next-update-time` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr set parallel-processing` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr show` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr show memory` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr statistics` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr tar-all-crl` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr test gp-client-cert-check cert-file` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr test show-cert-check-jobs` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr view crl` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr view ocsp` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr view ocsp-host` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug sslmgr view pending-crl-downloads` | device | `panos_debug_sslmgr` | (live device state — SSH via --remote) |
-| `debug streaming dump` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug streaming tdb` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug streaming-telemetry set-logging-reporting-timeout` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug streaming-telemetry show-region-list` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug streaming-telemetry show-schedule` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug streaming-telemetry show-schedule-path-list` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug swm` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug swm install image` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug swm refresh content` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug swm show revert-status` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug sysd prefix-query command` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug sysd process-query command` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug sysd summary` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug sysd top` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug syslog-params reset-to-default-settings` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug syslog-params settings time-reopen` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug syslog-params show` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug system` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug system disk-life disk-1` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug system disk-smart-info disk-1` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug system ssh-key-reset` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug tac-login` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug techsupport duts` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug techsupport duts add-search-dir` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug techsupport duts set-byte-threshold` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug tund clear all` | device | `panos_debug_tund` | (live device state — SSH via --remote) |
-| `debug tund global off` | device | `panos_debug_tund` | (live device state — SSH via --remote) |
-| `debug tund global on` | device | `panos_debug_tund` | (live device state — SSH via --remote) |
-| `debug tund global show` | device | `panos_debug_tund` | (live device state — SSH via --remote) |
-| `debug tund tunnel id` | device | `panos_debug_tund` | (live device state — SSH via --remote) |
-| `debug ui telemetry` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug use-proxy-for-email-server` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug user-id` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id agent` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id agent-getall-rate rate` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id agent-getall-rate show` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id clear cloud-identity-engine type` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id clear domain-map from-disk` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id clear email-cache` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id clear gm-srvc-query` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id clear group` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id clear ip-port-user-dp ip` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id clear log` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id cluster-get-all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id cluster-peer-ip` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id cluster-state` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id cp-redirect-host-v6 clear` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id cp-redirect-host-v6 show` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id cp-redirect-host-v6 value` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dscd off` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dscd on` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dscd subdomains` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump cloud-identity-engine type` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump com statistics` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump conn-mgr statistics` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump domain-id-table domain all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump domain-id-table domain name` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump edir-user all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump edir-user user` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump email-cache all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump email-cache email` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump hip-mdm-cache start-from` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump hip-profile-database entry start-from` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump hip-profile-database ipmapping` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump hip-profile-database statistics` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump hip-report user` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr high-availability state` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr redis type computer all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr redis type computer id` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr redis type computer name` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr redis type user all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr redis type user id` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr redis type user name` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr redis type user-group all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr redis type user-group id` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr redis type user-group name` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr type computer all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr type computer id` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr type computer name` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr type user all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr type user id` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr type user name` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr type user-group all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr type user-group id` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump idmgr type user-group name` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump memory` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump relay-ipc-distributord` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump ts-agent` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump uid-2-metadata user all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump uid-2-metadata user id` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump uid-2-primeuid user all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump uid-2-primeuid user id` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump userprefix-2-uid user all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump userprefix-2-uid user name` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump vm-monitored-objects all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump vm-monitored-objects ref-id` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump vm-monitored-objects source-name` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id dump vm-monitored-objects type` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id get` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id kerberos list server-monitor` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id kerberos purge server-monitor` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id kerberos test default` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id kerberos test server-name` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id l3svc-max-retry rate` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id l3svc-max-retry show` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id l3svc-max-write-retry rate` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id l3svc-max-write-retry show` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id measure-handle-messages-duration` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id off` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id on` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id refresh cloud-identity-engine all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id refresh cloud-identity-engine config-data` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id refresh cloud-identity-engine name` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id refresh dp-uid-gid` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id refresh group-mapping all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id refresh group-mapping group-mapping-name` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id refresh group-mapping xmlapi-groups` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id refresh user-id agent` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id relay-ipc-distributord set qsize` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id relay-ipc-distributord set relay-distd-recv-cache-qsize` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id relay-ipc-distributord set relay-distd-recv-read-batch-size` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id relay-ipc-distributord show` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id reset` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id reset captive-portal ip-address` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id reset cloud-identity-engine all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id reset cloud-identity-engine name` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id reset cluster-state` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id reset com statistics` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id reset conn-mgr statistics` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id reset ip-user-mapping-stats` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id reset relay-statistics` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id reset user-id-manager type` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id save hip-profile-database` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id set agent` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id set all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id set base` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id set features` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id set hip` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id set ldap` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id set misc` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id set relay` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id set third-party` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id set userid` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id test agentless` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id test cp-login ip-address` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id test cp-logout ip-address` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id test debug-log-category` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id test gp-login ip-address` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id test gp-logout ip-address` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id test hip-profile-database size` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id test hip-report user` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id test hip-update ip` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id test idmgr-change-max type user-group new-max-id` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id test idmgr-restore-default-max type user-group` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id test probing` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id test sso-login ip-address` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id unset agent` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id unset all` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id unset base` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id unset features` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id unset hip` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id unset ldap` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id unset misc` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id unset relay` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id unset third-party` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug user-id unset userid` | device | `panos_debug_user_id` | (live device state — SSH via --remote) |
-| `debug vardata-receiver off` | device | `panos_debug_vardata_receiver` | (live device state — SSH via --remote) |
-| `debug vardata-receiver on` | device | `panos_debug_vardata_receiver` | (live device state — SSH via --remote) |
-| `debug vardata-receiver set all` | device | `panos_debug_vardata_receiver` | (live device state — SSH via --remote) |
-| `debug vardata-receiver set third-party` | device | `panos_debug_vardata_receiver` | (live device state — SSH via --remote) |
-| `debug vardata-receiver show` | device | `panos_debug_vardata_receiver` | (live device state — SSH via --remote) |
-| `debug vardata-receiver statistics` | device | `panos_debug_vardata_receiver` | (live device state — SSH via --remote) |
-| `debug vardata-receiver unset all` | device | `panos_debug_vardata_receiver` | (live device state — SSH via --remote) |
-| `debug vardata-receiver unset third-party` | device | `panos_debug_vardata_receiver` | (live device state — SSH via --remote) |
-| `debug vm-monitor clear source-name` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug vm-monitor reset source-name` | device | `panos_debug_misc` | (live device state — SSH via --remote) |
-| `debug wildfire batch-forward set disable` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire batch-forward set max-count` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire batch-forward set timeout` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire cloud-info channel` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire content-info` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire dp-status` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire file-cache` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire file-digest sha256` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire monitor-log` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire monitor-log interval` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire monitor-log max-size` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire report-process channel` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire reset all` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire reset dp-receiver` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire reset file-cache` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire reset forwarding channel` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire reset log-cache channel` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire reset report-cache channel` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire server-selection` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire transition-file-list` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire upload-log log disable` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire upload-log log enable` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire upload-log log extended-log` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire upload-log log max-size` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire upload-log log settings` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `debug wildfire upload-log show channel` | device | `panos_debug_wildfire` | (live device state — SSH via --remote) |
-| `delete admin-sessions username` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete anti-virus update` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete auth` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete authentication system-lock-files` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete authentication user-file ssh-known-hosts self` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete authentication user-file ssh-known-hosts user username` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete config saved` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete config-audit-history` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete content cache curr-content version` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete content cache old-content` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete content update` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete core data-plane file` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete core large-core file` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete core management-plane file` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete data-capture directory` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete debug-filter file` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete debug-log dp-log file` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete debug-log mp-global file` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete debug-log mp-log file` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete device-serialno host all` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete device-serialno host all-from-cloud` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete device-serialno host all-from-ldap` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete device-serialno host serialno` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete dnsproxy file` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete global-protect global-protect-portal portal` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete global-protect-client image` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete global-protect-client version` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete global-protect-clientless-vpn update` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete high-availability-key` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete high-availability-known-hosts` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete hip-mdm-cache mobile-id` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete hip-profile-database all` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete hip-profile-database check-delete-all-status` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete hip-profile-database entry ip` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete hip-report all logout-only` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete hip-report report user` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete iot cache curr-iot version` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete iot cache old-iot` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete license key` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete license token-file` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete logo` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete pcap directory` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete policy-cache` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete pprof management-plane file` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete report custom scope` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete report predefined scope` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete report summary scope` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete runtime-user-db` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete server cert` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete software version` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete ssh-authentication-public-key` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete sslmgr-store certificate-info portal name` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete sslmgr-store satellite-info portal name` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete sslmgr-store satellite-info-revoke-certificate portal` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete unknown-pcap directory` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete url-database all` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete url-database url` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete user-group-cache` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete wf-private update` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete wildfire update` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete wildfire-realtime-cache virus-pattern-type` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `delete wildfire-realtime-stats` | device | `panos_delete` | (live device state — SSH via --remote) |
-| `diff config num-context-lines` | device | `panos_diff` | (live device state — SSH via --remote) |
-| `ftp export log` | device | `panos_ftp` | (live device state — SSH via --remote) |
-| `grep invert-match` | device | `panos_grep` | (live device state — SSH via --remote) |
-| `less agent-log` | device | `panos_less` | (live device state — SSH via --remote) |
-| `less custom-page` | device | `panos_less` | (live device state — SSH via --remote) |
-| `less db-log` | device | `panos_less` | (live device state — SSH via --remote) |
-| `less dp-backtrace` | device | `panos_less` | (live device state — SSH via --remote) |
-| `less dp-log` | device | `panos_less` | (live device state — SSH via --remote) |
-| `less largecore-mp-backtrace` | device | `panos_less` | (live device state — SSH via --remote) |
-| `less mp-backtrace` | device | `panos_less` | (live device state — SSH via --remote) |
-| `less mp-global` | device | `panos_less` | (live device state — SSH via --remote) |
-| `less mp-log` | device | `panos_less` | (live device state — SSH via --remote) |
-| `less plugins-log` | device | `panos_less` | (live device state — SSH via --remote) |
-| `less webserver-log` | device | `panos_less` | (live device state — SSH via --remote) |
-| `ping bypass-routing` | device | `panos_ping` | (live device state — SSH via --remote) |
-| `request acknowledge logid` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request address-expansion expand object-name` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request anti-virus downgrade install` | device | `panos_request_anti_virus` | (live device state — SSH via --remote) |
-| `request anti-virus upgrade check` | device | `panos_request_anti_virus` | (live device state — SSH via --remote) |
-| `request anti-virus upgrade download sync-to-peer` | device | `panos_request_anti_virus` | (live device state — SSH via --remote) |
-| `request anti-virus upgrade info` | device | `panos_request_anti_virus` | (live device state — SSH via --remote) |
-| `request anti-virus upgrade install commit` | device | `panos_request_anti_virus` | (live device state — SSH via --remote) |
-| `request api key expiration` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request authentication unlock-admin user` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request authentication unlock-user vsys` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request authkey set` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request certificate fetch otp` | device | `panos_request_certificate` | (live device state — SSH via --remote) |
-| `request certificate generate certificate-name` | device | `panos_request_certificate` | (live device state — SSH via --remote) |
-| `request certificate generate-scep-client-cert certificate-name` | device | `panos_request_certificate` | (live device state — SSH via --remote) |
-| `request certificate import-scep-ca-cert certificate-name` | device | `panos_request_certificate` | (live device state — SSH via --remote) |
-| `request certificate is-blocked certificate-name` | device | `panos_request_certificate` | (live device state — SSH via --remote) |
-| `request certificate renew certificate-name` | device | `panos_request_certificate` | (live device state — SSH via --remote) |
-| `request certificate revoke certificate-name` | device | `panos_request_certificate` | (live device state — SSH via --remote) |
-| `request certificate revoke sslmgr-store db-serialno` | device | `panos_request_certificate` | (live device state — SSH via --remote) |
-| `request certificate show certificate-name` | device | `panos_request_certificate` | (live device state — SSH via --remote) |
-| `request certificate show-blocked` | device | `panos_request_certificate` | (live device state — SSH via --remote) |
-| `request certificate show-blocked shared` | device | `panos_request_certificate` | (live device state — SSH via --remote) |
-| `request clean-replay entries` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request clear-commit-tasks` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request commit-lock add comment` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request commit-lock remove admin` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request config diff ver1` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request config list commit-versions filter filter-data` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request config list commit-versions filter filter-query` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request config list commit-versions locations version` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request config-lock add comment` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request config-lock remove` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request content downgrade skip-content-validity-check` | device | `panos_request_content` | (live device state — SSH via --remote) |
-| `request content upgrade check` | device | `panos_request_content` | (live device state — SSH via --remote) |
-| `request content upgrade download sync-to-peer` | device | `panos_request_content` | (live device state — SSH via --remote) |
-| `request content upgrade info` | device | `panos_request_content` | (live device state — SSH via --remote) |
-| `request content upgrade install commit` | device | `panos_request_content` | (live device state — SSH via --remote) |
-| `request content validity-check` | device | `panos_request_content` | (live device state — SSH via --remote) |
-| `request cpld-restart` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request data-filtering access-password create password` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request data-filtering access-password delete` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request data-filtering access-password modify old-password` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request determine-new-applications version` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request device-quarantine-list add ip` | device | `panos_request_device_quarantine_list` | (live device state — SSH via --remote) |
-| `request device-quarantine-list delete host` | device | `panos_request_device_quarantine_list` | (live device state — SSH via --remote) |
-| `request device-quarantine-list show all option` | device | `panos_request_device_quarantine_list` | (live device state — SSH via --remote) |
-| `request device-quarantine-list show hostid` | device | `panos_request_device_quarantine_list` | (live device state — SSH via --remote) |
-| `request device-quarantine-list show serialno` | device | `panos_request_device_quarantine_list` | (live device state — SSH via --remote) |
-| `request device-registration username` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request device-telemetry` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request dhcp client ipv6 release` | device | `panos_request_dhcp` | (live device state — SSH via --remote) |
-| `request dhcp client ipv6 renew` | device | `panos_request_dhcp` | (live device state — SSH via --remote) |
-| `request dhcp client management-interface` | device | `panos_request_dhcp` | (live device state — SSH via --remote) |
-| `request dhcp client release` | device | `panos_request_dhcp` | (live device state — SSH via --remote) |
-| `request dhcp client renew` | device | `panos_request_dhcp` | (live device state — SSH via --remote) |
-| `request dhcpv6 client management-interface` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request disable-ztp` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request dnsproxy license refresh` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request encryption-level level` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request get-application-status application` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request get-disabled-applications` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request global-protect-client software activate file` | device | `panos_request_global_protect_client` | (live device state — SSH via --remote) |
-| `request global-protect-client software activate version` | device | `panos_request_global_protect_client` | (live device state — SSH via --remote) |
-| `request global-protect-client software check` | device | `panos_request_global_protect_client` | (live device state — SSH via --remote) |
-| `request global-protect-client software download sync-to-peer` | device | `panos_request_global_protect_client` | (live device state — SSH via --remote) |
-| `request global-protect-client software info` | device | `panos_request_global_protect_client` | (live device state — SSH via --remote) |
-| `request global-protect-clientless-vpn downgrade install` | device | `panos_request_global_protect_clientless_vpn` | (live device state — SSH via --remote) |
-| `request global-protect-clientless-vpn upgrade check` | device | `panos_request_global_protect_clientless_vpn` | (live device state — SSH via --remote) |
-| `request global-protect-clientless-vpn upgrade download latest sync-to-peer` | device | `panos_request_global_protect_clientless_vpn` | (live device state — SSH via --remote) |
-| `request global-protect-clientless-vpn upgrade info` | device | `panos_request_global_protect_clientless_vpn` | (live device state — SSH via --remote) |
-| `request global-protect-clientless-vpn upgrade install commit` | device | `panos_request_global_protect_clientless_vpn` | (live device state — SSH via --remote) |
-| `request global-protect-gateway check-client-logout-all-status` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request global-protect-gateway client-logout gateway` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request global-protect-gateway client-logout-all gateway` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request global-protect-gateway satellite-logout gateway` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request global-protect-portal client-logout portal` | device | `panos_request_global_protect_portal` | (live device state — SSH via --remote) |
-| `request global-protect-portal refresh-csc-cookie-key` | device | `panos_request_global_protect_portal` | (live device state — SSH via --remote) |
-| `request global-protect-portal refresh-scep-cookie-key` | device | `panos_request_global_protect_portal` | (live device state — SSH via --remote) |
-| `request global-protect-portal restore-satellite-cookie-expiration` | device | `panos_request_global_protect_portal` | (live device state — SSH via --remote) |
-| `request global-protect-portal set-satellite-cookie-expiration value` | device | `panos_request_global_protect_portal` | (live device state — SSH via --remote) |
-| `request global-protect-portal ticket portal` | device | `panos_request_global_protect_portal` | (live device state — SSH via --remote) |
-| `request global-protect-satellite get-gateway-config satellite` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request global-protect-satellite get-portal-config satellite` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request global-protect-satellite refresh-cookie-key` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request high-availability cluster clear-cache` | device | `panos_request_high_availability` | (live device state — SSH via --remote) |
-| `request high-availability cluster sync-from` | device | `panos_request_high_availability` | (live device state — SSH via --remote) |
-| `request high-availability session-reestablish force` | device | `panos_request_high_availability` | (live device state — SSH via --remote) |
-| `request high-availability state functional` | device | `panos_request_high_availability` | (live device state — SSH via --remote) |
-| `request high-availability state peer` | device | `panos_request_high_availability` | (live device state — SSH via --remote) |
-| `request high-availability state suspend` | device | `panos_request_high_availability` | (live device state — SSH via --remote) |
-| `request high-availability sync-to-remote` | device | `panos_request_high_availability` | (live device state — SSH via --remote) |
-| `request high-availability sync-to-remote id-manager` | device | `panos_request_high_availability` | (live device state — SSH via --remote) |
-| `request hsm` | device | `panos_request_hsm` | (live device state — SSH via --remote) |
-| `request hsm authenticate server` | device | `panos_request_hsm` | (live device state — SSH via --remote) |
-| `request hsm client-version` | device | `panos_request_hsm` | (live device state — SSH via --remote) |
-| `request hsm ha create-ha-group password` | device | `panos_request_hsm` | (live device state — SSH via --remote) |
-| `request hsm ha recover` | device | `panos_request_hsm` | (live device state — SSH via --remote) |
-| `request hsm ha replace-server password` | device | `panos_request_hsm` | (live device state — SSH via --remote) |
-| `request hsm ha synchronize password` | device | `panos_request_hsm` | (live device state — SSH via --remote) |
-| `request hsm login password` | device | `panos_request_hsm` | (live device state — SSH via --remote) |
-| `request hsm server-enroll` | device | `panos_request_hsm` | (live device state — SSH via --remote) |
-| `request iot upgrade` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request iot validity-check` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request last-acknowledge-time` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request license api-key delete` | device | `panos_request_license` | (live device state — SSH via --remote) |
-| `request license api-key set key` | device | `panos_request_license` | (live device state — SSH via --remote) |
-| `request license api-key show` | device | `panos_request_license` | (live device state — SSH via --remote) |
-| `request license deactivate key mode` | device | `panos_request_license` | (live device state — SSH via --remote) |
-| `request license deactivate vm-capacity mode` | device | `panos_request_license` | (live device state — SSH via --remote) |
-| `request license fetch auth-code` | device | `panos_request_license` | (live device state — SSH via --remote) |
-| `request license info` | device | `panos_request_license` | (live device state — SSH via --remote) |
-| `request license install` | device | `panos_request_license` | (live device state — SSH via --remote) |
-| `request list-content-downloads` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request log-collector-forwarding status` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request logdb migrate-to-panorama start type` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request logdb migrate-to-panorama status type` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request logdb migrate-to-panorama stop type` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request logging-service-forwarding certificate delete` | device | `panos_request_logging_service_forwarding` | (live device state — SSH via --remote) |
-| `request logging-service-forwarding certificate fetch` | device | `panos_request_logging_service_forwarding` | (live device state — SSH via --remote) |
-| `request logging-service-forwarding certificate fetch-noproxy pre-shared-key` | device | `panos_request_logging_service_forwarding` | (live device state — SSH via --remote) |
-| `request logging-service-forwarding certificate info` | device | `panos_request_logging_service_forwarding` | (live device state — SSH via --remote) |
-| `request logging-service-forwarding customerinfo` | device | `panos_request_logging_service_forwarding` | (live device state — SSH via --remote) |
-| `request logging-service-forwarding status` | device | `panos_request_logging_service_forwarding` | (live device state — SSH via --remote) |
-| `request master-key new-master-key` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request mongo set storage-engine instance` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request mongo show storage-engine instance` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request multi-config` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request panorama-connectivity-check` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request password-change-history dump-history` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request password-change-history re-encrypt old-master-key` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request password-hash password` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request pppoe ipv6 dhcpv6 release` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request pppoe ipv6 dhcpv6 renew` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request quota-enforcement` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request resolve vsys` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request restart dataplane` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request restart software` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request restart system with-swap-scrub` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request routing` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request routing show-config virtual-router` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request routing show-error virtual-router` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request saas_agent certificate info` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request session-discard id` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request set-application-status-recursive enable-dependent-apps` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request shutdown system with-swap-scrub` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request stats dump` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request streaming-telemetry reload-config` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request support` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request system bootstrap-usb delete bundle` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system bootstrap-usb prepare from` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system external-list global-find string` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system external-list list-capacities` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system external-list refresh type domain name` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system external-list refresh type ip name` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system external-list refresh type url name` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system external-list show type` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system external-list stats type` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system external-list url-test` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system fqdn` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system idmap-sync` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system patch apply` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system patch check` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system patch download version` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system patch info version` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system patch install version` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system patch revert` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system patch scp-export profile-name` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system patch scp-import profile-name` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system private-data-reset shutdown` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system self-test crypto` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system self-test force-crypto-failure dp` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system self-test force-crypto-failure mp` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system self-test force-software-integrity-failure` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system self-test software-integrity` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system self-test-job` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system software download scp-profile` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system software eligible to-version` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system software info` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system software install load-config` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system software scp-export profile-name` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request system software scp-import profile-name` | device | `panos_request_system` | (live device state — SSH via --remote) |
-| `request tech-support copy-to-remote-host remote-hostname` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request tech-support dump` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request telemetry-data dump` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request ui telemetry` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request url-filtering install pandb-database` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request url-filtering save url-database` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request url-filtering update url` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request user-id cloud-identity-engine config-data status` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request wf-private downgrade install` | device | `panos_request_wf_private` | (live device state — SSH via --remote) |
-| `request wf-private upgrade check` | device | `panos_request_wf_private` | (live device state — SSH via --remote) |
-| `request wf-private upgrade download latest sync-to-peer` | device | `panos_request_wf_private` | (live device state — SSH via --remote) |
-| `request wf-private upgrade info` | device | `panos_request_wf_private` | (live device state — SSH via --remote) |
-| `request wf-private upgrade install commit` | device | `panos_request_wf_private` | (live device state — SSH via --remote) |
-| `request wildfire downgrade install` | device | `panos_request_wildfire` | (live device state — SSH via --remote) |
-| `request wildfire registration channel` | device | `panos_request_wildfire` | (live device state — SSH via --remote) |
-| `request wildfire upgrade check` | device | `panos_request_wildfire` | (live device state — SSH via --remote) |
-| `request wildfire upgrade download latest sync-to-peer` | device | `panos_request_wildfire` | (live device state — SSH via --remote) |
-| `request wildfire upgrade info` | device | `panos_request_wildfire` | (live device state — SSH via --remote) |
-| `request wildfire upgrade install commit` | device | `panos_request_wildfire` | (live device state — SSH via --remote) |
-| `request wildfire-realtime-cache add virus-pattern-type` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `request wildfire-realtime-cache delete virus-pattern-type` | device | `panos_request_misc` | (live device state — SSH via --remote) |
-| `schedule botnet-report period` | device | `panos_schedule` | (live device state — SSH via --remote) |
-| `schedule saas-applications-usage-report skip-detailed-report` | device | `panos_schedule` | (live device state — SSH via --remote) |
-| `schedule uar-report user` | device | `panos_schedule` | (live device state — SSH via --remote) |
-| `scp export` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp export certificate to` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp export core-file data-plane from` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp export core-file large-corefile from` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp export core-file management-plane from` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp export debug bootmem_file from` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp export log` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp export log-file data-plane to` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp export log-file management-plane to` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp export pprof-file management-plane from` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp export stats-dump to` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp export threat-pcap pcap-id` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp import` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp import certificate from` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp import hsm-ciphertrust-client-cert from` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp import hsm-ciphertrust-client-key from` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp import hsm-ciphertrust-server-cert from` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp import hsm-server-cert from` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp import idp-metadata profile-name` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp import keypair from` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `scp import private-key from` | device | `panos_scp` | (live device state — SSH via --remote) |
-| `set advanced-routing fib check default-interval` | device | `panos_set_advanced_routing` | (live device state — SSH via --remote) |
-| `set advanced-routing fib check disable` | device | `panos_set_advanced_routing` | (live device state — SSH via --remote) |
-| `set advanced-routing fib check disable-auto-recovery` | device | `panos_set_advanced_routing` | (live device state — SSH via --remote) |
-| `set advanced-routing fib check interval` | device | `panos_set_advanced_routing` | (live device state — SSH via --remote) |
-| `set advanced-routing fib check recovery-failure-threshold` | device | `panos_set_advanced_routing` | (live device state — SSH via --remote) |
-| `set application dump off` | device | `panos_set_application` | (live device state — SSH via --remote) |
-| `set application dump on limit` | device | `panos_set_application` | (live device state — SSH via --remote) |
-| `set application traceroute enable` | device | `panos_set_application` | (live device state — SSH via --remote) |
-| `set application traceroute ttl-threshold` | device | `panos_set_application` | (live device state — SSH via --remote) |
-| `set audit-comment xpath` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set auth remote-host-check` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set auth strict-username-check` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set authentication radius-vsa-off` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set authentication radius-vsa-on` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set authentication saml_signature_digest_algorithm` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set cli` | device | `panos_set_cli` | (live device state — SSH via --remote) |
-| `set cli config-output-format` | device | `panos_set_cli` | (live device state — SSH via --remote) |
-| `set cli hide-ip value` | device | `panos_set_cli` | (live device state — SSH via --remote) |
-| `set cli hide-user value` | device | `panos_set_cli` | (live device state — SSH via --remote) |
-| `set cli terminal height` | device | `panos_set_cli` | (live device state — SSH via --remote) |
-| `set cli terminal type` | device | `panos_set_cli` | (live device state — SSH via --remote) |
-| `set cli terminal width` | device | `panos_set_cli` | (live device state — SSH via --remote) |
-| `set cli timeout idle` | device | `panos_set_cli` | (live device state — SSH via --remote) |
-| `set clock date` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set data-access-password` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set device-inventory-edit add-device mac` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set device-inventory-edit edit-devices hostname` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set device-inventory-upload csvfile` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set fwd-uni-dhcp-packet-on-dhcp-client-intf` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set global-protect arg-maxlen` | device | `panos_set_global_protect` | (live device state — SSH via --remote) |
-| `set global-protect global-protect-portal portal` | device | `panos_set_global_protect` | (live device state — SSH via --remote) |
-| `set global-protect redirect location` | device | `panos_set_global_protect` | (live device state — SSH via --remote) |
-| `set global-protect redirect off` | device | `panos_set_global_protect` | (live device state — SSH via --remote) |
-| `set global-protect redirect on` | device | `panos_set_global_protect` | (live device state — SSH via --remote) |
-| `set global-protect redirect show` | device | `panos_set_global_protect` | (live device state — SSH via --remote) |
-| `set global-protect satellite-serialnumberip-auth` | device | `panos_set_global_protect` | (live device state — SSH via --remote) |
-| `set logrcvr offline-logpurger interval` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set logrcvr offline-logpurger percentage-threshold` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set management-server logging` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set max-num-images count` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set mgmtbond` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set nw-id-api data` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set password` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set preserve-prenat-feature adjust-mtu` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set preserve-prenat-feature verify-checksum` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set quarantine data` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set session` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session accelerated-aging-scaling-factor` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session accelerated-aging-threshold` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session default` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session ingress_backlogs_duration` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session ingress_backlogs_threshold` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session lag-flow-key-type` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session pvst-native-vlan-id` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session resource-limit-behavior` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session scan-scaling-factor` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session scan-threshold` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session tcp-cong-ctrl` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session tcp-reject-small-initial-window-threshold` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session tcp-rsts` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session timeout-scan` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session timeout-tcp-delayed-ack` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session timeout-tcp-half-closed` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session timeout-tcp-time-wait` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session timeout-tcp-unverified-rst` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session timeout-tcphandshake` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set session timeout-tcpinit` | device | `panos_set_session` | (live device state — SSH via --remote) |
-| `set snmpd refresh-timer-period` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set ssh service-restart` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set ssh-authentication public-key` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set ssl add-secure-renegotiation-extension` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set ssl-conn-on-cert fail-all-conns` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set ssl-conn-on-cert fail-syslog-conns` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set sslmgr-check-cert-jobs max-limit` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set syslog fqdn-refresh` | device | `panos_set_syslog` | (live device state — SSH via --remote) |
-| `set syslog ssl-conn-validation all-conns` | device | `panos_set_syslog` | (live device state — SSH via --remote) |
-| `set syslog ssl-conn-validation explicit crl` | device | `panos_set_syslog` | (live device state — SSH via --remote) |
-| `set syslog ssl-conn-validation explicit eku` | device | `panos_set_syslog` | (live device state — SSH via --remote) |
-| `set syslog ssl-conn-validation explicit ocsp` | device | `panos_set_syslog` | (live device state — SSH via --remote) |
-| `set system setting` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting additional-threat-log` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting alg-natref` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting alg-persistent-nat` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting arp-cache-timeout` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ctd` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ctd ctd-agent-assigned-cores` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ctd feature-forward cloud-appid-prefiltering` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ctd feature-forward mica` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ctd lscan-mode` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ctd lscan-mode-default` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ctd max-sess-hash-limit` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ctd nonblocking-pattern-match-interval` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ctd pkt-proc-boundary` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ctd pkt-proc-loop-high` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ctd pkt-proc-loop-low` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ctd regex-stats-on` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ctd wif-shared-buf-threshold` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ctd-mode` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ctd-mode-default` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting delay-interface-process interface` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting dfa-mode` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting dfa-mode-default` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting hardware-acl-blocking-duration` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting hardware-acl-blocking-enable` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting icmp6-error` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ip6-defrag-timeout` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting jumbo-frame` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting layer4-checksum` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting logging default` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting logging default-policy-logging` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting logging log-compression` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting logging log-suppression` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting logging max-log-rate` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting logging max-packet-rate` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting mp-vr-vif-install-only-host-route` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting multi-vsys` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting packet ip-frag-limit` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting packet-path-test enable` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting packet-path-test show` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting paloalto-networks-service-proxy` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting persistent-dipp-alert` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting pow` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting pppoe-dont-send-eol interface` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting shared-policy` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting software-acl-blocking-duration` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ssl-decrypt` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ssl-decrypt answer-timeout` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting ssl-decrypt tunnel-taildrop-threshold` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting target-vsys` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting template` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting util assert-crash-once` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting wildfire disk-quota` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting wildfire disk-quota global` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting wildfire interval report-update-interval` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting wildfire interval server-list-update-interval` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting zip enable` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set system setting zip hw-reset` | device | `panos_set_system` | (live device state — SSH via --remote) |
-| `set transceiver-monitor-rate slot` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set user-id data` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set xmlapi-group add group` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set xmlapi-group delete group` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set xmlapi-group refresh group` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `set ztp panorama-timeout` | device | `panos_set_misc` | (live device state — SSH via --remote) |
-| `show adem probes` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show adem routeinfo destination` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show admins` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show advanced-routing bfd active-profile name` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing bfd details logical-router` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing bfd drop-counters session-id` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing bfd summary logical-router` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing bgp filters access-list logical-router` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing bgp filters prefix-list logical-router` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing bgp filters route-map logical-router` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing bgp loc-rib-detail peer` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing bgp peer` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing bgp peer detail peer-name` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing bgp peer status peer-name` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing bgp peer-groups logical-router` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing bgp rib-out-detail peer` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing bgp route afi` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing bgp summary logical-router` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing fib afi` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing interface logical-router` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing logical-router lr-name` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing multicast fib group` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing multicast group-permission interface` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing multicast igmp interface logical-router` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing multicast igmp membership interface` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing multicast igmp statistics interface` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing multicast msdp peer detail peer-name` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing multicast msdp peer status peer-name` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing multicast msdp sa logical-router` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing multicast msdp statistics logical-router` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing multicast msdp summary logical-router` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing multicast pim elected-bsr logical-router` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing multicast pim group-mapping group` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing multicast pim interface logical-router` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing multicast pim neighbor logical-router` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing multicast pim rpf static` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing multicast pim state logical-router` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing multicast pim statistics interface` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing multicast route group` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing ospf` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing ospf dumplsdb adv-rtr` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing ospf interface brief` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing ospf lsdb adv-rtr` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing ospf neighbor brief` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing ospf virt-neighbor brief` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing ospfv3` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing ospfv3 dumplsdb scope` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing ospfv3 interface brief` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing ospfv3 lsdb scope` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing ospfv3 neighbor brief` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing ospfv3 virt-neighbor brief` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing resource logical-router` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing rip` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing route destination` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show advanced-routing static-route-path-monitor logical-router` | device | `panos_show_advanced_routing` | (live device state — SSH via --remote) |
-| `show api-key-expiration-ts` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show applications vsys` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show auth` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show authentication allowlist` | device | `panos_show_authentication` | (live device state — SSH via --remote) |
-| `show authentication groupdb` | device | `panos_show_authentication` | (live device state — SSH via --remote) |
-| `show authentication groupnames` | device | `panos_show_authentication` | (live device state — SSH via --remote) |
-| `show authentication local-user-db vsys` | device | `panos_show_authentication` | (live device state — SSH via --remote) |
-| `show authentication locked-users vsys` | device | `panos_show_authentication` | (live device state — SSH via --remote) |
-| `show authentication service-principal vsys` | device | `panos_show_authentication` | (live device state — SSH via --remote) |
-| `show authentication service-principals vsys` | device | `panos_show_authentication` | (live device state — SSH via --remote) |
-| `show authentication statistics username` | device | `panos_show_authentication` | (live device state — SSH via --remote) |
-| `show bad-custom-signature` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show bonjour interface` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show chassis inventory` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show chassis-ready` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show cli` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show clock more` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show cloud-appid` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid app-to-filtergroup-mapping batch-idx` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid application` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid application-filter all` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid application-filter option vsys` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid application-group all` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid application-group option vsys` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid cloud-app-data app-metadata` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid cloud-app-data application all` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid cloud-app-data application app-id` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid cloud-app-data application cloud-app-name` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid cloud-app-data application statistics` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid cloud-app-data container all` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid cloud-app-data container container-id` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid cloud-app-data container container-name` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid cloud-app-data container statistics` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid signature-dp` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid signature-dp app-signature all` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid signature-dp app-signature cloud-app-name` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid signature-dp app-signature signature-id` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid signature-dp app-signature statistics` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid signature-dp appid` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid signature-dp threat-signature all` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid signature-dp threat-signature cloud-app-name` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid signature-dp threat-signature statistics` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid signature-dp threat-signature threat-id` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid task all option` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid task statistics` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid task task-index` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid transaction all option` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-appid transaction trans-index` | device | `panos_show_cloud_appid` | (live device state — SSH via --remote) |
-| `show cloud-auth-service-alerts` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show cloud-auth-service-metadata region_id` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show cloud-auth-service-profiles tenant_id` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show cloud-auth-service-regions force_refresh` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show cloud-auth-service-tenants region_id` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show cloud-management-status` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show cloud-userid` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show cluster` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show cluster-userid statistics` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show commit-locks vsys` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show config` | device | `panos_show_config` | (live device state — SSH via --remote) |
-| `show config audit base-version` | device | `panos_show_config` | (live device state — SSH via --remote) |
-| `show config audit base-version-no-deletes` | device | `panos_show_config` | (live device state — SSH via --remote) |
-| `show config audit info` | device | `panos_show_config` | (live device state — SSH via --remote) |
-| `show config audit version` | device | `panos_show_config` | (live device state — SSH via --remote) |
-| `show config commit-scope partial shared-object` | device | `panos_show_config` | (live device state — SSH via --remote) |
-| `show config effective-running xpath` | device | `panos_show_config` | (live device state — SSH via --remote) |
-| `show config list admins partial shared-object` | device | `panos_show_config` | (live device state — SSH via --remote) |
-| `show config list audit-comments xpath` | device | `panos_show_config` | (live device state — SSH via --remote) |
-| `show config list change-summary partial admin` | device | `panos_show_config` | (live device state — SSH via --remote) |
-| `show config list changes partial shared-object` | device | `panos_show_config` | (live device state — SSH via --remote) |
-| `show config pushed-shared-policy vsys` | device | `panos_show_config` | (live device state — SSH via --remote) |
-| `show config running xpath` | device | `panos_show_config` | (live device state — SSH via --remote) |
-| `show config saved` | device | `panos_show_config` | (live device state — SSH via --remote) |
-| `show config-locks vsys` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show counter global filter category` | device | `panos_show_counter` | (live device state — SSH via --remote) |
-| `show counter global name` | device | `panos_show_counter` | (live device state — SSH via --remote) |
-| `show counter interface` | device | `panos_show_counter` | (live device state — SSH via --remote) |
-| `show counter management-server` | device | `panos_show_counter` | (live device state — SSH via --remote) |
-| `show counter rate` | device | `panos_show_counter` | (live device state — SSH via --remote) |
-| `show counter total-throughput` | device | `panos_show_counter` | (live device state — SSH via --remote) |
-| `show ctd-agent` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show ctd-agent debug` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show ctd-agent status` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show device-certificate` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show device-telemetry` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show device-telemetry stats` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability election-option` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability election-option timers` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability path-monitoring` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability path-monitoring path-group` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability peer` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig high-availability peer encryption` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting cloud-host-compliance` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting management log-forwarding-from-device` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting management secure-conn-server authorization-list` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting wildfire private-cloud-secure-conn-client` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig setting wildfire private-cloud-secure-conn-client certificate-type` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system config-bundle-export-schedule` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system deployment-update-schedule` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system dlsrvr` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system hsm-settings provider aws-cloudhsm` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system hsm-settings provider aws-cloudhsm health-check-settings` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system hsm-settings provider aws-cloudhsm hsm-cluster` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system maintenance-user` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system management-tunnel` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system management-tunnel crypto-profiles` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system management-tunnel crypto-profiles ikev2-crypto-profiles` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system management-tunnel crypto-profiles ipsec-crypto-profiles` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system management-tunnel ikev2-gateway` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system management-tunnel tunnel` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show deviceconfig system push-schedule` | device | `panos_show_deviceconfig` | (live device state — SSH via --remote) |
-| `show dhcp client ipv6 pool-details` | device | `panos_show_dhcp` | (live device state — SSH via --remote) |
-| `show dhcp client ipv6 state interface` | device | `panos_show_dhcp` | (live device state — SSH via --remote) |
-| `show dhcp client ipv6-gateway-address` | device | `panos_show_dhcp` | (live device state — SSH via --remote) |
-| `show dhcp client mgmt-interface-state` | device | `panos_show_dhcp` | (live device state — SSH via --remote) |
-| `show dhcp client mgmt6-interface-state` | device | `panos_show_dhcp` | (live device state — SSH via --remote) |
-| `show dhcp client state` | device | `panos_show_dhcp` | (live device state — SSH via --remote) |
-| `show dhcp inherited state interface` | device | `panos_show_dhcp` | (live device state — SSH via --remote) |
-| `show dhcp server lease interface` | device | `panos_show_dhcp` | (live device state — SSH via --remote) |
-| `show dhcp server settings` | device | `panos_show_dhcp` | (live device state — SSH via --remote) |
-| `show dns-proxy cache all` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy cache dump file` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy cache filter fqdn` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy cache mgmt-obj` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy cache name` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy ddns interface name` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy dns-signature cache fqdn` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy dns-signature content` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy dns-signature counters` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy dns-signature info` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy encrypted-dns` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy fqdn all` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy fqdn mgmt-obj` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy fqdn name` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy settings all` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy settings mgmt-obj` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy settings name` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy socket-count all` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy static-entries all` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy static-entries dump file` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy static-entries filter fqdn` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy static-entries name` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy statistics all` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy statistics mgmt-obj` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dns-proxy statistics name` | device | `panos_show_dns_proxy` | (live device state — SSH via --remote) |
-| `show dos-block-table all start-at` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show dos-block-table hardware start-at` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show dos-block-table software start-at` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show dos-block-table summary` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show dos-protection rule` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show dos-protection zone` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show global-protect` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show global-protect-firewall summary firewall-client-version-last-activity-time` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show global-protect-gateway current-satellite gateway` | device | `panos_show_global_protect_gateway` | (live device state — SSH via --remote) |
-| `show global-protect-gateway current-user gateway` | device | `panos_show_global_protect_gateway` | (live device state — SSH via --remote) |
-| `show global-protect-gateway flow name` | device | `panos_show_global_protect_gateway` | (live device state — SSH via --remote) |
-| `show global-protect-gateway flow tunnel-id` | device | `panos_show_global_protect_gateway` | (live device state — SSH via --remote) |
-| `show global-protect-gateway flow-site-to-site name` | device | `panos_show_global_protect_gateway` | (live device state — SSH via --remote) |
-| `show global-protect-gateway flow-site-to-site tunnel-id` | device | `panos_show_global_protect_gateway` | (live device state — SSH via --remote) |
-| `show global-protect-gateway gateway name` | device | `panos_show_global_protect_gateway` | (live device state — SSH via --remote) |
-| `show global-protect-gateway previous-satellite gateway` | device | `panos_show_global_protect_gateway` | (live device state — SSH via --remote) |
-| `show global-protect-gateway previous-user gateway` | device | `panos_show_global_protect_gateway` | (live device state — SSH via --remote) |
-| `show global-protect-gateway statistics gateway` | device | `panos_show_global_protect_gateway` | (live device state — SSH via --remote) |
-| `show global-protect-gateway summary all` | device | `panos_show_global_protect_gateway` | (live device state — SSH via --remote) |
-| `show global-protect-gateway summary detail name` | device | `panos_show_global_protect_gateway` | (live device state — SSH via --remote) |
-| `show global-protect-mdm state` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show global-protect-mdm statistics` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show global-protect-portal cookie-cache portal` | device | `panos_show_global_protect_portal` | (live device state — SSH via --remote) |
-| `show global-protect-portal current-user portal` | device | `panos_show_global_protect_portal` | (live device state — SSH via --remote) |
-| `show global-protect-portal global-protect-portal portal` | device | `panos_show_global_protect_portal` | (live device state — SSH via --remote) |
-| `show global-protect-portal satellite-cookie-expiration` | device | `panos_show_global_protect_portal` | (live device state — SSH via --remote) |
-| `show global-protect-portal satellite-serialnumberip-auth status` | device | `panos_show_global_protect_portal` | (live device state — SSH via --remote) |
-| `show global-protect-portal statistics portal` | device | `panos_show_global_protect_portal` | (live device state — SSH via --remote) |
-| `show global-protect-portal summary all` | device | `panos_show_global_protect_portal` | (live device state — SSH via --remote) |
-| `show global-protect-portal summary detail name` | device | `panos_show_global_protect_portal` | (live device state — SSH via --remote) |
-| `show global-protect-satellite current-gateway satellite` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show global-protect-satellite interface` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show global-protect-satellite satellite name` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show gp-broker gpsvc counter` | device | `panos_show_gp_broker` | (live device state — SSH via --remote) |
-| `show gp-broker gpsvc task all option` | device | `panos_show_gp_broker` | (live device state — SSH via --remote) |
-| `show gp-broker gpsvc task src-ip` | device | `panos_show_gp_broker` | (live device state — SSH via --remote) |
-| `show gp-broker gpsvc task task-index` | device | `panos_show_gp_broker` | (live device state — SSH via --remote) |
-| `show gp-broker gpsvc task user` | device | `panos_show_gp_broker` | (live device state — SSH via --remote) |
-| `show gp-broker gpsvc version` | device | `panos_show_gp_broker` | (live device state — SSH via --remote) |
-| `show gp-broker ipc-stat` | device | `panos_show_gp_broker` | (live device state — SSH via --remote) |
-| `show gp-broker panos-config` | device | `panos_show_gp_broker` | (live device state — SSH via --remote) |
-| `show high-availability` | device | `panos_show_high_availability` | (live device state — SSH via --remote) |
-| `show high-availability cluster` | device | `panos_show_high_availability` | (live device state — SSH via --remote) |
-| `show high-availability cluster session-synchronization all` | device | `panos_show_high_availability` | (live device state — SSH via --remote) |
-| `show high-availability cluster session-synchronization device device-id` | device | `panos_show_high_availability` | (live device state — SSH via --remote) |
-| `show high-availability cluster session-synchronization device device-name` | device | `panos_show_high_availability` | (live device state — SSH via --remote) |
-| `show high-availability cluster statistics all` | device | `panos_show_high_availability` | (live device state — SSH via --remote) |
-| `show high-availability cluster statistics device device-id` | device | `panos_show_high_availability` | (live device state — SSH via --remote) |
-| `show high-availability cluster statistics device device-name` | device | `panos_show_high_availability` | (live device state — SSH via --remote) |
-| `show high-availability control-link statistics` | device | `panos_show_high_availability` | (live device state — SSH via --remote) |
-| `show high-availability interface` | device | `panos_show_high_availability` | (live device state — SSH via --remote) |
-| `show high-availability pre-negotiation summary` | device | `panos_show_high_availability` | (live device state — SSH via --remote) |
-| `show hsm` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show iot device-inventory all match` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot device-inventory all match ip` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot device-inventory summmary` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot dhcp-server status all` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot dhcp-server status server` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot dp-quarantine-cache all option` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot dp-quarantine-cache ip` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot eal` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot eal dpi-stats all` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot eal dpi-stats subtype` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot edit-device-inventory id` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot edit-device-inventory jobs` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot export-device-inventory all match` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot export-device-inventory all match ip` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot host-cache all option` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot host-cache hostid` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot icd statistics` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot icd version` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot ip-device-mapping all option` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot ip-device-mapping ip` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot ip-device-mapping-mp all option` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show iot ip-device-mapping-mp ip` | device | `panos_show_iot` | (live device state — SSH via --remote) |
-| `show jobs pending` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show jobs processed` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show lacp aggregate-ethernet` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show ldl` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show license-token-files name` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show lldp` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show location ip` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show log` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log alarm` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log alarm csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log alarm direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log alarm dport equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log alarm opaque contains` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log alarm receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log alarm sport equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log appstat csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log appstat direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log appstat end-time equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log appstat name equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log appstat name not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log appstat query equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log appstat receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log appstat risk` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log appstat start-time equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log auth` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log auth clienttype equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log auth csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log auth direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log auth ip in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log auth ip not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log auth receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log config client equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log config client not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log config cmd equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log config cmd not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log config csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log config direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log config end-time equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log config query equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log config receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log config result equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log config result not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log config start-time equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log corr` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log corr csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log corr direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log corr receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log corr severity` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log corr src in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log corr src not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log corr-categ` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log corr-categ csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log corr-categ direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log corr-categ receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log corr-categ severity` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log corr-categ src in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log corr-categ src not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log corr-detail match-oid equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log corr-detail object-name equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log data` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log data action equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log data action not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log data csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log data direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log data dport equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log data dport not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log data dst in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log data dst not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log data receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log data sport equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log data sport not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log data src in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log data src not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log data suppress-threatid-mapping equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption action equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption action not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption dport equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption dport not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption dst in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption dst not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption ec_curve equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption proxy_type equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption show-tracker equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption sport equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption sport not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption src in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption src not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption tls_auth equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption tls_enc equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption tls_keyxchg equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log decryption tls_version equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log globalprotect` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log globalprotect csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log globalprotect direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log globalprotect machinename contains` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log globalprotect machinename equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log globalprotect machinename not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log globalprotect private_ip equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log globalprotect private_ip in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log globalprotect private_ip not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log globalprotect public_ip equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log globalprotect public_ip in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log globalprotect public_ip not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log globalprotect receive_time equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log globalprotect receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log globalprotect receive_time not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log hipmatch` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log hipmatch csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log hipmatch direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log hipmatch machinename equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log hipmatch machinename not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log hipmatch matchname equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log hipmatch matchname not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log hipmatch matchtype equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log hipmatch matchtype not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log hipmatch os equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log hipmatch os not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log hipmatch receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log hipmatch src in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log hipmatch src not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log iptag` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log iptag csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log iptag datasource_subtype equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log iptag datasource_subtype not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log iptag datasource_type equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log iptag datasource_type not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log iptag datasourcename equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log iptag datasourcename not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log iptag direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log iptag event_id equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log iptag event_id not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log iptag ip in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log iptag ip not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log iptag ip_subnet_range equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log iptag ip_subnet_range not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log iptag receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log iptag tag_name equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log iptag tag_name not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log mdm receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log system csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log system direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log system end-time equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log system opaque contains` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log system query equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log system receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log system severity` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log system start-time equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log threat action equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log threat action not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log threat csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log threat direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log threat dport equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log threat dport not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log threat dst in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log threat dst not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log threat pcap-dump equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log threat receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log threat sport equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log threat sport not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log threat src in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log threat src not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log threat suppress-threatid-mapping equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log trace csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log trace direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log trace end-time equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log trace query equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log trace receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log trace sessionid equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log trace sessionid not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log trace start-time equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log traffic action equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log traffic action not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log traffic csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log traffic direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log traffic dport equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log traffic dport not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log traffic dst in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log traffic dst not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log traffic http2_connection equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log traffic http2_connection not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log traffic receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log traffic session-end-reason equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log traffic session-end-reason not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log traffic show-tracker equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log traffic sport equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log traffic sport not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log traffic src in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log traffic src not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log tunnel` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log tunnel action equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log tunnel action not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log tunnel csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log tunnel direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log tunnel dport equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log tunnel dport not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log tunnel dst in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log tunnel dst not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log tunnel receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log tunnel severity` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log tunnel sport equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log tunnel sport not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log tunnel src in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log tunnel src not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log url` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log url action equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log url action not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log url csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log url direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log url dport equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log url dport not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log url dst in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log url dst not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log url receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log url sport equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log url sport not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log url src in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log url src not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log url suppress-threatid-mapping equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log userid` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log userid beginport equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log userid beginport not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log userid csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log userid datasource equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log userid datasourcetype equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log userid direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log userid endport equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log userid endport not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log userid ip in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log userid ip not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log userid receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log wildfire` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log wildfire category equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log wildfire category not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log wildfire csv-output equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log wildfire direction equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log wildfire dport equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log wildfire dport not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log wildfire dst in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log wildfire dst not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log wildfire receive_time in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log wildfire sport equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log wildfire sport not-equal` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log wildfire src in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log wildfire src not-in` | device | `panos_show_log` | (live device state — SSH via --remote) |
-| `show log-collector-group` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show logging-status verbose` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show logrcvr ip-cache vsys` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show logrcvr offline-logpurger` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show mac` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show macsec association interface` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show macsec stats interface` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show management-clients` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show management-server candidate config-size` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show management-server last-committed config-size` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show max-num-images` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show mgt-config devices` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show mlav` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show neighbor` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show net-inspection details` | device | `panos_show_net_inspection` | (live device state — SSH via --remote) |
-| `show net-inspection evaluator index` | device | `panos_show_net_inspection` | (live device state — SSH via --remote) |
-| `show net-inspection evaluator zone` | device | `panos_show_net_inspection` | (live device state — SSH via --remote) |
-| `show net-inspection exempt` | device | `panos_show_net_inspection` | (live device state — SSH via --remote) |
-| `show net-inspection filter index` | device | `panos_show_net_inspection` | (live device state — SSH via --remote) |
-| `show net-inspection filter rule-name` | device | `panos_show_net_inspection` | (live device state — SSH via --remote) |
-| `show net-inspection filter zone` | device | `panos_show_net_inspection` | (live device state — SSH via --remote) |
-| `show net-inspection status` | device | `panos_show_net_inspection` | (live device state — SSH via --remote) |
-| `show netstat route` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show ntp` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show object dynamic-address-group all` | device | `panos_show_object` | (live device state — SSH via --remote) |
-| `show object dynamic-address-group name` | device | `panos_show_object` | (live device state — SSH via --remote) |
-| `show object registered-ip limit` | device | `panos_show_object` | (live device state — SSH via --remote) |
-| `show object registered-user all start-point` | device | `panos_show_object` | (live device state — SSH via --remote) |
-| `show object registered-user user` | device | `panos_show_object` | (live device state — SSH via --remote) |
-| `show object static ip` | device | `panos_show_object` | (live device state — SSH via --remote) |
-| `show obsolete-disabled-ssl-exclusions` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show operational-mode` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show oss-license` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show panorama-certificates` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show panorama-status` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show parent-info all` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show parent-info filter saddr` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show parent-info info` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show pbf return-mac all` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show pbf return-mac name` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show pbf rule all detail` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show pbf rule name` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show policy-recommendation iot max-count` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show policy-recommendation saas max-count` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show pppoe inherited state interface` | device | `panos_show_pppoe` | (live device state — SSH via --remote) |
-| `show pppoe interface` | device | `panos_show_pppoe` | (live device state — SSH via --remote) |
-| `show pppoe ipv6 interface` | device | `panos_show_pppoe` | (live device state — SSH via --remote) |
-| `show pppoe ipv6 pool-details` | device | `panos_show_pppoe` | (live device state — SSH via --remote) |
-| `show pppoe ipv6 prefix interface` | device | `panos_show_pppoe` | (live device state — SSH via --remote) |
-| `show predefined xpath` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show predefined-iot xpath` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show qos interface` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show query corr-detail id` | device | `panos_show_query` | (live device state — SSH via --remote) |
-| `show query effective-queries query` | device | `panos_show_query` | (live device state — SSH via --remote) |
-| `show query jobs` | device | `panos_show_query` | (live device state — SSH via --remote) |
-| `show query result id` | device | `panos_show_query` | (live device state — SSH via --remote) |
-| `show query stats` | device | `panos_show_query` | (live device state — SSH via --remote) |
-| `show redistribution agent state` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show redistribution agent statistics` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show redistribution service client` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show redistribution service status` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show report cache cache_id` | device | `panos_show_report` | (live device state — SSH via --remote) |
-| `show report cache info` | device | `panos_show_report` | (live device state — SSH via --remote) |
-| `show report custom` | device | `panos_show_report` | (live device state — SSH via --remote) |
-| `show report custom database equal` | device | `panos_show_report` | (live device state — SSH via --remote) |
-| `show report custom receive_time in` | device | `panos_show_report` | (live device state — SSH via --remote) |
-| `show report directory-listing` | device | `panos_show_report` | (live device state — SSH via --remote) |
-| `show report exec_mgr batch_id` | device | `panos_show_report` | (live device state — SSH via --remote) |
-| `show report exec_mgr info` | device | `panos_show_report` | (live device state — SSH via --remote) |
-| `show report id` | device | `panos_show_report` | (live device state — SSH via --remote) |
-| `show report jobs` | device | `panos_show_report` | (live device state — SSH via --remote) |
-| `show report predefined end-time equal` | device | `panos_show_report` | (live device state — SSH via --remote) |
-| `show report predefined name equal` | device | `panos_show_report` | (live device state — SSH via --remote) |
-| `show report predefined start-time equal` | device | `panos_show_report` | (live device state — SSH via --remote) |
-| `show resource limit` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show routing bfd active-profile name` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing bfd details virtual-router` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing bfd drop-counters session-id` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing bfd summary virtual-router` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing fib virtual-router` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing interface` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing multicast fib group` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing multicast group-permission interface` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing multicast igmp interface virtual-router` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing multicast igmp membership interface` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing multicast igmp statistics interface` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing multicast pim elected-bsr` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing multicast pim group-mapping group` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing multicast pim interface virtual-router` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing multicast pim neighbor virtual-router` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing multicast pim state virtual-router` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing multicast pim statistics interface` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing multicast route group` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing path-monitor virtual-router` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing protocol bgp` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing protocol bgp peer peer-name` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing protocol bgp peer-group group-name` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing protocol bgp policy virtual-router` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing protocol bgp summary virtual-router` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing protocol ospf` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing protocol ospfv3` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing protocol ospfv3 dumplsdb scope` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing protocol ospfv3 interface brief` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing protocol ospfv3 lsdb scope` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing protocol ospfv3 neighbor brief` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing protocol ospfv3 virt-neighbor brief` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing protocol redist` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing protocol rip` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing resource` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing route destination` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show routing summary virtual-router` | device | `panos_show_routing` | (live device state — SSH via --remote) |
-| `show rule-hit-count vsys` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show rule-hit-count vsys all rule-base` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show rule-hit-count vsys list entry` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show rule-hit-count vsys list rule-base` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show running` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running appinfo2ip saddr` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running application cache all` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running application disabled` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running application setting` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running application statistics` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running application-signature statistics` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running dns-cache statistics` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running global-ippool summary-only` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running ipv6 address` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running ml-block-cache top` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running ml-block-cache url` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running mlav-model status` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running nat-policy vsys` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running nat-rule-ippool rule` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running ndp-proxy interface` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running network-packet-broker` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running persistent-dipp-client ip-utilization pool` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running persistent-dipp-client pool` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running persistent-dipp-client-translation ip` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running persistent-dipp-pool ip-utilization` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running resource-monitor day last` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running resource-monitor hour last` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running resource-monitor ingress-backlogs` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running resource-monitor minute last` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running resource-monitor second last` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running resource-monitor week last` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running rule-use highlight vsys` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running rule-use hit-count vsys` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running security-policy rule-index` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running tcp state` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running tunnel flow` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running tunnel flow all filter type` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running tunnel flow context` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running tunnel flow name` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running tunnel flow tunnel-id` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running url` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running url-cache` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show running url-info` | device | `panos_show_running` | (live device state — SSH via --remote) |
-| `show sdwan connection` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan details` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan details basic` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan details rule id` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan details rule idx` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan details session id` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan event` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan path-monitor details` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan path-monitor dia-anypath packet-buffer` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan path-monitor parameter active` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan path-monitor parameter adaptive` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan path-monitor parameter all-dp` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan path-monitor parameter conn-idx` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan path-monitor parameter path-name` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan path-monitor parameter vif` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan path-monitor policy-map` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan path-monitor stats active` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan path-monitor stats adaptive` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan path-monitor stats all-dp` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan path-monitor stats conn-idx` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan path-monitor stats dia-vif` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan path-monitor stats path-name` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan path-monitor stats vif` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan pool details` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan rule vif` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan session distribution policy-name` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan session log session-id` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show sdwan session path-select session-id` | device | `panos_show_sdwan` | (live device state — SSH via --remote) |
-| `show session` | device | `panos_show_session` | (live device state — SSH via --remote) |
-| `show session all start-at` | device | `panos_show_session` | (live device state — SSH via --remote) |
-| `show session cache all filter from` | device | `panos_show_session` | (live device state — SSH via --remote) |
-| `show session cache external md5` | device | `panos_show_session` | (live device state — SSH via --remote) |
-| `show session cache md5` | device | `panos_show_session` | (live device state — SSH via --remote) |
-| `show session id` | device | `panos_show_session` | (live device state — SSH via --remote) |
-| `show session packet-buffer-protection` | device | `panos_show_session` | (live device state — SSH via --remote) |
-| `show shared address-group` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared application` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared application-filter` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared external-list` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared post-rulebase` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared post-rulebase application-override rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared post-rulebase authentication rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared post-rulebase decryption rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared post-rulebase default-security-rules rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared post-rulebase dos rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared post-rulebase nat rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared post-rulebase network-packet-broker rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared post-rulebase pbf rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared post-rulebase qos rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared post-rulebase sdwan rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared post-rulebase security rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared post-rulebase tunnel-inspect rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared pre-rulebase` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared pre-rulebase application-override rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared pre-rulebase authentication rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared pre-rulebase decryption rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared pre-rulebase dos rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared pre-rulebase nat rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared pre-rulebase network-packet-broker rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared pre-rulebase pbf rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared pre-rulebase qos rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared pre-rulebase sdwan rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared pre-rulebase security rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared pre-rulebase tunnel-inspect rules` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles ai-security` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles data-filtering` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles data-objects` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles decryption` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles dos-protection` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles file-blocking` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles gtp` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles hip-objects` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles host-compliance-objects` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles sctp` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles sdwan-error-correction` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles sdwan-path-quality` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles sdwan-saas-quality` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles sdwan-traffic-distribution` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles spyware` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles url-filtering` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles virus` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles vulnerability` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared profiles wildfire-analysis` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared region` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared schedule` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared service` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared threats` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared threats spyware` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show shared threats vulnerability` | device | `panos_show_shared` | (live device state — SSH via --remote) |
-| `show snmpd refresh-timer-period` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show sp-metadata captive-portal authprofile` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show sp-metadata global-protect authprofile` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show sp-metadata management authprofile` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show ssh-fingerprints hash-type` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show ssl-conn-on-cert` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show sslmgr-max-check-cert-jobs` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show sslmgr-store certificate-info issuer` | device | `panos_show_sslmgr_store` | (live device state — SSH via --remote) |
-| `show sslmgr-store certificate-info portal name` | device | `panos_show_sslmgr_store` | (live device state — SSH via --remote) |
-| `show sslmgr-store config-ca-certificate subjectname-hash` | device | `panos_show_sslmgr_store` | (live device state — SSH via --remote) |
-| `show sslmgr-store config-certificate-info db-serialno` | device | `panos_show_sslmgr_store` | (live device state — SSH via --remote) |
-| `show sslmgr-store satellite-info portal name` | device | `panos_show_sslmgr_store` | (live device state — SSH via --remote) |
-| `show sslmgr-store serialno-certificate-info db-serialno` | device | `panos_show_sslmgr_store` | (live device state — SSH via --remote) |
-| `show statistics` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show streaming-telemetry region-list` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show syslog-ssl-conn-validation` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show system` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system crypto entropy-status` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system disk-space files` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system environmentals fans slot` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system environmentals power slot` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system environmentals slot` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system environmentals thermal slot` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system resources follow` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system setting` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system setting ctd` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system setting ctd threat id` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system setting logging log-compression` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system setting ssl-decrypt` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system setting ssl-decrypt exclude-cache xml yes` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system setting ssl-decrypt gp-cookie-cache user` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system setting ssl-decrypt memory detail` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system setting url-cache` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system state browser` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system state filter` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system state filter-pretty` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show system statistics` | device | `panos_show_system` | (live device state — SSH via --remote) |
-| `show threat id` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show transceiver` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show transceiver-detail` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show transceiver-eeprom` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show transceiver-monitor-rate` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show tunnel-acceleration` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show upgrade-history` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show url-cloud status` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show user cloud-identity-engine client statistics` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user cloud-identity-engine statistics all` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user cloud-identity-engine statistics name` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user cloud-identity-engine status all` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user cloud-identity-engine status name` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user cookie-surrogate-cache-dp all` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user cookie-surrogate-cache-dp username` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user credential-filter` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user email-lookup email` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user group name` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user group-mapping naming-context server` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user group-mapping state` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user group-mapping statistics` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user group-mapping-service query` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user group-mapping-service status` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user group-policy-dp` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user group-policy-dp gid` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user group-selection sp_vsys_id` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user hip-report user` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user ip-port-user-mapping all` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user ip-port-user-mapping ip` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user ip-port-user-mapping source-user` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user ip-port-user-mapping-mp all` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user ip-port-user-mapping-mp ip` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user ip-port-user-mapping-mp source-user` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user ip-user-mapping all option` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user ip-user-mapping ip` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user ip-user-mapping-mp limit` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user ldap-device-serialno all` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user ldap-device-serialno serialno` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user local-user-db vsys` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user server-monitor auto-discover domain` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user server-monitor state` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user server-monitor statistics` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user ts-agent state` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user ts-agent statistics` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user uid2primeuid-dp all` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user uid2primeuid-dp uid` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user user-attributes user` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user user-cache-dp all` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user user-cache-dp uid` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user user-id-agent config all` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user user-id-agent config name` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user user-id-agent state` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user user-id-agent statistics` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user user-id-service client` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user user-id-service ipuser-update-list option` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user user-id-service status` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user user-ids all option` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user user-ids match-user` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user user-policy-dp all` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user user-policy-dp uid` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show user xml-api multiusersystem` | device | `panos_show_user` | (live device state — SSH via --remote) |
-| `show virtual-wire` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show vlan` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show vm-monitor source all` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show vm-monitor source state` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show vm-monitor source statistics` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show vpn flow name` | device | `panos_show_vpn` | (live device state — SSH via --remote) |
-| `show vpn flow tunnel-id` | device | `panos_show_vpn` | (live device state — SSH via --remote) |
-| `show vpn gateway match` | device | `panos_show_vpn` | (live device state — SSH via --remote) |
-| `show vpn gateway name` | device | `panos_show_vpn` | (live device state — SSH via --remote) |
-| `show vpn ike-hashurl` | device | `panos_show_vpn` | (live device state — SSH via --remote) |
-| `show vpn ike-sa detail gateway` | device | `panos_show_vpn` | (live device state — SSH via --remote) |
-| `show vpn ike-sa gateway` | device | `panos_show_vpn` | (live device state — SSH via --remote) |
-| `show vpn ike-sa match` | device | `panos_show_vpn` | (live device state — SSH via --remote) |
-| `show vpn ipsec-sa match` | device | `panos_show_vpn` | (live device state — SSH via --remote) |
-| `show vpn ipsec-sa summary` | device | `panos_show_vpn` | (live device state — SSH via --remote) |
-| `show vpn ipsec-sa tunnel` | device | `panos_show_vpn` | (live device state — SSH via --remote) |
-| `show vpn tunnel match` | device | `panos_show_vpn` | (live device state — SSH via --remote) |
-| `show vpn tunnel name` | device | `panos_show_vpn` | (live device state — SSH via --remote) |
-| `show wildfire` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show wildfire-appliance-cluster` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show wildfire-realtime-cache total` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show wildfire-realtime-cache virus-pattern-type` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show wildfire-realtime-cloud-status` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show wildfire-realtime-stats` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `show zone-protection zone` | device | `panos_show_misc` | (live device state — SSH via --remote) |
-| `ssh inet` | device | `panos_ssh` | (live device state — SSH via --remote) |
-| `tail follow` | device | `panos_tail` | (live device state — SSH via --remote) |
-| `target set` | device | `panos_target` | (live device state — SSH via --remote) |
-| `target show` | device | `panos_target` | (live device state — SSH via --remote) |
-| `test advanced-routing bgp logical-router` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test advanced-routing fib-lookup ip` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test advanced-routing mfib-lookup group` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test advanced-routing multicast msdp logical-router` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test arp gratuitous interface` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test authentication authentication-profile` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test authentication-policy-match from` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test botnet domain` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test cookie-surrogate username` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test custom-signature-perf pattern` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test custom-signature-type pattern` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test custom-url url` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test data-filtering ccn` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test data-filtering pattern` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test data-filtering ssn` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test decryption-policy-match from` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test dns-proxy ddns update interface name` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test dns-proxy dns-signature fqdn` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test dns-proxy fqdn refresh all` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test dns-proxy fqdn refresh entry fqdn` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test dns-proxy query name` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test dos-policy-match from` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test generate-saml-url captive-portal vsys` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test generate-saml-url global-protect vsys` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test generate-saml-url management interface` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test global-protect-mdm hipreport request mobile-id` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test global-protect-satellite gateway-connect satellite` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test global-protect-satellite gateway-disconnect satellite` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test global-protect-satellite gateway-reconnect satellite` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test http-profile vsys` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test http-profile-server-auth-token vsys` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test http-server vsys` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test macsec association interface` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test mfa-vendors mfa-server-profile` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test nat-policy-match from` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test nd router-advertisement interface` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test nptv6 cks-neutral dest-network` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test pbf-policy-match from` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test pppoe interface` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test pppoe ipv6 interface` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test qos-policy-match from` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test routing bgp virtual-router` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test routing fib-lookup ip` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test routing mfib-lookup group` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test routing ospf logical-router` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test routing ospfv3 logical-router` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test scp-server-connection confirm hostname` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test scp-server-connection initiate hostname` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test security-policy-match from` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test smtp-server vsys` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test ssl-exclude-list predefined hostname` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test ssl-exclude-list shared hostname` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test ssl-exclude-list vsys hostname` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test stats-service` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test tag-filter` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test threat-vault connection` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test uid` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test url-info-cloud` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test url-info-host` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test url-wpc` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test user-id custom-group group-mapping` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test user-id user-id-syslog-parse field-identifier event-string` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test user-id user-id-syslog-parse regex-identifier event-regex` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test uuid enable` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test vpn ike-sa gateway` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test vpn ipsec-sa tunnel` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test wildfire registration channel` | device | `panos_test` | (live device state — SSH via --remote) |
-| `test x-authenticated-user ip` | device | `panos_test` | (live device state — SSH via --remote) |
-| `tftp export` | device | `panos_tftp` | (live device state — SSH via --remote) |
-| `tftp export core-file data-plane from` | device | `panos_tftp` | (live device state — SSH via --remote) |
-| `tftp export core-file large-corefile from` | device | `panos_tftp` | (live device state — SSH via --remote) |
-| `tftp export core-file management-plane from` | device | `panos_tftp` | (live device state — SSH via --remote) |
-| `tftp export debug bootmem_file from` | device | `panos_tftp` | (live device state — SSH via --remote) |
-| `tftp export log-file data-plane to` | device | `panos_tftp` | (live device state — SSH via --remote) |
-| `tftp export log-file management-plane to` | device | `panos_tftp` | (live device state — SSH via --remote) |
-| `tftp export stats-dump to` | device | `panos_tftp` | (live device state — SSH via --remote) |
-| `tftp export threat-pcap pcap-id` | device | `panos_tftp` | (live device state — SSH via --remote) |
-| `tftp import` | device | `panos_tftp` | (live device state — SSH via --remote) |
-| `tftp import certificate from` | device | `panos_tftp` | (live device state — SSH via --remote) |
-| `tftp import keypair from` | device | `panos_tftp` | (live device state — SSH via --remote) |
-| `tftp import private-key from` | device | `panos_tftp` | (live device state — SSH via --remote) |
-| `traceroute ipv4` | device | `panos_traceroute` | (live device state — SSH via --remote) |
+| `clear advanced-routing bfd counters session-id` | remote | `panos_clear_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear advanced-routing bfd session-state session-id` | remote | `panos_clear_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear advanced-routing bgp logical-router` | remote | `panos_clear_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear advanced-routing multicast igmp membership logical-router` | remote | `panos_clear_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear advanced-routing multicast igmp statistics logical-router` | remote | `panos_clear_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear advanced-routing multicast mroute logical-router` | remote | `panos_clear_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear advanced-routing multicast msdp sa logical-router` | remote | `panos_clear_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear advanced-routing multicast msdp statistics logical-router` | remote | `panos_clear_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear advanced-routing multicast pim statistics logical-router` | remote | `panos_clear_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear application-signature statistics` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear arp interface` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear audit-comment xpath` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear auto-tag vsys` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear bonjour interface` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear cluster-flow all` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear cluster-flow id` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear cookie-surrogate-cache all` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear cookie-surrogate-cache username` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear counter all` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear counter global filter category` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear counter global name` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear counter interface` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear device-cache-mp all` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear device-cache-mp ip` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear dhcp lease all expired-only` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear dhcp lease interface` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear dns-proxy cache all domain-name` | remote | `panos_clear_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear dns-proxy cache name` | remote | `panos_clear_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear dns-proxy dns-signature cache fqdn` | remote | `panos_clear_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear dns-proxy dns-signature counters` | remote | `panos_clear_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear dns-proxy encrypted-dns` | remote | `panos_clear_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear dns-proxy statistics all` | remote | `panos_clear_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear dns-proxy statistics name` | remote | `panos_clear_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear dos-block-table all filter source-ip` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear dos-block-table drop-counter` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear dos-protection rule` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear dos-protection zone` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear global-protect redirect location` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear global-protect-portal statistics portal` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear high-availability cluster statistics` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear high-availability control-link statistics` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear high-availability transitions` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear job id` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear lacp counters aggregate-ethernet` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear lldp counters all` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear lldp counters interface` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear log` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear logrcvr offline-logpurger` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear mac` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear nat-rule-cache rule` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear neighbor interface` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear neighbor ndp-monitor` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear net-inspection filter` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear pbf return-mac all` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear pbf return-mac name` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear pbf rule all` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear pbf rule name` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear policy-app-usage-data ruleuuid` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear pppoe interface` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear pppoe ipv6 interface` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear query all-by-session` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear query id` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear report all-by-session` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear report cache` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear report id` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear resiliency statistics` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear routing bfd counters session-id` | remote | `panos_clear_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear routing bfd session-state session-id` | remote | `panos_clear_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear routing bgp virtual-router` | remote | `panos_clear_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear routing multicast igmp statistics virtual-router` | remote | `panos_clear_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear routing multicast pim statistics virtual-router` | remote | `panos_clear_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear rule-hit-count vsys` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear sdwan event` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear sdwan pool unsuccess` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear session all filter nat` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear snmpd refresh-timer-period` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear ssl-cert-cn` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear ssl-decrypt exclude-cache server` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear statistics` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear uappid-filtergroup-mapping all` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear uappid-filtergroup-mapping id` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear uappid-policy-cache all` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear uappid-policy-cache id` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear ueip address` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear ueip all` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear uid-cache all` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear uid-cache uid` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear uid-map-cache all` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear uid-map-cache uid` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear url-cache all` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear url-cache url` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear user-cache all type` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear user-cache ip` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear user-cache-mp all type` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear user-cache-mp ip` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear user-policy-cache all` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear user-policy-cache uid` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear vpn flow tunnel-id` | remote | `panos_clear_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear vpn ike-hashurl` | remote | `panos_clear_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear vpn ike-preferred-version gateway` | remote | `panos_clear_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear vpn ike-sa gateway` | remote | `panos_clear_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear vpn ipsec-sa tunnel` | remote | `panos_clear_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear wildfire counters` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear xml-api multiusersystem cloud` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `clear zone-protection zone` | remote | `panos_clear_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing bgp` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing bgp updates in peer-name` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing bgp updates out peer-name` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing daemon-status logical-router` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing fib check` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing fib clear logical-router` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing fib flush` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing fib stats` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing fqdn display logical-router` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing global off` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing global on` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing global show` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing mpf offload` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing mpf stats` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing ospfv3 logical-router` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing path-monitor id` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing pcap` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing pcap show` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing qtrace disable afi` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing qtrace enable afi` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing qtrace flush-log` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing qtrace show afi` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing restart` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing zebra events enable` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing zebra fpm enable` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing zebra kernel msgdump logical-router` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing zebra nht detailed` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing zebra packet logical-router` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug advanced-routing zebra rib detailed` | remote | `panos_debug_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug authentication` | remote | `panos_debug_authentication` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug authentication api-key-show key` | remote | `panos_debug_authentication` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug authentication connection-debug-off protocol-type` | remote | `panos_debug_authentication` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug authentication connection-debug-on protocol-type` | remote | `panos_debug_authentication` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug authentication connection-show protocol-type` | remote | `panos_debug_authentication` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug authentication on` | remote | `panos_debug_authentication` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug authentication set-tacacs-acct-task-q-size qsize` | remote | `panos_debug_authentication` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug authentication test-tacacs-acct-server-connection address` | remote | `panos_debug_authentication` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug bfd global off` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug bfd global on` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug bfd global show` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cli` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cloud-appid ace-server` | remote | `panos_debug_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cloud-appid cloud-manual-pull` | remote | `panos_debug_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cloud-appid delete-signature-data app-name` | remote | `panos_debug_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cloud-appid delete-signature-data appid` | remote | `panos_debug_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cloud-appid delete-signature-data filter-signature-id` | remote | `panos_debug_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cloud-appid dump config` | remote | `panos_debug_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cloud-appid keep-task-file` | remote | `panos_debug_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cloud-appid reset` | remote | `panos_debug_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cloud-appid reset signature-dp option` | remote | `panos_debug_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cloud-appid set config` | remote | `panos_debug_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cloud-appid unknown-signature-query app-name` | remote | `panos_debug_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cloud-appid unknown-signature-query appid` | remote | `panos_debug_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cloud-appid unknown-signature-query filter-sig-id` | remote | `panos_debug_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cloud-userid clear-cookie type` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cloud-userid reset-connection` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cloud-userid reset-counters` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug contentd status` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord corr-mgr off` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord corr-mgr on` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord corr-mgr show back-query status` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord corr-mgr show brief` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord corr-mgr show failed` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord corr-mgr show filter search object` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord corr-mgr show instance search category` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord corr-mgr show instance summary` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord corr-mgr show object id` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord corr-mgr show object list` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord corr-mgr stats clear object` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord corr-mgr stats show object` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord delete db` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord delete events objectname` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord delete instances match` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord object-stats clear` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord object-stats set` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord object-stats show` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord object-stats show-setting` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord off` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord on` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord show` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cord stats` | remote | `panos_debug_cord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cryptod clear hsm-key-cache` | remote | `panos_debug_cryptod` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cryptod global off` | remote | `panos_debug_cryptod` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cryptod global on` | remote | `panos_debug_cryptod` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cryptod global show` | remote | `panos_debug_cryptod` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cryptod show counters` | remote | `panos_debug_cryptod` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cryptod show hsm-thread all` | remote | `panos_debug_cryptod` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug cryptod show hsm-thread index` | remote | `panos_debug_cryptod` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane appinfo clear` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane cloud-appid lookup filter-sig-id` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane cloud-appid lookup global-id` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane cloud-appid lookup local-id` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane cloud-appid lookup name` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane cloud-appid reset cache all` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane cloud-appid reset cache appid` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane cloud-appid reset cache hash-slot` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane cloud-appid set report-overlap` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane cloud-appid show` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane cloud-appid show app-sig type` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane cloud-appid show cache` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane cloud-appid show database details` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane cloud-appid show detection` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent adns-telemetry debug` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent adns-telemetry debug-log` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent adns-telemetry freeze` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent adns-telemetry set interval-ms` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent adns-telemetry set max-cache-entry` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent adns-telemetry show` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent adns-telemetry stop` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent clear all` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent config` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent device-cert` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent global off` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent global on` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent global show` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent license` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent reset security-client` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent session id` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent set ace-debug` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent set cloud-trace` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent set host` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent set port` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane ctd-agent set source` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane flow-control disable slot` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane flow-control enable slot` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane flush-log` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane fpga hw_aho offload-bytes-threshold` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane fpga hw_aho offload-request-threshold` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane fpga hw_dfa offload-bytes-threshold` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane fpga hw_dfa offload-request-threshold` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane fpga set sw_aho` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane fpga set sw_dfa` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane fpga state` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt abort` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt bcm counters` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt bcm lport shaper get lport` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt bcm show congestion` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt bcm show flow flow_id` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt bcm show port` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt bcm show queue` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt ce10 cip` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt ce10 dfa` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt ce10 dxaui info instance` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt ce10 dxge info instance` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt ce10 dxge stats instance` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt ce10 pbm status instance` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt ce10 rd instance` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt ce10 show` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt ce10 show-all` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 acl dump count` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 csr` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 csr rd addr` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 csr scan regex` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 csr wr_sem_ctrl_ctr_scan_dis value` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 csr wr_sem_fcr_max_upd_thresh_cfg_pkt_ctr value` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 ddr eye intf` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 debug check` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 dphy_reg rd dcfg` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 event dump count` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 event fetch offset` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 flow ctrs` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 flow dump offset` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 flow histo` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 flow lookup saddr` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 flow tbl_size` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 lag dump count` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 lef dump count` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 lif access table` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 lif dump count` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 lif lookup table` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 lif stats clear` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 lif tbl_size` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 mac dump offset` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 mem rd target_mem` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 nexthop dump type` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 nif check_port` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 nif pkt_cap disable intf` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 nif pkt_cap display intf` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 nif pkt_cap enable intf` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 nif pkt_cap help` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 predict dump count` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 qmap dump pt` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 rd offset` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 route dump pt` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 show config` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 show fc clear` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 show intr` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 show latency` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 show stats` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 show stats port port` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 show status` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 tmi check_port` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 tmi pkt_cap disable intf` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 tmi pkt_cap display intf` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 tmi pkt_cap enable intf` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 tmi pkt_cap help` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 traffic info` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 umctl2_reg rd dcfg` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt fe100 vsys dump count` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt nac aho dump instance` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt nac dfa dump instance` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt nac info instance` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt nac show-all` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt nac stats instance` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt oct bgx config bgx` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt oct bgx status bgx` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt oct bootmem` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt oct csr rd reg` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt oct fpa show` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt oct gmx stats port` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt oct ilk` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt oct pip stats port` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt oct pki dump` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt oct pki port_config port` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt oct pki stats` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt oct pko debug port` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt oct pko stats all` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt oct pko stats port` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt oct pko3` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt oct portmap show` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt oct pow debug all` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal pdt pci list` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal vif` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane internal vif route` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane memory dump bootmem delete file` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane memory dump bootmem disable` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane memory dump bootmem enable log_disk_percent` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane memory dump bootmem show` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane memory status` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica reset cache` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica reset request-meta-cache adns` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica reset rtt` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica set cache adns` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica set cache default` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica set cache disable` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica set cache enable` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica set cache tp` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica set cache url` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica set inwf-mlav-prefilter` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica set mlc2-http-ldl-prefilter` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica set mlc2-micaflag-prefilter` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica set request-meta-cache adns` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica set telemetry adns-interval` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica show cache adns` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica show cache tp` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica show cache url` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica show config` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica show request-meta-cache adns entries` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mica show rtt service` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg leakiller memory-pool enable` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg leakiller memory-pool show` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg leakiller swbuf-pool enable` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg leakiller swbuf-pool show` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg obj-trace ev_num_per_q set` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg obj-trace session level` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg obj-trace shared-pool-192 level` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg obj-trace shared-pool-24 level` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg obj-trace stop` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg obj-trace symbol lvl` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg obj-trace wqe delay-free` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg obj-trace wqe extra-trace` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg obj-trace wqe leak-dump num` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg obj-trace wqe level` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg obj-trace wqe trace-type` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg pool-debug overflow-check` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg pool-debug reuse-check` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg status` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane mmdbg watchpoint address s1dp0` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane monitor detail` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane nat static-mapping add from-ip` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane nat static-mapping del from-ip` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane nat static-mapping show` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane nat sync-ippool rule` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane netflow` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane oprofile opcontrol` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane oprofile opreport` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag aggregate-logs log_name` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear all` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear capture all` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear capture snaplen` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear capture stage` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear capture trigger` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear capture username` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear filter index` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear filter-marked-session all` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear filter-marked-session id` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear log counter` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear log feature` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear log feature all` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear log feature appid` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear log feature base` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear log feature cfg` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear log feature ctd` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear log feature flow` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear log feature misc` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear log feature module` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear log feature ssl` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear log feature tcp` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear log feature tdb` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear log feature tunnel` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear log feature url_trie` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag clear log log` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set capture off` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set capture on` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set capture snaplen` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set capture stage` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set capture stage clientless-vpn-client file` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set capture stage clientless-vpn-server file` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set capture trigger application from` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set capture username` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set filter index` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set filter match ingress-interface` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set filter off` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set filter offload` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set filter on` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set filter pre-parse-match` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set filter-marked-session id` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log buffer-threshold` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log counter` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log cpu-threshold` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log feature` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log feature all` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log feature appid` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log feature base` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log feature cfg` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log feature ctd` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log feature flow` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log feature misc` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log feature module` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log feature ssl` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log feature tcp` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log feature tdb` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log feature tunnel` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log feature url_trie` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log log-option throttle` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log off` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log on` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set log timeout` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag set tag` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-diag show` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-path-test counter` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane packet-path-test test proc` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane policy cache-usage-threshold` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane policy switch-cache` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool check hardware` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool check software` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool elastic delete profile name` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool elastic reset-defaults` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool elastic select-profile name` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool elastic set mode` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool elastic set profile name` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool elastic show config` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool elastic show profile active` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool elastic show profile all` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool elastic show profile capacity` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool elastic show profile name` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool mem file` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool memseg name common sz-pct` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool reset-max-usage` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool set` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool set off` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool set on name dthreat` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool set on name fptcp sessid-cid` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool set on name vcheck` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool show all top` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool show history top` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool show in-use top` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pool statistics` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pow performance all core` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pow performance core` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pow performance filter` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pow performance rx_tx_ltncy` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pow status filter worker` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pow status global-counters pretty` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pow status high-watermark reset` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pow status inflightonly reset` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pow status niconly brief` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pow status niconly filter worker` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pow status nonic reset` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pow status nosleep filter worker` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane process` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane process cmd off` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane process cmd on` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane process cmd show` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane process comm off` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane process comm on` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane process comm profile-cache` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane process comm show` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane process mprelay off` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane process mprelay on` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane process mprelay show` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane process task dynamic-filter` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane process task off` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane process task on` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane process task show` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane pvst sys-id-ext-rewrite` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset appid cache` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset appid statistics` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset appid unknown-cache destination` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset ctd` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset ctd dns-cache host` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset ctd feature-forward stats` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset ctd url-block-cache lockout` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset ctd wf-cache virus-pattern-type` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset dns-cache all` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset dns-cache fqdn` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset dos block-table` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset dos classification-table` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset dos rule` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset dos zone` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset ml-block-cache all` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset ml-block-cache url` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset ssl-decrypt` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane reset ssl-decrypt notify-cache source` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane set` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane set blocked-forward upload` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane set ctd autogen` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane set ctd ldl-model-enable` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane set ctd wildfire max` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane set ip6-mcast-fwd-check` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane set pbf-no-return-mac-learning` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane set pow no-desched` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane set qos-setting qos-param qlimit` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane set ssl-decrypt blk-send-reset` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane set ssl-decrypt ecdhe-aggressive-keying` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show app-filter-policy vsys` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show app-group-policy vsys` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd credential-enforcement domain-credential` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd credential-enforcement group-mapping vsys` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd dns-cache entries host` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd dns-cache stats` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd feature-forward` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd feature-forward forward-info session-id` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd ldl status` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd lscan app-sig type` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd lscan database context prefix` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd lscan database context-list` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd lscan database details` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd lscan sml-scope appid` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd lscan sml-token appid` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd regex-group dump` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd regex-stats dump` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd session` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd threat id` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd wf-cache virus-pattern-type` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd wif service-mapping` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ctd wildfire max` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show dns-cache print` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show dns-cache query fqdn` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show dns-cache statistics` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show dos block-table` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show dos classification-table` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show dos free-list` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show dos rule` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show dos zone` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show gtp session-qinfo` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show http2` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show http2 session` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show pow no-desched` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show qos-param qos-qlimit-sw` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ssl-decrypt bitmask-cipher` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ssl-decrypt bitmask-version` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ssl-decrypt dns-cache` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ssl-decrypt session` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show ssl-decrypt ssl-stats` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show uappid-filtergroup-mapping id` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show uappid-in-policy id` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show uappid-policy-cache uappid` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane show unknown-uappid-cache id` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane task-heartbeat` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane tcp state` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane test dump-nw-id-ebl-tble` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane test dump-nw-id-vsys-tble vsysid` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane test nat-policy-add from` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane test nat-policy-del from` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane test nw-id-lookup vsysid` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane test tunnel-tables` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane test uappid-filtergroup-mapping uappid` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane test uappid-policy-cache uappid` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane test url` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane test url-bloom` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dataplane test url-from-file max-per-sec` | remote | `panos_debug_dataplane` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server clear` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump app-containers name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump app-filters vsys` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump app-groups vsys` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump apps vsys` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump com` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump dynamic-address-group vsys` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump fqdn type dnat vsys` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump fqdn type pbf vsys` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump fqdn type policy vsys` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr global` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr high-availability state` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type dns-proxy all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type dns-proxy id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type dns-proxy name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type edl-domain all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type edl-domain id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type edl-domain name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type edl-ip all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type edl-ip id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type edl-ip name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type hip-profile all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type hip-profile id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type hip-profile name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type http-header-insert-header-value-l all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type http-header-insert-header-value-l id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type http-header-insert-header-value-l name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type http-header-insert-header-value-s all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type http-header-insert-header-value-s id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type http-header-insert-header-value-s name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type interface-group all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type interface-group id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type interface-group name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type macl-rule all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type macl-rule id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type macl-rule name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type monitor-tag all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type monitor-tag id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type monitor-tag name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type ospfv3-virtual-link all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type ospfv3-virtual-link id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type ospfv3-virtual-link name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type sdwan-link-tag all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type sdwan-link-tag id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type sdwan-link-tag name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-app-signature all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-app-signature id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-app-signature name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-application-filter all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-application-filter id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-application-filter name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-application-group all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-application-group id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-application-group name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-bgp-aggr-address all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-bgp-aggr-address id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-bgp-aggr-address name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-bgp-peer all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-bgp-peer id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-bgp-peer name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-bgp-peergrp all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-bgp-peergrp id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-bgp-peergrp name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-qos-group all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-qos-group id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-qos-group name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-region all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-region id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-region name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-spyware all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-spyware id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-spyware name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-url-filtering all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-url-filtering id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type shared-url-filtering name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type tci-rule all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type tci-rule id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type tci-rule name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type vsys-app-signature all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type vsys-app-signature id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type vsys-app-signature name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type vsys-application-filter all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type vsys-application-filter id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type vsys-application-filter name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type vsys-application-group all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type vsys-application-group id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type vsys-application-group name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type vsys-region all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type vsys-region id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type vsys-region name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type vsys-spyware all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type vsys-spyware id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type vsys-spyware name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type vsys-url-filtering all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type vsys-url-filtering id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr redis type vsys-url-filtering name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type dns-proxy all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type dns-proxy id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type dns-proxy name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type edl-domain all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type edl-domain id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type edl-domain name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type edl-ip all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type edl-ip id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type edl-ip name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type hip-profile all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type hip-profile id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type hip-profile name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type http-header-insert-header-value-l all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type http-header-insert-header-value-l id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type http-header-insert-header-value-l name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type http-header-insert-header-value-s all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type http-header-insert-header-value-s id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type http-header-insert-header-value-s name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type interface-group all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type interface-group id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type interface-group name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type macl-rule all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type macl-rule id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type macl-rule name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type monitor-tag all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type monitor-tag id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type monitor-tag name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type ospfv3-virtual-link all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type ospfv3-virtual-link id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type ospfv3-virtual-link name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type sdwan-link-tag all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type sdwan-link-tag id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type sdwan-link-tag name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-app-signature all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-app-signature id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-app-signature name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-application-filter all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-application-filter id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-application-filter name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-application-group all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-application-group id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-application-group name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-bgp-aggr-address all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-bgp-aggr-address id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-bgp-aggr-address name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-bgp-peer all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-bgp-peer id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-bgp-peer name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-bgp-peergrp all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-bgp-peergrp id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-bgp-peergrp name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-qos-group all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-qos-group id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-qos-group name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-region all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-region id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-region name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-spyware all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-spyware id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-spyware name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-url-filtering all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-url-filtering id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type shared-url-filtering name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type tci-rule all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type tci-rule id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type tci-rule name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type vsys-app-signature all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type vsys-app-signature id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type vsys-app-signature name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type vsys-application-filter all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type vsys-application-filter id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type vsys-application-filter name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type vsys-application-group all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type vsys-application-group id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type vsys-application-group name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type vsys-region all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type vsys-region id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type vsys-region name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type vsys-spyware all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type vsys-spyware id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type vsys-spyware name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type vsys-url-filtering all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type vsys-url-filtering id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump idmgr type vsys-url-filtering name` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump logging statistics` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump memory` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump ml7-idblob-flatbuf statistics` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump pan-url-db statistics` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump regips ip` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump regips iprange` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump regips summary` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump regips tag` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server dump tag-table tag` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server ldl show status` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server mlav clear-cache` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server mlav revert-model filetype-id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server mlav set-cloud-url default` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server mlav set-cloud-url url` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server off` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server on` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server pan-url-db` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server pan-url-db db-backup back-duration` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server pcap` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server pcap logical-router on logicalrouter` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server pcap virtual-router on virtualrouter` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server reset com statistics` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server reset config` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server reset id-manager type` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server reset logging statistics` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server set all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server set base` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server set config` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server set misc` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server set mlav` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server set tdb` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server set third-party` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server set url` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server set url_trie` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server set wfrt` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server show` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server test admin-override-password` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server test botnet-domain` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server test dynamic-url cloud` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server test idmgr-change-max type` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server test idmgr-change-max type global-router new-max-id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server test idmgr-change-max type shared-custom-url-category new-max-id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server test idmgr-change-max type ssl-rule new-max-id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server test idmgr-change-max type vsys-application new-max-id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server test idmgr-change-max type vsys-custom-url-category new-max-id` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server test idmgr-restore-default-max type` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server test ldl-model path` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server test ml7-blob path` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server test nw_id options` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server test url-category` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server trigger addrobjrefresh` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server unset all` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server unset base` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server unset config` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server unset misc` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server unset mlav` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server unset tdb` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server unset third-party` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server unset url` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server unset url_trie` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-server unset wfrt` | remote | `panos_debug_device_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug device-telemetry` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dhcpd cluster` | remote | `panos_debug_dhcpd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dhcpd downgrade convert-db` | remote | `panos_debug_dhcpd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dhcpd global off` | remote | `panos_debug_dhcpd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dhcpd global on` | remote | `panos_debug_dhcpd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dhcpd global show` | remote | `panos_debug_dhcpd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dhcpd high-availability ignore-config-sync` | remote | `panos_debug_dhcpd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dhcpd pcap` | remote | `panos_debug_dhcpd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dhcpd pcap logical-router on logicalrouter` | remote | `panos_debug_dhcpd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dhcpd pcap virtual-router on virtualrouter` | remote | `panos_debug_dhcpd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dhcpd show objects` | remote | `panos_debug_dhcpd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord dump relay` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord dump relay-ipc-iotd state` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord dump relay-ipc-useridd` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord hip-relay hip-report-dedup-cache-size set` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord hip-relay hip-report-dedup-cache-size show` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord hip-relay hip-report-in-cache-aging-interval set` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord hip-relay hip-report-in-cache-aging-interval show` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord hip-relay reset-hip-report-dedup-cache` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord max-handle-concurrent-clients set` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord max-handle-concurrent-clients show` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord off` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord on` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord redis-connection-pool ip-user set` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord redis-connection-pool ip-user show` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord redis-connection-pool other-data-types enable` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord redis-connection-pool other-data-types set` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord redis-connection-pool other-data-types show` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord relay relay-ipc-iotd set qsize` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord relay relay-ipc-iotd set relay-iotd-recv-cache-qsize` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord relay relay-ipc-iotd set relay-iotd-recv-read-batch-size` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord relay relay-ipc-iotd show` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord relay relay-ipc-useridd set qsize` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord relay relay-ipc-useridd set relay-useridd-recv-cache-qsize` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord relay relay-ipc-useridd set relay-useridd-recv-read-batch-size` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord relay relay-ipc-useridd show` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord relay relay-mode set-dcom-relay-mode-only` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord relay relay-mode show-dcom-relay-mode` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord reset redistribution-agent` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord reset relay-statistics` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord set agent` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord set client` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord set distribute` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord set relay` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord show` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord test debug-log-category` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord unset agent` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord unset client` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord unset distribute` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug distributord unset relay` | remote | `panos_debug_distributord` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd clear cache-statistics` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd clear fqdn counters` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd clear sys-stats` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd dns-signature allow-list download` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd dns-signature cache fqdn` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd dns-signature counters` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd dns-signature info` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd dns-signature query bypass-cache` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd dns-signature query_n bypass-cache` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd dns-signature response fqdn` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd dns-signature response_n` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd dns-signature response_n fqdns` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd dns-signature response_n match-subdomains` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd dns-signature threat-info fqdn` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd dns-signature ut threat-info-api api-query-domain fqdn` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd fqdn counters delta` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd fqdn dump brief` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd global off` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd global on` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd global show` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug dnsproxyd show` | remote | `panos_debug_dnsproxyd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug evtmgr` | remote | `panos_debug_evtmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug evtmgr ms` | remote | `panos_debug_evtmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug evtmgr ms debug-log clfy` | remote | `panos_debug_evtmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug evtmgr ms debug-log client` | remote | `panos_debug_evtmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug evtmgr ms debug-log msg` | remote | `panos_debug_evtmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug evtmgr ms debug-log multicast` | remote | `panos_debug_evtmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug evtmgr ms msg-filter msg-class` | remote | `panos_debug_evtmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug evtmgr ms show basic` | remote | `panos_debug_evtmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug evtmgr ms show client-id` | remote | `panos_debug_evtmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug evtmgr ms show detail` | remote | `panos_debug_evtmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug evtmgr ms syslog-enabled` | remote | `panos_debug_evtmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug external-list delete-file all` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug external-list delete-file type domain name` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug external-list delete-file type ip name` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug external-list delete-file type url name` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug global-protect hip set-dp-query-interval` | remote | `panos_debug_global_protect` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug global-protect hip show-dp-query-interval` | remote | `panos_debug_global_protect` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug global-protect portal clientlessvpn gzip-encoding` | remote | `panos_debug_global_protect` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug global-protect portal clientlessvpn host-match-referer` | remote | `panos_debug_global_protect` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug global-protect portal interval` | remote | `panos_debug_global_protect` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug global-protect portal off` | remote | `panos_debug_global_protect` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug global-protect portal on` | remote | `panos_debug_global_protect` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug global-protect portal show` | remote | `panos_debug_global_protect` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug gp-broker gpsvc key-value` | remote | `panos_debug_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug gp-broker gpsvc reload-template` | remote | `panos_debug_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug gp-broker gpsvc reset counter` | remote | `panos_debug_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug gp-broker gpsvc reset key-value` | remote | `panos_debug_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug gp-broker gpsvc task` | remote | `panos_debug_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug gp-broker gpsvc test rpc api-name` | remote | `panos_debug_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug gp-broker gpsvc trace add user` | remote | `panos_debug_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug gp-broker gpsvc trace clear` | remote | `panos_debug_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug gp-broker gpsvc trace delete user` | remote | `panos_debug_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug gp-broker gpsvc trace global-log` | remote | `panos_debug_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug gp-broker gpsvc trace show` | remote | `panos_debug_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug gp-broker off` | remote | `panos_debug_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug gp-broker on` | remote | `panos_debug_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug gp-broker show` | remote | `panos_debug_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug high-availability` | remote | `panos_debug_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug high-availability flap-interface interface` | remote | `panos_debug_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug high-availability knob set encrypt-init-hold-time` | remote | `panos_debug_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug high-availability knob set init-hold-time` | remote | `panos_debug_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug high-availability knob show` | remote | `panos_debug_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug high-availability on` | remote | `panos_debug_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug ifmgr dump-detail-history port` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug ifmgr dump-history port` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug ifmgr dump-portdb` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug ifmgr pstate port` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug ike gateway` | remote | `panos_debug_ike` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug ike global off` | remote | `panos_debug_ike` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug ike global on` | remote | `panos_debug_ike` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug ike global show` | remote | `panos_debug_ike` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug ike pcap` | remote | `panos_debug_ike` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug ike socket` | remote | `panos_debug_ike` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug ike stat` | remote | `panos_debug_ike` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug ike stat fqdn name` | remote | `panos_debug_ike` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug ike stat ipsec counter` | remote | `panos_debug_ike` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug ike stat isakmp counter` | remote | `panos_debug_ike` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug ike stat sched filter gwid` | remote | `panos_debug_ike` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug ike tunnel` | remote | `panos_debug_ike` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot clear-all type` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot disable-device-id` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot dump relay` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot dump relay-ipc-distributord state` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot eal cortex-server` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot eal key-value` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot eal on` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot eal reset aggregation-non-ack` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot eal reset aggregation-num` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot eal reset connection` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot eal reset counter` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot eal reset key-value` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot eal sending-format` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot eal test load-dpi` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot eal track` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot eal track filter add subtype` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot eal track filter clear` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot eal track filter show` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot eal validate-dpi` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot global counter` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot global off` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot global on` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot global show` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot icd key-value` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot icd on` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot icd reset connection` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot icd reset cookie` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot icd reset key-value` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot icd set-app-match-workers` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot icd trigger-app-match` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot icd verdict-server` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot memory` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot relay-ipc-distributord set qsize` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot relay-ipc-distributord set relay-distd-recv-cache-qsize` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot relay-ipc-distributord set relay-distd-recv-read-batch-size` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug iot relay-ipc-distributord show` | remote | `panos_debug_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug keymgr gateway id` | remote | `panos_debug_keymgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug keymgr global off` | remote | `panos_debug_keymgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug keymgr global on` | remote | `panos_debug_keymgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug keymgr global show` | remote | `panos_debug_keymgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug keymgr list-sa` | remote | `panos_debug_keymgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug keymgr queue` | remote | `panos_debug_keymgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug keymgr socket` | remote | `panos_debug_keymgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug keymgr tunnel id` | remote | `panos_debug_keymgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l2ctrld global off` | remote | `panos_debug_l2ctrld` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l2ctrld global on` | remote | `panos_debug_l2ctrld` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l2ctrld global show` | remote | `panos_debug_l2ctrld` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l2ctrld lacp off` | remote | `panos_debug_l2ctrld` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l2ctrld lacp on` | remote | `panos_debug_l2ctrld` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l2ctrld lacp set hold-time aggregate-ethernet` | remote | `panos_debug_l2ctrld` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l2ctrld lacp show` | remote | `panos_debug_l2ctrld` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l2ctrld lldp delete neighbor` | remote | `panos_debug_l2ctrld` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l2ctrld lldp off` | remote | `panos_debug_l2ctrld` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l2ctrld lldp on` | remote | `panos_debug_l2ctrld` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l2ctrld lldp pcap` | remote | `panos_debug_l2ctrld` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l2ctrld lldp pcap logical-router on logicalrouter` | remote | `panos_debug_l2ctrld` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l2ctrld lldp pcap virtual-router on virtualrouter` | remote | `panos_debug_l2ctrld` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l2ctrld lldp set stagger-limit` | remote | `panos_debug_l2ctrld` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l2ctrld lldp show` | remote | `panos_debug_l2ctrld` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l3svc captive-portal kerberos-timeout interval` | remote | `panos_debug_l3svc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l3svc captive-portal kerberos-timeout off` | remote | `panos_debug_l3svc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l3svc captive-portal kerberos-timeout on` | remote | `panos_debug_l3svc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l3svc captive-portal kerberos-timeout show` | remote | `panos_debug_l3svc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l3svc clear` | remote | `panos_debug_l3svc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l3svc off` | remote | `panos_debug_l3svc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l3svc on` | remote | `panos_debug_l3svc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l3svc pcap` | remote | `panos_debug_l3svc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l3svc pcap logical-router on logicalrouter` | remote | `panos_debug_l3svc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l3svc pcap virtual-router on virtualrouter` | remote | `panos_debug_l3svc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l3svc reset user-cache` | remote | `panos_debug_l3svc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug l3svc show user-cache` | remote | `panos_debug_l3svc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug list-admin-history` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug list-blocked-partial-xpaths` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-output-need-utf8` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver container-page entries` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver container-page off` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver container-page on` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver container-page timeout` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver contmgr status` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver corr-mgr off` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver corr-mgr on` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver corr-mgr show back-query status` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver corr-mgr show brief` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver corr-mgr show failed` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver corr-mgr show filter search object` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver corr-mgr show instance search category` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver corr-mgr show instance summary` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver corr-mgr show object id` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver corr-mgr show object list` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver corr-mgr stats clear object` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver corr-mgr stats show object` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver correlation filters show` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver correlation stats show` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver counters filter delta` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver dag always-include-dag` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver dag disable-dag-logging` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver dag dump dag-id vsysid` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver dag dump id-dag dag-idx` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver dag dump ip-dag ip` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver dag dump rule-dag rule_uuid` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver dag off` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver dag on` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver dag show` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver dpi dump clear` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver dpi dump format` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver dpi dump off` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver dpi dump on` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver dump users all` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver dump users id` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver dumplog off` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver dumplog on count` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver edl disable-edl-logging` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver edl dump edl-id vsysid` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver edl dump id-edl edl-idx` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver edl dump ip-edl ip` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver edl dump rule-edl rule_uuid` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver edl off` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver edl on` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver edl show` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver fwd` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver ip-cache clear node-data vsysid` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver ip-cache clear vsys-data vsysid` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver log-flow counters` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver log-flow trace show` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver log-forwarding per-second-stats` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver log-forwarding status` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver log-forwarding-connections per-second-stats` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver log-forwarding-connections status` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver log-purger debug` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver logdb-writer-stats latest` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver memory info verbose` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver memory per-second-stats` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver memory trim` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver netflow` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver on` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver param-tuning rollup` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver param-tuning syslog-threads show` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver param-tuning syslog-threads size` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver param-tuning task-queue show` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver param-tuning task-queue size` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver per-second-stats off` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver per-second-stats on` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver rawlog_fwd clear hints-all` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver rawlog_fwd off` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver rawlog_fwd on` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver rawlog_fwd set hints-expiration-duration` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver rawlog_fwd set hints-max` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver rawlog_fwd show` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver rawlog_fwd show connmgr verbose` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver rawlog_fwd stats global clear` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver rawlog_fwd stats global show verbose` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver rawlog_fwd stats per-lc` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver rawlog_fwd_trial connmgr` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver rawlog_fwd_trial evtmgr` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver rawlog_fwd_trial stats global show verbose` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug log-receiver telemetry-triggers` | remote | `panos_debug_log_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug logdb-usage` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug logview role` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type edl-domain all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type edl-domain id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type edl-domain name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type edl-ip all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type edl-ip id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type edl-ip name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type hip-profile all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type hip-profile id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type hip-profile name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type interface-group all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type interface-group id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type interface-group name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type macl-rule all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type macl-rule id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type macl-rule name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type ospfv3-virtual-link all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type ospfv3-virtual-link id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type ospfv3-virtual-link name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type sdwan-link-tag all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type sdwan-link-tag id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type sdwan-link-tag name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-app-signature all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-app-signature id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-app-signature name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-bgp-aggr-address all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-bgp-aggr-address id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-bgp-aggr-address name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-bgp-peer all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-bgp-peer id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-bgp-peer name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-bgp-peergrp all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-bgp-peergrp id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-bgp-peergrp name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-qos-group all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-qos-group id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-qos-group name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-region all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-region id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-region name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-spyware all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-spyware id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-spyware name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-url-filtering all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-url-filtering id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type shared-url-filtering name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type tci-rule all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type tci-rule id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type tci-rule name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type vsys-app-signature all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type vsys-app-signature id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type vsys-app-signature name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type vsys-region all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type vsys-region id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type vsys-region name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type vsys-spyware all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type vsys-spyware id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type vsys-spyware name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type vsys-url-filtering all` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type vsys-url-filtering id` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd dump idmgr type vsys-url-filtering name` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug lpmgrd status` | remote | `panos_debug_lpmgrd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug macsec global off` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug macsec global on` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug macsec global show` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug macsec pcap` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-interface dhcp client debug` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-interface dhcp client log` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server app-config-trigger` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server autofocus` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server client disable` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server client enable` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server configd-mem` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server contmgr status` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server corr-mgr off` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server corr-mgr on` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server corr-mgr show back-query status` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server corr-mgr show brief` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server corr-mgr show failed` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server corr-mgr show filter search object` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server corr-mgr show instance search category` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server corr-mgr show instance summary` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server corr-mgr show object id` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server corr-mgr show object list` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server corr-mgr stats clear object` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server corr-mgr stats show object` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server db-intervals start-time` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server db-rollup` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server device-monitoring enable` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server dg-ctxt vsys` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server disable-cms-conn-check` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server last-candidatecfg-audit diff base-version` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server last-candidatecfg-audit info` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server last-candidatecfg-audit show version` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server log-forwarding-congestion-ctrl set` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server log-forwarding-congestion-ctrl show` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server max-config-size set size` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server max-config-size show` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server memory` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server ml7 anti-virus install` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server ml7 content install` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server ml7 iot install` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server on` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server req-stats` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server rolledup-intervals start-time` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server rule-hit` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server secure-conn set scep-cert-renewal-time` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server secure-conn set scep-cert-retry-on-failure-interval` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server secure-conn show ha config file` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server secure-conn show mgmt config file` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server secure-conn show mgmt detail` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server secure-conn show scep-cert-renewal-time` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server secure-conn show scep-cert-retry-on-failure-interval` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server set` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server set all` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server snmp-memory-map` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server telemetry-triggers correlated-threat-log-limit` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server telemetry-triggers counters` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server telemetry-triggers per-signature-limit` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server telemetry-triggers raw-threat-log-limit` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server telemetry-triggers related-threat-log-limit` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server template dump-config from` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server toggle-ui-notification` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server unified-log` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server unset` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server unset all` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server user bitmap` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server user info name` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-server vld stats cc` | remote | `panos_debug_management_server` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-websrvr backend off` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-websrvr backend on` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug management-websrvr backend show` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug md-service internal-dump` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug md-service off` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug md-service on` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug md-service show` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug mprelay off` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug mprelay on` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug mprelay show` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug net-inspection packet-limit` | remote | `panos_debug_net_inspection` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug net-inspection reset` | remote | `panos_debug_net_inspection` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug net-inspection show` | remote | `panos_debug_net_inspection` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug net-inspection trace` | remote | `panos_debug_net_inspection` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug net-inspection trace-limit` | remote | `panos_debug_net_inspection` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug netconfig-agent off` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug netconfig-agent on` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug netconfig-agent show` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug object registered-ip` | remote | `panos_debug_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug object registered-ip clear all source-name` | remote | `panos_debug_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug object registered-ip redis-entry ip` | remote | `panos_debug_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug object registered-ip redis-entry iprange` | remote | `panos_debug_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug object registered-ip show tag-source tag` | remote | `panos_debug_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug object registered-ip test cuid-upload` | remote | `panos_debug_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug object registered-ip test download` | remote | `panos_debug_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug object registered-ip test download-mode` | remote | `panos_debug_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug object registered-ip test register tag` | remote | `panos_debug_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug object registered-ip test unregister tag` | remote | `panos_debug_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug object registered-user clear all tag-source` | remote | `panos_debug_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug object registered-user show tag-source user` | remote | `panos_debug_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug object registered-user test cuid-upload` | remote | `panos_debug_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug object registered-user test register user` | remote | `panos_debug_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug object registered-user test unregister user` | remote | `panos_debug_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug online diagnostics get execution-time` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug online diagnostics run` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug pancfg-directory-usage clean config saved` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug pancfg-directory-usage clean dynamic-updates anti-virus update` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug pancfg-directory-usage clean dynamic-updates content update` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug pancfg-directory-usage clean software-images version` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug pppoed global off` | remote | `panos_debug_pppoed` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug pppoed global on` | remote | `panos_debug_pppoed` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug pppoed global show` | remote | `panos_debug_pppoed` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug pppoed pcap` | remote | `panos_debug_pppoed` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug pppoed pcap on file_size` | remote | `panos_debug_pppoed` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug pppoed show config` | remote | `panos_debug_pppoed` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug pppoed show interface` | remote | `panos_debug_pppoed` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug predefined-report-default` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug preserve-prenat feature show` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug proxy discard-partial-client-hello enable` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug proxy discard-partial-client-hello show` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug proxy fast-session-delete enable` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug proxy-protocol debug-level` | remote | `panos_debug_proxy_protocol` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug proxy-protocol debug-mode normal` | remote | `panos_debug_proxy_protocol` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug proxy-protocol debug-mode session-limit` | remote | `panos_debug_proxy_protocol` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug proxy-protocol debug-mode trace-limit` | remote | `panos_debug_proxy_protocol` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug proxy-protocol feature enabled` | remote | `panos_debug_proxy_protocol` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug proxy-protocol feature hostid-subtlv-type` | remote | `panos_debug_proxy_protocol` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug proxy-protocol feature show` | remote | `panos_debug_proxy_protocol` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug proxy-protocol feature userid-subtlv-type` | remote | `panos_debug_proxy_protocol` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug proxy-protocol packet-dump-max-bytes` | remote | `panos_debug_proxy_protocol` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug rasmgr delay-nh-update` | remote | `panos_debug_rasmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug rasmgr delay-nh-update reset` | remote | `panos_debug_rasmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug rasmgr gateway` | remote | `panos_debug_rasmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug rasmgr ippool reset-all` | remote | `panos_debug_rasmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug rasmgr off` | remote | `panos_debug_rasmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug rasmgr on` | remote | `panos_debug_rasmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug rasmgr satellite` | remote | `panos_debug_rasmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug rasmgr show` | remote | `panos_debug_rasmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug rasmgr src-ip-trie gateway-name` | remote | `panos_debug_rasmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug rasmgr statistics` | remote | `panos_debug_rasmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug rasmgr user` | remote | `panos_debug_rasmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug rawlog_fwd enable` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd contmgr status` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd corr-mgr off` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd corr-mgr on` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd corr-mgr show back-query status` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd corr-mgr show brief` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd corr-mgr show failed` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd corr-mgr show filter search object` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd corr-mgr show instance search category` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd corr-mgr show instance summary` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd corr-mgr show object id` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd corr-mgr show object list` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd corr-mgr stats clear object` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd corr-mgr stats show object` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd off` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd on` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd schedule-reports` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd send-request-to-7k` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd set-timeout` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug reportd show` | remote | `panos_debug_reportd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing dctrace both enable` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing dctrace ips enable` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing dctrace pd enable` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing dctrace show` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing fib clear virtual-router` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing fib flush` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing fib stats` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing fqdn display virtual-router` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing global off` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing global on` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing global show` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing mib` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing mpf offload` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing mpf stats` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing path-monitor id` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing pcap` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing pcap show` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing qtrace disable afi` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing qtrace enable afi` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing qtrace flush-log` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug routing qtrace show afi` | remote | `panos_debug_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug run-panorama-predefined-report` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug satd dump certificate-pool global` | remote | `panos_debug_satd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug satd dump certificate-pool satellite` | remote | `panos_debug_satd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug satd failed-refresh-timeout satellite name` | remote | `panos_debug_satd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug satd off` | remote | `panos_debug_satd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug satd on` | remote | `panos_debug_satd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug satd show` | remote | `panos_debug_satd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug satd statistics` | remote | `panos_debug_satd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sdwand clear all` | remote | `panos_debug_sdwand` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sdwand event-log filter delete all` | remote | `panos_debug_sdwand` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sdwand event-log filter delete idx` | remote | `panos_debug_sdwand` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sdwand event-log filter off` | remote | `panos_debug_sdwand` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sdwand event-log filter on` | remote | `panos_debug_sdwand` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sdwand event-log filter set index` | remote | `panos_debug_sdwand` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sdwand event-log filter set match ingress-interface` | remote | `panos_debug_sdwand` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sdwand event-log filter show` | remote | `panos_debug_sdwand` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sdwand feature show` | remote | `panos_debug_sdwand` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sdwand global off` | remote | `panos_debug_sdwand` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sdwand global on` | remote | `panos_debug_sdwand` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sdwand global show` | remote | `panos_debug_sdwand` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sdwand path-monitor disable all` | remote | `panos_debug_sdwand` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sdwand path-monitor disable tunnel-id` | remote | `panos_debug_sdwand` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sdwand path-monitor enable all` | remote | `panos_debug_sdwand` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sdwand path-monitor enable tunnel-id` | remote | `panos_debug_sdwand` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sdwand saas branch interval` | remote | `panos_debug_sdwand` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sdwand saas hub interval` | remote | `panos_debug_sdwand` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug set-content-download-retry attempts` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug snmpd async` | remote | `panos_debug_snmpd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug snmpd clear_persistence` | remote | `panos_debug_snmpd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug snmpd off` | remote | `panos_debug_snmpd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug snmpd on debug` | remote | `panos_debug_snmpd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug snmpd sysd-disable-retry` | remote | `panos_debug_snmpd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug snmpd sysd-timeout` | remote | `panos_debug_snmpd` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software core` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software disk-usage aggressive-cleaning` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software disk-usage cleanup threshold` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software disk-usage dagger-fds-cleaning` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software disk-usage dangling-fds target-name` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software fd-limit service` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software generate-sar-report current-date` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software kernelcfg thp` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software kernelcfg zram-swap disable` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software kernelcfg zram-swap enable` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software kernelcfg zram-swap modify num-dev` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software kernelcfg zram-swap show` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software large-core show-reserved-space` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software logging-level set feature service` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software logging-level set level` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software logging-level show feature service` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software logging-level show feature-defs service` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software logging-level show level service` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software logging-size set ratio` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software logging-size show ratio service` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software memsize_tracked` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software monitor_smaps_threshold percentage` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software phy-limit service` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software resource subsystem` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software restart process` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software trace` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug software virt-limit service` | remote | `panos_debug_software` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr clear log` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr delete crl` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr delete ocsp` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr delete ocsp-host` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr off` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr on` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr reset` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr save ocsp` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr set` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr set crl-background-download` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr set crl-recv-speed-limit` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr set disable-scep-auth-cookie` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr set max-crl-file-size` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr set max-inflated-crl-file-size` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr set ocsp-host-failure-threshold` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr set ocsp-next-update-time` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr set parallel-processing` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr show` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr show memory` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr statistics` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr tar-all-crl` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr test gp-client-cert-check cert-file` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr test show-cert-check-jobs` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr view crl` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr view ocsp` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr view ocsp-host` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sslmgr view pending-crl-downloads` | remote | `panos_debug_sslmgr` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug streaming dump` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug streaming tdb` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug streaming-telemetry set-logging-reporting-timeout` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug streaming-telemetry show-region-list` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug streaming-telemetry show-schedule` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug streaming-telemetry show-schedule-path-list` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug swm` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug swm install image` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug swm refresh content` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug swm show revert-status` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sysd prefix-query command` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sysd process-query command` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sysd summary` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug sysd top` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug syslog-params reset-to-default-settings` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug syslog-params settings time-reopen` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug syslog-params show` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug system` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug system disk-life disk-1` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug system disk-smart-info disk-1` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug system ssh-key-reset` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug tac-login` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug techsupport duts` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug techsupport duts add-search-dir` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug techsupport duts set-byte-threshold` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug tund clear all` | remote | `panos_debug_tund` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug tund global off` | remote | `panos_debug_tund` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug tund global on` | remote | `panos_debug_tund` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug tund global show` | remote | `panos_debug_tund` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug tund tunnel id` | remote | `panos_debug_tund` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug ui telemetry` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug use-proxy-for-email-server` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id agent` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id agent-getall-rate rate` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id agent-getall-rate show` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id clear cloud-identity-engine type` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id clear domain-map from-disk` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id clear email-cache` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id clear gm-srvc-query` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id clear group` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id clear ip-port-user-dp ip` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id clear log` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id cluster-get-all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id cluster-peer-ip` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id cluster-state` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id cp-redirect-host-v6 clear` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id cp-redirect-host-v6 show` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id cp-redirect-host-v6 value` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dscd off` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dscd on` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dscd subdomains` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump cloud-identity-engine type` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump com statistics` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump conn-mgr statistics` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump domain-id-table domain all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump domain-id-table domain name` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump edir-user all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump edir-user user` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump email-cache all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump email-cache email` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump hip-mdm-cache start-from` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump hip-profile-database entry start-from` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump hip-profile-database ipmapping` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump hip-profile-database statistics` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump hip-report user` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr high-availability state` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr redis type computer all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr redis type computer id` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr redis type computer name` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr redis type user all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr redis type user id` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr redis type user name` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr redis type user-group all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr redis type user-group id` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr redis type user-group name` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr type computer all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr type computer id` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr type computer name` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr type user all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr type user id` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr type user name` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr type user-group all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr type user-group id` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump idmgr type user-group name` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump memory` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump relay-ipc-distributord` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump ts-agent` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump uid-2-metadata user all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump uid-2-metadata user id` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump uid-2-primeuid user all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump uid-2-primeuid user id` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump userprefix-2-uid user all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump userprefix-2-uid user name` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump vm-monitored-objects all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump vm-monitored-objects ref-id` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump vm-monitored-objects source-name` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id dump vm-monitored-objects type` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id get` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id kerberos list server-monitor` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id kerberos purge server-monitor` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id kerberos test default` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id kerberos test server-name` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id l3svc-max-retry rate` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id l3svc-max-retry show` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id l3svc-max-write-retry rate` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id l3svc-max-write-retry show` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id measure-handle-messages-duration` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id off` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id on` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id refresh cloud-identity-engine all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id refresh cloud-identity-engine config-data` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id refresh cloud-identity-engine name` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id refresh dp-uid-gid` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id refresh group-mapping all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id refresh group-mapping group-mapping-name` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id refresh group-mapping xmlapi-groups` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id refresh user-id agent` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id relay-ipc-distributord set qsize` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id relay-ipc-distributord set relay-distd-recv-cache-qsize` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id relay-ipc-distributord set relay-distd-recv-read-batch-size` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id relay-ipc-distributord show` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id reset` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id reset captive-portal ip-address` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id reset cloud-identity-engine all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id reset cloud-identity-engine name` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id reset cluster-state` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id reset com statistics` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id reset conn-mgr statistics` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id reset ip-user-mapping-stats` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id reset relay-statistics` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id reset user-id-manager type` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id save hip-profile-database` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id set agent` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id set all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id set base` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id set features` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id set hip` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id set ldap` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id set misc` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id set relay` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id set third-party` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id set userid` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id test agentless` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id test cp-login ip-address` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id test cp-logout ip-address` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id test debug-log-category` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id test gp-login ip-address` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id test gp-logout ip-address` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id test hip-profile-database size` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id test hip-report user` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id test hip-update ip` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id test idmgr-change-max type user-group new-max-id` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id test idmgr-restore-default-max type user-group` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id test probing` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id test sso-login ip-address` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id unset agent` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id unset all` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id unset base` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id unset features` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id unset hip` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id unset ldap` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id unset misc` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id unset relay` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id unset third-party` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug user-id unset userid` | remote | `panos_debug_user_id` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug vardata-receiver off` | remote | `panos_debug_vardata_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug vardata-receiver on` | remote | `panos_debug_vardata_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug vardata-receiver set all` | remote | `panos_debug_vardata_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug vardata-receiver set third-party` | remote | `panos_debug_vardata_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug vardata-receiver show` | remote | `panos_debug_vardata_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug vardata-receiver statistics` | remote | `panos_debug_vardata_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug vardata-receiver unset all` | remote | `panos_debug_vardata_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug vardata-receiver unset third-party` | remote | `panos_debug_vardata_receiver` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug vm-monitor clear source-name` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug vm-monitor reset source-name` | remote | `panos_debug_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire batch-forward set disable` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire batch-forward set max-count` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire batch-forward set timeout` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire cloud-info channel` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire content-info` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire dp-status` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire file-cache` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire file-digest sha256` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire monitor-log` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire monitor-log interval` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire monitor-log max-size` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire report-process channel` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire reset all` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire reset dp-receiver` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire reset file-cache` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire reset forwarding channel` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire reset log-cache channel` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire reset report-cache channel` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire server-selection` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire transition-file-list` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire upload-log log disable` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire upload-log log enable` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire upload-log log extended-log` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire upload-log log max-size` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire upload-log log settings` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `debug wildfire upload-log show channel` | remote | `panos_debug_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete admin-sessions username` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete anti-virus update` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete auth` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete authentication system-lock-files` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete authentication user-file ssh-known-hosts self` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete authentication user-file ssh-known-hosts user username` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete config saved` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete config-audit-history` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete content cache curr-content version` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete content cache old-content` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete content update` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete core data-plane file` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete core large-core file` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete core management-plane file` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete data-capture directory` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete debug-filter file` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete debug-log dp-log file` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete debug-log mp-global file` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete debug-log mp-log file` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete device-serialno host all` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete device-serialno host all-from-cloud` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete device-serialno host all-from-ldap` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete device-serialno host serialno` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete dnsproxy file` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete global-protect global-protect-portal portal` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete global-protect-client image` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete global-protect-client version` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete global-protect-clientless-vpn update` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete high-availability-key` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete high-availability-known-hosts` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete hip-mdm-cache mobile-id` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete hip-profile-database all` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete hip-profile-database check-delete-all-status` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete hip-profile-database entry ip` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete hip-report all logout-only` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete hip-report report user` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete iot cache curr-iot version` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete iot cache old-iot` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete license key` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete license token-file` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete logo` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete pcap directory` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete policy-cache` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete pprof management-plane file` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete report custom scope` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete report predefined scope` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete report summary scope` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete runtime-user-db` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete server cert` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete software version` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete ssh-authentication-public-key` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete sslmgr-store certificate-info portal name` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete sslmgr-store satellite-info portal name` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete sslmgr-store satellite-info-revoke-certificate portal` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete unknown-pcap directory` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete url-database all` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete url-database url` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete user-group-cache` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete wf-private update` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete wildfire update` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete wildfire-realtime-cache virus-pattern-type` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `delete wildfire-realtime-stats` | remote | `panos_delete` | (live device state — SSH via --remote; expect device 2FA) |
+| `diff config num-context-lines` | remote | `panos_diff` | (live device state — SSH via --remote; expect device 2FA) |
+| `ftp export log` | remote | `panos_ftp` | (live device state — SSH via --remote; expect device 2FA) |
+| `grep invert-match` | remote | `panos_grep` | (live device state — SSH via --remote; expect device 2FA) |
+| `less agent-log` | remote | `panos_less` | (live device state — SSH via --remote; expect device 2FA) |
+| `less custom-page` | remote | `panos_less` | (live device state — SSH via --remote; expect device 2FA) |
+| `less db-log` | remote | `panos_less` | (live device state — SSH via --remote; expect device 2FA) |
+| `less dp-backtrace` | remote | `panos_less` | (live device state — SSH via --remote; expect device 2FA) |
+| `less dp-log` | remote | `panos_less` | (live device state — SSH via --remote; expect device 2FA) |
+| `less largecore-mp-backtrace` | remote | `panos_less` | (live device state — SSH via --remote; expect device 2FA) |
+| `less mp-backtrace` | remote | `panos_less` | (live device state — SSH via --remote; expect device 2FA) |
+| `less mp-global` | remote | `panos_less` | (live device state — SSH via --remote; expect device 2FA) |
+| `less mp-log` | remote | `panos_less` | (live device state — SSH via --remote; expect device 2FA) |
+| `less plugins-log` | remote | `panos_less` | (live device state — SSH via --remote; expect device 2FA) |
+| `less webserver-log` | remote | `panos_less` | (live device state — SSH via --remote; expect device 2FA) |
+| `ping bypass-routing` | remote | `panos_ping` | (live device state — SSH via --remote; expect device 2FA) |
+| `request acknowledge logid` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request address-expansion expand object-name` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request anti-virus downgrade install` | remote | `panos_request_anti_virus` | (live device state — SSH via --remote; expect device 2FA) |
+| `request anti-virus upgrade check` | remote | `panos_request_anti_virus` | (live device state — SSH via --remote; expect device 2FA) |
+| `request anti-virus upgrade download sync-to-peer` | remote | `panos_request_anti_virus` | (live device state — SSH via --remote; expect device 2FA) |
+| `request anti-virus upgrade info` | remote | `panos_request_anti_virus` | (live device state — SSH via --remote; expect device 2FA) |
+| `request anti-virus upgrade install commit` | remote | `panos_request_anti_virus` | (live device state — SSH via --remote; expect device 2FA) |
+| `request api key expiration` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request authentication unlock-admin user` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request authentication unlock-user vsys` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request authkey set` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request certificate fetch otp` | remote | `panos_request_certificate` | (live device state — SSH via --remote; expect device 2FA) |
+| `request certificate generate certificate-name` | remote | `panos_request_certificate` | (live device state — SSH via --remote; expect device 2FA) |
+| `request certificate generate-scep-client-cert certificate-name` | remote | `panos_request_certificate` | (live device state — SSH via --remote; expect device 2FA) |
+| `request certificate import-scep-ca-cert certificate-name` | remote | `panos_request_certificate` | (live device state — SSH via --remote; expect device 2FA) |
+| `request certificate is-blocked certificate-name` | remote | `panos_request_certificate` | (live device state — SSH via --remote; expect device 2FA) |
+| `request certificate renew certificate-name` | remote | `panos_request_certificate` | (live device state — SSH via --remote; expect device 2FA) |
+| `request certificate revoke certificate-name` | remote | `panos_request_certificate` | (live device state — SSH via --remote; expect device 2FA) |
+| `request certificate revoke sslmgr-store db-serialno` | remote | `panos_request_certificate` | (live device state — SSH via --remote; expect device 2FA) |
+| `request certificate show certificate-name` | remote | `panos_request_certificate` | (live device state — SSH via --remote; expect device 2FA) |
+| `request certificate show-blocked` | remote | `panos_request_certificate` | (live device state — SSH via --remote; expect device 2FA) |
+| `request certificate show-blocked shared` | remote | `panos_request_certificate` | (live device state — SSH via --remote; expect device 2FA) |
+| `request clean-replay entries` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request clear-commit-tasks` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request commit-lock add comment` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request commit-lock remove admin` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request config diff ver1` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request config list commit-versions filter filter-data` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request config list commit-versions filter filter-query` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request config list commit-versions locations version` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request config-lock add comment` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request config-lock remove` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request content downgrade skip-content-validity-check` | remote | `panos_request_content` | (live device state — SSH via --remote; expect device 2FA) |
+| `request content upgrade check` | remote | `panos_request_content` | (live device state — SSH via --remote; expect device 2FA) |
+| `request content upgrade download sync-to-peer` | remote | `panos_request_content` | (live device state — SSH via --remote; expect device 2FA) |
+| `request content upgrade info` | remote | `panos_request_content` | (live device state — SSH via --remote; expect device 2FA) |
+| `request content upgrade install commit` | remote | `panos_request_content` | (live device state — SSH via --remote; expect device 2FA) |
+| `request content validity-check` | remote | `panos_request_content` | (live device state — SSH via --remote; expect device 2FA) |
+| `request cpld-restart` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request data-filtering access-password create password` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request data-filtering access-password delete` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request data-filtering access-password modify old-password` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request determine-new-applications version` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request device-quarantine-list add ip` | remote | `panos_request_device_quarantine_list` | (live device state — SSH via --remote; expect device 2FA) |
+| `request device-quarantine-list delete host` | remote | `panos_request_device_quarantine_list` | (live device state — SSH via --remote; expect device 2FA) |
+| `request device-quarantine-list show all option` | remote | `panos_request_device_quarantine_list` | (live device state — SSH via --remote; expect device 2FA) |
+| `request device-quarantine-list show hostid` | remote | `panos_request_device_quarantine_list` | (live device state — SSH via --remote; expect device 2FA) |
+| `request device-quarantine-list show serialno` | remote | `panos_request_device_quarantine_list` | (live device state — SSH via --remote; expect device 2FA) |
+| `request device-registration username` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request device-telemetry` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request dhcp client ipv6 release` | remote | `panos_request_dhcp` | (live device state — SSH via --remote; expect device 2FA) |
+| `request dhcp client ipv6 renew` | remote | `panos_request_dhcp` | (live device state — SSH via --remote; expect device 2FA) |
+| `request dhcp client management-interface` | remote | `panos_request_dhcp` | (live device state — SSH via --remote; expect device 2FA) |
+| `request dhcp client release` | remote | `panos_request_dhcp` | (live device state — SSH via --remote; expect device 2FA) |
+| `request dhcp client renew` | remote | `panos_request_dhcp` | (live device state — SSH via --remote; expect device 2FA) |
+| `request dhcpv6 client management-interface` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request disable-ztp` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request dnsproxy license refresh` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request encryption-level level` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request get-application-status application` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request get-disabled-applications` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-client software activate file` | remote | `panos_request_global_protect_client` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-client software activate version` | remote | `panos_request_global_protect_client` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-client software check` | remote | `panos_request_global_protect_client` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-client software download sync-to-peer` | remote | `panos_request_global_protect_client` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-client software info` | remote | `panos_request_global_protect_client` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-clientless-vpn downgrade install` | remote | `panos_request_global_protect_clientless_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-clientless-vpn upgrade check` | remote | `panos_request_global_protect_clientless_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-clientless-vpn upgrade download latest sync-to-peer` | remote | `panos_request_global_protect_clientless_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-clientless-vpn upgrade info` | remote | `panos_request_global_protect_clientless_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-clientless-vpn upgrade install commit` | remote | `panos_request_global_protect_clientless_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-gateway check-client-logout-all-status` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-gateway client-logout gateway` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-gateway client-logout-all gateway` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-gateway satellite-logout gateway` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-portal client-logout portal` | remote | `panos_request_global_protect_portal` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-portal refresh-csc-cookie-key` | remote | `panos_request_global_protect_portal` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-portal refresh-scep-cookie-key` | remote | `panos_request_global_protect_portal` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-portal restore-satellite-cookie-expiration` | remote | `panos_request_global_protect_portal` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-portal set-satellite-cookie-expiration value` | remote | `panos_request_global_protect_portal` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-portal ticket portal` | remote | `panos_request_global_protect_portal` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-satellite get-gateway-config satellite` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-satellite get-portal-config satellite` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request global-protect-satellite refresh-cookie-key` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request high-availability cluster clear-cache` | remote | `panos_request_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `request high-availability cluster sync-from` | remote | `panos_request_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `request high-availability session-reestablish force` | remote | `panos_request_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `request high-availability state functional` | remote | `panos_request_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `request high-availability state peer` | remote | `panos_request_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `request high-availability state suspend` | remote | `panos_request_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `request high-availability sync-to-remote` | remote | `panos_request_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `request high-availability sync-to-remote id-manager` | remote | `panos_request_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `request hsm` | remote | `panos_request_hsm` | (live device state — SSH via --remote; expect device 2FA) |
+| `request hsm authenticate server` | remote | `panos_request_hsm` | (live device state — SSH via --remote; expect device 2FA) |
+| `request hsm client-version` | remote | `panos_request_hsm` | (live device state — SSH via --remote; expect device 2FA) |
+| `request hsm ha create-ha-group password` | remote | `panos_request_hsm` | (live device state — SSH via --remote; expect device 2FA) |
+| `request hsm ha recover` | remote | `panos_request_hsm` | (live device state — SSH via --remote; expect device 2FA) |
+| `request hsm ha replace-server password` | remote | `panos_request_hsm` | (live device state — SSH via --remote; expect device 2FA) |
+| `request hsm ha synchronize password` | remote | `panos_request_hsm` | (live device state — SSH via --remote; expect device 2FA) |
+| `request hsm login password` | remote | `panos_request_hsm` | (live device state — SSH via --remote; expect device 2FA) |
+| `request hsm server-enroll` | remote | `panos_request_hsm` | (live device state — SSH via --remote; expect device 2FA) |
+| `request iot upgrade` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request iot validity-check` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request last-acknowledge-time` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request license api-key delete` | remote | `panos_request_license` | (live device state — SSH via --remote; expect device 2FA) |
+| `request license api-key set key` | remote | `panos_request_license` | (live device state — SSH via --remote; expect device 2FA) |
+| `request license api-key show` | remote | `panos_request_license` | (live device state — SSH via --remote; expect device 2FA) |
+| `request license deactivate key mode` | remote | `panos_request_license` | (live device state — SSH via --remote; expect device 2FA) |
+| `request license deactivate vm-capacity mode` | remote | `panos_request_license` | (live device state — SSH via --remote; expect device 2FA) |
+| `request license fetch auth-code` | remote | `panos_request_license` | (live device state — SSH via --remote; expect device 2FA) |
+| `request license info` | remote | `panos_request_license` | (live device state — SSH via --remote; expect device 2FA) |
+| `request license install` | remote | `panos_request_license` | (live device state — SSH via --remote; expect device 2FA) |
+| `request list-content-downloads` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request log-collector-forwarding status` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request logdb migrate-to-panorama start type` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request logdb migrate-to-panorama status type` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request logdb migrate-to-panorama stop type` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request logging-service-forwarding certificate delete` | remote | `panos_request_logging_service_forwarding` | (live device state — SSH via --remote; expect device 2FA) |
+| `request logging-service-forwarding certificate fetch` | remote | `panos_request_logging_service_forwarding` | (live device state — SSH via --remote; expect device 2FA) |
+| `request logging-service-forwarding certificate fetch-noproxy pre-shared-key` | remote | `panos_request_logging_service_forwarding` | (live device state — SSH via --remote; expect device 2FA) |
+| `request logging-service-forwarding certificate info` | remote | `panos_request_logging_service_forwarding` | (live device state — SSH via --remote; expect device 2FA) |
+| `request logging-service-forwarding customerinfo` | remote | `panos_request_logging_service_forwarding` | (live device state — SSH via --remote; expect device 2FA) |
+| `request logging-service-forwarding status` | remote | `panos_request_logging_service_forwarding` | (live device state — SSH via --remote; expect device 2FA) |
+| `request master-key new-master-key` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request mongo set storage-engine instance` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request mongo show storage-engine instance` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request multi-config` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request panorama-connectivity-check` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request password-change-history dump-history` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request password-change-history re-encrypt old-master-key` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request password-hash password` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request pppoe ipv6 dhcpv6 release` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request pppoe ipv6 dhcpv6 renew` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request quota-enforcement` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request resolve vsys` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request restart dataplane` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request restart software` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request restart system with-swap-scrub` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request routing` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request routing show-config virtual-router` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request routing show-error virtual-router` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request saas_agent certificate info` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request session-discard id` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request set-application-status-recursive enable-dependent-apps` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request shutdown system with-swap-scrub` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request stats dump` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request streaming-telemetry reload-config` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request support` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system bootstrap-usb delete bundle` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system bootstrap-usb prepare from` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system external-list global-find string` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system external-list list-capacities` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system external-list refresh type domain name` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system external-list refresh type ip name` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system external-list refresh type url name` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system external-list show type` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system external-list stats type` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system external-list url-test` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system fqdn` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system idmap-sync` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system patch apply` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system patch check` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system patch download version` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system patch info version` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system patch install version` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system patch revert` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system patch scp-export profile-name` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system patch scp-import profile-name` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system private-data-reset shutdown` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system self-test crypto` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system self-test force-crypto-failure dp` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system self-test force-crypto-failure mp` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system self-test force-software-integrity-failure` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system self-test software-integrity` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system self-test-job` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system software download scp-profile` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system software eligible to-version` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system software info` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system software install load-config` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system software scp-export profile-name` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request system software scp-import profile-name` | remote | `panos_request_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `request tech-support copy-to-remote-host remote-hostname` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request tech-support dump` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request telemetry-data dump` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request ui telemetry` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request url-filtering install pandb-database` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request url-filtering save url-database` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request url-filtering update url` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request user-id cloud-identity-engine config-data status` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request wf-private downgrade install` | remote | `panos_request_wf_private` | (live device state — SSH via --remote; expect device 2FA) |
+| `request wf-private upgrade check` | remote | `panos_request_wf_private` | (live device state — SSH via --remote; expect device 2FA) |
+| `request wf-private upgrade download latest sync-to-peer` | remote | `panos_request_wf_private` | (live device state — SSH via --remote; expect device 2FA) |
+| `request wf-private upgrade info` | remote | `panos_request_wf_private` | (live device state — SSH via --remote; expect device 2FA) |
+| `request wf-private upgrade install commit` | remote | `panos_request_wf_private` | (live device state — SSH via --remote; expect device 2FA) |
+| `request wildfire downgrade install` | remote | `panos_request_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `request wildfire registration channel` | remote | `panos_request_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `request wildfire upgrade check` | remote | `panos_request_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `request wildfire upgrade download latest sync-to-peer` | remote | `panos_request_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `request wildfire upgrade info` | remote | `panos_request_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `request wildfire upgrade install commit` | remote | `panos_request_wildfire` | (live device state — SSH via --remote; expect device 2FA) |
+| `request wildfire-realtime-cache add virus-pattern-type` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `request wildfire-realtime-cache delete virus-pattern-type` | remote | `panos_request_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `schedule botnet-report period` | remote | `panos_schedule` | (live device state — SSH via --remote; expect device 2FA) |
+| `schedule saas-applications-usage-report skip-detailed-report` | remote | `panos_schedule` | (live device state — SSH via --remote; expect device 2FA) |
+| `schedule uar-report user` | remote | `panos_schedule` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp export` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp export certificate to` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp export core-file data-plane from` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp export core-file large-corefile from` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp export core-file management-plane from` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp export debug bootmem_file from` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp export log` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp export log-file data-plane to` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp export log-file management-plane to` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp export pprof-file management-plane from` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp export stats-dump to` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp export threat-pcap pcap-id` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp import` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp import certificate from` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp import hsm-ciphertrust-client-cert from` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp import hsm-ciphertrust-client-key from` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp import hsm-ciphertrust-server-cert from` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp import hsm-server-cert from` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp import idp-metadata profile-name` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp import keypair from` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `scp import private-key from` | remote | `panos_scp` | (live device state — SSH via --remote; expect device 2FA) |
+| `set advanced-routing fib check default-interval` | remote | `panos_set_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `set advanced-routing fib check disable` | remote | `panos_set_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `set advanced-routing fib check disable-auto-recovery` | remote | `panos_set_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `set advanced-routing fib check interval` | remote | `panos_set_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `set advanced-routing fib check recovery-failure-threshold` | remote | `panos_set_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `set application dump off` | remote | `panos_set_application` | (live device state — SSH via --remote; expect device 2FA) |
+| `set application dump on limit` | remote | `panos_set_application` | (live device state — SSH via --remote; expect device 2FA) |
+| `set application traceroute enable` | remote | `panos_set_application` | (live device state — SSH via --remote; expect device 2FA) |
+| `set application traceroute ttl-threshold` | remote | `panos_set_application` | (live device state — SSH via --remote; expect device 2FA) |
+| `set audit-comment xpath` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set auth remote-host-check` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set auth strict-username-check` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set authentication radius-vsa-off` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set authentication radius-vsa-on` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set authentication saml_signature_digest_algorithm` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set cli` | remote | `panos_set_cli` | (live device state — SSH via --remote; expect device 2FA) |
+| `set cli config-output-format` | remote | `panos_set_cli` | (live device state — SSH via --remote; expect device 2FA) |
+| `set cli hide-ip value` | remote | `panos_set_cli` | (live device state — SSH via --remote; expect device 2FA) |
+| `set cli hide-user value` | remote | `panos_set_cli` | (live device state — SSH via --remote; expect device 2FA) |
+| `set cli terminal height` | remote | `panos_set_cli` | (live device state — SSH via --remote; expect device 2FA) |
+| `set cli terminal type` | remote | `panos_set_cli` | (live device state — SSH via --remote; expect device 2FA) |
+| `set cli terminal width` | remote | `panos_set_cli` | (live device state — SSH via --remote; expect device 2FA) |
+| `set cli timeout idle` | remote | `panos_set_cli` | (live device state — SSH via --remote; expect device 2FA) |
+| `set clock date` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set data-access-password` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set device-inventory-edit add-device mac` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set device-inventory-edit edit-devices hostname` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set device-inventory-upload csvfile` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set fwd-uni-dhcp-packet-on-dhcp-client-intf` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set global-protect arg-maxlen` | remote | `panos_set_global_protect` | (live device state — SSH via --remote; expect device 2FA) |
+| `set global-protect global-protect-portal portal` | remote | `panos_set_global_protect` | (live device state — SSH via --remote; expect device 2FA) |
+| `set global-protect redirect location` | remote | `panos_set_global_protect` | (live device state — SSH via --remote; expect device 2FA) |
+| `set global-protect redirect off` | remote | `panos_set_global_protect` | (live device state — SSH via --remote; expect device 2FA) |
+| `set global-protect redirect on` | remote | `panos_set_global_protect` | (live device state — SSH via --remote; expect device 2FA) |
+| `set global-protect redirect show` | remote | `panos_set_global_protect` | (live device state — SSH via --remote; expect device 2FA) |
+| `set global-protect satellite-serialnumberip-auth` | remote | `panos_set_global_protect` | (live device state — SSH via --remote; expect device 2FA) |
+| `set logrcvr offline-logpurger interval` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set logrcvr offline-logpurger percentage-threshold` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set management-server logging` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set max-num-images count` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set mgmtbond` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set nw-id-api data` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set password` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set preserve-prenat-feature adjust-mtu` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set preserve-prenat-feature verify-checksum` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set quarantine data` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session accelerated-aging-scaling-factor` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session accelerated-aging-threshold` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session default` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session ingress_backlogs_duration` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session ingress_backlogs_threshold` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session lag-flow-key-type` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session pvst-native-vlan-id` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session resource-limit-behavior` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session scan-scaling-factor` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session scan-threshold` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session tcp-cong-ctrl` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session tcp-reject-small-initial-window-threshold` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session tcp-rsts` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session timeout-scan` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session timeout-tcp-delayed-ack` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session timeout-tcp-half-closed` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session timeout-tcp-time-wait` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session timeout-tcp-unverified-rst` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session timeout-tcphandshake` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set session timeout-tcpinit` | remote | `panos_set_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `set snmpd refresh-timer-period` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set ssh service-restart` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set ssh-authentication public-key` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set ssl add-secure-renegotiation-extension` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set ssl-conn-on-cert fail-all-conns` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set ssl-conn-on-cert fail-syslog-conns` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set sslmgr-check-cert-jobs max-limit` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set syslog fqdn-refresh` | remote | `panos_set_syslog` | (live device state — SSH via --remote; expect device 2FA) |
+| `set syslog ssl-conn-validation all-conns` | remote | `panos_set_syslog` | (live device state — SSH via --remote; expect device 2FA) |
+| `set syslog ssl-conn-validation explicit crl` | remote | `panos_set_syslog` | (live device state — SSH via --remote; expect device 2FA) |
+| `set syslog ssl-conn-validation explicit eku` | remote | `panos_set_syslog` | (live device state — SSH via --remote; expect device 2FA) |
+| `set syslog ssl-conn-validation explicit ocsp` | remote | `panos_set_syslog` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting additional-threat-log` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting alg-natref` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting alg-persistent-nat` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting arp-cache-timeout` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ctd` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ctd ctd-agent-assigned-cores` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ctd feature-forward cloud-appid-prefiltering` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ctd feature-forward mica` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ctd lscan-mode` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ctd lscan-mode-default` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ctd max-sess-hash-limit` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ctd nonblocking-pattern-match-interval` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ctd pkt-proc-boundary` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ctd pkt-proc-loop-high` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ctd pkt-proc-loop-low` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ctd regex-stats-on` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ctd wif-shared-buf-threshold` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ctd-mode` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ctd-mode-default` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting delay-interface-process interface` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting dfa-mode` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting dfa-mode-default` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting hardware-acl-blocking-duration` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting hardware-acl-blocking-enable` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting icmp6-error` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ip6-defrag-timeout` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting jumbo-frame` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting layer4-checksum` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting logging default` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting logging default-policy-logging` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting logging log-compression` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting logging log-suppression` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting logging max-log-rate` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting logging max-packet-rate` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting mp-vr-vif-install-only-host-route` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting multi-vsys` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting packet ip-frag-limit` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting packet-path-test enable` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting packet-path-test show` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting paloalto-networks-service-proxy` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting persistent-dipp-alert` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting pow` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting pppoe-dont-send-eol interface` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting shared-policy` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting software-acl-blocking-duration` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ssl-decrypt` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ssl-decrypt answer-timeout` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting ssl-decrypt tunnel-taildrop-threshold` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting target-vsys` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting template` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting util assert-crash-once` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting wildfire disk-quota` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting wildfire disk-quota global` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting wildfire interval report-update-interval` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting wildfire interval server-list-update-interval` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting zip enable` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set system setting zip hw-reset` | remote | `panos_set_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `set transceiver-monitor-rate slot` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set user-id data` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set xmlapi-group add group` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set xmlapi-group delete group` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set xmlapi-group refresh group` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `set ztp panorama-timeout` | remote | `panos_set_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show adem probes` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show adem routeinfo destination` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show admins` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing bfd active-profile name` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing bfd details logical-router` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing bfd drop-counters session-id` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing bfd summary logical-router` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing bgp filters access-list logical-router` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing bgp filters prefix-list logical-router` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing bgp filters route-map logical-router` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing bgp loc-rib-detail peer` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing bgp peer` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing bgp peer detail peer-name` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing bgp peer status peer-name` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing bgp peer-groups logical-router` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing bgp rib-out-detail peer` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing bgp route afi` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing bgp summary logical-router` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing fib afi` | device | `panos_show_advanced_routing` | (live device state — via the SCM device tunnel; no SSH/2FA) |
+| `show advanced-routing interface logical-router` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing logical-router lr-name` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing multicast fib group` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing multicast group-permission interface` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing multicast igmp interface logical-router` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing multicast igmp membership interface` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing multicast igmp statistics interface` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing multicast msdp peer detail peer-name` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing multicast msdp peer status peer-name` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing multicast msdp sa logical-router` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing multicast msdp statistics logical-router` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing multicast msdp summary logical-router` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing multicast pim elected-bsr logical-router` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing multicast pim group-mapping group` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing multicast pim interface logical-router` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing multicast pim neighbor logical-router` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing multicast pim rpf static` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing multicast pim state logical-router` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing multicast pim statistics interface` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing multicast route group` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing ospf` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing ospf dumplsdb adv-rtr` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing ospf interface brief` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing ospf lsdb adv-rtr` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing ospf neighbor brief` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing ospf virt-neighbor brief` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing ospfv3` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing ospfv3 dumplsdb scope` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing ospfv3 interface brief` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing ospfv3 lsdb scope` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing ospfv3 neighbor brief` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing ospfv3 virt-neighbor brief` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing resource logical-router` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing rip` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show advanced-routing route destination` | device | `panos_show_advanced_routing` | (live device state — via the SCM device tunnel; no SSH/2FA) |
+| `show advanced-routing static-route-path-monitor logical-router` | remote | `panos_show_advanced_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show api-key-expiration-ts` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show applications vsys` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show auth` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show authentication allowlist` | remote | `panos_show_authentication` | (live device state — SSH via --remote; expect device 2FA) |
+| `show authentication groupdb` | remote | `panos_show_authentication` | (live device state — SSH via --remote; expect device 2FA) |
+| `show authentication groupnames` | remote | `panos_show_authentication` | (live device state — SSH via --remote; expect device 2FA) |
+| `show authentication local-user-db vsys` | remote | `panos_show_authentication` | (live device state — SSH via --remote; expect device 2FA) |
+| `show authentication locked-users vsys` | remote | `panos_show_authentication` | (live device state — SSH via --remote; expect device 2FA) |
+| `show authentication service-principal vsys` | remote | `panos_show_authentication` | (live device state — SSH via --remote; expect device 2FA) |
+| `show authentication service-principals vsys` | remote | `panos_show_authentication` | (live device state — SSH via --remote; expect device 2FA) |
+| `show authentication statistics username` | remote | `panos_show_authentication` | (live device state — SSH via --remote; expect device 2FA) |
+| `show bad-custom-signature` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show bonjour interface` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show chassis inventory` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show chassis-ready` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cli` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show clock more` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid app-to-filtergroup-mapping batch-idx` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid application` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid application-filter all` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid application-filter option vsys` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid application-group all` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid application-group option vsys` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid cloud-app-data app-metadata` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid cloud-app-data application all` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid cloud-app-data application app-id` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid cloud-app-data application cloud-app-name` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid cloud-app-data application statistics` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid cloud-app-data container all` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid cloud-app-data container container-id` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid cloud-app-data container container-name` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid cloud-app-data container statistics` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid signature-dp` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid signature-dp app-signature all` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid signature-dp app-signature cloud-app-name` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid signature-dp app-signature signature-id` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid signature-dp app-signature statistics` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid signature-dp appid` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid signature-dp threat-signature all` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid signature-dp threat-signature cloud-app-name` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid signature-dp threat-signature statistics` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid signature-dp threat-signature threat-id` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid task all option` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid task statistics` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid task task-index` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid transaction all option` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-appid transaction trans-index` | remote | `panos_show_cloud_appid` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-auth-service-alerts` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-auth-service-metadata region_id` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-auth-service-profiles tenant_id` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-auth-service-regions force_refresh` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-auth-service-tenants region_id` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-management-status` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cloud-userid` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cluster` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show cluster-userid statistics` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show commit-locks vsys` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show config` | remote | `panos_show_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show config audit base-version` | remote | `panos_show_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show config audit base-version-no-deletes` | remote | `panos_show_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show config audit info` | remote | `panos_show_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show config audit version` | remote | `panos_show_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show config commit-scope partial shared-object` | remote | `panos_show_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show config effective-running xpath` | remote | `panos_show_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show config list admins partial shared-object` | remote | `panos_show_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show config list audit-comments xpath` | remote | `panos_show_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show config list change-summary partial admin` | remote | `panos_show_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show config list changes partial shared-object` | remote | `panos_show_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show config pushed-shared-policy vsys` | remote | `panos_show_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show config running xpath` | remote | `panos_show_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show config saved` | remote | `panos_show_config` | (live device state — SSH via --remote; expect device 2FA) |
+| `show config-locks vsys` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show counter global filter category` | remote | `panos_show_counter` | (live device state — SSH via --remote; expect device 2FA) |
+| `show counter global name` | remote | `panos_show_counter` | (live device state — SSH via --remote; expect device 2FA) |
+| `show counter interface` | remote | `panos_show_counter` | (live device state — SSH via --remote; expect device 2FA) |
+| `show counter management-server` | remote | `panos_show_counter` | (live device state — SSH via --remote; expect device 2FA) |
+| `show counter rate` | remote | `panos_show_counter` | (live device state — SSH via --remote; expect device 2FA) |
+| `show counter total-throughput` | remote | `panos_show_counter` | (live device state — SSH via --remote; expect device 2FA) |
+| `show ctd-agent` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show ctd-agent debug` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show ctd-agent status` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show device-certificate` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show device-telemetry` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show device-telemetry stats` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability election-option` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability election-option timers` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability path-monitoring` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability path-monitoring path-group` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability peer` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig high-availability peer encryption` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting cloud-host-compliance` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting management log-forwarding-from-device` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting management secure-conn-server authorization-list` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting wildfire private-cloud-secure-conn-client` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig setting wildfire private-cloud-secure-conn-client certificate-type` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system config-bundle-export-schedule` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system deployment-update-schedule` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system dlsrvr` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system hsm-settings provider aws-cloudhsm` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system hsm-settings provider aws-cloudhsm health-check-settings` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system hsm-settings provider aws-cloudhsm hsm-cluster` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system maintenance-user` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system management-tunnel` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system management-tunnel crypto-profiles` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system management-tunnel crypto-profiles ikev2-crypto-profiles` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system management-tunnel crypto-profiles ipsec-crypto-profiles` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system management-tunnel ikev2-gateway` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system management-tunnel tunnel` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show deviceconfig system push-schedule` | remote | `panos_show_deviceconfig` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dhcp client ipv6 pool-details` | remote | `panos_show_dhcp` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dhcp client ipv6 state interface` | remote | `panos_show_dhcp` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dhcp client ipv6-gateway-address` | remote | `panos_show_dhcp` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dhcp client mgmt-interface-state` | remote | `panos_show_dhcp` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dhcp client mgmt6-interface-state` | remote | `panos_show_dhcp` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dhcp client state` | remote | `panos_show_dhcp` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dhcp inherited state interface` | remote | `panos_show_dhcp` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dhcp server lease interface` | remote | `panos_show_dhcp` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dhcp server settings` | remote | `panos_show_dhcp` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy cache all` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy cache dump file` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy cache filter fqdn` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy cache mgmt-obj` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy cache name` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy ddns interface name` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy dns-signature cache fqdn` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy dns-signature content` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy dns-signature counters` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy dns-signature info` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy encrypted-dns` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy fqdn all` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy fqdn mgmt-obj` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy fqdn name` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy settings all` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy settings mgmt-obj` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy settings name` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy socket-count all` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy static-entries all` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy static-entries dump file` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy static-entries filter fqdn` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy static-entries name` | remote | `panos_show_dns_proxy` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dns-proxy statistics all` | device | `panos_show_dns_proxy` | (live device state — via the SCM device tunnel; no SSH/2FA) |
+| `show dns-proxy statistics mgmt-obj` | device | `panos_show_dns_proxy` | (live device state — via the SCM device tunnel; no SSH/2FA) |
+| `show dns-proxy statistics name` | device | `panos_show_dns_proxy` | (live device state — via the SCM device tunnel; no SSH/2FA) |
+| `show dos-block-table all start-at` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dos-block-table hardware start-at` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dos-block-table software start-at` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dos-block-table summary` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dos-protection rule` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show dos-protection zone` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-firewall summary firewall-client-version-last-activity-time` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-gateway current-satellite gateway` | remote | `panos_show_global_protect_gateway` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-gateway current-user gateway` | remote | `panos_show_global_protect_gateway` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-gateway flow name` | remote | `panos_show_global_protect_gateway` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-gateway flow tunnel-id` | remote | `panos_show_global_protect_gateway` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-gateway flow-site-to-site name` | remote | `panos_show_global_protect_gateway` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-gateway flow-site-to-site tunnel-id` | remote | `panos_show_global_protect_gateway` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-gateway gateway name` | remote | `panos_show_global_protect_gateway` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-gateway previous-satellite gateway` | remote | `panos_show_global_protect_gateway` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-gateway previous-user gateway` | remote | `panos_show_global_protect_gateway` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-gateway statistics gateway` | remote | `panos_show_global_protect_gateway` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-gateway summary all` | remote | `panos_show_global_protect_gateway` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-gateway summary detail name` | remote | `panos_show_global_protect_gateway` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-mdm state` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-mdm statistics` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-portal cookie-cache portal` | remote | `panos_show_global_protect_portal` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-portal current-user portal` | remote | `panos_show_global_protect_portal` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-portal global-protect-portal portal` | remote | `panos_show_global_protect_portal` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-portal satellite-cookie-expiration` | remote | `panos_show_global_protect_portal` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-portal satellite-serialnumberip-auth status` | remote | `panos_show_global_protect_portal` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-portal statistics portal` | remote | `panos_show_global_protect_portal` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-portal summary all` | remote | `panos_show_global_protect_portal` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-portal summary detail name` | remote | `panos_show_global_protect_portal` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-satellite current-gateway satellite` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-satellite interface` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show global-protect-satellite satellite name` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show gp-broker gpsvc counter` | remote | `panos_show_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `show gp-broker gpsvc task all option` | remote | `panos_show_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `show gp-broker gpsvc task src-ip` | remote | `panos_show_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `show gp-broker gpsvc task task-index` | remote | `panos_show_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `show gp-broker gpsvc task user` | remote | `panos_show_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `show gp-broker gpsvc version` | remote | `panos_show_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `show gp-broker ipc-stat` | remote | `panos_show_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `show gp-broker panos-config` | remote | `panos_show_gp_broker` | (live device state — SSH via --remote; expect device 2FA) |
+| `show high-availability` | remote | `panos_show_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `show high-availability cluster` | remote | `panos_show_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `show high-availability cluster session-synchronization all` | remote | `panos_show_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `show high-availability cluster session-synchronization device device-id` | remote | `panos_show_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `show high-availability cluster session-synchronization device device-name` | remote | `panos_show_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `show high-availability cluster statistics all` | remote | `panos_show_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `show high-availability cluster statistics device device-id` | remote | `panos_show_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `show high-availability cluster statistics device device-name` | remote | `panos_show_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `show high-availability control-link statistics` | remote | `panos_show_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `show high-availability interface` | remote | `panos_show_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `show high-availability pre-negotiation summary` | remote | `panos_show_high_availability` | (live device state — SSH via --remote; expect device 2FA) |
+| `show hsm` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot device-inventory all match` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot device-inventory all match ip` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot device-inventory summmary` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot dhcp-server status all` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot dhcp-server status server` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot dp-quarantine-cache all option` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot dp-quarantine-cache ip` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot eal` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot eal dpi-stats all` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot eal dpi-stats subtype` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot edit-device-inventory id` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot edit-device-inventory jobs` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot export-device-inventory all match` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot export-device-inventory all match ip` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot host-cache all option` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot host-cache hostid` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot icd statistics` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot icd version` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot ip-device-mapping all option` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot ip-device-mapping ip` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot ip-device-mapping-mp all option` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show iot ip-device-mapping-mp ip` | remote | `panos_show_iot` | (live device state — SSH via --remote; expect device 2FA) |
+| `show jobs pending` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show jobs processed` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show lacp aggregate-ethernet` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show ldl` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show license-token-files name` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show lldp` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show location ip` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log alarm` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log alarm csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log alarm direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log alarm dport equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log alarm opaque contains` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log alarm receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log alarm sport equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log appstat csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log appstat direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log appstat end-time equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log appstat name equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log appstat name not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log appstat query equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log appstat receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log appstat risk` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log appstat start-time equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log auth` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log auth clienttype equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log auth csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log auth direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log auth ip in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log auth ip not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log auth receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log config client equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log config client not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log config cmd equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log config cmd not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log config csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log config direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log config end-time equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log config query equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log config receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log config result equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log config result not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log config start-time equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log corr` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log corr csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log corr direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log corr receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log corr severity` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log corr src in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log corr src not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log corr-categ` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log corr-categ csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log corr-categ direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log corr-categ receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log corr-categ severity` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log corr-categ src in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log corr-categ src not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log corr-detail match-oid equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log corr-detail object-name equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log data` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log data action equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log data action not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log data csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log data direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log data dport equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log data dport not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log data dst in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log data dst not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log data receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log data sport equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log data sport not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log data src in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log data src not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log data suppress-threatid-mapping equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption action equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption action not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption dport equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption dport not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption dst in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption dst not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption ec_curve equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption proxy_type equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption show-tracker equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption sport equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption sport not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption src in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption src not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption tls_auth equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption tls_enc equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption tls_keyxchg equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log decryption tls_version equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log globalprotect` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log globalprotect csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log globalprotect direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log globalprotect machinename contains` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log globalprotect machinename equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log globalprotect machinename not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log globalprotect private_ip equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log globalprotect private_ip in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log globalprotect private_ip not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log globalprotect public_ip equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log globalprotect public_ip in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log globalprotect public_ip not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log globalprotect receive_time equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log globalprotect receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log globalprotect receive_time not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log hipmatch` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log hipmatch csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log hipmatch direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log hipmatch machinename equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log hipmatch machinename not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log hipmatch matchname equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log hipmatch matchname not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log hipmatch matchtype equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log hipmatch matchtype not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log hipmatch os equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log hipmatch os not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log hipmatch receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log hipmatch src in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log hipmatch src not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log iptag` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log iptag csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log iptag datasource_subtype equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log iptag datasource_subtype not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log iptag datasource_type equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log iptag datasource_type not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log iptag datasourcename equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log iptag datasourcename not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log iptag direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log iptag event_id equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log iptag event_id not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log iptag ip in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log iptag ip not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log iptag ip_subnet_range equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log iptag ip_subnet_range not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log iptag receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log iptag tag_name equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log iptag tag_name not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log mdm receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log system csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log system direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log system end-time equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log system opaque contains` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log system query equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log system receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log system severity` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log system start-time equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log threat action equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log threat action not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log threat csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log threat direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log threat dport equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log threat dport not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log threat dst in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log threat dst not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log threat pcap-dump equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log threat receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log threat sport equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log threat sport not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log threat src in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log threat src not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log threat suppress-threatid-mapping equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log trace csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log trace direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log trace end-time equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log trace query equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log trace receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log trace sessionid equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log trace sessionid not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log trace start-time equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log traffic action equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log traffic action not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log traffic csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log traffic direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log traffic dport equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log traffic dport not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log traffic dst in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log traffic dst not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log traffic http2_connection equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log traffic http2_connection not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log traffic receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log traffic session-end-reason equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log traffic session-end-reason not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log traffic show-tracker equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log traffic sport equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log traffic sport not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log traffic src in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log traffic src not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log tunnel` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log tunnel action equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log tunnel action not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log tunnel csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log tunnel direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log tunnel dport equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log tunnel dport not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log tunnel dst in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log tunnel dst not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log tunnel receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log tunnel severity` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log tunnel sport equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log tunnel sport not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log tunnel src in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log tunnel src not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log url` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log url action equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log url action not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log url csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log url direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log url dport equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log url dport not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log url dst in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log url dst not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log url receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log url sport equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log url sport not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log url src in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log url src not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log url suppress-threatid-mapping equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log userid` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log userid beginport equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log userid beginport not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log userid csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log userid datasource equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log userid datasourcetype equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log userid direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log userid endport equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log userid endport not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log userid ip in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log userid ip not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log userid receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log wildfire` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log wildfire category equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log wildfire category not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log wildfire csv-output equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log wildfire direction equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log wildfire dport equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log wildfire dport not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log wildfire dst in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log wildfire dst not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log wildfire receive_time in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log wildfire sport equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log wildfire sport not-equal` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log wildfire src in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log wildfire src not-in` | remote | `panos_show_log` | (live device state — SSH via --remote; expect device 2FA) |
+| `show log-collector-group` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show logging-status verbose` | device | `panos_show_misc` | (live device state — via the SCM device tunnel; no SSH/2FA) |
+| `show logrcvr ip-cache vsys` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show logrcvr offline-logpurger` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show mac` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show macsec association interface` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show macsec stats interface` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show management-clients` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show management-server candidate config-size` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show management-server last-committed config-size` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show max-num-images` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show mgt-config devices` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show mlav` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show neighbor` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show net-inspection details` | remote | `panos_show_net_inspection` | (live device state — SSH via --remote; expect device 2FA) |
+| `show net-inspection evaluator index` | remote | `panos_show_net_inspection` | (live device state — SSH via --remote; expect device 2FA) |
+| `show net-inspection evaluator zone` | remote | `panos_show_net_inspection` | (live device state — SSH via --remote; expect device 2FA) |
+| `show net-inspection exempt` | remote | `panos_show_net_inspection` | (live device state — SSH via --remote; expect device 2FA) |
+| `show net-inspection filter index` | remote | `panos_show_net_inspection` | (live device state — SSH via --remote; expect device 2FA) |
+| `show net-inspection filter rule-name` | remote | `panos_show_net_inspection` | (live device state — SSH via --remote; expect device 2FA) |
+| `show net-inspection filter zone` | remote | `panos_show_net_inspection` | (live device state — SSH via --remote; expect device 2FA) |
+| `show net-inspection status` | remote | `panos_show_net_inspection` | (live device state — SSH via --remote; expect device 2FA) |
+| `show netstat route` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show ntp` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show object dynamic-address-group all` | remote | `panos_show_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `show object dynamic-address-group name` | remote | `panos_show_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `show object registered-ip limit` | remote | `panos_show_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `show object registered-user all start-point` | remote | `panos_show_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `show object registered-user user` | remote | `panos_show_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `show object static ip` | remote | `panos_show_object` | (live device state — SSH via --remote; expect device 2FA) |
+| `show obsolete-disabled-ssl-exclusions` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show operational-mode` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show oss-license` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show panorama-certificates` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show panorama-status` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show parent-info all` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show parent-info filter saddr` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show parent-info info` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show pbf return-mac all` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show pbf return-mac name` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show pbf rule all detail` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show pbf rule name` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show policy-recommendation iot max-count` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show policy-recommendation saas max-count` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show pppoe inherited state interface` | remote | `panos_show_pppoe` | (live device state — SSH via --remote; expect device 2FA) |
+| `show pppoe interface` | remote | `panos_show_pppoe` | (live device state — SSH via --remote; expect device 2FA) |
+| `show pppoe ipv6 interface` | remote | `panos_show_pppoe` | (live device state — SSH via --remote; expect device 2FA) |
+| `show pppoe ipv6 pool-details` | remote | `panos_show_pppoe` | (live device state — SSH via --remote; expect device 2FA) |
+| `show pppoe ipv6 prefix interface` | remote | `panos_show_pppoe` | (live device state — SSH via --remote; expect device 2FA) |
+| `show predefined xpath` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show predefined-iot xpath` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show qos interface` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show query corr-detail id` | remote | `panos_show_query` | (live device state — SSH via --remote; expect device 2FA) |
+| `show query effective-queries query` | remote | `panos_show_query` | (live device state — SSH via --remote; expect device 2FA) |
+| `show query jobs` | remote | `panos_show_query` | (live device state — SSH via --remote; expect device 2FA) |
+| `show query result id` | remote | `panos_show_query` | (live device state — SSH via --remote; expect device 2FA) |
+| `show query stats` | remote | `panos_show_query` | (live device state — SSH via --remote; expect device 2FA) |
+| `show redistribution agent state` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show redistribution agent statistics` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show redistribution service client` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show redistribution service status` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show report cache cache_id` | remote | `panos_show_report` | (live device state — SSH via --remote; expect device 2FA) |
+| `show report cache info` | remote | `panos_show_report` | (live device state — SSH via --remote; expect device 2FA) |
+| `show report custom` | remote | `panos_show_report` | (live device state — SSH via --remote; expect device 2FA) |
+| `show report custom database equal` | remote | `panos_show_report` | (live device state — SSH via --remote; expect device 2FA) |
+| `show report custom receive_time in` | remote | `panos_show_report` | (live device state — SSH via --remote; expect device 2FA) |
+| `show report directory-listing` | remote | `panos_show_report` | (live device state — SSH via --remote; expect device 2FA) |
+| `show report exec_mgr batch_id` | remote | `panos_show_report` | (live device state — SSH via --remote; expect device 2FA) |
+| `show report exec_mgr info` | remote | `panos_show_report` | (live device state — SSH via --remote; expect device 2FA) |
+| `show report id` | remote | `panos_show_report` | (live device state — SSH via --remote; expect device 2FA) |
+| `show report jobs` | remote | `panos_show_report` | (live device state — SSH via --remote; expect device 2FA) |
+| `show report predefined end-time equal` | remote | `panos_show_report` | (live device state — SSH via --remote; expect device 2FA) |
+| `show report predefined name equal` | remote | `panos_show_report` | (live device state — SSH via --remote; expect device 2FA) |
+| `show report predefined start-time equal` | remote | `panos_show_report` | (live device state — SSH via --remote; expect device 2FA) |
+| `show resource limit` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing bfd active-profile name` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing bfd details virtual-router` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing bfd drop-counters session-id` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing bfd summary virtual-router` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing fib virtual-router` | device | `panos_show_routing` | (live device state — via the SCM device tunnel; no SSH/2FA) |
+| `show routing interface` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing multicast fib group` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing multicast group-permission interface` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing multicast igmp interface virtual-router` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing multicast igmp membership interface` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing multicast igmp statistics interface` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing multicast pim elected-bsr` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing multicast pim group-mapping group` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing multicast pim interface virtual-router` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing multicast pim neighbor virtual-router` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing multicast pim state virtual-router` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing multicast pim statistics interface` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing multicast route group` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing path-monitor virtual-router` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing protocol bgp` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing protocol bgp peer peer-name` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing protocol bgp peer-group group-name` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing protocol bgp policy virtual-router` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing protocol bgp summary virtual-router` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing protocol ospf` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing protocol ospfv3` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing protocol ospfv3 dumplsdb scope` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing protocol ospfv3 interface brief` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing protocol ospfv3 lsdb scope` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing protocol ospfv3 neighbor brief` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing protocol ospfv3 virt-neighbor brief` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing protocol redist` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing protocol rip` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing resource` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show routing route destination` | device | `panos_show_routing` | (live device state — via the SCM device tunnel; no SSH/2FA) |
+| `show routing summary virtual-router` | remote | `panos_show_routing` | (live device state — SSH via --remote; expect device 2FA) |
+| `show rule-hit-count vsys` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show rule-hit-count vsys all rule-base` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show rule-hit-count vsys list entry` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show rule-hit-count vsys list rule-base` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running appinfo2ip saddr` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running application cache all` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running application disabled` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running application setting` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running application statistics` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running application-signature statistics` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running dns-cache statistics` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running global-ippool summary-only` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running ipv6 address` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running ml-block-cache top` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running ml-block-cache url` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running mlav-model status` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running nat-policy vsys` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running nat-rule-ippool rule` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running ndp-proxy interface` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running network-packet-broker` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running persistent-dipp-client ip-utilization pool` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running persistent-dipp-client pool` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running persistent-dipp-client-translation ip` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running persistent-dipp-pool ip-utilization` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running resource-monitor day last` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running resource-monitor hour last` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running resource-monitor ingress-backlogs` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running resource-monitor minute last` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running resource-monitor second last` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running resource-monitor week last` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running rule-use highlight vsys` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running rule-use hit-count vsys` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running security-policy rule-index` | device | `panos_show_running` | (live device state — via the SCM device tunnel; no SSH/2FA) |
+| `show running tcp state` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running tunnel flow` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running tunnel flow all filter type` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running tunnel flow context` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running tunnel flow name` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running tunnel flow tunnel-id` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running url` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running url-cache` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show running url-info` | remote | `panos_show_running` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan connection` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan details` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan details basic` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan details rule id` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan details rule idx` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan details session id` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan event` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan path-monitor details` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan path-monitor dia-anypath packet-buffer` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan path-monitor parameter active` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan path-monitor parameter adaptive` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan path-monitor parameter all-dp` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan path-monitor parameter conn-idx` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan path-monitor parameter path-name` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan path-monitor parameter vif` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan path-monitor policy-map` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan path-monitor stats active` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan path-monitor stats adaptive` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan path-monitor stats all-dp` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan path-monitor stats conn-idx` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan path-monitor stats dia-vif` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan path-monitor stats path-name` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan path-monitor stats vif` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan pool details` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan rule vif` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan session distribution policy-name` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan session log session-id` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sdwan session path-select session-id` | remote | `panos_show_sdwan` | (live device state — SSH via --remote; expect device 2FA) |
+| `show session` | remote | `panos_show_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `show session all start-at` | remote | `panos_show_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `show session cache all filter from` | remote | `panos_show_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `show session cache external md5` | remote | `panos_show_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `show session cache md5` | remote | `panos_show_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `show session id` | remote | `panos_show_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `show session packet-buffer-protection` | remote | `panos_show_session` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared address-group` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared application` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared application-filter` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared external-list` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared post-rulebase` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared post-rulebase application-override rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared post-rulebase authentication rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared post-rulebase decryption rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared post-rulebase default-security-rules rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared post-rulebase dos rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared post-rulebase nat rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared post-rulebase network-packet-broker rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared post-rulebase pbf rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared post-rulebase qos rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared post-rulebase sdwan rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared post-rulebase security rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared post-rulebase tunnel-inspect rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared pre-rulebase` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared pre-rulebase application-override rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared pre-rulebase authentication rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared pre-rulebase decryption rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared pre-rulebase dos rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared pre-rulebase nat rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared pre-rulebase network-packet-broker rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared pre-rulebase pbf rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared pre-rulebase qos rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared pre-rulebase sdwan rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared pre-rulebase security rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared pre-rulebase tunnel-inspect rules` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles ai-security` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles data-filtering` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles data-objects` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles decryption` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles dos-protection` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles file-blocking` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles gtp` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles hip-objects` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles host-compliance-objects` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles sctp` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles sdwan-error-correction` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles sdwan-path-quality` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles sdwan-saas-quality` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles sdwan-traffic-distribution` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles spyware` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles url-filtering` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles virus` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles vulnerability` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared profiles wildfire-analysis` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared region` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared schedule` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared service` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared threats` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared threats spyware` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show shared threats vulnerability` | remote | `panos_show_shared` | (live device state — SSH via --remote; expect device 2FA) |
+| `show snmpd refresh-timer-period` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sp-metadata captive-portal authprofile` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sp-metadata global-protect authprofile` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sp-metadata management authprofile` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show ssh-fingerprints hash-type` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show ssl-conn-on-cert` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sslmgr-max-check-cert-jobs` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sslmgr-store certificate-info issuer` | remote | `panos_show_sslmgr_store` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sslmgr-store certificate-info portal name` | remote | `panos_show_sslmgr_store` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sslmgr-store config-ca-certificate subjectname-hash` | remote | `panos_show_sslmgr_store` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sslmgr-store config-certificate-info db-serialno` | remote | `panos_show_sslmgr_store` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sslmgr-store satellite-info portal name` | remote | `panos_show_sslmgr_store` | (live device state — SSH via --remote; expect device 2FA) |
+| `show sslmgr-store serialno-certificate-info db-serialno` | remote | `panos_show_sslmgr_store` | (live device state — SSH via --remote; expect device 2FA) |
+| `show statistics` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show streaming-telemetry region-list` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show syslog-ssl-conn-validation` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system crypto entropy-status` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system disk-space files` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system environmentals fans slot` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system environmentals power slot` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system environmentals slot` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system environmentals thermal slot` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system resources follow` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system setting` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system setting ctd` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system setting ctd threat id` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system setting logging log-compression` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system setting ssl-decrypt` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system setting ssl-decrypt exclude-cache xml yes` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system setting ssl-decrypt gp-cookie-cache user` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system setting ssl-decrypt memory detail` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system setting url-cache` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system state browser` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system state filter` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system state filter-pretty` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show system statistics` | remote | `panos_show_system` | (live device state — SSH via --remote; expect device 2FA) |
+| `show threat id` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show transceiver` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show transceiver-detail` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show transceiver-eeprom` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show transceiver-monitor-rate` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show tunnel-acceleration` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show upgrade-history` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show url-cloud status` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user cloud-identity-engine client statistics` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user cloud-identity-engine statistics all` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user cloud-identity-engine statistics name` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user cloud-identity-engine status all` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user cloud-identity-engine status name` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user cookie-surrogate-cache-dp all` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user cookie-surrogate-cache-dp username` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user credential-filter` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user email-lookup email` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user group name` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user group-mapping naming-context server` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user group-mapping state` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user group-mapping statistics` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user group-mapping-service query` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user group-mapping-service status` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user group-policy-dp` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user group-policy-dp gid` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user group-selection sp_vsys_id` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user hip-report user` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user ip-port-user-mapping all` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user ip-port-user-mapping ip` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user ip-port-user-mapping source-user` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user ip-port-user-mapping-mp all` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user ip-port-user-mapping-mp ip` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user ip-port-user-mapping-mp source-user` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user ip-user-mapping all option` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user ip-user-mapping ip` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user ip-user-mapping-mp limit` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user ldap-device-serialno all` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user ldap-device-serialno serialno` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user local-user-db vsys` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user server-monitor auto-discover domain` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user server-monitor state` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user server-monitor statistics` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user ts-agent state` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user ts-agent statistics` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user uid2primeuid-dp all` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user uid2primeuid-dp uid` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user user-attributes user` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user user-cache-dp all` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user user-cache-dp uid` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user user-id-agent config all` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user user-id-agent config name` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user user-id-agent state` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user user-id-agent statistics` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user user-id-service client` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user user-id-service ipuser-update-list option` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user user-id-service status` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user user-ids all option` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user user-ids match-user` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user user-policy-dp all` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user user-policy-dp uid` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show user xml-api multiusersystem` | remote | `panos_show_user` | (live device state — SSH via --remote; expect device 2FA) |
+| `show virtual-wire` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show vlan` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show vm-monitor source all` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show vm-monitor source state` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show vm-monitor source statistics` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show vpn flow name` | remote | `panos_show_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `show vpn flow tunnel-id` | remote | `panos_show_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `show vpn gateway match` | remote | `panos_show_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `show vpn gateway name` | remote | `panos_show_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `show vpn ike-hashurl` | remote | `panos_show_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `show vpn ike-sa detail gateway` | remote | `panos_show_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `show vpn ike-sa gateway` | remote | `panos_show_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `show vpn ike-sa match` | remote | `panos_show_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `show vpn ipsec-sa match` | remote | `panos_show_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `show vpn ipsec-sa summary` | remote | `panos_show_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `show vpn ipsec-sa tunnel` | remote | `panos_show_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `show vpn tunnel match` | remote | `panos_show_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `show vpn tunnel name` | remote | `panos_show_vpn` | (live device state — SSH via --remote; expect device 2FA) |
+| `show wildfire` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show wildfire-appliance-cluster` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show wildfire-realtime-cache total` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show wildfire-realtime-cache virus-pattern-type` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show wildfire-realtime-cloud-status` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show wildfire-realtime-stats` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `show zone-protection zone` | remote | `panos_show_misc` | (live device state — SSH via --remote; expect device 2FA) |
+| `ssh inet` | remote | `panos_ssh` | (live device state — SSH via --remote; expect device 2FA) |
+| `tail follow` | remote | `panos_tail` | (live device state — SSH via --remote; expect device 2FA) |
+| `target set` | remote | `panos_target` | (live device state — SSH via --remote; expect device 2FA) |
+| `target show` | remote | `panos_target` | (live device state — SSH via --remote; expect device 2FA) |
+| `test advanced-routing bgp logical-router` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test advanced-routing fib-lookup ip` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test advanced-routing mfib-lookup group` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test advanced-routing multicast msdp logical-router` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test arp gratuitous interface` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test authentication authentication-profile` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test authentication-policy-match from` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test botnet domain` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test cookie-surrogate username` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test custom-signature-perf pattern` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test custom-signature-type pattern` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test custom-url url` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test data-filtering ccn` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test data-filtering pattern` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test data-filtering ssn` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test decryption-policy-match from` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test dns-proxy ddns update interface name` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test dns-proxy dns-signature fqdn` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test dns-proxy fqdn refresh all` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test dns-proxy fqdn refresh entry fqdn` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test dns-proxy query name` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test dos-policy-match from` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test generate-saml-url captive-portal vsys` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test generate-saml-url global-protect vsys` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test generate-saml-url management interface` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test global-protect-mdm hipreport request mobile-id` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test global-protect-satellite gateway-connect satellite` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test global-protect-satellite gateway-disconnect satellite` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test global-protect-satellite gateway-reconnect satellite` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test http-profile vsys` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test http-profile-server-auth-token vsys` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test http-server vsys` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test macsec association interface` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test mfa-vendors mfa-server-profile` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test nat-policy-match from` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test nd router-advertisement interface` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test nptv6 cks-neutral dest-network` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test pbf-policy-match from` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test pppoe interface` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test pppoe ipv6 interface` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test qos-policy-match from` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test routing bgp virtual-router` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test routing fib-lookup ip` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test routing mfib-lookup group` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test routing ospf logical-router` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test routing ospfv3 logical-router` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test scp-server-connection confirm hostname` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test scp-server-connection initiate hostname` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test security-policy-match from` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test smtp-server vsys` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test ssl-exclude-list predefined hostname` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test ssl-exclude-list shared hostname` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test ssl-exclude-list vsys hostname` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test stats-service` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test tag-filter` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test threat-vault connection` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test uid` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test url-info-cloud` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test url-info-host` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test url-wpc` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test user-id custom-group group-mapping` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test user-id user-id-syslog-parse field-identifier event-string` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test user-id user-id-syslog-parse regex-identifier event-regex` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test uuid enable` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test vpn ike-sa gateway` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test vpn ipsec-sa tunnel` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test wildfire registration channel` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `test x-authenticated-user ip` | remote | `panos_test` | (live device state — SSH via --remote; expect device 2FA) |
+| `tftp export` | remote | `panos_tftp` | (live device state — SSH via --remote; expect device 2FA) |
+| `tftp export core-file data-plane from` | remote | `panos_tftp` | (live device state — SSH via --remote; expect device 2FA) |
+| `tftp export core-file large-corefile from` | remote | `panos_tftp` | (live device state — SSH via --remote; expect device 2FA) |
+| `tftp export core-file management-plane from` | remote | `panos_tftp` | (live device state — SSH via --remote; expect device 2FA) |
+| `tftp export debug bootmem_file from` | remote | `panos_tftp` | (live device state — SSH via --remote; expect device 2FA) |
+| `tftp export log-file data-plane to` | remote | `panos_tftp` | (live device state — SSH via --remote; expect device 2FA) |
+| `tftp export log-file management-plane to` | remote | `panos_tftp` | (live device state — SSH via --remote; expect device 2FA) |
+| `tftp export stats-dump to` | remote | `panos_tftp` | (live device state — SSH via --remote; expect device 2FA) |
+| `tftp export threat-pcap pcap-id` | remote | `panos_tftp` | (live device state — SSH via --remote; expect device 2FA) |
+| `tftp import` | remote | `panos_tftp` | (live device state — SSH via --remote; expect device 2FA) |
+| `tftp import certificate from` | remote | `panos_tftp` | (live device state — SSH via --remote; expect device 2FA) |
+| `tftp import keypair from` | remote | `panos_tftp` | (live device state — SSH via --remote; expect device 2FA) |
+| `tftp import private-key from` | remote | `panos_tftp` | (live device state — SSH via --remote; expect device 2FA) |
+| `traceroute ipv4` | remote | `panos_traceroute` | (live device state — SSH via --remote; expect device 2FA) |
 
 ## Posture
 
 | Command | Scope | Feature flag | SCM API |
 |---|---|---|---|
+| `delete posture definitions` | global | `posture_definitions_write` | DELETE https://api.strata.paloaltonetworks.com/posture/compliance-frameworks/v1/definitions/{id} |
 | `delete posture root` | global | `posture_root_write` | DELETE https://api.strata.paloaltonetworks.com/posture/checks/v1/{id} |
 | `set posture batch-delete` | global | `posture_batch_delete_write` | POST https://api.strata.paloaltonetworks.com/posture/checks/v1/batch-delete |
 | `set posture batch-upsert` | global | `posture_batch_upsert_write` | POST https://api.strata.paloaltonetworks.com/posture/checks/v1/batch-upsert |
+| `set posture benchmark-monitoring` | global | `posture_benchmark_monitoring_write` | POST https://api.strata.paloaltonetworks.com/posture/compliance-frameworks/v1/benchmark-monitoring |
+| `set posture benchmark-monitoring download` | global | `posture_benchmark_monitoring_download_write` | POST https://api.strata.paloaltonetworks.com/posture/compliance-frameworks/v1/benchmark-monitoring/download |
 | `set posture clone` | global | `posture_clone_write` | POST https://api.strata.paloaltonetworks.com/posture/checks/v1/{id}:clone |
+| `set posture definitions` | global | `posture_definitions_write` | POST https://api.strata.paloaltonetworks.com/posture/compliance-frameworks/v1/definitions |
+| `set posture definitions benchmark` | global | `posture_definitions_benchmark_write` | POST https://api.strata.paloaltonetworks.com/posture/compliance-frameworks/v1/definitions/{id}:benchmark |
+| `set posture definitions clone` | global | `posture_definitions_clone_write` | POST https://api.strata.paloaltonetworks.com/posture/compliance-frameworks/v1/definitions/{id}:clone |
+| `set posture definitions un-benchmark` | global | `posture_definitions_un_benchmark_write` | POST https://api.strata.paloaltonetworks.com/posture/compliance-frameworks/v1/definitions/{id}:un-benchmark |
 | `set posture reports config-file-upload` | global | `posture_reports_config_file_upload_write` | POST https://api.strata.paloaltonetworks.com/posture/checks/v1/reports/config-file-upload |
 | `set posture root` | global | `posture_root_write` | POST https://api.strata.paloaltonetworks.com/posture/checks/v1 |
+| `show posture compliance-controls id` | global | `posture_compliance_controls_read` | GET https://api.strata.paloaltonetworks.com/posture/compliance-frameworks/v1/compliance-controls/{id} |
+| `show posture configurations-assessed id` | global | `posture_configurations_assessed_read` | GET https://api.strata.paloaltonetworks.com/posture/compliance-frameworks/v1/configurations-assessed/{id} |
+| `show posture definitions` | global | `posture_definitions_read` | GET https://api.strata.paloaltonetworks.com/posture/compliance-frameworks/v1/definitions |
+| `show posture definitions id` | global | `posture_definitions_read` | GET https://api.strata.paloaltonetworks.com/posture/compliance-frameworks/v1/definitions/{id} |
 | `show posture id` | global | `posture_read` | GET https://api.strata.paloaltonetworks.com/posture/checks/v1/{id} |
+| `show posture overall-compliance id` | global | `posture_overall_compliance_read` | GET https://api.strata.paloaltonetworks.com/posture/compliance-frameworks/v1/overall-compliance/{id} |
+| `show posture overall-compliance-timeline id` | global | `posture_overall_compliance_timeline_read` | GET https://api.strata.paloaltonetworks.com/posture/compliance-frameworks/v1/overall-compliance-timeline/{id} |
 | `show posture reports bpa-result id` | global | `posture_reports_bpa_result_read` | GET https://api.strata.paloaltonetworks.com/posture/checks/v1/reports/{id}/bpa-result |
 | `show posture root` | global | `posture_root_read` | GET https://api.strata.paloaltonetworks.com/posture/checks/v1 |
+| `show posture summaries` | global | `posture_summaries_read` | GET https://api.strata.paloaltonetworks.com/posture/compliance-frameworks/v1/summaries |
+| `update posture definitions` | global | `posture_definitions_write` | PUT https://api.strata.paloaltonetworks.com/posture/compliance-frameworks/v1/definitions/{id} |
 | `update posture root` | global | `posture_root_write` | PUT https://api.strata.paloaltonetworks.com/posture/checks/v1/{id} |
 
 ## Sase
@@ -4921,11 +4949,14 @@ registry. Regenerate with `python app/scripts/generate_command_docs.py` (runs on
 | `show url-categories` | folder | `show_url_categories` | GET /config/security/v1/url-categories |
 | `show vulnerability-profile` | folder | `security_profiles` | GET /config/security/v1/vulnerability-protection-profiles |
 | `show wildfire-profile` | folder | `security_profiles` | GET /config/security/v1/wildfire-anti-virus-profiles |
+| `update security-rule` | folder | `update_security` | — |
 
 ## Setup
 
 | Command | Scope | Feature flag | SCM API |
 |---|---|---|---|
+| `delete snippet` | global | `show_snippets` | — |
+| `set snippet` | global | `show_snippets` | — |
 | `show device` | global | `show_devices` | GET /config/setup/v1/devices/{id} |
 | `show device snippets` | global | `show_devices` | GET /config/setup/v1/devices/{id} |
 | `show devices` | global | `show_devices` | GET /config/setup/v1/devices |

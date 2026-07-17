@@ -1,6 +1,24 @@
 ---
 command: "update external-dynamic-list"
 description: "Update EDL url/frequency — update external-dynamic-list <name> url <url>"
+feature_flag: update_objects
+category: objects
+scope: folder
+api: "PUT /config/objects/v1/external-dynamic-lists/{id}"
+---
+
+---
+command: "update external-dynamic-list"
+description: "Update EDL url/frequency — update external-dynamic-list <name> url <url>"
+feature_flag: update_objects
+category: objects
+scope: folder
+api: "PUT /config/objects/v1/external-dynamic-lists/{id}"
+---
+
+---
+command: "update external-dynamic-list"
+description: "Update EDL url/frequency — update external-dynamic-list <name> url <url>"
 usage: "update external-dynamic-list <name> url <fetch-url>"
 feature_flag: update_objects
 category: objects

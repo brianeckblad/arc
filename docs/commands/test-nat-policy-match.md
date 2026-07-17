@@ -1,5 +1,23 @@
 ---
 command: "test nat-policy-match"
+description: "Test NAT policy match — source <ip> destination <ip>  (use --remote)"
+feature_flag: test_nat
+category: network
+scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "test nat-policy-match"
+description: "Test NAT policy match — source <ip> destination <ip>  (use --remote)"
+feature_flag: test_nat
+category: network
+scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "test nat-policy-match"
 description: "Test NAT policy match (use --remote)"
 usage: "test nat-policy-match source <ip> destination <ip>"
 feature_flag: test_nat

@@ -7,6 +7,24 @@ scope: folder
 api: "GET /config/identity/v1/authentication-rules"
 ---
 
+---
+command: "show authentication-rules"
+description: "Show authentication rules in the active folder"
+feature_flag: authentication
+category: identity
+scope: folder
+api: "GET /config/identity/v1/authentication-rules"
+---
+
+---
+command: "show authentication-rules"
+description: "Show authentication rules in the active folder"
+feature_flag: authentication
+category: identity
+scope: folder
+api: "GET /config/identity/v1/authentication-rules"
+---
+
 # show authentication-rules
 
 **Category:** identity

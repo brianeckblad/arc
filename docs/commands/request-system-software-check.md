@@ -1,5 +1,25 @@
 ---
 command: "request system software check"
+description: "Check available software updates — use --remote for live data"
+usage: "request system software check"
+feature_flag: request_system_software
+category: operations
+scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "request system software check"
+description: "Check available software updates — use --remote for live data"
+usage: "request system software check"
+feature_flag: request_system_software
+category: operations
+scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "request system software check"
 description: "Check available software updates (use --remote for live data)"
 usage: "request system software check"
 feature_flag: request_system_software

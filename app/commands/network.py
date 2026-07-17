@@ -399,6 +399,7 @@ _EXTRA_COMMANDS: dict[str, CommandDef] = {
         ssh_command=None,
         render="raw",
         feature_flag="nat_rules",
+        usage="delete nat-rule <name>",
     ),
     "show pbf-rules": CommandDef(
         description="Show policy-based forwarding rules in the active folder",

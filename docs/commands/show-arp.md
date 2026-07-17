@@ -4,6 +4,24 @@ description: "Show live ARP table from device — use --remote"
 feature_flag: show_arp
 category: network
 scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "show arp"
+description: "Show live ARP table from device — use --remote"
+feature_flag: show_arp
+category: network
+scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "show arp"
+description: "Show live ARP table from device — use --remote"
+feature_flag: show_arp
+category: network
+scope: device
 api: "(live device state — SSH via --remote)"
 ---
 

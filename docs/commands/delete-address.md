@@ -1,6 +1,24 @@
 ---
 command: "delete address"
 description: "Delete an address object — delete address <name>"
+feature_flag: delete_objects
+category: objects
+scope: folder
+api: "DELETE /config/objects/v1/addresses/{id}"
+---
+
+---
+command: "delete address"
+description: "Delete an address object — delete address <name>"
+feature_flag: delete_objects
+category: objects
+scope: folder
+api: "DELETE /config/objects/v1/addresses/{id}"
+---
+
+---
+command: "delete address"
+description: "Delete an address object — delete address <name>"
 usage: "delete address <name>"
 feature_flag: delete_objects
 category: objects

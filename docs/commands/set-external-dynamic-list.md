@@ -1,6 +1,24 @@
 ---
 command: "set external-dynamic-list"
 description: "Create EDL — set external-dynamic-list <name> type ip|domain|url url <fetch-url>"
+feature_flag: create_edl
+category: objects
+scope: folder
+api: "POST /config/objects/v1/external-dynamic-lists"
+---
+
+---
+command: "set external-dynamic-list"
+description: "Create EDL — set external-dynamic-list <name> type ip|domain|url url <fetch-url>"
+feature_flag: create_edl
+category: objects
+scope: folder
+api: "POST /config/objects/v1/external-dynamic-lists"
+---
+
+---
+command: "set external-dynamic-list"
+description: "Create EDL — set external-dynamic-list <name> type ip|domain|url url <fetch-url>"
 usage: "set external-dynamic-list <name> type ip|domain|url url <fetch-url> [description <text>]"
 feature_flag: create_edl
 category: objects

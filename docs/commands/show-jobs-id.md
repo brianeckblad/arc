@@ -1,5 +1,23 @@
 ---
 command: "show jobs id"
+description: "Show a specific job by ID — show jobs id <n>"
+feature_flag: show_jobs
+category: operations
+scope: global
+api: "GET /config/setup/v1/jobs/{id}"
+---
+
+---
+command: "show jobs id"
+description: "Show a specific job by ID — show jobs id <n>"
+feature_flag: show_jobs
+category: operations
+scope: global
+api: "GET /config/setup/v1/jobs/{id}"
+---
+
+---
+command: "show jobs id"
 description: "Show a specific SCM job by ID"
 usage: "show jobs id <n>"
 feature_flag: show_jobs

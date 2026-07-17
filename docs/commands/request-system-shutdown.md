@@ -1,5 +1,25 @@
 ---
 command: "request system shutdown"
+description: "Shut down a managed device — use --remote  (CAUTION: device will go offline)"
+usage: "request system shutdown"
+feature_flag: request_system_reboot
+category: operations
+scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "request system shutdown"
+description: "Shut down a managed device — use --remote  (CAUTION: device will go offline)"
+usage: "request system shutdown"
+feature_flag: request_system_reboot
+category: operations
+scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "request system shutdown"
 description: "Shut down a managed device (CAUTION: device will go offline)"
 usage: "request system shutdown  (use --remote)"
 feature_flag: request_system_reboot

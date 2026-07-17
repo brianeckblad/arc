@@ -7,6 +7,24 @@ scope: folder
 api: "GET /config/network/v1/pbf-rules"
 ---
 
+---
+command: "show pbf-rules"
+description: "Show policy-based forwarding rules in the active folder"
+feature_flag: pbf_rules
+category: network
+scope: folder
+api: "GET /config/network/v1/pbf-rules"
+---
+
+---
+command: "show pbf-rules"
+description: "Show policy-based forwarding rules in the active folder"
+feature_flag: pbf_rules
+category: network
+scope: folder
+api: "GET /config/network/v1/pbf-rules"
+---
+
 # show pbf-rules
 
 **Category:** network

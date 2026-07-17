@@ -5,6 +5,26 @@ usage: "show log system [last <Nm|Nh|Nd>] [limit <n>]"
 feature_flag: sls_logs
 category: operations
 scope: global
+api: "(live device state — SSH via --remote)"
+---
+
+---
+command: "show log system"
+description: "Fleet-wide system log via SLS (lags minutes) — --remote for real-time on one device"
+usage: "show log system [last <Nm|Nh|Nd>] [limit <n>]"
+feature_flag: sls_logs
+category: operations
+scope: global
+api: "(live device state — SSH via --remote)"
+---
+
+---
+command: "show log system"
+description: "Fleet-wide system log via SLS (lags minutes) — --remote for real-time on one device"
+usage: "show log system [last <Nm|Nh|Nd>] [limit <n>]"
+feature_flag: sls_logs
+category: operations
+scope: global
 api: "SLS Query Service v2 — POST /query/v2/jobs (SQL over firewall.system)"
 ---
 

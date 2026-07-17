@@ -7,6 +7,24 @@ scope: folder
 api: "GET /config/security/v1/app-override-rules"
 ---
 
+---
+command: "show app-override-rules"
+description: "Show application override rules in the active folder"
+feature_flag: app_override
+category: security
+scope: folder
+api: "GET /config/security/v1/app-override-rules"
+---
+
+---
+command: "show app-override-rules"
+description: "Show application override rules in the active folder"
+feature_flag: app_override
+category: security
+scope: folder
+api: "GET /config/security/v1/app-override-rules"
+---
+
 # show app-override-rules
 
 **Category:** security

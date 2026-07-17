@@ -5,6 +5,24 @@ usage: "clone <resource> <source-name> <new-name>"
 feature_flag: clone_object
 category: objects
 scope: folder
+---
+
+---
+command: "clone"
+description: "Clone a named object under a new name (address, service, group, tag, EDL, …)"
+usage: "clone <resource> <source-name> <new-name>"
+feature_flag: clone_object
+category: objects
+scope: folder
+---
+
+---
+command: "clone"
+description: "Clone a named object under a new name (address, service, group, tag, EDL, …)"
+usage: "clone <resource> <source-name> <new-name>"
+feature_flag: clone_object
+category: objects
+scope: folder
 api: "GET <resource> + POST <resource> (staged)"
 ---
 

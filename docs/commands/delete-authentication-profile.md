@@ -1,3 +1,21 @@
+---
+command: "delete authentication-profile"
+description: "Delete an authentication profile — delete authentication-profile <name>"
+usage: "delete authentication-profile <name>"
+feature_flag: authentication
+category: identity
+scope: folder
+---
+
+---
+command: "delete authentication-profile"
+description: "Delete an authentication profile — delete authentication-profile <name>"
+usage: "delete authentication-profile <name>"
+feature_flag: authentication
+category: identity
+scope: folder
+---
+
 # delete authentication-profile
 
 Delete a **authentication-profile** object by name from the active SCM folder.

@@ -1,5 +1,23 @@
 ---
 command: "test url"
+description: "Test URL categorization — test url <url>  (use --remote)"
+feature_flag: test_url
+category: network
+scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "test url"
+description: "Test URL categorization — test url <url>  (use --remote)"
+feature_flag: test_url
+category: network
+scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "test url"
 description: "Test URL categorization (use --remote)"
 usage: "test url <url>"
 feature_flag: test_url

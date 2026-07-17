@@ -1,6 +1,24 @@
 ---
 command: "set address"
 description: "Create address — set address <name> ip-netmask|ip-range|ip-wildcard|fqdn <value>"
+feature_flag: create_address
+category: objects
+scope: folder
+api: "POST /config/objects/v1/addresses"
+---
+
+---
+command: "set address"
+description: "Create address — set address <name> ip-netmask|ip-range|ip-wildcard|fqdn <value>"
+feature_flag: create_address
+category: objects
+scope: folder
+api: "POST /config/objects/v1/addresses"
+---
+
+---
+command: "set address"
+description: "Create address — set address <name> ip-netmask|ip-range|ip-wildcard|fqdn <value>"
 usage: "set address <name> ip-netmask|ip-range|ip-wildcard|fqdn <value> [description <optional>] [tag <optional>]"
 feature_flag: create_address
 category: objects

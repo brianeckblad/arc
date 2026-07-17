@@ -1,3 +1,21 @@
+---
+command: "set authentication-profile"
+description: "Create an authentication profile — set authentication-profile <name> type <type>"
+usage: "set authentication-profile <name> type <ldap|radius|saml|kerberos|local-db>"
+feature_flag: authentication
+category: identity
+scope: folder
+---
+
+---
+command: "set authentication-profile"
+description: "Create an authentication profile — set authentication-profile <name> type <type>"
+usage: "set authentication-profile <name> type <ldap|radius|saml|kerberos|local-db>"
+feature_flag: authentication
+category: identity
+scope: folder
+---
+
 # set authentication-profile
 
 Create a **authentication-profile** object in the active SCM folder.

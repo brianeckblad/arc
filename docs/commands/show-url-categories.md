@@ -7,6 +7,24 @@ scope: folder
 api: "GET /config/security/v1/url-categories"
 ---
 
+---
+command: "show url-categories"
+description: "Show custom URL categories in the active folder"
+feature_flag: show_url_categories
+category: security
+scope: folder
+api: "GET /config/security/v1/url-categories"
+---
+
+---
+command: "show url-categories"
+description: "Show custom URL categories in the active folder"
+feature_flag: show_url_categories
+category: security
+scope: folder
+api: "GET /config/security/v1/url-categories"
+---
+
 # show url-categories
 
 **Category:** security

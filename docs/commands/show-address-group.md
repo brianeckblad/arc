@@ -1,6 +1,26 @@
 ---
 command: "show address-group"
 description: "Show address groups in the active folder"
+usage: "show address-group [<name>]"
+feature_flag: show_address_group
+category: objects
+scope: folder
+api: "GET /config/objects/v1/address-groups"
+---
+
+---
+command: "show address-group"
+description: "Show address groups in the active folder"
+usage: "show address-group [<name>]"
+feature_flag: show_address_group
+category: objects
+scope: folder
+api: "GET /config/objects/v1/address-groups"
+---
+
+---
+command: "show address-group"
+description: "Show address groups in the active folder"
 feature_flag: show_address_group
 category: objects
 scope: folder

@@ -1,6 +1,24 @@
 ---
 command: "delete address-group"
 description: "Delete an address group — delete address-group <name>"
+feature_flag: delete_objects
+category: objects
+scope: folder
+api: "DELETE /config/objects/v1/address-groups/{id}"
+---
+
+---
+command: "delete address-group"
+description: "Delete an address group — delete address-group <name>"
+feature_flag: delete_objects
+category: objects
+scope: folder
+api: "DELETE /config/objects/v1/address-groups/{id}"
+---
+
+---
+command: "delete address-group"
+description: "Delete an address group — delete address-group <name>"
 usage: "delete address-group <name>"
 feature_flag: delete_objects
 category: objects

@@ -7,6 +7,24 @@ scope: folder
 api: "GET /config/security/v1/security-rules"
 ---
 
+---
+command: "show security policy"
+description: "Show security policy rules in the active folder"
+feature_flag: show_security_policy
+category: security
+scope: folder
+api: "GET /config/security/v1/security-rules"
+---
+
+---
+command: "show security policy"
+description: "Show security policy rules in the active folder"
+feature_flag: show_security_policy
+category: security
+scope: folder
+api: "GET /config/security/v1/security-rules"
+---
+
 # show security policy
 
 Show security policy rules

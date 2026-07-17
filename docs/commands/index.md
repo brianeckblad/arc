@@ -79,8 +79,9 @@ Use `help <command>` to open detailed docs for a command.
 - `clear rule-hit-count vsys` — Clear rule hit count vsys — live device data
 - `clear sdwan event` — Clear sdwan event — live device data
 - `clear sdwan pool unsuccess` — Clear sdwan pool unsuccess — live device data
+- `clear session all` — Clear all active sessions on the device — use --remote  (CAUTION: terminates all sessions)
 - `clear session all filter nat` — Clear session all filter nat — live device data
-- `clear session id` — Clear session id — live device data
+- `clear session id` — Clear a specific session by ID — use --remote
 - `clear snmpd refresh-timer-period` — Clear snmpd refresh timer period — live device data
 - `clear ssl-cert-cn` — Clear ssl cert cn — live device data
 - `clear ssl-decrypt exclude-cache server` — Clear ssl decrypt exclude cache server — live device data
@@ -111,7 +112,8 @@ Use `help <command>` to open detailed docs for a command.
 - `clear wildfire counters` — Clear wildfire counters — live device data
 - `clear xml-api multiusersystem cloud` — Clear xml api multiusersystem cloud — live device data
 - `clear zone-protection zone` — Clear zone protection zone — live device data
-- `commit` — Apply staged changes and push to devices
+- `clone` — Clone a named object under a new name (address, service, group, tag, EDL, …)
+- `commit` — Apply staged changes and push to devices — commit [watch] [description <text>]
 - `commit description` — Commit description — device-local config (break-glass)
 - `debug advanced-routing` — Debug advanced routing — live device data
 - `debug advanced-routing bgp` — Debug advanced routing bgp — live device data
@@ -1685,6 +1687,7 @@ Use `help <command>` to open detailed docs for a command.
 - `delete authentication system-lock-files` — Delete authentication system lock files — live device data
 - `delete authentication user-file ssh-known-hosts self` — Delete authentication user file ssh known hosts self — live device data
 - `delete authentication user-file ssh-known-hosts user username` — Delete authentication user file ssh known hosts user username — live device data
+- `delete authentication-profile` — Delete an authentication profile — delete authentication-profile <name>
 - `delete authentication-settings` — Delete authentication settings
 - `delete auto-vpn-clusters` — Delete an Auto VPN cluster
 - `delete autoscale` — Delete autoscale settings
@@ -1829,11 +1832,13 @@ Use `help <command>` to open detailed docs for a command.
 - `delete license token-file` — Delete license token file — live device data
 - `delete link-tags` — Delete a link tag
 - `delete lldp-profiles` — Delete an LLDP profile
+- `delete local-user` — Delete a local user — delete local-user <name>
 - `delete logical-routers` — Delete a logical router
 - `delete logo` — Delete logo — live device data
 - `delete loopback-interfaces` — Delete a loopback interface
 - `delete management-interface` — Delete management interface settings
 - `delete motd-banner-settings` — Delete login banner settings
+- `delete nat-rule` — Delete a NAT rule — delete nat-rule <name>
 - `delete nat-rules` — Delete a NAT rule
 - `delete ngts cert-requests approval` — Delete certificate request workflow approval rule
 - `delete ngts cert-templates` — Remove an issuing template
@@ -1859,6 +1864,7 @@ Use `help <command>` to open detailed docs for a command.
 - `delete pbf-rules` — Delete a PBF rule
 - `delete pcap directory` — Delete pcap directory — live device data
 - `delete policy-cache` — Delete policy cache — live device data
+- `delete posture definitions` — Delete Compliance Framework
 - `delete posture root` — Delete Posture Check
 - `delete pprof management-plane file` — Delete pprof management plane file — live device data
 - `delete qos-policy-rules` — Delete a QoS policy rule
@@ -1901,6 +1907,7 @@ Use `help <command>` to open detailed docs for a command.
 - `delete service-settings` — Delete service settings
 - `delete session-settings` — Delete session settings
 - `delete session-timeouts` — Delete session settings
+- `delete snippet` — Delete an SCM snippet — delete snippet <name>  (WARNING: removes from all attached devices)
 - `delete software version` — Delete software version — live device data
 - `delete ssh-authentication-public-key` — Delete ssh authentication public key — live device data
 - `delete sslmgr-store certificate-info portal name` — Delete sslmgr store certificate info portal name — live device data
@@ -1944,7 +1951,7 @@ Use `help <command>` to open detailed docs for a command.
 - `load config version` — Rollback: load a config version as the candidate (preview without confirm)
 - `load device-state` — Load device state — device-local config (break-glass)
 - `ping bypass-routing` — Ping bypass routing — live device data
-- `ping host` — Ping a host from a managed device (use --remote)
+- `ping host` — Ping a host from the device — ping host <ip>  (use --remote)
 - `request acknowledge logid` — Request acknowledge logid — live device data
 - `request address-expansion expand object-name` — Request address expansion expand object name — live device data
 - `request anti-virus downgrade install` — Request anti virus downgrade install — live device data
@@ -2114,15 +2121,15 @@ Use `help <command>` to open detailed docs for a command.
 - `request system patch scp-export profile-name` — Request system patch scp export profile name — live device data
 - `request system patch scp-import profile-name` — Request system patch scp import profile name — live device data
 - `request system private-data-reset shutdown` — Request system private data reset shutdown — live device data
-- `request system reboot` — Reboot a managed device (CAUTION: device will restart)
+- `request system reboot` — Reboot a managed device — use --remote  (CAUTION: device will restart)
 - `request system self-test crypto` — Request system self test crypto — live device data
 - `request system self-test force-crypto-failure dp` — Request system self test force crypto failure dp — live device data
 - `request system self-test force-crypto-failure mp` — Request system self test force crypto failure mp — live device data
 - `request system self-test force-software-integrity-failure` — Request system self test force software integrity failure — live device data
 - `request system self-test software-integrity` — Request system self test software integrity — live device data
 - `request system self-test-job` — Request system self test job — live device data
-- `request system shutdown` — Shut down a managed device (CAUTION: device will go offline)
-- `request system software check` — Check available software updates (use --remote for live data)
+- `request system shutdown` — Shut down a managed device — use --remote  (CAUTION: device will go offline)
+- `request system software check` — Check available software updates — use --remote for live data
 - `request system software download scp-profile` — Request system software download scp profile — live device data
 - `request system software eligible to-version` — Request system software eligible to version — live device data
 - `request system software info` — Request system software info — live device data
@@ -2203,6 +2210,7 @@ Use `help <command>` to open detailed docs for a command.
 - `set authentication radius-vsa-off` — Set authentication radius vsa off — live device data
 - `set authentication radius-vsa-on` — Set authentication radius vsa on — live device data
 - `set authentication saml_signature_digest_algorithm` — Set authentication saml_signature_digest_algorithm — live device data
+- `set authentication-profile` — Create an authentication profile — set authentication-profile <name> type <type>
 - `set authentication-settings` — Create authentication settings
 - `set auto-vpn-clusters` — Create an Auto VPN cluster
 - `set auto-vpn-push` — Push Auto VPN configs
@@ -2571,6 +2579,7 @@ Use `help <command>` to open detailed docs for a command.
 - `set layer3-subinterfaces` — Create a layer 3 subinterface
 - `set link-tags` — Create a link tag
 - `set lldp-profiles` — Create an LLDP profile
+- `set local-user` — Create a local user — set local-user <name> password <pw>
 - `set logical-routers` — Create a logical router
 - `set logrcvr offline-logpurger interval` — Set logrcvr offline logpurger interval — live device data
 - `set logrcvr offline-logpurger percentage-threshold` — Set logrcvr offline logpurger percentage threshold — live device data
@@ -2653,7 +2662,13 @@ Use `help <command>` to open detailed docs for a command.
 - `set pbf-rules` — Create a PBF rule
 - `set posture batch-delete` — Batch Delete Posture Checks
 - `set posture batch-upsert` — Batch Upsert Posture Checks
+- `set posture benchmark-monitoring` — Get Benchmark Monitoring Data
+- `set posture benchmark-monitoring download` — Download Benchmark Data
 - `set posture clone` — Clone Posture Check
+- `set posture definitions` — Create Compliance Framework
+- `set posture definitions benchmark` — Benchmark Compliance Framework
+- `set posture definitions clone` — Clone Compliance Framework
+- `set posture definitions un-benchmark` — Remove Framework Benchmark
 - `set posture reports config-file-upload` — Initiate a Configuration Upload
 - `set posture root` — Create Posture Check
 - `set preserve-prenat-feature adjust-mtu` — Set preserve prenat feature adjust mtu — live device data
@@ -2726,6 +2741,7 @@ Use `help <command>` to open detailed docs for a command.
 - `set shared report-group` — Set shared report group — device-local config (break-glass)
 - `set shared response-page remote-browser-isolation` — Set shared response page remote browser isolation — device-local config (break-glass)
 - `set shared response-page url-reply` — Set shared response page url reply — device-local config (break-glass)
+- `set snippet` — Create a new SCM snippet — set snippet <name> [description <text>]
 - `set snmpd refresh-timer-period` — Set snmpd refresh timer period — live device data
 - `set ssh service-restart` — Set ssh service restart — live device data
 - `set ssh-authentication public-key` — Set ssh authentication public key — live device data
@@ -2818,6 +2834,8 @@ Use `help <command>` to open detailed docs for a command.
 - `set zones` — Create a security zone
 - `set ztp panorama-timeout` — Set ztp panorama timeout — live device data
 - `show address` — Show address objects in the active folder
+- `show address search` — Filter address objects by name, description, or value
+- `show address tag` — Show address objects with a specific tag
 - `show address-group` — Show address groups in the active folder
 - `show adem probes` — Show adem probes — live device data
 - `show adem routeinfo destination` — Show adem routeinfo destination — live device data
@@ -3176,9 +3194,9 @@ Use `help <command>` to open detailed docs for a command.
 - `show ctd-agent status` — Show ctd agent status — live device data
 - `show decryption-profile` — Show decryption profiles in the active folder
 - `show decryption-rules` — Show decryption rules in the active folder
-- `show device` — Show detail for a device (or 'show device' when cd'd in)
+- `show device` — Show detail for a device — show device <hostname>  (or 'show device' when cd'd in)
 - `show device jobs id` — Retrieve job status and results, running on a device
-- `show device snippets` — Show snippets attached to a device
+- `show device snippets` — Show snippets attached to a device — show device <hostname> snippets
 - `show device-certificate` — Show device certificate — live device data
 - `show device-context-segment-association` — List device context segment associations
 - `show device-context-segment-association id` — Get a device context segment association
@@ -3322,6 +3340,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show dhcp server settings` — Show dhcp server settings — live device data
 - `show dhcp-interfaces` — List DHCP interfaces
 - `show dhcp-interfaces id` — Get a DHCP interface
+- `show diff` — Compare config versions or show staged changes
 - `show disable-inspect` — Show disable inspect — device-local config (break-glass)
 - `show display-name` — Show display name — device-local config (break-glass)
 - `show dns-proxies id` — Get a DNS proxy
@@ -3449,7 +3468,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show ike-gateways id` — Get an IKE gateway
 - `show import` — Show import — device-local config (break-glass)
 - `show incidents incidents details id` — Incidents Details
-- `show interface` — Show a specific interface in the active folder
+- `show interface` — Show a specific interface — show interface <name>
 - `show interface all` — Show all interfaces in the active folder
 - `show iot device-inventory all match` — Show iot device inventory all match — live device data
 - `show iot device-inventory all match ip` — Show iot device inventory all match ip — live device data
@@ -3484,7 +3503,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show ipuser-include-exclude-list` — Show ipuser include exclude list — device-local config (break-glass)
 - `show ipuser-include-exclude-list include-exclude-network` — Show ipuser include exclude list include exclude network — device-local config (break-glass)
 - `show jobs all` — Show all SCM jobs (TSG-wide)
-- `show jobs id` — Show a specific SCM job by ID
+- `show jobs id` — Show a specific job by ID — show jobs id <n>
 - `show jobs pending` — Show jobs pending — live device data
 - `show jobs processed` — Show jobs processed — live device data
 - `show lacp aggregate-ethernet` — Show lacp aggregate ethernet — live device data
@@ -3751,7 +3770,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show log wildfire src not-in` — Show log wildfire src not in — live device data
 - `show log-collector-group` — Show log collector group — live device data
 - `show log-forwarding-profile` — Show log forwarding profiles in the active folder
-- `show logging-status verbose` — Show logging status verbose — live device data
+- `show logging-status verbose` — Show logging status verbose — live device data via SCM
 - `show logical-routers` — List logical routers
 - `show logical-routers id` — Get a logical router
 - `show logrcvr ip-cache vsys` — Show logrcvr ip cache vsys — live device data
@@ -4011,9 +4030,16 @@ Use `help <command>` to open detailed docs for a command.
 - `show pdf-summary-report` — Show pdf summary report — device-local config (break-glass)
 - `show policy-recommendation iot max-count` — Show policy recommendation iot max count — live device data
 - `show policy-recommendation saas max-count` — Show policy recommendation saas max count — live device data
+- `show posture compliance-controls id` — Get Compliance Controls
+- `show posture configurations-assessed id` — Get Assessed Configurations
+- `show posture definitions` — List Compliance Frameworks
+- `show posture definitions id` — Get Framework Revision
 - `show posture id` — Get Posture Check
+- `show posture overall-compliance id` — Get Framework Compliance Scores
+- `show posture overall-compliance-timeline id` — Get Compliance Timeline
 - `show posture reports bpa-result id` — Get BPA Processing Status
 - `show posture root` — List Posture Checks
+- `show posture summaries` — List Framework Summaries
 - `show pppoe inherited state interface` — Show pppoe inherited state interface — live device data
 - `show pppoe interface` — Show pppoe interface — live device data
 - `show pppoe ipv6 interface` — Show pppoe ipv6 interface — live device data
@@ -4121,7 +4147,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show routing protocol rip` — Show routing protocol rip — live device data
 - `show routing resource` — Show routing resource — live device data
 - `show routing route` — Show static routes in the active folder
-- `show routing route destination` — Show routing route destination — live device data
+- `show routing route destination` — Show routing route destination — live device data via SCM
 - `show routing summary` — Show virtual routers / routing profiles in the active folder
 - `show routing summary virtual-router` — Show routing summary virtual router — live device data
 - `show rule-hit-count vsys` — Show rule hit count vsys — live device data
@@ -4170,7 +4196,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show running resource-monitor week last` — Show running resource monitor week last — live device data
 - `show running rule-use highlight vsys` — Show running rule use highlight vsys — live device data
 - `show running rule-use hit-count vsys` — Show running rule use hit count vsys — live device data
-- `show running security-policy rule-index` — Show running security policy rule index — live device data
+- `show running security-policy rule-index` — Show running security policy rule index — live device data via SCM
 - `show running tcp state` — Show running tcp state — live device data
 - `show running tunnel flow` — Show running tunnel flow — live device data
 - `show running tunnel flow all filter type` — Show running tunnel flow all filter type — live device data
@@ -4256,6 +4282,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show sdwan-traffic-profiles id` — Get an SD-WAN traffic distribution profile
 - `show security policy` — Show security policy rules in the active folder
 - `show service` — Show service objects in the active folder
+- `show service search` — Filter service objects by name or description
 - `show service-accounts` — List all service accounts
 - `show service-accounts id` — Get a service account
 - `show service-group` — Show service groups in the active folder
@@ -4379,7 +4406,7 @@ Use `help <command>` to open detailed docs for a command.
 - `show shared threats spyware` — Show shared threats spyware — live device data
 - `show shared threats vulnerability` — Show shared threats vulnerability — live device data
 - `show shared user-id-hub` — Show shared user id hub — device-local config (break-glass)
-- `show snippet` — Show full detail for a snippet
+- `show snippet` — Show full detail for a snippet — show snippet <name>
 - `show snippets` — List snippets for the current context  [dim](device → device snippets | folder → folder snippets | Shared → all)[/dim]
 - `show snippets global` — List ALL snippets regardless of device or folder context
 - `show snmpd refresh-timer-period` — Show snmpd refresh timer period — live device data
@@ -4593,7 +4620,7 @@ Use `help <command>` to open detailed docs for a command.
 - `test http-server vsys` — Test http server vsys — live device data
 - `test macsec association interface` — Test macsec association interface — live device data
 - `test mfa-vendors mfa-server-profile` — Test mfa vendors mfa server profile — live device data
-- `test nat-policy-match` — Test NAT policy match (use --remote)
+- `test nat-policy-match` — Test NAT policy match — source <ip> destination <ip>  (use --remote)
 - `test nat-policy-match from` — Test nat policy match from — live device data
 - `test nd router-advertisement interface` — Test nd router advertisement interface — live device data
 - `test nptv6 cks-neutral dest-network` — Test nptv6 cks neutral dest network — live device data
@@ -4608,7 +4635,7 @@ Use `help <command>` to open detailed docs for a command.
 - `test routing ospfv3 logical-router` — Test routing ospfv3 logical router — live device data
 - `test scp-server-connection confirm hostname` — Test scp server connection confirm hostname — live device data
 - `test scp-server-connection initiate hostname` — Test scp server connection initiate hostname — live device data
-- `test security-policy-match` — Test which security rule a packet matches (alias of packet-tracer)
+- `test security-policy-match` — Test which security rule a packet matches — test security-policy-match source <ip> destination <ip> [from <zone>] [to <zone>] [application <app>] [destination-port <n>]
 - `test security-policy-match from` — Test security policy match from — live device data
 - `test smtp-server vsys` — Test smtp server vsys — live device data
 - `test ssl-exclude-list predefined hostname` — Test ssl exclude list predefined hostname — live device data
@@ -4618,7 +4645,7 @@ Use `help <command>` to open detailed docs for a command.
 - `test tag-filter` — Test tag filter — live device data
 - `test threat-vault connection` — Test threat vault connection — live device data
 - `test uid` — Test uid — live device data
-- `test url` — Test URL categorization (use --remote)
+- `test url` — Test URL categorization — test url <url>  (use --remote)
 - `test url-info-cloud` — Test url info cloud — live device data
 - `test url-info-host` — Test url info host — live device data
 - `test url-wpc` — Test url wpc — live device data
@@ -4643,9 +4670,10 @@ Use `help <command>` to open detailed docs for a command.
 - `tftp import certificate from` — Tftp import certificate from — live device data
 - `tftp import keypair from` — Tftp import keypair from — live device data
 - `tftp import private-key from` — Tftp import private key from — live device data
-- `traceroute host` — Traceroute from a managed device (use --remote)
+- `traceroute host` — Traceroute from device — traceroute host <ip>  (use --remote)
 - `traceroute ipv4` — Traceroute ipv4 — live device data
 - `update address` — Update address — update address <name> ip-netmask|fqdn|ip-range|ip-wildcard|description|tag <value>
+- `update address bulk` — Bulk update multiple address objects in one command — update address bulk <n1> <n2>... <field> <value>
 - `update address-group` — Update address group — update address-group <name> static <m1>... | dynamic filter '<expr>'
 - `update adnsr bad-domains` — Update a misconfigured domain
 - `update adnsr conn-sources` — Update a Connection Source
@@ -4763,6 +4791,7 @@ Use `help <command>` to open detailed docs for a command.
 - `update loopback-interfaces` — Update a loopback interface
 - `update management-interface` — Update management interface settings
 - `update motd-banner-settings` — Update login banner settings
+- `update nat-rule` — Update a NAT rule — update nat-rule <name> <field> <value>
 - `update nat-rules` — Update a NAT rule
 - `update ngts autorenewal tenant-config` — Update the monitoring configuration
 - `update ngts cert-requests approval` — Update certificate request workflow approval rule
@@ -4790,6 +4819,7 @@ Use `help <command>` to open detailed docs for a command.
 - `update npb-rules` — Update Network Packet Broker Rule by ID
 - `update ospf-auth-profiles` — Update an OSPF authentication profile
 - `update pbf-rules` — Update a PBF rule
+- `update posture definitions` — Update Compliance Framework
 - `update posture root` — Update Posture Check
 - `update qos-policy-rules` — Update a QoS policy rule
 - `update qos-profiles` — Update a QoS profile
@@ -4822,6 +4852,7 @@ Use `help <command>` to open detailed docs for a command.
 - `update sdwan-rules` — Update an SD-WAN rule
 - `update sdwan-saas-profiles` — Update an SD-WAN SaaS quality profile
 - `update sdwan-traffic-profiles` — Update an SD-WAN traffic distribution profile
+- `update security-rule` — Update an existing security rule — update security-rule <name> <field> <value>
 - `update service` — Update service — update service <name> tcp|udp port <n> [source-port <n>]
 - `update service-accounts` — Update a service account
 - `update service-group` — Update service group members — update service-group <name> members <svc1> [svc2...]

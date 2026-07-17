@@ -4,6 +4,24 @@ description: "Show live BGP routing state from device — use --remote"
 feature_flag: bgp_routing
 category: network
 scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "show routing bgp"
+description: "Show live BGP routing state from device — use --remote"
+feature_flag: bgp_routing
+category: network
+scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "show routing bgp"
+description: "Show live BGP routing state from device — use --remote"
+feature_flag: bgp_routing
+category: network
+scope: device
 api: "(live device state — SSH via --remote)"
 ---
 

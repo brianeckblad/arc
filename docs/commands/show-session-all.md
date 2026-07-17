@@ -4,6 +4,24 @@ description: "Show live session table from device — use --remote"
 feature_flag: show_sessions
 category: network
 scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "show session all"
+description: "Show live session table from device — use --remote"
+feature_flag: show_sessions
+category: network
+scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "show session all"
+description: "Show live session table from device — use --remote"
+feature_flag: show_sessions
+category: network
+scope: device
 api: "(live device state — SSH via --remote)"
 ---
 

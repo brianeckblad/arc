@@ -1,6 +1,6 @@
 # SCM API Manifest
 
-Pulled on 2026-07-06 from `PaloAltoNetworks/pan.dev` (master).
+Pulled on 2026-07-16 from `PaloAltoNetworks/pan.dev` (master).
 
 | Category | Base URL (`servers[0].url`) | Spec |
 |----------|------------------------------|------|
@@ -48,3 +48,4 @@ Pulled on 2026-07-06 from `PaloAltoNetworks/pan.dev` (master).
 | `subscription-licenses` | `https://api.sase.paloaltonetworks.com` | `openapi-specs/scm/subscription/Licenses.yaml` |
 | `ngfw-device-device-settings` | `https://api.strata.paloaltonetworks.com/config/device/v1` | `openapi-specs/scm/config/ngfw/device/device-settings.yaml` |
 | `sase-deployment-deployment-services-june` | `https://api.strata.paloaltonetworks.com/config/deployment/v1` | `openapi-specs/scm/config/sase/deployment/deployment-services-june.yaml` |
+| `posture-management-compliance-framework` | `https://api.strata.paloaltonetworks.com/posture/compliance-frameworks/v1` | `openapi-specs/scm/config/posture-management/compliance-framework/compliance-center-recent-v1.yaml` |

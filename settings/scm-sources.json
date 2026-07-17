@@ -1,7 +1,10 @@
 {
   "_comment": "Editable registry of SCM (Strata Cloud Manager) doc sources for app/scripts/docsupdate.py. This file is auto-updated when pan.dev moves/renames files (see 'relocations'). Edit 'specs' or 'guides' by hand when you know the new path; the tool will also self-heal via tree discovery. This is the SCM / pan.dev sibling of the PAN-OS CLI registry settings/panos-sources.json.",
-  "_site": ["https://pan.dev/scm/api/", "https://pan.dev/strata-cloud-manager/"],
-  "_note": "The machine source is the GitHub repo tree below ('repo'/'branch' + 'specs_root'); the _site URLs are the human-facing pan.dev landing pages. Because mirror_all_specs and mirror_all_guides are true and discover_all_specs() walks the whole tree, EVERY SCM spec/guide on pan.dev is mirrored automatically and any NEW spec (new feature) is auto-included on the next docsupdate — no manual link maintenance is needed here.",
+  "_site": [
+    "https://pan.dev/scm/api/",
+    "https://pan.dev/strata-cloud-manager/"
+  ],
+  "_note": "The machine source is the GitHub repo tree below ('repo'/'branch' + 'specs_root'); the _site URLs are the human-facing pan.dev landing pages. Because mirror_all_specs and mirror_all_guides are true and discover_all_specs() walks the whole tree, EVERY SCM spec/guide on pan.dev is mirrored automatically and any NEW spec (new feature) is auto-included on the next docsupdate \u2014 no manual link maintenance is needed here.",
   "repo": "PaloAltoNetworks/pan.dev",
   "branch": "master",
   "settings": {
@@ -55,7 +58,8 @@
     "subscription-instance": "openapi-specs/scm/subscription/Instance.yaml",
     "subscription-licenses": "openapi-specs/scm/subscription/Licenses.yaml",
     "ngfw-device-device-settings": "openapi-specs/scm/config/ngfw/device/device-settings.yaml",
-    "sase-deployment-deployment-services-june": "openapi-specs/scm/config/sase/deployment/deployment-services-june.yaml"
+    "sase-deployment-deployment-services-june": "openapi-specs/scm/config/sase/deployment/deployment-services-june.yaml",
+    "posture-management-compliance-framework": "openapi-specs/scm/config/posture-management/compliance-framework/compliance-center-recent-v1.yaml"
   },
   "spec_domains": {
     "ngfw-objects": "objects",
@@ -101,7 +105,8 @@
     "subscription-instance": "subscription",
     "subscription-licenses": "subscription",
     "ngfw-device-device-settings": "device",
-    "sase-deployment-deployment-services-june": "deployment"
+    "sase-deployment-deployment-services-june": "deployment",
+    "posture-management-compliance-framework": "compliance-framework"
   },
   "guides": {
     "home": "products/scm/docs/home.md",

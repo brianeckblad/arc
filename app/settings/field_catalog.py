@@ -1537,6 +1537,56 @@ FIELD_CATALOG: dict[str, dict] = {
             'variant': None,
         },
     },
+    'set posture benchmark-monitoring': {
+        'args': [
+            {'name': 'action', 'kind': 'keyword', 'required': False, 'hint': 'Action filter', 'value_hint': 'One or more values'},
+            {'name': 'bpc-id', 'kind': 'keyword', 'required': False, 'hint': 'BPC ID filter', 'value_hint': 'One or more values'},
+            {'name': 'bpc-status', 'kind': 'keyword', 'required': False, 'hint': 'BPC status filter', 'value_hint': 'One or more values'},
+            {'name': 'device-type', 'kind': 'keyword', 'required': False, 'hint': 'Device type filter', 'value_hint': 'One or more values'},
+            {'name': 'object-id', 'kind': 'keyword', 'required': False, 'hint': 'Object ID filter', 'value_hint': 'One or more values'},
+            {'name': 'object-type', 'kind': 'keyword', 'required': False, 'hint': 'Object type filter', 'value_hint': 'One or more values'},
+            {'name': 'product', 'kind': 'keyword', 'required': False, 'hint': 'Product filter', 'value_hint': 'One of: sase, ngfw, all', 'choices': ['sase', 'ngfw', 'all']},
+            {'name': 'remediation-location', 'kind': 'keyword', 'required': False, 'hint': 'Remediation location filter', 'value_hint': 'One or more values'},
+            {'name': 'severity', 'kind': 'keyword', 'required': False, 'hint': 'Severity filter', 'value_hint': 'One or more values'},
+        ],
+        'payload': {
+            'fields': {'action': 'action', 'bpc-id': 'bpc_id', 'bpc-status': 'bpc_status', 'device-type': 'device_type', 'object-id': 'object_id', 'object-type': 'object_type', 'product': 'product', 'remediation-location': 'remediation_location', 'severity': 'severity'},
+            'list_fields': ['action', 'bpc-id', 'bpc-status', 'device-type', 'object-id', 'object-type', 'remediation-location', 'severity'],
+            'variant': None,
+        },
+    },
+    'set posture benchmark-monitoring download': {
+        'args': [
+            {'name': 'action', 'kind': 'keyword', 'required': False, 'hint': 'Action filter', 'value_hint': 'One or more values'},
+            {'name': 'bpc-id', 'kind': 'keyword', 'required': False, 'hint': 'BPC ID filter', 'value_hint': 'One or more values'},
+            {'name': 'bpc-status', 'kind': 'keyword', 'required': False, 'hint': 'BPC status filter', 'value_hint': 'One or more values'},
+            {'name': 'device-type', 'kind': 'keyword', 'required': False, 'hint': 'Device type filter', 'value_hint': 'One or more values'},
+            {'name': 'object-id', 'kind': 'keyword', 'required': False, 'hint': 'Object ID filter', 'value_hint': 'One or more values'},
+            {'name': 'object-type', 'kind': 'keyword', 'required': False, 'hint': 'Object type filter', 'value_hint': 'One or more values'},
+            {'name': 'product', 'kind': 'keyword', 'required': False, 'hint': 'Product filter', 'value_hint': 'One of: sase, ngfw, all', 'choices': ['sase', 'ngfw', 'all']},
+            {'name': 'remediation-location', 'kind': 'keyword', 'required': False, 'hint': 'Remediation location filter', 'value_hint': 'One or more values'},
+            {'name': 'severity', 'kind': 'keyword', 'required': False, 'hint': 'Severity filter', 'value_hint': 'One or more values'},
+        ],
+        'payload': {
+            'fields': {'action': 'action', 'bpc-id': 'bpc_id', 'bpc-status': 'bpc_status', 'device-type': 'device_type', 'object-id': 'object_id', 'object-type': 'object_type', 'product': 'product', 'remediation-location': 'remediation_location', 'severity': 'severity'},
+            'list_fields': ['action', 'bpc-id', 'bpc-status', 'device-type', 'object-id', 'object-type', 'remediation-location', 'severity'],
+            'variant': None,
+        },
+    },
+    'set posture definitions': {
+        'args': [
+            {'name': 'description', 'kind': 'keyword', 'required': False, 'hint': 'Framework description', 'value_hint': 'Text value'},
+            {'name': 'category', 'kind': 'keyword', 'required': False, 'hint': "Framework category (e.g., 'PCF', 'CCF')", 'value_hint': 'One of: PCF, CCF', 'choices': ['PCF', 'CCF']},
+            {'name': 'name', 'kind': 'keyword', 'required': False, 'hint': 'Compliance framework name', 'value_hint': 'Text value'},
+            {'name': 'source', 'kind': 'keyword', 'required': False, 'hint': 'Framework source/origin', 'value_hint': 'Text value'},
+            {'name': 'source-url', 'kind': 'keyword', 'required': False, 'hint': 'Source URL of the framework', 'value_hint': 'Text value'},
+        ],
+        'payload': {
+            'fields': {'description': 'description', 'category': 'category', 'name': 'name', 'source': 'source', 'source-url': 'source_url'},
+            'list_fields': [],
+            'variant': None,
+        },
+    },
     'set posture reports config-file-upload': {
         'args': [
             {'name': 'delete-after-processing', 'kind': 'value', 'required': True, 'hint': 'If true, the uploaded data will be deleted immediately after processing completes.'},

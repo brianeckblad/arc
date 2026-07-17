@@ -1,6 +1,26 @@
 ---
 command: "show tag"
 description: "Show tags in the active folder"
+usage: "show tag [<name>]"
+feature_flag: show_tag
+category: objects
+scope: folder
+api: "GET /config/objects/v1/tags"
+---
+
+---
+command: "show tag"
+description: "Show tags in the active folder"
+usage: "show tag [<name>]"
+feature_flag: show_tag
+category: objects
+scope: folder
+api: "GET /config/objects/v1/tags"
+---
+
+---
+command: "show tag"
+description: "Show tags in the active folder"
 feature_flag: show_tag
 category: objects
 scope: folder

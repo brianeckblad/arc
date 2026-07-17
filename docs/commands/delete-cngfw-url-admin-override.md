@@ -8,6 +8,26 @@ scope: global
 api: "DELETE https://api.strata.paloaltonetworks.com/config/security/v1/url-admin-override/{id}"
 ---
 
+---
+command: "delete cngfw url-admin-override"
+description: "Delete a url admin override"
+usage: "delete cngfw url-admin-override id <value>"
+feature_flag: cngfw_url_admin_override_write
+category: cloudngfw
+scope: global
+api: "DELETE https://api.strata.paloaltonetworks.com/config/security/v1/url-admin-override/{id}"
+---
+
+---
+command: "delete cngfw url-admin-override"
+description: "Delete a url admin override"
+usage: "delete cngfw url-admin-override id <value>"
+feature_flag: cngfw_url_admin_override_write
+category: cloudngfw
+scope: global
+api: "DELETE https://api.strata.paloaltonetworks.com/config/security/v1/url-admin-override/{id}"
+---
+
 # delete url-admin-override
 
 Delete a **url-admin-override** object by name from the active SCM folder.

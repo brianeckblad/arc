@@ -7,6 +7,24 @@ scope: folder
 api: "GET /config/security/v1/wildfire-anti-virus-profiles"
 ---
 
+---
+command: "show wildfire-profile"
+description: "Show WildFire anti-virus profiles in the active folder"
+feature_flag: security_profiles
+category: security
+scope: folder
+api: "GET /config/security/v1/wildfire-anti-virus-profiles"
+---
+
+---
+command: "show wildfire-profile"
+description: "Show WildFire anti-virus profiles in the active folder"
+feature_flag: security_profiles
+category: security
+scope: folder
+api: "GET /config/security/v1/wildfire-anti-virus-profiles"
+---
+
 # show wildfire-profile
 
 **Category:** security

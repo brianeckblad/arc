@@ -7,6 +7,24 @@ scope: folder
 api: "GET /config/security/v1/anti-spyware-profiles"
 ---
 
+---
+command: "show anti-spyware-profile"
+description: "Show anti-spyware profiles in the active folder"
+feature_flag: security_profiles
+category: security
+scope: folder
+api: "GET /config/security/v1/anti-spyware-profiles"
+---
+
+---
+command: "show anti-spyware-profile"
+description: "Show anti-spyware profiles in the active folder"
+feature_flag: security_profiles
+category: security
+scope: folder
+api: "GET /config/security/v1/anti-spyware-profiles"
+---
+
 # show anti-spyware-profile
 
 **Category:** security

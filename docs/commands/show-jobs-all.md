@@ -7,6 +7,24 @@ scope: global
 api: "GET /config/setup/v1/jobs"
 ---
 
+---
+command: "show jobs all"
+description: "Show all SCM jobs (TSG-wide)"
+feature_flag: show_jobs
+category: operations
+scope: global
+api: "GET /config/setup/v1/jobs"
+---
+
+---
+command: "show jobs all"
+description: "Show all SCM jobs (TSG-wide)"
+feature_flag: show_jobs
+category: operations
+scope: global
+api: "GET /config/setup/v1/jobs"
+---
+
 # show jobs all
 
 Show all SCM jobs for the current tenant (TSG-wide).

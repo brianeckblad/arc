@@ -5,6 +5,24 @@ usage: "show config format set [address|address-group|service|service-group|tag|
 feature_flag: config_view
 category: operations
 scope: folder
+---
+
+---
+command: "show config format set"
+description: "Dump folder config as replayable set commands"
+usage: "show config format set [address|address-group|service|service-group|tag|external-dynamic-list]"
+feature_flag: config_view
+category: operations
+scope: folder
+---
+
+---
+command: "show config format set"
+description: "Dump folder config as replayable set commands"
+usage: "show config format set [address|address-group|service|service-group|tag|external-dynamic-list]"
+feature_flag: config_view
+category: operations
+scope: folder
 api: "GET /config/objects/v1/<resource>?folder=<active>"
 ---
 

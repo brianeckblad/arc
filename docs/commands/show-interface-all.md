@@ -7,6 +7,24 @@ scope: folder
 api: "GET /config/network/v1/ethernet-interfaces"
 ---
 
+---
+command: "show interface all"
+description: "Show all interfaces in the active folder"
+feature_flag: show_interface
+category: network
+scope: folder
+api: "GET /config/network/v1/ethernet-interfaces"
+---
+
+---
+command: "show interface all"
+description: "Show all interfaces in the active folder"
+feature_flag: show_interface
+category: network
+scope: folder
+api: "GET /config/network/v1/ethernet-interfaces"
+---
+
 # show interface all
 
 Show all interfaces

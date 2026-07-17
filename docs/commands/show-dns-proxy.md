@@ -7,6 +7,24 @@ scope: folder
 api: "GET /config/network/v1/dns-proxies"
 ---
 
+---
+command: "show dns-proxy"
+description: "Show DNS proxy configurations in the active folder"
+feature_flag: dns_proxy
+category: network
+scope: folder
+api: "GET /config/network/v1/dns-proxies"
+---
+
+---
+command: "show dns-proxy"
+description: "Show DNS proxy configurations in the active folder"
+feature_flag: dns_proxy
+category: network
+scope: folder
+api: "GET /config/network/v1/dns-proxies"
+---
+
 # show dns-proxy
 
 **Category:** network

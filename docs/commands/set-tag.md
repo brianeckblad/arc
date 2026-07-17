@@ -1,6 +1,24 @@
 ---
 command: "set tag"
 description: "Create tag — set tag <name> [color red|green|blue|...] [comments <text>]"
+feature_flag: create_tag
+category: objects
+scope: folder
+api: "POST /config/objects/v1/tags"
+---
+
+---
+command: "set tag"
+description: "Create tag — set tag <name> [color red|green|blue|...] [comments <text>]"
+feature_flag: create_tag
+category: objects
+scope: folder
+api: "POST /config/objects/v1/tags"
+---
+
+---
+command: "set tag"
+description: "Create tag — set tag <name> [color red|green|blue|...] [comments <text>]"
 usage: "set tag <name> [color <color>] [comments <text>]"
 feature_flag: create_tag
 category: objects

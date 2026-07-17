@@ -7,6 +7,24 @@ scope: folder
 api: "GET /config/identity/v1/authentication-profiles"
 ---
 
+---
+command: "show authentication-profile"
+description: "Show authentication profiles in the active folder"
+feature_flag: authentication
+category: identity
+scope: folder
+api: "GET /config/identity/v1/authentication-profiles"
+---
+
+---
+command: "show authentication-profile"
+description: "Show authentication profiles in the active folder"
+feature_flag: authentication
+category: identity
+scope: folder
+api: "GET /config/identity/v1/authentication-profiles"
+---
+
 # show authentication-profile
 
 **Category:** identity

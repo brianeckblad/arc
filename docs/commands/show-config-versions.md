@@ -5,6 +5,24 @@ usage: "show config versions [<id>]"
 feature_flag: config_view
 category: operations
 scope: global
+---
+
+---
+command: "show config versions"
+description: "List SCM config versions (id, date, admin) or one version by id"
+usage: "show config versions [<id>]"
+feature_flag: config_view
+category: operations
+scope: global
+---
+
+---
+command: "show config versions"
+description: "List SCM config versions (id, date, admin) or one version by id"
+usage: "show config versions [<id>]"
+feature_flag: config_view
+category: operations
+scope: global
 api: "GET /config/operations/v1/config-versions"
 ---
 

@@ -1,6 +1,24 @@
 ---
 command: "delete service-group"
 description: "Delete a service group — delete service-group <name>"
+feature_flag: delete_objects
+category: objects
+scope: folder
+api: "DELETE /config/objects/v1/service-groups/{id}"
+---
+
+---
+command: "delete service-group"
+description: "Delete a service group — delete service-group <name>"
+feature_flag: delete_objects
+category: objects
+scope: folder
+api: "DELETE /config/objects/v1/service-groups/{id}"
+---
+
+---
+command: "delete service-group"
+description: "Delete a service group — delete service-group <name>"
 usage: "delete service-group <name>"
 feature_flag: delete_objects
 category: objects

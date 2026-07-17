@@ -1,6 +1,24 @@
 ---
 command: "set address-group"
 description: "Create address group — set address-group <name> static <m1> [m2] | dynamic filter '<expr>'"
+feature_flag: create_address_group
+category: objects
+scope: folder
+api: "POST /config/objects/v1/address-groups"
+---
+
+---
+command: "set address-group"
+description: "Create address group — set address-group <name> static <m1> [m2] | dynamic filter '<expr>'"
+feature_flag: create_address_group
+category: objects
+scope: folder
+api: "POST /config/objects/v1/address-groups"
+---
+
+---
+command: "set address-group"
+description: "Create address group — set address-group <name> static <m1> [m2] | dynamic filter '<expr>'"
 usage: "set address-group <name> static|dynamic <value> [description <text>] [tag <name>]"
 feature_flag: create_address_group
 category: objects

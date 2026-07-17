@@ -7,6 +7,24 @@ scope: folder
 api: "GET /config/objects/v1/application-filters"
 ---
 
+---
+command: "show application-filter"
+description: "Show application filters in the active folder"
+feature_flag: app_groups
+category: objects
+scope: folder
+api: "GET /config/objects/v1/application-filters"
+---
+
+---
+command: "show application-filter"
+description: "Show application filters in the active folder"
+feature_flag: app_groups
+category: objects
+scope: folder
+api: "GET /config/objects/v1/application-filters"
+---
+
 # show application-filter
 
 **Category:** objects

@@ -1,3 +1,21 @@
+---
+command: "set snippet"
+description: "Create a new SCM snippet — set snippet <name> [description <text>]"
+usage: "set snippet <name>  [description <text>]  [type predefined|custom]"
+feature_flag: show_snippets
+category: setup
+scope: global
+---
+
+---
+command: "set snippet"
+description: "Create a new SCM snippet — set snippet <name> [description <text>]"
+usage: "set snippet <name>  [description <text>]  [type predefined|custom]"
+feature_flag: show_snippets
+category: setup
+scope: global
+---
+
 # set snippet
 
 Create a **snippet** object in the active SCM folder.

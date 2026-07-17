@@ -1,7 +1,7 @@
 # SCM NGFW API Reference
 
 > Pulled from https://pan.app/scripts/scm/docs/home/ and the pan.dev GitHub
-> OpenAPI specs on 2026-07-06.
+> OpenAPI specs on 2026-07-16.
 > Regenerate with: `python app/scripts/docsupdate.py` (the `docsupdate` trigger).
 
 This reference set ships with ARC but is excluded from the browsable
@@ -60,6 +60,7 @@ Consolidated OpenAPI endpoint listings per NGFW config domain. See
 - **[specs/subscription-licenses.md](specs/subscription-licenses.md)** — 1 endpoints
 - **[specs/ngfw-device-device-settings.md](specs/ngfw-device-device-settings.md)** — 89 endpoints
 - **[specs/sase-deployment-deployment-services-june.md](specs/sase-deployment-deployment-services-june.md)** — 40 endpoints
+- **[specs/posture-management-compliance-framework.md](specs/posture-management-compliance-framework.md)** — 15 endpoints
 
 ## Guides (`guides/`)
 

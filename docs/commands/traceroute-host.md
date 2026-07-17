@@ -1,5 +1,23 @@
 ---
 command: "traceroute host"
+description: "Traceroute from device — traceroute host <ip>  (use --remote)"
+feature_flag: traceroute
+category: network
+scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "traceroute host"
+description: "Traceroute from device — traceroute host <ip>  (use --remote)"
+feature_flag: traceroute
+category: network
+scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "traceroute host"
 description: "Traceroute from a managed device (use --remote)"
 usage: "traceroute host <ip>"
 feature_flag: traceroute

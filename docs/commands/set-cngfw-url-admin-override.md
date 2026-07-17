@@ -8,6 +8,26 @@ scope: global
 api: "POST https://api.strata.paloaltonetworks.com/config/security/v1/url-admin-override"
 ---
 
+---
+command: "set cngfw url-admin-override"
+description: "Add URL Admin Override"
+usage: "set cngfw url-admin-override [password <value>] [ssl-tls-service-profile <value>]"
+feature_flag: cngfw_url_admin_override_write
+category: cloudngfw
+scope: global
+api: "POST https://api.strata.paloaltonetworks.com/config/security/v1/url-admin-override"
+---
+
+---
+command: "set cngfw url-admin-override"
+description: "Add URL Admin Override"
+usage: "set cngfw url-admin-override [password <value>] [ssl-tls-service-profile <value>]"
+feature_flag: cngfw_url_admin_override_write
+category: cloudngfw
+scope: global
+api: "POST https://api.strata.paloaltonetworks.com/config/security/v1/url-admin-override"
+---
+
 # set url-admin-override
 
 Create a **url-admin-override** object in the active SCM folder.

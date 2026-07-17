@@ -1,5 +1,21 @@
 ---
 command: "commit"
+description: "Apply staged changes and push to devices — commit [watch] [description <text>]"
+category: operations
+scope: folder
+api: "POST /config/setup/v1/config-versions/candidate:push"
+---
+
+---
+command: "commit"
+description: "Apply staged changes and push to devices — commit [watch] [description <text>]"
+category: operations
+scope: folder
+api: "POST /config/setup/v1/config-versions/candidate:push"
+---
+
+---
+command: "commit"
 description: "Apply staged changes and push to devices"
 usage: "commit [check|watch|confirmed <min>|confirm] [description <text>]"
 category: operations

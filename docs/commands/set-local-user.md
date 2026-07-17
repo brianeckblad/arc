@@ -1,3 +1,21 @@
+---
+command: "set local-user"
+description: "Create a local user — set local-user <name> password <pw>"
+usage: "set local-user <name> password <password>  [email <addr>]  [description <text>]"
+feature_flag: local_users
+category: identity
+scope: folder
+---
+
+---
+command: "set local-user"
+description: "Create a local user — set local-user <name> password <pw>"
+usage: "set local-user <name> password <password>  [email <addr>]  [description <text>]"
+feature_flag: local_users
+category: identity
+scope: folder
+---
+
 # set local-user
 
 Create a **local-user** object in the active SCM folder.

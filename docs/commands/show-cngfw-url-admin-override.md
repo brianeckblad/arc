@@ -8,6 +8,26 @@ scope: global
 api: "GET https://api.strata.paloaltonetworks.com/config/security/v1/url-admin-override"
 ---
 
+---
+command: "show cngfw url-admin-override"
+description: "URL Admin Override"
+usage: "show cngfw url-admin-override"
+feature_flag: cngfw_url_admin_override_read
+category: cloudngfw
+scope: global
+api: "GET https://api.strata.paloaltonetworks.com/config/security/v1/url-admin-override"
+---
+
+---
+command: "show cngfw url-admin-override"
+description: "URL Admin Override"
+usage: "show cngfw url-admin-override"
+feature_flag: cngfw_url_admin_override_read
+category: cloudngfw
+scope: global
+api: "GET https://api.strata.paloaltonetworks.com/config/security/v1/url-admin-override"
+---
+
 # show url-admin-override
 
 List **url-admin-override** objects in the active SCM folder.

@@ -1,3 +1,21 @@
+---
+command: "delete local-user"
+description: "Delete a local user — delete local-user <name>"
+usage: "delete local-user <name>"
+feature_flag: local_users
+category: identity
+scope: folder
+---
+
+---
+command: "delete local-user"
+description: "Delete a local user — delete local-user <name>"
+usage: "delete local-user <name>"
+feature_flag: local_users
+category: identity
+scope: folder
+---
+
 # delete local-user
 
 Delete a **local-user** object by name from the active SCM folder.

@@ -1,5 +1,23 @@
 ---
 command: "show device"
+description: "Show detail for a device — show device <hostname>  (or 'show device' when cd'd in)"
+feature_flag: show_devices
+category: setup
+scope: global
+api: "GET /config/setup/v1/devices/{id}"
+---
+
+---
+command: "show device"
+description: "Show detail for a device — show device <hostname>  (or 'show device' when cd'd in)"
+feature_flag: show_devices
+category: setup
+scope: global
+api: "GET /config/setup/v1/devices/{id}"
+---
+
+---
+command: "show device"
 description: "Show detail for a device (or 'show device' when cd'd in)"
 usage: "show device <hostname>"
 feature_flag: show_devices

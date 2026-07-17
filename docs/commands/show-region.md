@@ -7,6 +7,24 @@ scope: global
 api: "GET /config/objects/v1/regions"
 ---
 
+---
+command: "show region"
+description: "Show regions (TSG-wide, no folder filter)"
+feature_flag: regions
+category: objects
+scope: global
+api: "GET /config/objects/v1/regions"
+---
+
+---
+command: "show region"
+description: "Show regions (TSG-wide, no folder filter)"
+feature_flag: regions
+category: objects
+scope: global
+api: "GET /config/objects/v1/regions"
+---
+
 # show region
 
 **Category:** objects

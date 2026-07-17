@@ -66,11 +66,11 @@ from typing import Any, Optional, cast
 
 # ── Constants ────────────────────────────────────────────────────────────────
 
-DEV_DIR = Path(__file__).resolve().parent
-ROOT = DEV_DIR.parent
+DEV_DIR = Path(__file__).resolve().parent      # app/scripts/
+ROOT = DEV_DIR.parent.parent                    # repo root (app/scripts → app → repo)
 # The SCM source registry is an operator-editable file — it lives in settings/
 # alongside its PAN-OS sibling (settings/panos-sources.json), not in app/.
-SETTINGS_DIR = ROOT.parent / "settings"
+SETTINGS_DIR = ROOT / "settings"
 SOURCES_FILE = SETTINGS_DIR / "scm-sources.json"
 
 HTTP_TIMEOUT = 30  # seconds — every network call is bounded
@@ -1040,10 +1040,25 @@ def update(check_only: bool = False, mirror_all: Optional[bool] = None) -> int:
         CHANGES_FILE.write_text(changes_md, encoding="utf-8")
         print(f"\n  ✓ index.md, MANIFEST.md, CHANGES.md written ({pulled_on})")
     elif not can_render:
+        # Raw specs were mirrored, but the markdown/diff half was skipped.  Don't
+        # leave a stale CHANGES.md that still reads as current — overwrite it with
+        # an honest, dated note so neither a human nor the docs-agent trusts an
+        # out-of-date report (this is exactly the trap of a silent no-op).
+        CHANGES_FILE.write_text(
+            "# SCM API Change Report\n\n"
+            f"> Attempted on {pulled_on}, but PyYAML is not installed, so the specs\n"
+            "> could not be parsed and this report was **not** regenerated.\n"
+            "> The raw `.yaml` specs were still mirrored. To get an accurate report,\n"
+            "> install the dev extras and re-run:\n"
+            ">\n"
+            ">     uv sync --extra dev        # or: pip install pyyaml\n"
+            ">     python app/scripts/docsupdate.py\n",
+            encoding="utf-8",
+        )
         print(
             "\n  ⚠ PyYAML not installed — raw .yaml specs + guides saved, but"
             "\n    markdown/index/changes were not regenerated. Install dev extras:"
-            "\n      uv pip install -e '.[dev]'   (or: pip install pyyaml)"
+            "\n      uv sync --extra dev   (or: pip install pyyaml)"
         )
 
     if failures:

@@ -5,6 +5,26 @@ usage: "show log traffic [src <ip>] [dst <ip>] [port <n>] [rule <name>] [app <na
 feature_flag: sls_logs
 category: operations
 scope: global
+api: "(live device state — SSH via --remote)"
+---
+
+---
+command: "show log traffic"
+description: "Fleet-wide traffic log via SLS (lags minutes) — --remote for real-time on one device"
+usage: "show log traffic [src <ip>] [dst <ip>] [port <n>] [rule <name>] [app <name>] [last <Nm|Nh|Nd>] [limit <n>]"
+feature_flag: sls_logs
+category: operations
+scope: global
+api: "(live device state — SSH via --remote)"
+---
+
+---
+command: "show log traffic"
+description: "Fleet-wide traffic log via SLS (lags minutes) — --remote for real-time on one device"
+usage: "show log traffic [src <ip>] [dst <ip>] [port <n>] [rule <name>] [app <name>] [last <Nm|Nh|Nd>] [limit <n>]"
+feature_flag: sls_logs
+category: operations
+scope: global
 api: "SLS Query Service v2 — POST /query/v2/jobs (SQL over firewall.traffic)"
 ---
 

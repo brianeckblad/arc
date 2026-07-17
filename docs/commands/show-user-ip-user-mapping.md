@@ -4,6 +4,24 @@ description: "Show live user-to-IP mapping from device — use --remote"
 feature_flag: local_users
 category: identity
 scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "show user ip-user-mapping"
+description: "Show live user-to-IP mapping from device — use --remote"
+feature_flag: local_users
+category: identity
+scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "show user ip-user-mapping"
+description: "Show live user-to-IP mapping from device — use --remote"
+feature_flag: local_users
+category: identity
+scope: device
 api: "(live device state — SSH via --remote)"
 ---
 

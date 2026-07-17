@@ -1,6 +1,24 @@
 ---
 command: "delete tag"
 description: "Delete a tag — delete tag <name>"
+feature_flag: delete_objects
+category: objects
+scope: folder
+api: "DELETE /config/objects/v1/tags/{id}"
+---
+
+---
+command: "delete tag"
+description: "Delete a tag — delete tag <name>"
+feature_flag: delete_objects
+category: objects
+scope: folder
+api: "DELETE /config/objects/v1/tags/{id}"
+---
+
+---
+command: "delete tag"
+description: "Delete a tag — delete tag <name>"
 usage: "delete tag <name>"
 feature_flag: delete_objects
 category: objects

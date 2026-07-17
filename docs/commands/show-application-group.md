@@ -7,6 +7,24 @@ scope: folder
 api: "GET /config/objects/v1/application-groups"
 ---
 
+---
+command: "show application-group"
+description: "Show application groups in the active folder"
+feature_flag: app_groups
+category: objects
+scope: folder
+api: "GET /config/objects/v1/application-groups"
+---
+
+---
+command: "show application-group"
+description: "Show application groups in the active folder"
+feature_flag: app_groups
+category: objects
+scope: folder
+api: "GET /config/objects/v1/application-groups"
+---
+
 # show application-group
 
 **Category:** objects

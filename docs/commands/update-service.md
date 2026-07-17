@@ -1,6 +1,24 @@
 ---
 command: "update service"
 description: "Update service — update service <name> tcp|udp port <n> [source-port <n>]"
+feature_flag: update_objects
+category: objects
+scope: folder
+api: "PUT /config/objects/v1/services/{id}"
+---
+
+---
+command: "update service"
+description: "Update service — update service <name> tcp|udp port <n> [source-port <n>]"
+feature_flag: update_objects
+category: objects
+scope: folder
+api: "PUT /config/objects/v1/services/{id}"
+---
+
+---
+command: "update service"
+description: "Update service — update service <name> tcp|udp port <n> [source-port <n>]"
 usage: "update service <name> tcp|udp port <n> [source-port <n>] [description <text>]"
 feature_flag: update_objects
 category: objects

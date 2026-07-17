@@ -5,6 +5,26 @@ usage: "show config running [address|address-group|service|service-group|tag|ext
 feature_flag: config_view
 category: operations
 scope: folder
+api: "(live device state — SSH via --remote)"
+---
+
+---
+command: "show config running"
+description: "Show the running config version, or one resource as set commands"
+usage: "show config running [address|address-group|service|service-group|tag|external-dynamic-list]"
+feature_flag: config_view
+category: operations
+scope: folder
+api: "(live device state — SSH via --remote)"
+---
+
+---
+command: "show config running"
+description: "Show the running config version, or one resource as set commands"
+usage: "show config running [address|address-group|service|service-group|tag|external-dynamic-list]"
+feature_flag: config_view
+category: operations
+scope: folder
 api: "GET /config/operations/v1/config-versions/running"
 ---
 

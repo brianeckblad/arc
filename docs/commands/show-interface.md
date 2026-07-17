@@ -1,5 +1,23 @@
 ---
 command: "show interface"
+description: "Show a specific interface — show interface <name>"
+feature_flag: show_interface
+category: network
+scope: folder
+api: "GET /config/network/v1/ethernet-interfaces"
+---
+
+---
+command: "show interface"
+description: "Show a specific interface — show interface <name>"
+feature_flag: show_interface
+category: network
+scope: folder
+api: "GET /config/network/v1/ethernet-interfaces"
+---
+
+---
+command: "show interface"
 description: "Show a specific interface in the active folder"
 usage: "show interface <name>"
 feature_flag: show_interface

@@ -2192,5 +2192,327 @@
         "value_hint": "name"
       }
     ]
+  },
+  "clone": {
+    "override": false,
+    "args": [
+      {
+        "name": "resource",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter resource"
+      },
+      {
+        "name": "source-name",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter source-name"
+      },
+      {
+        "name": "new-name",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter new-name"
+      }
+    ]
+  },
+  "delete authentication-profile": {
+    "override": false,
+    "args": [
+      {
+        "name": "name",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter name"
+      }
+    ]
+  },
+  "delete local-user": {
+    "override": false,
+    "args": [
+      {
+        "name": "name",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter name"
+      }
+    ]
+  },
+  "delete snippet": {
+    "override": false,
+    "args": [
+      {
+        "name": "name",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter name"
+      }
+    ]
+  },
+  "set authentication-profile": {
+    "override": false,
+    "args": [
+      {
+        "name": "name",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter name"
+      },
+      {
+        "name": "type",
+        "kind": "choice",
+        "required": true,
+        "choices": [
+          "ldap",
+          "radius",
+          "saml",
+          "kerberos",
+          "local-db"
+        ],
+        "choice_hints": {},
+        "hint": "Choose one"
+      }
+    ]
+  },
+  "set local-user": {
+    "override": false,
+    "args": [
+      {
+        "name": "name",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter name"
+      },
+      {
+        "name": "password",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter password"
+      },
+      {
+        "name": "email",
+        "kind": "keyword",
+        "required": false,
+        "hint": "Enter email",
+        "value_hint": "addr"
+      },
+      {
+        "name": "description",
+        "kind": "keyword",
+        "required": false,
+        "hint": "Enter description",
+        "value_hint": "text"
+      }
+    ]
+  },
+  "set snippet": {
+    "override": false,
+    "args": [
+      {
+        "name": "name",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter name"
+      },
+      {
+        "name": "description",
+        "kind": "keyword",
+        "required": false,
+        "hint": "Enter description",
+        "value_hint": "text"
+      },
+      {
+        "name": "type",
+        "kind": "keyword",
+        "required": false,
+        "hint": "Enter type",
+        "value_hint": "predefined|custom"
+      }
+    ]
+  },
+  "show address search": {
+    "override": false,
+    "args": [
+      {
+        "name": "pattern",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter pattern"
+      }
+    ]
+  },
+  "show address tag": {
+    "override": false,
+    "args": [
+      {
+        "name": "tag-name",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter tag-name"
+      }
+    ]
+  },
+  "show diff": {
+    "override": false,
+    "args": [
+      {
+        "name": "versions",
+        "kind": "keyword",
+        "required": false,
+        "hint": "Enter versions",
+        "value_hint": "a> <b"
+      }
+    ]
+  },
+  "show service search": {
+    "override": false,
+    "args": [
+      {
+        "name": "pattern",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter pattern"
+      }
+    ]
+  },
+  "update address bulk": {
+    "override": false,
+    "args": [
+      {
+        "name": "name1",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter name1"
+      },
+      {
+        "name": "name2> ...",
+        "kind": "keyword",
+        "required": false,
+        "hint": "Enter name2> ...",
+        "value_hint": "name2> ..."
+      },
+      {
+        "name": "type",
+        "kind": "choice",
+        "required": true,
+        "choices": [
+          "description",
+          "tag",
+          "ip-netmask"
+        ],
+        "choice_hints": {},
+        "hint": "Choose one"
+      },
+      {
+        "name": "value",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter value"
+      }
+    ]
+  },
+  "update nat-rule": {
+    "override": false,
+    "args": [
+      {
+        "name": "name",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter name"
+      },
+      {
+        "name": "type",
+        "kind": "choice",
+        "required": true,
+        "choices": [
+          "from",
+          "to",
+          "source",
+          "destination",
+          "service",
+          "description",
+          "disabled"
+        ],
+        "choice_hints": {},
+        "hint": "Choose one"
+      },
+      {
+        "name": "value",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter value"
+      }
+    ]
+  },
+  "update security-rule": {
+    "override": false,
+    "args": [
+      {
+        "name": "name",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter name"
+      },
+      {
+        "name": "type",
+        "kind": "choice",
+        "required": true,
+        "choices": [
+          "action",
+          "from",
+          "to",
+          "source",
+          "destination",
+          "application",
+          "service",
+          "description",
+          "tag",
+          "disabled",
+          "position"
+        ],
+        "choice_hints": {},
+        "hint": "Choose one"
+      },
+      {
+        "name": "value",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter value"
+      },
+      {
+        "name": "type",
+        "kind": "choice",
+        "required": true,
+        "choices": [
+          "top",
+          "bottom",
+          "before"
+        ],
+        "choice_hints": {},
+        "hint": "Choose one"
+      },
+      {
+        "name": "type",
+        "kind": "choice",
+        "required": true,
+        "choices": [
+          "rule",
+          "after"
+        ],
+        "choice_hints": {},
+        "hint": "Choose one"
+      }
+    ]
+  },
+  "delete nat-rule": {
+    "override": false,
+    "args": [
+      {
+        "name": "name",
+        "kind": "value",
+        "required": true,
+        "hint": "Enter name"
+      }
+    ]
   }
 }

@@ -121,9 +121,9 @@ Resource                                      Methods  ARC Command              
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  config-versions                             LRC      ✓ load config version / set cngfw config-versions load / show cngfw config-versions / +2 more —
+  config-versions                             LRC      ✓ load config version / set cngfw config-versions load / show cngfw config-versions / +1 more —
   config-versions/candidate                   CD       ✓ commit / delete cngfw config-versions candidate / set cngfw config-versions candidate push —
-  config-versions/running                     L        ✓ show cngfw config-versions running / show config running —
+  config-versions/running                     L        ✓ show cngfw config-versions running       —
   jobs                                        LR       ✓ show cngfw jobs / show cngfw jobs id / show jobs all / +1 more show jobs processed
 
 ## Security Services
@@ -238,9 +238,9 @@ Resource                                      Methods  ARC Command              
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  config-versions                             LRC      ✓ load config version / set cngfw config-versions load / show cngfw config-versions / +2 more —
+  config-versions                             LRC      ✓ load config version / set cngfw config-versions load / show cngfw config-versions / +1 more —
   config-versions/candidate                   CD       ✓ commit / delete cngfw config-versions candidate / set cngfw config-versions candidate push —
-  config-versions/running                     L        ✓ show cngfw config-versions running / show config running —
+  config-versions/running                     L        ✓ show cngfw config-versions running       —
   jobs                                        LR       ✓ show cngfw jobs / show cngfw jobs id / show jobs all / +1 more show jobs processed
 
 ## Device Settings
@@ -548,6 +548,20 @@ Resource                                      Methods  ARC Command              
   v1/tagsassignment/aggregates                C        ✓ show tag                                 show objects tag
   v1/updatesconfig                            L        —                                          —
 
+## Compliance Center API
+**Base:** `https://api.strata.paloaltonetworks.com/posture/compliance-frameworks/v1`  |  **Spec:** `docs/scm-api/specs/posture-management-compliance-framework.yaml`
+
+Resource                                      Methods  ARC Command                                SSH Command
+───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
+  benchmark-monitoring                        C        —                                          —
+  benchmark-monitoring/download               C        —                                          —
+  compliance-controls                         R        —                                          —
+  configurations-assessed                     R        —                                          —
+  definitions                                 LRCUD    —                                          —
+  overall-compliance                          R        —                                          —
+  overall-compliance-timeline                 R        —                                          —
+  summaries                                   L        —                                          —
+
 ## Posture Management and Assessment API: BPA, Custom Checks, and Compliance
 **Base:** `https://api.strata.paloaltonetworks.com`  |  **Spec:** `docs/scm-api/specs/posture-management.yaml`
 
@@ -794,9 +808,9 @@ Resource                                      Methods  ARC Command              
 
 Resource                                      Methods  ARC Command                                SSH Command
 ───────────────────────────────────────────── ──────── ────────────────────────────────────────── ───────────────────────────────────
-  config-versions                             LRC      ✓ load config version / set cngfw config-versions load / show cngfw config-versions / +2 more —
+  config-versions                             LRC      ✓ load config version / set cngfw config-versions load / show cngfw config-versions / +1 more —
   config-versions/candidate                   CD       ✓ commit / delete cngfw config-versions candidate / set cngfw config-versions candidate push —
-  config-versions/running                     L        ✓ show cngfw config-versions running / show config running —
+  config-versions/running                     L        ✓ show cngfw config-versions running       —
   jobs                                        LR       ✓ show cngfw jobs / show cngfw jobs id / show jobs all / +1 more show jobs processed
 
 ## Security Services

@@ -1,5 +1,23 @@
 ---
 command: "ping host"
+description: "Ping a host from the device — ping host <ip>  (use --remote)"
+feature_flag: ping
+category: operations
+scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "ping host"
+description: "Ping a host from the device — ping host <ip>  (use --remote)"
+feature_flag: ping
+category: operations
+scope: device
+api: "(live device state — via the SCM device tunnel; no SSH/2FA)"
+---
+
+---
+command: "ping host"
 description: "Ping a host from a managed device (use --remote)"
 usage: "ping host <ip>"
 feature_flag: ping
