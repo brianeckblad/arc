@@ -177,6 +177,36 @@ def synthesize_builtin_help(name: str) -> str:
     return result
 
 
+_alias_synthesis_cache: dict[str, str] = {}
+
+
+def synthesize_alias_help(name: str) -> str:
+    """Build a Markdown help page for a system command alias.
+
+    System aliases (``settings/command-aliases.json`` — e.g. ``sh`` → ``show``,
+    ``ls`` → ``show``, ``conf t`` → ``configure``) are typeable in the shell but
+    resolve to another command line, so they get a short page pointing at their
+    target.  Returns "" if *name* isn't a system alias.
+    """
+    cached = _alias_synthesis_cache.get(name)
+    if cached is not None:
+        return cached
+    from app.settings.aliases import load_system_aliases
+    expansion = load_system_aliases().get(name)
+    if not expansion:
+        return ""
+    lines = [
+        f"# {name}", "",
+        f"**Alias for** `{expansion}`", "",
+        f"Typing `{name}` runs `{expansion}`. See that command's help for details.", "",
+        "- **Type:** shell alias", "",
+        "_Synthesized from settings/command-aliases.json._",
+    ]
+    result = "\n".join(lines)
+    _alias_synthesis_cache[name] = result
+    return result
+
+
 # Pager behavior — set once at shell startup from the user's preferences file
 # (`terminal length <n>` persists it). 0 = paging disabled: print everything
 # and rely on terminal scrollback. There is no terminal-size auto-detection.
@@ -406,6 +436,14 @@ def render_help_topic(console: Console, topic: str, use_pager: bool = True) -> b
         if builtin_md:
             console.print()
             console.print(Panel(Markdown(builtin_md), title=f"Help: {normalized}", border_style="cyan"))
+            console.print()
+            return True
+        # System aliases (sh, ls, conf …) resolve to another command — show a
+        # short page pointing at the target so every typeable input is documented.
+        alias_md = synthesize_alias_help(normalized)
+        if alias_md:
+            console.print()
+            console.print(Panel(Markdown(alias_md), title=f"Help: {normalized}", border_style="cyan"))
             console.print()
             return True
         return False

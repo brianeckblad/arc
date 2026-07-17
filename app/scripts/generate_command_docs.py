@@ -358,7 +358,15 @@ def prune_generated_stubs() -> list[str]:
 
 
 def regenerate_index() -> None:
-    """Rewrite docs/commands/index.md (the catalog) from the live registry."""
+    """Rewrite docs/commands/index.md (the catalog) from the live registry, plus
+    the shell built-ins and system aliases — so every typeable shell command is
+    listed and the browser portal's nav + search pick them all up (each links to
+    its synthesized page). `- ` + backticked name is the line format the portal
+    parser matches, so the section headers below are for human readers only.
+    """
+    from app.settings.commands import load_builtin_docs
+    from app.settings.aliases import load_system_aliases
+
     lines = [
         "# Command Reference",
         "",
@@ -367,6 +375,19 @@ def regenerate_index() -> None:
     ]
     for key in sorted(COMMANDS):
         lines.append(f"- `{key}` — {COMMANDS[key].description}")
+
+    builtins = load_builtin_docs()
+    if builtins:
+        lines += ["", "## Shell built-ins", ""]
+        for name in sorted(builtins):
+            lines.append(f"- `{name}` — {builtins[name].get('help') or 'shell builtin'}")
+
+    aliases = load_system_aliases()
+    if aliases:
+        lines += ["", "## Aliases", ""]
+        for name in sorted(aliases):
+            lines.append(f"- `{name}` — alias for `{aliases[name]}`")
+
     lines.append("")
     (COMMAND_DOCS_DIR / "index.md").write_text("\n".join(lines), encoding="utf-8")
 

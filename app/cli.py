@@ -843,6 +843,18 @@ def _build_docs_bundle() -> int:
         if page:
             pages[rel] = page
 
+    # System aliases (sh, ls, conf …) are typeable too — give each a short page
+    # pointing at its target so no shell input leads to a missing portal page.
+    from app.docs import synthesize_alias_help
+    from app.settings.aliases import load_system_aliases
+    for name in load_system_aliases():
+        rel = f"commands/{slugify(name)}.md"
+        if rel in pages:
+            continue
+        page = synthesize_alias_help(name)
+        if page:
+            pages[rel] = page
+
     js_entries = ",\n".join(
         f"  {json.dumps(key)}: {json.dumps(value)}"
         for key, value in pages.items()

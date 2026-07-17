@@ -440,6 +440,27 @@ format_raw()                             957-958
 format_dict()                            961-962        
 _flatten()                               969-984        Recursively flatten a nested dict into dot-separated key/value pairs.
 
+## `app/cli.py`  (951 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+main()                                   49-65          Launch the ARC interactive shell.
+open_docs()                              69-74          Open ARC documentation in the default browser (fully offline, no serve
+auth_configure()                         86-241         Interactively configure ARC credentials.
+auth_show()                              245-310        Display current configuration (credentials masked).
+auth_clear()                             314-334        Remove ARC secrets from the OS keychain.
+_short_err()                             337-339        Return the first line of an error string — avoids huge httpx traceback
+auth_migrate()                           343-416        Migrate old keychain entries to the new arc.* naming scheme.
+auth_delete_profile()                    420-445        Delete a named credential profile from config.json and the OS keychain
+auth_test()                              449-677        Test connectivity using stored credentials.
+config_generate()                        717-751        Generate a starter config.json with annotated placeholders and mode 06
+_ensure_vendor_files()                   769-789        Download vendor JS/CSS to docs/vendor/ if not already present.
+_build_docs_bundle()                     792-868        Embed every doc page into docs/docs-bundle.js.
+_do_cliup()                              871-891        Core cliup logic — rebuild the offline browser docs bundle.
+cliup()                                  895-914        Rebuild the offline browser docs bundle.
+scm_get()                                926-938        Perform a raw GET request against the SCM API.
+run()                                    945-946        
+
 ## `app/shell/dispatch.py`  (939 lines)
 
 Symbol                                   Lines          Purpose
@@ -458,27 +479,6 @@ class DispatchMixin                      108-938
   ._cmd_alias()                          341-412        User-defined aliases (`alias` / `alias <name> <expansion…>` /
   ._show_command_not_found()             414-510        Show a helpful message when a command is not recognized.
   ._dispatch()                           512-938        Process one input line.  Returns True when the user wants to exit ARC.
-
-## `app/cli.py`  (939 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-main()                                   49-65          Launch the ARC interactive shell.
-open_docs()                              69-74          Open ARC documentation in the default browser (fully offline, no serve
-auth_configure()                         86-241         Interactively configure ARC credentials.
-auth_show()                              245-310        Display current configuration (credentials masked).
-auth_clear()                             314-334        Remove ARC secrets from the OS keychain.
-_short_err()                             337-339        Return the first line of an error string — avoids huge httpx traceback
-auth_migrate()                           343-416        Migrate old keychain entries to the new arc.* naming scheme.
-auth_delete_profile()                    420-445        Delete a named credential profile from config.json and the OS keychain
-auth_test()                              449-677        Test connectivity using stored credentials.
-config_generate()                        717-751        Generate a starter config.json with annotated placeholders and mode 06
-_ensure_vendor_files()                   769-789        Download vendor JS/CSS to docs/vendor/ if not already present.
-_build_docs_bundle()                     792-856        Embed every doc page into docs/docs-bundle.js.
-_do_cliup()                              859-879        Core cliup logic — rebuild the offline browser docs bundle.
-cliup()                                  883-902        Rebuild the offline browser docs bundle.
-scm_get()                                914-926        Perform a raw GET request against the SCM API.
-run()                                    933-934        
 
 ## `app/shell/navigation.py`  (876 lines)
 
@@ -705,6 +705,34 @@ _load_config_version()                   362-434        Rollback: load a config 
 _show_diff()                             438-505        Show a version-to-version diff of SCM config metadata and staged chang
 COMMANDS                                 514-565        command registry dict
 
+## `app/docs.py`  (564 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+slugify()                                72-76          Return the docs filename slug for a shell command or topic.
+available_help_topics()                  79-84          Return topics that can be completed after ``help ``.
+doc_path_for_topic()                     87-111         Return the Markdown path for a help topic, if one exists.
+synthesize_command_help()                114-141        Build a Markdown help page for a command straight from the registry.
+synthesize_builtin_help()                150-177        Build a Markdown help page for a shell builtin from its metadata.
+synthesize_alias_help()                  183-207        Build a Markdown help page for a system command alias.
+set_page_length()                        216-219        Set the pager threshold (0 disables paging). Called from shell startup
+page_length()                            222-224        Current pager threshold in lines (0 = paging disabled).
+class _PagingFile                        227-308        A sys.stdout wrapper that pauses output every *page_size* lines.
+  .__init__()                            235-245        
+  .isatty()                              248-249        
+  .fileno()                              251-252        
+  .write()                               254-272        
+  .flush()                               274-275        
+  ._getch()                              277-288        
+  ._show_more()                          290-308        Print --More-- prompt; return False if user quits.
+paging_stdout()                          319-335        Context manager: wrap sys.stdout with line-based paging.
+cisco_pager()                            338-410        Cisco IOS-style --More-- interactive pager.
+render_help_topic()                      413-472        Render a Markdown help topic inside the ARC shell.
+os_setup_doc()                           485-487        Return the platform doc filename for an OS key (or None if unknown).
+render_doc_file()                        490-515        Render a Markdown file from the docs root by filename (front-matter st
+topic_to_page_path()                     522-542        Convert a help topic string to a relative docs page path.
+open_docs_in_browser()                   545-563        Open docs/index.html in the default browser using a file:// URL.
+
 ## `app/commands/network.py`  (544 lines)
 
 Symbol                                   Lines          Purpose
@@ -755,33 +783,6 @@ render()                                 435-436
 main()                                   439-479        
 augment_feature_labels()                 482-538        Add newly-discovered areas to settings/feature-labels.json, edit-safe.
 
-## `app/docs.py`  (526 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-slugify()                                72-76          Return the docs filename slug for a shell command or topic.
-available_help_topics()                  79-84          Return topics that can be completed after ``help ``.
-doc_path_for_topic()                     87-111         Return the Markdown path for a help topic, if one exists.
-synthesize_command_help()                114-141        Build a Markdown help page for a command straight from the registry.
-synthesize_builtin_help()                150-177        Build a Markdown help page for a shell builtin from its metadata.
-set_page_length()                        186-189        Set the pager threshold (0 disables paging). Called from shell startup
-page_length()                            192-194        Current pager threshold in lines (0 = paging disabled).
-class _PagingFile                        197-278        A sys.stdout wrapper that pauses output every *page_size* lines.
-  .__init__()                            205-215        
-  .isatty()                              218-219        
-  .fileno()                              221-222        
-  .write()                               224-242        
-  .flush()                               244-245        
-  ._getch()                              247-258        
-  ._show_more()                          260-278        Print --More-- prompt; return False if user quits.
-paging_stdout()                          289-305        Context manager: wrap sys.stdout with line-based paging.
-cisco_pager()                            308-380        Cisco IOS-style --More-- interactive pager.
-render_help_topic()                      383-434        Render a Markdown help topic inside the ARC shell.
-os_setup_doc()                           447-449        Return the platform doc filename for an OS key (or None if unknown).
-render_doc_file()                        452-477        Render a Markdown file from the docs root by filename (front-matter st
-topic_to_page_path()                     484-504        Convert a help topic string to a relative docs page path.
-open_docs_in_browser()                   507-525        Open docs/index.html in the default browser using a file:// URL.
-
 ## `app/settings/features.py`  (504 lines)
 
 Symbol                                   Lines          Purpose
@@ -806,6 +807,26 @@ is_enabled()                             464-479        Return True when *flag_n
 is_feature_visible()                     482-498        Return True when a command should appear in ``?`` / tab completion.
 dev_mode_from_env()                      501-503        Return True when ARC_DEV_MODE is set to a truthy value (CI/CD hook).
 
+## `app/scripts/generate_command_docs.py`  (474 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+_seed_help()                             56-86          Return {command: (description, usage)} to seed front-matter on first r
+_generated_api_map()                     187-201        Return API notes for commands created from the generated endpoint cata
+_generated_commands()                    204-210        Return command keys created from the generated endpoint catalog.
+_generated_usage_map()                   213-247        Return command → usage for generated endpoint commands.
+_api_for()                               250-266        Return a human-readable API note for a command.
+_front_matter()                          269-287        Build the YAML front-matter block for a command from the live registry
+_dq()                                    290-292        Double-quote a YAML scalar, escaping backslashes and quotes.
+_doc_path()                              295-296        
+_is_trivial_body()                       299-309        True when a doc body carries no hand-written content.
+ensure_front_matter()                    312-337        Refresh front-matter on EXISTING command docs; never create stub files
+prune_generated_stubs()                  340-357        Delete generated-command docs whose body is boilerplate (heading only)
+regenerate_index()                       360-392        Rewrite docs/commands/index.md (the catalog) from the live registry, p
+regenerate_api_reference()               395-418        Rewrite docs/commands/api-reference.md from front-matter + the registr
+_invalid_docs()                          421-438        Existing command docs that are malformed or point at unknown commands.
+main()                                   441-469        
+
 ## `app/scripts/generate_field_library.py`  (461 lines)
 
 Symbol                                   Lines          Purpose
@@ -829,26 +850,6 @@ _build_entry()                           252-370        Build one FIELD_CATALOG 
 _build_catalog()                         373-386        Return (catalog, skipped-reason -> [commands]).
 _render()                                393-417        
 main()                                   420-456        
-
-## `app/scripts/generate_command_docs.py`  (453 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_seed_help()                             56-86          Return {command: (description, usage)} to seed front-matter on first r
-_generated_api_map()                     187-201        Return API notes for commands created from the generated endpoint cata
-_generated_commands()                    204-210        Return command keys created from the generated endpoint catalog.
-_generated_usage_map()                   213-247        Return command → usage for generated endpoint commands.
-_api_for()                               250-266        Return a human-readable API note for a command.
-_front_matter()                          269-287        Build the YAML front-matter block for a command from the live registry
-_dq()                                    290-292        Double-quote a YAML scalar, escaping backslashes and quotes.
-_doc_path()                              295-296        
-_is_trivial_body()                       299-309        True when a doc body carries no hand-written content.
-ensure_front_matter()                    312-337        Refresh front-matter on EXISTING command docs; never create stub files
-prune_generated_stubs()                  340-357        Delete generated-command docs whose body is boilerplate (heading only)
-regenerate_index()                       360-371        Rewrite docs/commands/index.md (the catalog) from the live registry.
-regenerate_api_reference()               374-397        Rewrite docs/commands/api-reference.md from front-matter + the registr
-_invalid_docs()                          400-417        Existing command docs that are malformed or point at unknown commands.
-main()                                   420-448        
 
 ## `app/commands/setup.py`  (448 lines)
 

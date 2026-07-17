@@ -4873,3 +4873,50 @@ Use `help <command>` to open detailed docs for a command.
 - `update zones` — Update a security zone
 - `validate full` — Validate full — device-local config (break-glass)
 - `validate partial device-and-network` — Validate partial device and network — device-local config (break-glass)
+
+## Shell built-ins
+
+- `?` — shell builtin
+- `abandon` — Discard staged changes  (local only — SCM is never touched)
+- `account` — List or switch credential profiles  (Tab -> profile names)
+- `alias` — User-defined shortcuts  (alias <name> <cmd…> | alias delete <name>)
+- `arc` — Application info  (arc show | arc show version | arc show session | arc ?)
+- `catalog` — Regenerate code artifacts  (catalog rebuild)
+- `cd` — Change device or folder context  (cd device <name> | cd folder <name> | cd ..)
+- `clear` — Clear the terminal screen
+- `cli` — CLI theme operations  (show | color | reset)
+- `close connection` — Drop a specific SSH connection from the pool  (see show connections)
+- `command-structure` — Manage contextual ? help specs  (list | update | clear)
+- `commit` — Apply staged changes + push to devices  (commit watch → follow the job)
+- `configure` — Enter configure mode  (arc:global #)
+- `connect` — SSH to device — interactive session  (keyboard-interactive + 2FA)
+- `delete` — Delete configuration object  (configure mode)  — delete ? for types
+- `docs` — Open docs in browser
+- `exit` — Exit ARC (or leave configure mode)
+- `feature` — Feature flags  (show | enable <flag> | disable <flag>)
+- `find` — Search ALL commands (incl. disabled, hidden, etc.) — PAN-OS style
+- `folder` — Manage SCM folders — list, create  (configure mode)
+- `help` — Show help  (help <topic> | help all)
+- `history` — Show recent commands  (history <n> — default 20)
+- `login` — Authenticate to SCM now via the API and show your identity (no browser)
+- `pwd` — Show device, folder, TSG, and active account
+- `quit` — Exit ARC (or leave configure mode)
+- `set` — Create configuration  (configure mode)  — set ? for sub-commands
+- `setup` — Guided setup: menu, credential wizard (setup scm), or OS step-by-step guide
+- `show config` — List staged changes pending commit  (local — not yet in SCM)
+- `show connections` — List active SSH connections in the pool  (close connection <host> to drop one)
+- `status` — Dev health dashboard  (docs age, feature counts, help coverage, git)
+- `terminal` — Pager/width/spinner preferences  (terminal length 0 = no paging)
+- `tsg` — Set active TSG  (Tab -> configured TSG)
+- `unstage` — Remove one staged change by index  (unstage 2 removes item #2 from show config)
+- `update` — Modify existing object  (configure mode)  — update ? for types
+- `watch` — Re-run a command every N seconds until Ctrl-C  (SSH session reused)
+
+## Aliases
+
+- `conf` — alias for `configure`
+- `conf t` — alias for `configure`
+- `conf term` — alias for `configure`
+- `conf terminal` — alias for `configure`
+- `ls` — alias for `show`
+- `sh` — alias for `show`
