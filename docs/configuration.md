@@ -100,7 +100,7 @@ credentials in `auth.json` (plaintext, `0600`).
 
 ## Migration from an older config.json
 
-The first `save_config` (via `arc setup scm`, `arc auth configure`, `login`, or the
+The first `save_config` (via `arc setup scm`, `arc auth configure`, or the
 GUI) migrates an older single- or multi-profile `config.json` automatically:
 top-level `scm`/`ssh` blocks become the `default` profile in `auth.json`,
 `features_gui`/`arc_gui` move under `config.json` → `gui`, and `active_profile`

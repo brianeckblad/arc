@@ -220,8 +220,8 @@ class ArcCompleter(Completer):
         has_arg_space = len(parts) > 1 or text.endswith(" ")
         partial_arg = parts[1] if len(parts) > 1 else ""
 
-        # ---- cd / remote / connect → device name or subcommand completion ----
-        if first in ("cd", "connect") and has_arg_space:
+        # ---- cd / connect / login → device name or subcommand completion ----
+        if first in ("cd", "connect", "login") and has_arg_space:
             second = parts[1].lower() if len(parts) > 1 else ""
             # cd device / cd folder sub-commands
             if first == "cd" and len(parts) <= 2:
@@ -533,7 +533,7 @@ class ArcCompleter(Completer):
             return
 
         # ---- no-argument builtins → only offer `?` (no stray registry hits) ----
-        if first in ("status", "login", "abandon", "pwd", "clear",
+        if first in ("status", "abandon", "pwd", "clear",
                      "history", "logout") and has_arg_space and len(parts) <= 2:
             if "?".startswith(partial_arg):
                 yield Completion("?", start_position=-len(partial_arg), display_meta="help")

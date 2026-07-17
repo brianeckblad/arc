@@ -6,19 +6,6 @@ import threading  # commit-confirmed auto-revert timer
 from app.shell._base import *  # noqa: F401,F403  (shared spine namespace)
 
 
-def _identity_name(claims: dict) -> str:
-    """First human-readable principal name from SCM userinfo claims, else ''.
-
-    Checks the standard OIDC/OAuth identity claims in priority order. Callers
-    that also accept a service-account token add ``client_id`` as a final
-    fallback themselves.
-    """
-    return (
-        claims.get("name") or claims.get("email")
-        or claims.get("preferred_username") or claims.get("sub") or ""
-    )
-
-
 def _prefs_file_label() -> str:
     """Repo-relative path of the config file (holds preferences), for display."""
     from app.config import CONFIG_FILE
@@ -1334,87 +1321,35 @@ class ConfigureMixin:
         console.print(f"[cyan]{status}[/cyan]")
 
     def _cmd_login(self, args: list[str]) -> None:
-        """Authenticate to SCM now via the API and show who you are (no browser).
+        """SSH into the current device (select one with ``cd device <name>`` first).
 
-        Uses the documented client-credentials flow to mint a fresh 15-minute
-        token from the SCM ``access_token`` endpoint, then calls ``userinfo`` to
-        display the authenticated identity.  The live SCM client is refreshed and
-        the token expiry recorded in preferences.  Requires SCM credentials
-        (client id + secret + TSG, or a pre-issued bearer token).
-
-        pan.dev refs:
-          /scm/api/auth/post-auth-v-1-oauth-2-access-token/
-          /scm/api/auth/post-auth-v-1-oauth-2-userinfo/
+        ``login`` opens an interactive SSH session to the device you have ``cd``'d
+        into — the same action as ``connect``. It reuses your stored SSH
+        credentials; TACACS/2FA may prompt. SCM API access is separate and
+        authenticates automatically at startup (verify with ``arc auth test``).
         """
         if args and args[0] in ("?", "help"):
             console.print(
-                "[bold]login[/bold] — authenticate to SCM now and show your identity (API, no browser)\n"
-                "  Mints a fresh 15-minute token via the client-credentials grant, then reads\n"
-                "  [bold]/auth/v1/oauth2/userinfo[/bold] to display who you are.\n\n"
-                "  Needs SCM credentials — set them with [bold]arc setup scm[/bold] / "
-                "[bold]arc auth configure[/bold].\n"
-                "  [dim]Docs: pan.dev → Create an access token · Retrieve OAuth 2.0 claims[/dim]"
+                "[bold]login[/bold] — SSH into the current device\n"
+                "  Select a device first: [bold]cd device <name>[/bold], then [bold]login[/bold].\n"
+                "  [dim]login <name>[/dim] also works. Uses your stored SSH credentials; "
+                "TACACS/2FA may prompt.\n"
+                "  [dim]SCM API auth is automatic at startup — check it with [bold]arc auth test[/bold].[/dim]"
             )
             return
 
-        scm = self._config.scm
-        has_creds = bool(scm.client_id and scm.client_secret and scm.tsg_id)
-        if not (has_creds or scm.bearer_token.strip()):
+        if not args and not self._state.device:
             console.print(
-                "[yellow]No SCM credentials configured.[/yellow]\n"
-                "  Run [bold]arc setup scm[/bold] (or [bold]arc auth configure[/bold]) to set a\n"
-                "  service account (client id + secret + TSG), then run [bold]login[/bold] again."
+                "[yellow]login opens an SSH session to a device — none selected.[/yellow]\n"
+                "  Choose one: [bold]cd device <name>[/bold], then [bold]login[/bold]  "
+                "(or [bold]login <name>[/bold]).\n"
+                "  [dim]SCM API auth is automatic — verify it with [bold]arc auth test[/bold].[/dim]"
             )
             return
 
-        # Mint a fresh token via the API (client-credentials → access_token).
-        try:
-            from app.api.client import SCMClient
-            client = SCMClient(self._config.scm)
-        except Exception as exc:  # noqa: BLE001
-            console.print(f"[red]Login failed:[/red] {exc}")
-            return
-
-        self._scm = client
-        # A service account already minted a fresh token in SCMClient.__init__
-        # (a bad secret would have raised above), so read the captured lifetime
-        # rather than re-authenticating. It re-mints on every launch, so there's
-        # no persisted bearer whose expiry we should record.
-        expires_in = client.token_expires_in if has_creds else 0
-
-        # Confirm identity via userinfo — best-effort, and for a bearer-only login
-        # it is our only signal that the pre-issued token is actually valid.
-        claims = {}
-        try:
-            claims = client.get_userinfo()
-        except Exception:  # noqa: BLE001
-            claims = {}
-
-        if has_creds:
-            if expires_in > 0:
-                console.print(
-                    f"[green]✓[/green] Authenticated to SCM — token valid for ~{expires_in // 60} min."
-                )
-            else:
-                console.print("[green]✓[/green] Authenticated to SCM.")
-        elif claims:
-            console.print("[green]✓[/green] Authenticated to SCM with the stored bearer token.")
-        else:
-            console.print(
-                "[yellow]⚠[/yellow] Using the stored bearer token, but SCM returned no identity — "
-                "it may be expired or invalid. Run [bold]arc setup scm[/bold] to re-authenticate "
-                "if API calls fail."
-            )
-        if claims:
-            who = _identity_name(claims) or claims.get("client_id") or ""
-            email = claims.get("email", "")
-            detail = f"{who}" + (f"  <{email}>" if email and email != who else "")
-            console.print(f"  [dim]Signed in as[/dim] [bold]{detail or 'unknown principal'}[/bold]")
-            tsg = claims.get("tsg_id") or scm.tsg_id
-            if tsg:
-                console.print(f"  [dim]TSG:[/dim] {tsg}")
-        else:
-            console.print("  [dim]Identity claims unavailable (userinfo not returned).[/dim]")
+        # Delegate to the interactive SSH path — shares self._state / self._ssh
+        # and reuses the connect PTY loop, credential lookup, and 2FA handling.
+        self._cmd_connect(args)
 
 
     # ------------------------------------------------------------------

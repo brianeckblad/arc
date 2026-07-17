@@ -48,7 +48,7 @@
   "login": {
     "visible": true,
     "display": "login",
-    "help": "Authenticate to SCM now via the API and show your identity (no browser)",
+    "help": "SSH into the current device (select it with 'cd device <name>' first)",
     "configure_only": false,
     "hide_in_configure": false,
     "onlogin": false,

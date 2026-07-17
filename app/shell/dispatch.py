@@ -421,7 +421,7 @@ class DispatchMixin:
         first_word = tokens[0].lower() if tokens else ""
         
         # Special case: setup/config-related terms
-        config_terms = ["setup", "config", "configure", "configuration", "credential", "auth", "login"]
+        config_terms = ["setup", "config", "configure", "configuration", "credential", "auth"]
         if first_word in config_terms or any(word in config_terms for word in [t.lower() for t in tokens]):
             console.print(
                 f"\n[yellow]No command:[/yellow] [bold]{cmd_text}[/bold]\n\n"
@@ -649,6 +649,10 @@ class DispatchMixin:
                     return False
                 if prefix_tokens[0].lower() in ("find",):
                     self._cmd_find(["?"])
+                    return False
+                # `login ?` — device-SSH command help (not a registry command).
+                if prefix_tokens[0].lower() == "login":
+                    self._cmd_login(["?"])
                     return False
                 # General case: prefix help for registered commands.
                 self._cmd_help_inline(prefix_tokens)

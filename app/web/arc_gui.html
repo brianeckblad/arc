@@ -238,7 +238,7 @@ async function mainAuthentication(main){
   main.appendChild(pageHead("Authentication",null));
   const c=await api("/api/credentials");
   const p=panel("How ARC signs in to SCM");
-  p.appendChild(intro("ARC authenticates to the SCM API over OAuth <b>client-credentials</b> (<code>POST /auth/v1/oauth2/access_token</code>) — there is no browser sign-in. Provide credentials under <b>Credentials &amp; Keychain</b> two ways:<ul><li><b>Service account</b> — store Client ID + secret + TSG; ARC mints and refreshes tokens automatically.</li><li><b>Token</b> — a pre-issued bearer token (stored in <code>auth.json</code>, reused until it expires).</li></ul>Run <code>login</code> in the ARC shell to re-authenticate and see your identity via <code>/auth/v1/oauth2/userinfo</code>."));
+  p.appendChild(intro("ARC authenticates to the SCM API over OAuth <b>client-credentials</b> (<code>POST /auth/v1/oauth2/access_token</code>) — there is no browser sign-in. Provide credentials under <b>Credentials &amp; Keychain</b> two ways:<ul><li><b>Service account</b> — store Client ID + secret + TSG; ARC mints and refreshes tokens automatically.</li><li><b>Token</b> — a pre-issued bearer token (stored in <code>auth.json</code>, reused until it expires).</li></ul>ARC mints and refreshes tokens automatically — use <b>Test auth</b> (or <code>arc auth test</code>) to verify. There is no interactive/browser SCM sign-in."));
   const cur=(c.scm&&c.scm.auth_method)?c.scm.auth_method:"none";
   p.appendChild(el("div","muted","Currently configured: "+esc(cur)));
   const tb=el("button","btn","Test SCM auth");tb.type="button";tb.onclick=testAuth;p.appendChild(tb);

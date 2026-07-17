@@ -15,7 +15,7 @@ storing those credentials safely for your platform.
 | A pre-issued **bearer token** | [Bearer token setup](#bearer-token) |
 | An **OAuth client ID + secret** (service account) | [OAuth setup](#oauth-client-credentials) |
 | Neither — I need to create a service account | [Create a service account](#create-a-service-account) |
-| I want to **log in now and confirm my identity** (uses the API) | [Log in via the API](#log-in-via-the-api-login) |
+| I want to **confirm my credentials work** | [Verify your credentials](#verify-your-credentials) |
 
 **2. How will you SSH to devices?**
 
@@ -63,7 +63,8 @@ a named profile: `arc auth configure --profile <name>`
 (see [Profiles](#profiles-multiple-accounts)).
 
 Any wizard: **Enter** keeps an existing value; **Ctrl-C** aborts without saving.
-Once configured, run `login` inside ARC to authenticate and confirm your identity.
+Once configured, ARC authenticates to SCM automatically at startup — confirm it
+with `arc auth test`.
 
 ---
 
@@ -150,32 +151,20 @@ arc auth configure
 
 ---
 
-## Log in via the API (`login`)
+## SCM authentication is automatic
 
-Once your SCM credentials are configured, run `login` inside ARC to authenticate
-**via the API — no browser** — and confirm your identity:
+There is no "log in to SCM" step. Once your service account (or bearer token) is
+configured, ARC mints a fresh token from the client-credentials endpoint
+automatically at startup and re-mints as needed — SCM has no interactive/browser
+login. Confirm it works with `arc auth test` (see
+[Verify your credentials](#verify-your-credentials)).
 
-```
-login
-```
+> The in-shell `login` command is **not** for SCM — it opens an **SSH** session to
+> the device you've `cd`'d into (see `help login` / `help connect`).
 
-It mints a fresh 15-minute token from your service account and reads the userinfo
-endpoint to show who you are:
-
-```
-✓ Authenticated to SCM — token valid for ~15 min.
-  Signed in as ARC Service  <svc@1234.iam.panserviceaccount.com>
-  TSG: 1234567890
-```
-
-Two documented SCM endpoints are used:
-
-- `POST /auth/v1/oauth2/access_token` — mint the token (Client ID + Secret as HTTP
-  Basic, `client_credentials`). [pan.dev](https://pan.dev/scm/api/auth/post-auth-v-1-oauth-2-access-token/)
-- `POST /auth/v1/oauth2/userinfo` — identity claims for the token.
-  [pan.dev](https://pan.dev/scm/api/auth/post-auth-v-1-oauth-2-userinfo/)
-
-If no credentials are set yet, `login` points you at `arc setup scm`.
+Token endpoint (for reference): `POST /auth/v1/oauth2/access_token` — Client ID +
+Secret as HTTP Basic, `grant_type=client_credentials`, `scope=tsg_id:<TSG>`.
+[pan.dev](https://pan.dev/scm/api/auth/post-auth-v-1-oauth-2-access-token/)
 
 ---
 
@@ -306,7 +295,7 @@ After `arc auth test` shows a green check, these are the high-value entry points
 | `arc gui-configure` | Browser settings console: authentication, credentials/keychain, theme, API sources, maintenance |
 | `feature gui-configure` | Browser feature editor: turn commands on/dev/hidden/off, areas, scope, aliases, built-ins |
 | `feature show` / `feature find <text>` | List/search every capability flag and the commands it gates |
-| `login` | Authenticate now via the API and show your identity (no browser) |
+| `cd device <name>` → `login` | Select a device, then SSH into it (2FA may prompt) |
 | `show log traffic\|threat\|system` | Fleet logs from Strata Logging Service — no device context needed |
 | `clone <res> <src> <new>` | Duplicate any named object into the active container |
 | `cd snippet <name>` | Work inside an SCM snippet container instead of a folder |

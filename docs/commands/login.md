@@ -1,66 +1,55 @@
 ---
 command: "login"
-description: "Authenticate to SCM now via the API and show your identity (no browser)"
-usage: "login"
-category: auth
-scope: global
+description: "SSH into the current device (select it with 'cd device <name>' first)"
+usage: "login [device]"
+category: device
+scope: device
 ---
 
 # login
 
-**Category:** auth
-**API mode:** obtains a fresh token, then re-initialises the SCM client
-**SSH mode:** Not applicable
+**Category:** device
+**API mode:** Not applicable
+**SSH mode:** opens an interactive SSH session to the selected device
 
 ## Description
 
-`login` authenticates to Strata Cloud Manager **using the API — no browser**. It
-mints a fresh token from your service-account credentials via the documented
-client-credentials flow, then reads the userinfo endpoint to show **who you are**.
-The live SCM client is refreshed (no restart) and the token expiry is recorded in
-your preferences.
+`login` opens an interactive **SSH** session to the device you are currently in.
+Select a device first with `cd device <name>`, then type `login` — this is the
+same action as [`connect`](connect.md). You can also pass a device directly:
+`login <name>`.
 
-Two SCM endpoints are used (pan.dev):
+It reuses your stored SSH credentials (username, key or password, port) from
+setup. Because it SSHes to the live device, **TACACS/RADIUS 2FA may prompt** —
+this is the explicit device-access path.
 
-| Endpoint | Purpose |
-|---|---|
-| `POST /auth/v1/oauth2/access_token` | Mint a 15-minute token — Client ID + Client Secret sent as HTTP Basic auth, `grant_type=client_credentials`, `scope=tsg_id:<TSG>`. [Docs](https://pan.dev/scm/api/auth/post-auth-v-1-oauth-2-access-token/) |
-| `POST /auth/v1/oauth2/userinfo` | Return the OAuth 2.0 identity claims for the token. [Docs](https://pan.dev/scm/api/auth/post-auth-v-1-oauth-2-userinfo/) |
-
-ARC already authenticates automatically on startup; `login` is an explicit
-"authenticate now and confirm my identity" command.
+> SCM API access is separate and needs no `login` — ARC authenticates to SCM
+> automatically at startup from your stored service account. To check that,
+> use `arc auth test` (from your terminal).
 
 ## Requirements
 
-`login` needs SCM credentials already configured — a **service account**
-(Client ID + Client Secret + TSG ID) or a pre-issued bearer token. Set them with:
-
-```
-arc setup scm        # guided credential wizard (run from your terminal)
-arc auth configure   # the same wizard, invoked directly
-```
-
-If no credentials are present, `login` tells you and points at `arc setup scm`.
+- A device context: run `cd device <name>` first (or `login <name>`).
+- SSH credentials configured — see [`arc setup scm keystore`](../setup.md) or the
+  per-OS guides (`arc setup osx|linux|win`). Prefer an SSH key or agent.
 
 ## Usage
 
 ```
+cd device fw01
 login
 ```
 
-Example output:
+or, in one step:
 
 ```
-✓ Authenticated to SCM — token valid for ~15 min.
-  Signed in as ARC Service  <svc@1234.iam.panserviceaccount.com>
-  TSG: 1234567890
+login fw01
 ```
 
-Identity display is best-effort: if the userinfo endpoint returns nothing, `login`
-still succeeds (the token is valid) and simply notes that claims were unavailable.
+Type `exit` (or the device's logout) to close the session and return to ARC.
 
 ## See also
 
-- `arc setup scm` — guided credential setup
-- `arc auth configure` — configure a service account (outside the shell)
-- `arc gui-configure` → Authentication — manage auth in the browser console
+- `connect` — the same interactive SSH session (accepts a device name)
+- `cd device <name>` — select the device context (never opens SSH itself)
+- `help device-access` — SCM API vs SCM proxy vs SSH/2FA planes

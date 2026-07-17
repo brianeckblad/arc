@@ -30,7 +30,7 @@ otherwise edit by hand. Sections:
 | Section | Manages |
 |---|---|
 | Dashboard | Health: SCM connectivity, keychain, profile/TSG/folder, GUI ports |
-| Authentication | How SCM sign-in works (client-credentials; service account or token); Test auth + `login` |
+| Authentication | How SCM sign-in works (client-credentials; service account or token); Test auth |
 | Credentials & Keychain | Storage mode (keychain/file) + SCM client id / TSG / secret / bearer + SSH user / key / port / password; real token expiry |
 | Connection / config.json | Default folder, debug, GUI **ports** + enabled toggles, profiles |
 | Preferences | Terminal paging/width/height, spinner |
@@ -49,21 +49,17 @@ edits and manual edits stay equivalent. Secrets are never written
 to `config.json` — only to the OS keychain — and are never read back into the
 browser (blank secret fields mean "leave unchanged").
 
-## `login` (API authentication + identity)
+## SCM authentication (automatic)
 
-`login` authenticates to SCM **via the API — no browser**. It mints a fresh
-15-minute token from your service-account credentials (client-credentials grant),
-then reads the userinfo endpoint to display who you are. The live SCM client is
-re-initialised (no restart) and the token expiry is recorded in preferences.
+There is no interactive SCM sign-in — SCM uses the OAuth **client-credentials**
+grant, so ARC mints a token from your configured service account (or uses a
+pre-issued bearer token) automatically at startup and re-mints as needed. There is
+no browser/user login for the API.
 
-Endpoints (pan.dev):
-
-- `POST /auth/v1/oauth2/access_token` — mint the token (Client ID + Secret as HTTP
-  Basic auth, `grant_type=client_credentials`).
+- Endpoint: `POST /auth/v1/oauth2/access_token` — Client ID + Secret as HTTP Basic,
+  `grant_type=client_credentials`, `scope=tsg_id:<TSG>`.
   [Docs](https://pan.dev/scm/api/auth/post-auth-v-1-oauth-2-access-token/)
-- `POST /auth/v1/oauth2/userinfo` — identity claims for the token.
-  [Docs](https://pan.dev/scm/api/auth/post-auth-v-1-oauth-2-userinfo/)
+- Verify it works: **`arc auth test`** (terminal), or the console's **Test auth**.
 
-`login` needs SCM credentials configured first (`arc setup scm` / `arc auth
-configure`). If none are present, it points you at `arc setup scm`. Service-account
-credentials remain the supported, fully-featured auth path.
+> The in-shell `login` command is unrelated to SCM — it opens an **SSH** session to
+> the device you've `cd`'d into (`help login`).
