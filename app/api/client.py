@@ -36,7 +36,7 @@ Gateway map (from the OpenAPI ``servers`` field in each spec):
 from __future__ import annotations
 
 import time
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 import httpx
 
@@ -97,7 +97,7 @@ class SCMClient:
         # Optional progress callback — set by the execution layer during paginated
         # fetches so the spinner text updates as pages arrive.  Signature:
         #   _page_reporter(fetched_so_far: int, total: int) -> None
-        self._page_reporter: Optional[callable] = None
+        self._page_reporter: Optional[Callable[[int, int], None]] = None
         # Active config-container override. When set to ("snippet", name) the
         # folder-scoped list getters rewrite their ?folder= param to ?snippet=
         # so reads target the active snippet instead of a folder. The execution
@@ -253,7 +253,7 @@ class SCMClient:
         path: str,
         params: Optional[dict],
         first: dict,
-        on_page: Optional[callable] = None,
+        on_page: Optional[Callable[[int, int], None]] = None,
     ) -> list[dict]:
         """Follow limit/offset pagination after an already-fetched first page.
 
