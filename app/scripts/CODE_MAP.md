@@ -80,12 +80,7 @@ class ConfigureMixin                     68-2887
   ._arc_show_session()                   2866-2883      arc show session — active profile, TSG, folder, device, modes.
   ._arc_show()                           2885-2887      arc show (all) — kept for backward compat; calls _cmd_arc(['show']).
 
-## `app/settings/field_catalog.py`  (1974 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-
-## `app/scripts/smoke_test.py`  (1945 lines)
+## `app/scripts/smoke_test.py`  (2008 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -101,15 +96,20 @@ test_token_optimizations()               626-638
 test_config()                            645-793        
 test_formatter()                         800-837        
 test_banner_alignment()                  852-876        
-test_inline_help_alignment()             892-1132       
-test_theme()                             1140-1242      
-test_code_map()                          1252-1287      
-test_command_visibility()                1290-1475      
-test_configure_flow()                    1482-1623      Section 13 — Configure/commit flow unit tests.
-test_gui_endpoints()                     1626-1841      Section 14 — Browser-console endpoint coverage (offline, no SCM).
-test_new_commands()                      1844-1867      Section 14b — the session's new features stay wired (registry + builti
-_test_gui_and_commands()                 1870-1873      Section 14 driver — GUI endpoint coverage + new-command wiring.
-main()                                   1895-1940      
+test_inline_help_alignment()             892-1195       
+test_theme()                             1203-1305      
+test_code_map()                          1315-1350      
+test_command_visibility()                1353-1538      
+test_configure_flow()                    1545-1686      Section 13 — Configure/commit flow unit tests.
+test_gui_endpoints()                     1689-1904      Section 14 — Browser-console endpoint coverage (offline, no SCM).
+test_new_commands()                      1907-1930      Section 14b — the session's new features stay wired (registry + builti
+_test_gui_and_commands()                 1933-1936      Section 14 driver — GUI endpoint coverage + new-command wiring.
+main()                                   1958-2003      
+
+## `app/settings/field_catalog.py`  (1974 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
 ## `app/api/client.py`  (1397 lines)
 
@@ -336,27 +336,27 @@ main()                                   1167-1246
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
-## `app/shell/completer.py`  (1043 lines)
+## `app/shell/completer.py`  (1058 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _parse_usage()                           26-62          Parse a usage string into (required_slots, optional_keywords).
 _usage_options()                         65-99          Return (token, display_meta) completions for the slot after *typed* ar
 _tokenize_partial()                      102-135        Split *text* for completion, honouring quotes, tracking the in-progres
-class ArcCompleter                       138-1042       Context-aware tab completer.
+class ArcCompleter                       138-1057       Context-aware tab completer.
   .__init__()                            147-148        
-  ._command_visible()                    150-159        Return True when a registered command is visible in this shell mode.
-  ._command_is_dev_gated()               161-171        Return True when the command exists but is gated behind dev mode.
-  .get_completions()                     173-194        
-  ._complete_normal()                    196-766        Yield completions for non-dev-shell commands.
-  ._complete_dev_shell()                 768-832        Yield completions for dev shell commands.
-  ._match_complete_command()             834-849        Return the longest complete command key the user has fully entered.
-  ._complete_arguments()                 851-903        Yield completions for the argument region of a complete command.
-  ._object_names()                       928-967        Existing object names in the active folder, cached for a minute.
-  ._dynamic_name_options()               969-995        Live object names for name-completion slots.
-  ._arg_options()                        997-1014       Resolve next-slot argument options: structure file first, usage fallba
-  ._all_commands()                       1017-1026      
-  ._dev_gated_commands()                 1028-1042      Return command keys that are gated by a 'dev' feature flag.
+  ._command_visible()                    150-174        Return True when a registered command is visible in this shell mode.
+  ._command_is_dev_gated()               176-186        Return True when the command exists but is gated behind dev mode.
+  .get_completions()                     188-209        
+  ._complete_normal()                    211-781        Yield completions for non-dev-shell commands.
+  ._complete_dev_shell()                 783-847        Yield completions for dev shell commands.
+  ._match_complete_command()             849-864        Return the longest complete command key the user has fully entered.
+  ._complete_arguments()                 866-918        Yield completions for the argument region of a complete command.
+  ._object_names()                       943-982        Existing object names in the active folder, cached for a minute.
+  ._dynamic_name_options()               984-1010       Live object names for name-completion slots.
+  ._arg_options()                        1012-1029      Resolve next-slot argument options: structure file first, usage fallba
+  ._all_commands()                       1032-1041      
+  ._dev_gated_commands()                 1043-1057      Return command keys that are gated by a 'dev' feature flag.
 
 ## `app/web/feature_server.py`  (1030 lines)
 

@@ -153,6 +153,21 @@ class ArcCompleter(Completer):
         Delegates to the shell's canonical check so completion, help, and
         dispatch can never disagree about which commands exist.
         """
+        # Shell builtins carry their own visibility (builtin-commands.json,
+        # name-keyed) and are governed by it EXCLUSIVELY — the registry path
+        # below is only for SCM/PAN-OS commands. Checking builtins here first
+        # matters twice over: builtins aren't in COMMANDS at all (so the
+        # registry path would drop `configure`, `alias`, ... entirely), and a
+        # builtin that happens to share a name with a registered command (e.g.
+        # `commit`, whose registry twin lives in the `operations` area) must
+        # not be suppressed when that area is disabled. Without this, those
+        # builtin names silently vanish from first-word prefix completion.
+        if key in _SHELL_BUILTINS:
+            return is_command_visible(
+                key,
+                getattr(self._shell, "_command_visibility", {}),
+                getattr(self._shell, "_dev_mode", False),
+            )
         command_def = COMMANDS.get(key)
         if command_def is None:
             return False

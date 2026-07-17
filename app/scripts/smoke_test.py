@@ -1131,6 +1131,69 @@ def test_inline_help_alignment() -> None:
     else:
         fail("builtin 'docs' offered no help topics")
 
+    # ---- Regression: first-word PREFIX completion of shell builtins ----------
+    #      A partial builtin name (`conf` -> `configure`) must complete. This
+    #      broke when the prefix loop started filtering candidates through a
+    #      registry-only visibility check: builtins aren't in COMMANDS, so all
+    #      of them silently vanished from name completion. `commit` is the nasty
+    #      case — it has a registry twin in the `operations` area, so a disabled
+    #      `operations` area must NOT suppress the core `commit` builtin.
+    from app.settings.commands import load_command_visibility
+
+    def _prefix_shell() -> SimpleNamespace:
+        shell = SimpleNamespace(
+            _features={}, _dev_mode=False,
+            _command_visibility=load_command_visibility(),
+            _disabled_areas={"operations"},  # reproduce the commit collision
+            _prefs=SimpleNamespace(aliases={}, terminal_length=0,
+                                   terminal_width=0, terminal_height=0),
+            _ssh=SimpleNamespace(_pool={}),
+            _state=SimpleNamespace(devices_cache=[], folders_cache=[],
+                                   snippets_cache=[], tsgs_cache=[],
+                                   dev_shell=False, configure_mode=True,
+                                   staged_ops=[]),
+        )
+        shell._is_command_visible = HelpMixin._is_command_visible.__get__(shell)
+        shell._visible_command_keys = HelpMixin._visible_command_keys.__get__(shell)
+        return shell
+
+    pcomp = ArcCompleter(_prefix_shell())
+
+    def _ptexts(line: str) -> set[str]:
+        doc = Document(text=line, cursor_position=len(line))
+        return {c.text.strip() for c in pcomp.get_completions(doc, None)}
+
+    # Builtins whose name must complete from a prefix (incl. `commit`, whose
+    # registry twin sits in the disabled `operations` area).
+    prefix_cases = {
+        "conf": "configure",
+        "comm": "commit",
+        "ali": "alias",
+        "acc": "account",
+        "wat": "watch",
+    }
+    for prefix, expected in prefix_cases.items():
+        got = _ptexts(prefix)
+        if expected in got:
+            ok(f"builtin prefix completion: {prefix!r} -> {expected!r}")
+        else:
+            fail(f"builtin prefix {prefix!r} did not complete to {expected!r}",
+                 f"got {sorted(got)[:8]}")
+
+    # A dev-gated builtin (feature = visible:'dev') must stay hidden in normal
+    # mode — proves the fix respects builtin visibility, not just membership.
+    if "feature" not in _ptexts("fe"):
+        ok("builtin prefix completion: dev-gated 'feature' hidden in normal mode")
+    else:
+        fail("dev-gated builtin 'feature' leaked into normal-mode completion")
+
+    # App (registry) commands must remain unaffected by the fix.
+    if "show" in _ptexts("sho") and "set" in _ptexts("set"):
+        ok("app-command prefix completion still works ('sho'->show, 'set'->set)")
+    else:
+        fail("app-command prefix completion regressed",
+             f"sho={sorted(_ptexts('sho'))[:5]} set={sorted(_ptexts('set'))[:5]}")
+
 
 
 # ---------------------------------------------------------------------------
