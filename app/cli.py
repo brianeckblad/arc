@@ -790,14 +790,19 @@ def _ensure_vendor_files() -> list[str]:
 
 
 def _build_docs_bundle() -> int:
-    """Embed all docs/*.md files into docs/docs-bundle.js.
+    """Embed every doc page into docs/docs-bundle.js.
+
+    Two sources: (1) all hand-written ``docs/*.md`` files, and (2) a
+    registry-synthesized page for every command without a file, so the portal
+    is a COMPLETE reference for all commands (generated + feature-gated ones
+    included) — no stub files are written to disk.
 
     The bundle sets ``window.DOCS_CONTENT`` to a plain JS object keyed by
     relative path (e.g. ``"commands/cd.md"``).  Loading it with a plain
     ``<script src="docs-bundle.js">`` tag works under ``file://`` — no server
     or fetch() required.
 
-    Returns the number of Markdown files bundled.
+    Returns the number of Markdown pages bundled (files + synthesized).
     """
     pages: dict[str, str] = {}
     for md_path in sorted(DOCS_ROOT.rglob("*.md")):
@@ -812,6 +817,20 @@ def _build_docs_bundle() -> int:
         from app.settings.command_help import parse_front_matter
         _meta, body = parse_front_matter(md_path.read_text(encoding="utf-8"))
         pages[rel] = body
+
+    # Full synthesis: every registered command WITHOUT a hand-written file gets a
+    # registry-synthesized page embedded here too, so the offline portal is a
+    # COMPLETE reference for all ~4,900 commands — including generated ones that
+    # are feature-gated off.  That lets someone browsing the docs discover a
+    # command and see the feature flag they'd enable to use it.  No stub files
+    # are created on disk; the synthesized Markdown lives only in this bundle.
+    from app.commands.registry import COMMANDS
+    from app.docs import slugify, synthesize_command_help
+    for key in COMMANDS:
+        rel = f"commands/{slugify(key)}.md"
+        if rel in pages:
+            continue  # a hand-written file already covers this command
+        pages[rel] = synthesize_command_help(key)
 
     js_entries = ",\n".join(
         f"  {json.dumps(key)}: {json.dumps(value)}"
@@ -830,8 +849,9 @@ def _do_cliup(silent: bool = False, skip_vendor: bool = False) -> dict:
     """Core cliup logic — rebuild the offline browser docs bundle.
 
     Doc FILES are owned by app/scripts/generate_command_docs.py (which prunes stubs —
-    commands without a file get registry-synthesized help). cliup only bundles
-    what exists for the browser portal; it never creates command docs.
+    commands without a file get registry-synthesized help).  The bundle embeds
+    those files PLUS a synthesized page for every file-less command, so the
+    browser portal covers the full command set; it still never creates files.
 
     Returns a stats dict with keys: downloaded, bundled.
     """

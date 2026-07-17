@@ -1582,7 +1582,7 @@ class ConfigureMixin:
         from app.paths import REPO_ROOT
         from app.settings import command_structure as cs
 
-        script = REPO_ROOT / "dev" / "commandupdate.py"
+        script = REPO_ROOT / "app" / "scripts" / "commandupdate.py"
         if not script.exists():
             console.print("[red]app/scripts/commandupdate.py not found.[/red]")
             return
@@ -1692,14 +1692,16 @@ class ConfigureMixin:
         console.print()
         rows = [
             ("status",                     "Health dashboard — docs freshness, catalog drift, help coverage"),
-            ("docs update",                "Pull latest pan.dev specs + regenerate all catalogs"),
+            ("docs update",                "ONE-STOP: pull pan.dev specs + rebuild everything (catalogs, docs, command structure, code map, offline bundle)"),
             ("docs status",                "Show spec/doc timestamps and change summary"),
-            ("catalog rebuild",            "Regenerate code artifacts (field catalog, resource catalog, …)"),
+            ("catalog rebuild",            "Rebuild everything from current code — same as docs update, minus the network pull"),
             ("command-structure list",     "Show contextual ? help coverage for all enabled commands"),
-            ("command-structure update",   "Auto-generate contextual help entries for enabled commands"),
             ("command-structure clear",    "Wipe auto-generated entries (reset to tier 3 fallback)"),
             ("exit",                       "Leave dev shell"),
         ]
+        # (`command-structure update` is intentionally not listed — it now runs
+        # automatically inside docs update / catalog rebuild.  Still typeable for
+        # a quick single-command refresh.)
         w = 32
         for cmd, desc in rows:
             console.print(
@@ -2083,17 +2085,17 @@ class ConfigureMixin:
         import subprocess as _sp
         from app.paths import REPO_ROOT
 
-        script = REPO_ROOT / "dev" / "docsupdate.py"
+        script = REPO_ROOT / "app" / "scripts" / "docsupdate.py"
         if not script.exists():
             console.print("[red]app/scripts/docsupdate.py not found.[/red]")
             return
 
-        extra: list[str] = []
         lf = [f.lower() for f in flags]
-        if "--scm" in lf:
-            extra += ["--scm-only"]
-        elif "--panos" in lf:
-            extra += ["--panos-only"]
+        if "--scm" in lf or "--panos" in lf:
+            console.print(
+                "[dim]note: docs update runs a full SCM + PAN-OS refresh; "
+                "--scm/--panos partial updates aren't supported.[/dim]"
+            )
 
         console.print(
             f"\n[magenta]● docs update[/magenta]  "
@@ -2101,7 +2103,7 @@ class ConfigureMixin:
         )
         try:
             proc = _sp.Popen(
-                [_sys.executable, str(script)] + extra,
+                [_sys.executable, str(script)],
                 stdout=_sp.PIPE, stderr=_sp.STDOUT,
                 text=True, bufsize=1, cwd=str(REPO_ROOT),
             )
@@ -2115,11 +2117,15 @@ class ConfigureMixin:
             return
 
         if rc == 0:
+            # docsupdate already ran the canonical catalog rebuild
+            # (catalog_rebuild.py) end-to-end, so don't rebuild again — just
+            # refresh the live shell's in-memory caches so changes show now.
+            self._dev_invalidate_caches()
             console.print(
                 "\n[green]✓ docs update complete.[/green]  "
-                "[dim]Auto-running [bold]catalog rebuild[/bold] to regenerate code artifacts…[/dim]\n"
+                "[dim]Catalogs, docs, command structure + bundle regenerated; "
+                "live caches refreshed — no restart needed.[/dim]\n"
             )
-            self._dev_catalog_rebuild()
         else:
             console.print(f"\n[yellow]docsupdate.py exited with code {rc}[/yellow]\n")
 
@@ -2188,73 +2194,63 @@ class ConfigureMixin:
             console.print(f"[yellow]Unknown catalog sub-command:[/yellow] {sub!r}  "
                          "(try: catalog rebuild | catalog ?)")
 
-    def _dev_catalog_rebuild(self) -> None:  # noqa: C901
-        """Run all generator scripts to rebuild code artifacts."""
+    def _dev_catalog_rebuild(self) -> None:
+        """Run the canonical catalog rebuild, then refresh the live shell's caches.
+
+        Delegates to app/scripts/catalog_rebuild.py — the SAME orchestration
+        docsupdate runs — so the dev-shell and docsupdate can never regenerate
+        different sets of artifacts.  That script regenerates every catalog + doc,
+        command-structure.json (commandupdate), CODE_MAP.md, and the offline docs
+        bundle (arc cliup).
+        """
         import sys as _sys
         import subprocess as _sp
         from app.paths import REPO_ROOT
-        from app.settings import command_structure as cs
 
-        scripts = [
-            ("app/scripts/generate_resource_catalog.py",  "resource catalog    → app/commands/resource_catalog.py"),
-            ("app/scripts/generate_feature_flags.py",      "feature flags       → settings/features/"),
-            ("app/scripts/generate_field_library.py",      "field library       → app/settings/field_catalog.py"),
-            ("app/scripts/generate_command_docs.py",       "command docs        → docs/commands/"),
-            ("app/scripts/generate_api_index.py",          "API index           → app/scripts/API_INDEX.md"),
-            ("app/scripts/generate_code_map.py",           "code map            → app/scripts/CODE_MAP.md"),
-        ]
+        script = REPO_ROOT / "app" / "scripts" / "catalog_rebuild.py"
+        if not script.exists():
+            console.print("[red]app/scripts/catalog_rebuild.py not found.[/red]")
+            return
 
         console.print("\n[magenta]● catalog rebuild[/magenta]\n")
-        all_ok = True
-        for script_rel, label in scripts:
-            p = REPO_ROOT / script_rel
-            if not p.exists():
-                console.print(f"  [dim]skip  {label}  (script not found)[/dim]")
-                continue
-            result = _sp.run(
-                [_sys.executable, str(p)],
-                capture_output=True, text=True, cwd=str(REPO_ROOT),
+        try:
+            proc = _sp.Popen(
+                [_sys.executable, str(script)],
+                stdout=_sp.PIPE, stderr=_sp.STDOUT,
+                text=True, bufsize=1, cwd=str(REPO_ROOT),
             )
-            if result.returncode == 0:
-                out_lines = [l for l in result.stdout.splitlines() if l.strip()]
-                summary = out_lines[-1] if out_lines else "ok"
-                console.print(f"  [green]✓[/green]  {label}  [dim]{summary}[/dim]")
-            else:
-                all_ok = False
-                console.print(f"  [red]✗[/red]  {label}  [red](exit {result.returncode})[/red]")
-                for line in (result.stderr or result.stdout).splitlines()[-5:]:
-                    console.print(f"       [dim]{line}[/dim]")
+            if not proc.stdout:
+                raise RuntimeError("Popen stdout pipe not available — check subprocess flags")
+            for raw_line in proc.stdout:
+                console.print(raw_line.rstrip())
+            rc = proc.wait()
+        except Exception as exc:
+            console.print(f"[red]Failed to run catalog_rebuild.py:[/red] {exc}")
+            return
 
+        self._dev_invalidate_caches()
+        console.print()
+        if rc == 0:
+            console.print(
+                "[green]✓ catalog rebuild complete.[/green]  "
+                "[dim]Changes are live immediately — no restart needed.[/dim]\n"
+            )
+        else:
+            console.print(
+                "[yellow]catalog rebuild finished with errors — check output above.[/yellow]\n"
+            )
+
+    def _dev_invalidate_caches(self) -> None:
+        """Refresh the live shell's in-memory caches after generators rewrote
+        their files on disk (command-structure + feature flags), so the changes
+        are visible in this session without a restart."""
+        from app.settings import command_structure as cs
         cs.invalidate_cache()
         try:
             from app.settings.features import _reload_cache
             _reload_cache()
         except ImportError:
             pass
-
-        console.print()
-        if all_ok:
-            console.print(
-                "[green]✓ catalog rebuild complete.[/green]  "
-                "[dim]Changes are live immediately — no restart needed.[/dim]\n"
-            )
-            # Rebuild the offline browser docs bundle so docs/index.html stays
-            # in sync with the freshly generated command docs.
-            try:
-                from app.cli import _do_cliup
-                _do_cliup(silent=True, skip_vendor=True)
-                console.print("[dim]  docs/docs-bundle.js rebuilt (arc cliup)[/dim]")
-            except Exception as exc:
-                # cliup is best-effort — a network failure downloading vendor JS
-                # should not block the catalog rebuild, but should be visible.
-                console.print(
-                    f"[yellow]  ⚠ docs bundle not rebuilt:[/yellow] {exc}\n"
-                    "  [dim]Run [bold]arc cliup[/bold] manually to update docs/index.html[/dim]"
-                )
-        else:
-            console.print(
-                "[yellow]catalog rebuild finished with errors — check output above.[/yellow]\n"
-            )
 
 
 

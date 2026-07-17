@@ -1204,33 +1204,14 @@ def main(argv: list[str] | None = None) -> int:
     mirror_all = False if args.no_mirror else None
     result = update(check_only=args.check, mirror_all=mirror_all)
 
-    # After a successful update, regenerate generated catalogs/docs derived from
-    # the freshly pulled specs.
+    # After a successful update, pull the PAN-OS CLI mirror (the only remaining
+    # network step) and then run the CANONICAL catalog rebuild — the exact same
+    # orchestration the dev-shell `catalog rebuild` uses
+    # (app/scripts/catalog_rebuild.py), so the two entry points can never drift.
+    # It regenerates every catalog + doc AND the pieces this chain used to skip:
+    # command-structure.json (commandupdate), CODE_MAP.md, and the offline docs
+    # bundle (arc cliup).
     if result == 0 and not args.check:
-        # Regenerate the auto-coverage resource catalog FIRST: turn every new
-        # pulled spec operation into feature-gated generated command metadata.
-        print("\nRegenerating NGFW resource catalog (app/commands/resource_catalog.py)…")
-        try:
-            subprocess.run(
-                [sys.executable, str(DEV_DIR / "generate_resource_catalog.py")],
-                check=True,
-            )
-        except (subprocess.CalledProcessError, OSError) as exc:
-            print(f"[warn] resource-catalog regeneration failed: {exc}", file=sys.stderr)
-
-        # Regenerate the CLI field catalog: request-body schemas become field
-        # syntax + prompt-time validation for flat generated `set` commands.
-        print("\nRegenerating CLI field catalog (app/settings/field_catalog.py)…")
-        try:
-            subprocess.run(
-                [sys.executable, str(DEV_DIR / "generate_field_library.py")],
-                check=True,
-            )
-        except (subprocess.CalledProcessError, OSError) as exc:
-            print(f"[warn] field-catalog regeneration failed: {exc}", file=sys.stderr)
-
-        # Pull the PAN-OS CLI hierarchy pages (app/scripts/panos_sources.json — add new
-        # version URLs there) and regenerate the PAN-OS command catalog.
         print("\nUpdating PAN-OS CLI hierarchy mirrors (docs/panos-cli/)…")
         try:
             subprocess.run(
@@ -1240,50 +1221,14 @@ def main(argv: list[str] | None = None) -> int:
         except (subprocess.CalledProcessError, OSError) as exc:
             print(f"[warn] PAN-OS docs pull failed: {exc}", file=sys.stderr)
 
-        print("\nRegenerating PAN-OS command catalog (app/commands/panos_catalog.py)…")
+        print("\nRebuilding catalogs, docs, command structure, code map + bundle…")
         try:
             subprocess.run(
-                [sys.executable, str(DEV_DIR / "generate_panos_catalog.py")],
+                [sys.executable, str(DEV_DIR / "catalog_rebuild.py")],
                 check=True,
             )
         except (subprocess.CalledProcessError, OSError) as exc:
-            print(f"[warn] PAN-OS catalog regeneration failed: {exc}", file=sys.stderr)
-
-        # Regenerate feature flags from the generated endpoint catalog plus every
-        # explicit CommandDef.feature_flag.  New API surface defaults OFF so ARC
-        # fails closed until features are intentionally enabled.
-        print("\nRegenerating feature flags (settings/features.json)…")
-        try:
-            subprocess.run(
-                [sys.executable, str(DEV_DIR / "generate_feature_flags.py")],
-                check=True,
-            )
-        except (subprocess.CalledProcessError, OSError) as exc:
-            print(f"[warn] feature-flag regeneration failed: {exc}", file=sys.stderr)
-
-        # Regenerate per-command help docs: ensure every command's
-        # docs/commands/<slug>.md has help front-matter, and rebuild the command
-        # index + API reference.  This keeps the `?`/`help` text and the
-        # API→command map in sync with the registry after a spec pull.
-        print("\nRegenerating command help docs (docs/commands/)…")
-        try:
-            subprocess.run(
-                [sys.executable, str(DEV_DIR / "generate_command_docs.py")],
-                check=True,
-            )
-        except (subprocess.CalledProcessError, OSError) as exc:
-            print(f"[warn] command-doc regeneration failed: {exc}", file=sys.stderr)
-
-        # Regenerate the compact API index last so the ARC Command column sees
-        # the freshly generated command docs/front-matter.
-        print("\nRegenerating compact API index (app/scripts/API_INDEX.md)…")
-        try:
-            subprocess.run(
-                [sys.executable, str(DEV_DIR / "generate_api_index.py")],
-                check=True,
-            )
-        except (subprocess.CalledProcessError, OSError) as exc:
-            print(f"[warn] API index regeneration failed: {exc}", file=sys.stderr)
+            print(f"[warn] catalog rebuild reported failures — check output above: {exc}", file=sys.stderr)
 
         # Self-verify: a broken catalog/registry should fail HERE, not at the
         # next arc startup.  Sections 1-3 = syntax + imports + registry.

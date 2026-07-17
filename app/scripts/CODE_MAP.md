@@ -14,14 +14,14 @@
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
-## `app/shell/configure.py`  (2894 lines)
+## `app/shell/configure.py`  (2890 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _identity_name()                         10-20          First human-readable principal name from SCM userinfo claims, else ''.
 _prefs_file_label()                      23-29          Repo-relative path of the config file (holds preferences), for display
 capture_write_ops()                      32-65          Run a write handler against a recording client and capture its mutatio
-class ConfigureMixin                     68-2891        
+class ConfigureMixin                     68-2887        
   ._cmd_configure()                      69-90          Enter configure mode (Cisco-style).
   ._stage_write()                        92-123         Validate a configure-mode write and stage it locally (no SCM change).
   ._cmd_show_pending()                   125-148        List the locally staged configure-mode changes (`show config`).
@@ -51,33 +51,39 @@ class ConfigureMixin                     68-2891
   ._cs_update()                          1578-1611      Stream app/scripts/commandupdate.py — same script the LLM 'commandupda
   ._cs_clear()                           1614-1635      Remove all override:false (cli-generated) entries from command-structu
   ._cmd_dev()                            1641-1679      Enter the dev shell (modal, like configure mode).
-  ._dev_shell_enter()                    1681-1711      Enter the dev shell — enable dev mode and show the dev menu.
-  ._dev_shell_exit()                     1713-1721      Leave the dev shell.
-  ._dispatch_dev_shell()                 1723-1802      Route dev-shell commands.
-  ._dev_inline_help()                    1804-1889      Show contextual help for a dev shell command or sub-command.
-  ._dev_shell_help()                     1891-1920      Print full dev shell command reference.
-  ._cs_tier_legend()                     1922-1958      Print the tier legend for command-structure list.
-  ._dev_status()                         1966-2061      Unified health dashboard for the dev shell.
-  ._dev_docs()                           2067-2078      Handle dev-shell 'docs' sub-commands.
-  ._dev_docs_update()                    2080-2124      Stream docsupdate.py to pull latest pan.dev specs and regenerate catal
-  ._dev_docs_status()                    2126-2174      Show doc/spec freshness with last pull date from MANIFEST.md.
-  ._dev_catalog()                        2180-2189      Handle dev-shell 'catalog' sub-commands.
-  ._dev_catalog_rebuild()                2191-2257      Run all generator scripts to rebuild code artifacts.
-  ._print_dev_status()                   2261-2275      Print current dev mode state (used by 'dev on/off' outside the shell).
-  ._cmd_setup()                          2278-2298      Guided setup — dispatcher for the `setup` subcommands.
-  ._setup_menu()                         2300-2326      Print the setup overview: detected OS + the available subcommands.
-  ._setup_os_guide()                     2328-2350      Render the OS-specific setup guide with a 'three ways to configure' he
-  ._setup_scm_wizard()                   2352-2629      Interactive SCM + SSH credential configurator.
-  ._cmd_arc()                            2635-2693      ARC application information and management.
-  ._arc_help()                           2695-2719      Print arc sub-command reference.
-  ._arc_row()                            2725-2731      Print one labelled row in the arc show style.
-  ._arc_show_version()                   2733-2756      arc show version — version, Python, platform.
-  ._arc_show_paths()                     2758-2771      arc show paths — app root, settings, config directories.
-  ._arc_show_scm()                       2773-2811      arc show scm — SCM API spec freshness and last change.
-  ._arc_show_commands()                  2813-2844      arc show commands — command counts and feature flag stats.
-  ._arc_show_settings()                  2846-2868      arc show settings — settings file inventory.
-  ._arc_show_session()                   2870-2887      arc show session — active profile, TSG, folder, device, modes.
-  ._arc_show()                           2889-2891      arc show (all) — kept for backward compat; calls _cmd_arc(['show']).
+  ._dev_shell_enter()                    1681-1713      Enter the dev shell — enable dev mode and show the dev menu.
+  ._dev_shell_exit()                     1715-1723      Leave the dev shell.
+  ._dispatch_dev_shell()                 1725-1804      Route dev-shell commands.
+  ._dev_inline_help()                    1806-1891      Show contextual help for a dev shell command or sub-command.
+  ._dev_shell_help()                     1893-1922      Print full dev shell command reference.
+  ._cs_tier_legend()                     1924-1960      Print the tier legend for command-structure list.
+  ._dev_status()                         1968-2063      Unified health dashboard for the dev shell.
+  ._dev_docs()                           2069-2080      Handle dev-shell 'docs' sub-commands.
+  ._dev_docs_update()                    2082-2130      Stream docsupdate.py to pull latest pan.dev specs and regenerate catal
+  ._dev_docs_status()                    2132-2180      Show doc/spec freshness with last pull date from MANIFEST.md.
+  ._dev_catalog()                        2186-2195      Handle dev-shell 'catalog' sub-commands.
+  ._dev_catalog_rebuild()                2197-2241      Run the canonical catalog rebuild, then refresh the live shell's cache
+  ._dev_invalidate_caches()              2243-2253      Refresh the live shell's in-memory caches after generators rewrote
+  ._print_dev_status()                   2257-2271      Print current dev mode state (used by 'dev on/off' outside the shell).
+  ._cmd_setup()                          2274-2294      Guided setup — dispatcher for the `setup` subcommands.
+  ._setup_menu()                         2296-2322      Print the setup overview: detected OS + the available subcommands.
+  ._setup_os_guide()                     2324-2346      Render the OS-specific setup guide with a 'three ways to configure' he
+  ._setup_scm_wizard()                   2348-2625      Interactive SCM + SSH credential configurator.
+  ._cmd_arc()                            2631-2689      ARC application information and management.
+  ._arc_help()                           2691-2715      Print arc sub-command reference.
+  ._arc_row()                            2721-2727      Print one labelled row in the arc show style.
+  ._arc_show_version()                   2729-2752      arc show version — version, Python, platform.
+  ._arc_show_paths()                     2754-2767      arc show paths — app root, settings, config directories.
+  ._arc_show_scm()                       2769-2807      arc show scm — SCM API spec freshness and last change.
+  ._arc_show_commands()                  2809-2840      arc show commands — command counts and feature flag stats.
+  ._arc_show_settings()                  2842-2864      arc show settings — settings file inventory.
+  ._arc_show_session()                   2866-2883      arc show session — active profile, TSG, folder, device, modes.
+  ._arc_show()                           2885-2887      arc show (all) — kept for backward compat; calls _cmd_arc(['show']).
+
+## `app/settings/field_catalog.py`  (1974 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
 ## `app/scripts/smoke_test.py`  (1945 lines)
 
@@ -104,11 +110,6 @@ test_gui_endpoints()                     1626-1841      Section 14 — Browser-c
 test_new_commands()                      1844-1867      Section 14b — the session's new features stay wired (registry + builti
 _test_gui_and_commands()                 1870-1873      Section 14 driver — GUI endpoint coverage + new-command wiring.
 main()                                   1895-1940      
-
-## `app/settings/field_catalog.py`  (1924 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
 ## `app/api/client.py`  (1397 lines)
 
@@ -258,7 +259,7 @@ class SCMClient                          51-1396        Strata Cloud Manager (SC
   .ops_job_status()                      1385-1393      Return a live-device operations job record.
   .close()                               1395-1396      
 
-## `app/commands/objects.py`  (1366 lines)
+## `app/commands/objects.py`  (1367 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -277,19 +278,19 @@ _set_service()                           485-555        Create a TCP or UDP serv
 _set_service_group()                     558-604        Create a service group (named collection of service objects).
 _set_tag()                               607-658        Create a tag in the active folder.
 _set_external_dynamic_list()             661-740        Create an External Dynamic List (EDL) in the active folder.
-_WRITE_COMMANDS                          743-867        command registry dict
-COMMANDS.update(…)                       869-869        merge additional commands into registry
-_bulk_update_address()                   885-963        Update the same field across multiple address objects in one command.
-_update_address()                        966-1026       Update an existing address object (GET→merge→PUT).
-_update_address_group()                  1029-1087      Update an existing address group (GET→merge→PUT).
-_update_service()                        1090-1142      Update an existing service object (GET→merge→PUT).
-_update_service_group()                  1145-1188      Update a service group's member list.
-_update_tag()                            1191-1232      Update an existing tag (color, comments).
-_update_external_dynamic_list()          1235-1294      Update an existing EDL (URL, description, or frequency).
-_UPDATE_COMMANDS                         1297-1362      command registry dict
-COMMANDS.update(…)                       1364-1364      merge additional commands into registry
+_WRITE_COMMANDS                          743-868        command registry dict
+COMMANDS.update(…)                       870-870        merge additional commands into registry
+_bulk_update_address()                   886-964        Update the same field across multiple address objects in one command.
+_update_address()                        967-1027       Update an existing address object (GET→merge→PUT).
+_update_address_group()                  1030-1088      Update an existing address group (GET→merge→PUT).
+_update_service()                        1091-1143      Update an existing service object (GET→merge→PUT).
+_update_service_group()                  1146-1189      Update a service group's member list.
+_update_tag()                            1192-1233      Update an existing tag (color, comments).
+_update_external_dynamic_list()          1236-1295      Update an existing EDL (URL, description, or frequency).
+_UPDATE_COMMANDS                         1298-1363      command registry dict
+COMMANDS.update(…)                       1365-1365      merge additional commands into registry
 
-## `app/scripts/docsupdate.py`  (1292 lines)
+## `app/scripts/docsupdate.py`  (1252 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -326,11 +327,11 @@ _slug_for_guide()                        843-852        Turn a guide path into a
 discover_all_guides()                    855-869        Return {slug: path} for every guide doc not already covered.
 _capture_old_signatures()                875-889        Parse existing local specs to capture endpoint signatures before overw
 _download_guides()                       892-923        Download guide docs (curated + discovered).  Returns names pulled OK.
-update()                                 926-1058       Download specs + guides and regenerate the reference set.  Returns exi
-_self_test()                             1064-1146      Exercise discovery + diff logic offline so the engine stays trustworth
-main()                                   1152-1286      
+update()                                 926-1073       Download specs + guides and regenerate the reference set.  Returns exi
+_self_test()                             1079-1161      Exercise discovery + diff logic offline so the engine stays trustworth
+main()                                   1167-1246      
 
-## `app/commands/resource_catalog.py`  (1068 lines)
+## `app/commands/resource_catalog.py`  (1083 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -458,7 +459,7 @@ class DispatchMixin                      108-938
   ._show_command_not_found()             414-510        Show a helpful message when a command is not recognized.
   ._dispatch()                           512-938        Process one input line.  Returns True when the user wants to exit ARC.
 
-## `app/cli.py`  (908 lines)
+## `app/cli.py`  (928 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -473,11 +474,11 @@ auth_delete_profile()                    420-445        Delete a named credentia
 auth_test()                              449-677        Test connectivity using stored credentials.
 config_generate()                        717-751        Generate a starter config.json with annotated placeholders and mode 06
 _ensure_vendor_files()                   769-789        Download vendor JS/CSS to docs/vendor/ if not already present.
-_build_docs_bundle()                     792-826        Embed all docs/*.md files into docs/docs-bundle.js.
-_do_cliup()                              829-848        Core cliup logic — rebuild the offline browser docs bundle.
-cliup()                                  852-871        Rebuild the offline browser docs bundle.
-scm_get()                                883-895        Perform a raw GET request against the SCM API.
-run()                                    902-903        
+_build_docs_bundle()                     792-845        Embed every doc page into docs/docs-bundle.js.
+_do_cliup()                              848-868        Core cliup logic — rebuild the offline browser docs bundle.
+cliup()                                  872-891        Rebuild the offline browser docs bundle.
+scm_get()                                903-915        Perform a raw GET request against the SCM API.
+run()                                    922-923        
 
 ## `app/shell/navigation.py`  (876 lines)
 
@@ -704,6 +705,30 @@ _load_config_version()                   362-434        Rollback: load a config 
 _show_diff()                             438-505        Show a version-to-version diff of SCM config metadata and staged chang
 COMMANDS                                 514-565        command registry dict
 
+## `app/commands/network.py`  (544 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+_update_nat_rule()                       33-120         Update an existing NAT rule (GET→merge→PUT).
+_show_interface_all()                    127-149        List all interfaces (ethernet, aggregate, loopback) in the active fold
+_show_interface()                        152-178        Show a specific interface by name.
+_show_ha_state()                         181-190        Show HA state summary — first HA entry as a key/value panel.
+_ssh_interface()                         197-199        
+COMMANDS                                 206-270        command registry dict
+_show_arp()                              277-281        Live ARP table from device — use --remote.  Not stored in SCM.
+_show_sessions()                         284-288        Live session table from device — use --remote.  Not stored in SCM.
+_show_vpn_tunnel()                       291-296        Live VPN tunnel state — use --remote.  Tunnel config is in SCM; live s
+_show_vpn_ike_sa()                       299-304        Live IKE security association state — use --remote.
+_show_routing_bgp()                      307-312        Live BGP routing state — use --remote.  BGP profiles (config) are in S
+_show_traceroute()                       315-322        Traceroute from device — use --remote.
+_ssh_traceroute()                        325-327        
+_test_nat_policy_match()                 330-338        Test NAT policy match — use --remote.  PAN-OS: test nat-policy-match
+_ssh_test_nat()                          341-349        
+_test_url()                              352-359        Test URL categorization — use --remote.  PAN-OS: test url <url>
+_ssh_test_url()                          362-364        
+_EXTRA_COMMANDS                          371-540        command registry dict
+COMMANDS.update(…)                       542-542        merge additional commands into registry
+
 ## `app/scripts/generate_feature_flags.py`  (543 lines)
 
 Symbol                                   Lines          Purpose
@@ -729,30 +754,6 @@ build_feature_files()                    307-432        Build {file_stem: ordere
 render()                                 435-436        
 main()                                   439-479        
 augment_feature_labels()                 482-538        Add newly-discovered areas to settings/feature-labels.json, edit-safe.
-
-## `app/commands/network.py`  (543 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_update_nat_rule()                       33-120         Update an existing NAT rule (GET→merge→PUT).
-_show_interface_all()                    127-149        List all interfaces (ethernet, aggregate, loopback) in the active fold
-_show_interface()                        152-178        Show a specific interface by name.
-_show_ha_state()                         181-190        Show HA state summary — first HA entry as a key/value panel.
-_ssh_interface()                         197-199        
-COMMANDS                                 206-270        command registry dict
-_show_arp()                              277-281        Live ARP table from device — use --remote.  Not stored in SCM.
-_show_sessions()                         284-288        Live session table from device — use --remote.  Not stored in SCM.
-_show_vpn_tunnel()                       291-296        Live VPN tunnel state — use --remote.  Tunnel config is in SCM; live s
-_show_vpn_ike_sa()                       299-304        Live IKE security association state — use --remote.
-_show_routing_bgp()                      307-312        Live BGP routing state — use --remote.  BGP profiles (config) are in S
-_show_traceroute()                       315-322        Traceroute from device — use --remote.
-_ssh_traceroute()                        325-327        
-_test_nat_policy_match()                 330-338        Test NAT policy match — use --remote.  PAN-OS: test nat-policy-match
-_ssh_test_nat()                          341-349        
-_test_url()                              352-359        Test URL categorization — use --remote.  PAN-OS: test url <url>
-_ssh_test_url()                          362-364        
-_EXTRA_COMMANDS                          371-539        command registry dict
-COMMANDS.update(…)                       541-541        merge additional commands into registry
 
 ## `app/settings/features.py`  (504 lines)
 

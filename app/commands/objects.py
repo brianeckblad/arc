@@ -749,6 +749,7 @@ _WRITE_COMMANDS: dict[str, CommandDef] = {
         ssh_command=None,
         render="raw",
         feature_flag="create_address",
+        usage="set address <name> ip-netmask|ip-range|ip-wildcard|fqdn <value> [description <text>] [tag <name>]",
     ),
     "delete address": CommandDef(
         description="Delete an address object — delete address <name>",

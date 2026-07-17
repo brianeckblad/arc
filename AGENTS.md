@@ -252,10 +252,12 @@ Type `dev` to enter (modal, prompt `:dev`). `exit` to leave. `dev on`/`dev off` 
 
 | Dev shell command | LLM trigger | Script |
 |---|---|---|
-| `docs update [--scm\|--panos]` | `docsupdate` | `python app/scripts/docsupdate.py` — **auto-chains `catalog rebuild`** on success |
-| `command-structure update [<cmd>]` | `commandupdate` | `python app/scripts/commandupdate.py` |
-| `catalog rebuild` | — | `app/scripts/generate_*.py` (6 scripts, includes CODE_MAP regeneration + silent `arc cliup`) |
+| `docs update` | `docsupdate` | `python app/scripts/docsupdate.py` — **the one-stop**: pull pan.dev specs (+ PAN-OS mirror), then run the full `catalog rebuild`. No `--scm`/`--panos` split. |
+| `catalog rebuild` | — | `python app/scripts/catalog_rebuild.py` — the **single canonical orchestrator** (offline): every generator + `commandupdate` + `generate_code_map` + `arc cliup`. `docsupdate` calls this exact script, so the two never drift. |
+| `command-structure update [<cmd>]` | `commandupdate` | `python app/scripts/commandupdate.py` — now a **step of `catalog rebuild`**; run standalone only for a quick single-command refresh |
 | `status` | — | health dashboard |
+
+**Keep-in-sync rule:** *internet changed* (new pan.dev specs) → `docs update`; *code changed* (edited a `CommandDef`) → `catalog rebuild`. Either regenerates the entire derived surface (catalogs, docs, `command-structure.json`, CODE_MAP, and the full offline docs bundle via `arc cliup`). You never run the individual generators by hand.
 
 ---
 
@@ -265,7 +267,7 @@ Type `dev` to enter (modal, prompt `:dev`). `exit` to leave. `dev on`/`dev off` 
 
 Gateways: objects/security/setup/network/identity/device at `api.strata.paloaltonetworks.com/config/<domain>/v1`; IAM at `api.sase.paloaltonetworks.com`; token at `auth.apps.paloaltonetworks.com/auth/v1/oauth2/access_token`.
 
-After `docsupdate`: `catalog rebuild` runs automatically on success — it regenerates CODE_MAP, resource catalog, feature flags, field library, command docs, and API index. Then check `docs/scm-api/CHANGES.md`; removed/renamed endpoints → fix `app/api/client.py` + commands. New endpoints auto-become gated commands + flags + docs.
+After `docsupdate`: the canonical `catalog rebuild` (`app/scripts/catalog_rebuild.py`) runs automatically on success — it regenerates the resource + PAN-OS catalogs, feature flags, field library, `command-structure.json` (commandupdate), command docs, API index, CODE_MAP, and the full offline docs bundle (`arc cliup`, which embeds a synthesized page for every command so the browser portal is a complete reference). Then check `docs/scm-api/CHANGES.md`; removed/renamed endpoints → fix `app/api/client.py` + commands. New endpoints auto-become gated commands + flags + docs.
 
 ---
 
