@@ -28,11 +28,10 @@ const SECTIONS=[
   {key:"areas",label:"Areas"},
   {key:"features",label:"Features"},
   {key:"structure",label:"Command Structure"},
-  {key:"aliases",label:"Aliases"},
   {key:"builtins",label:"Built-ins"},
   {key:"advanced",label:"Advanced"},
 ];
-const HELP_TOPIC={areas:"areas",features:"features",structure:"structure",aliases:"aliases",builtins:"builtins",advanced:"files"};
+const HELP_TOPIC={areas:"areas",features:"features",structure:"structure",builtins:"builtins",advanced:"files"};
 let cur={section:"areas",group:null};
 let filter="";
 // Monotonic render token: every loadMain() bumps it.  Serialized + latest-wins
@@ -68,7 +67,7 @@ async function loadSidebar(){
   const nav=await api("/api/nav?section="+cur.section);
   const groups=nav.groups||[];
   if(!cur.group && groups.length)cur.group=groups[0].key;
-  side.innerHTML=`<div class="stitle">${cur.section==="advanced"?"Files":(cur.section==="aliases"||cur.section==="builtins"?"Groups":"Areas")}</div>`;
+  side.innerHTML=`<div class="stitle">${cur.section==="advanced"?"Files":(cur.section==="builtins"?"Groups":"Areas")}</div>`;
   groups.forEach(g=>{
     const it=el("div","g-item"+(g.key===cur.group?" active":""));
     let dot="";
@@ -102,7 +101,6 @@ async function _loadMain(){
   if(cur.section==="areas")return mainAreas(main);
   if(cur.section==="features")return mainFeatures(main);
   if(cur.section==="structure")return mainStructure(main);
-  if(cur.section==="aliases")return mainAliases(main);
   if(cur.section==="builtins")return mainBuiltins(main);
   if(cur.section==="advanced")return mainAdvanced(main);
 }
@@ -302,24 +300,6 @@ async function loadFieldEditor(card,command){
   }
   draw();
 }
-
-// ---- ALIASES ----
-async function mainAliases(main){
-  const data=await api("/api/aliases");const grp=(cur.group==="user")?"user":"system";
-  main.appendChild(pageHead(main,grp==="user"?"My aliases":"System aliases"));
-  const add=el("div","aadd");
-  add.innerHTML=`<input class="an" placeholder="alias (e.g. sap)"/><input class="ax" placeholder="expands to… (e.g. show address)"/><button class="btn">Add</button>`;
-  add.querySelector(".btn").onclick=()=>{const an=add.querySelector(".an").value.trim(),ax=add.querySelector(".ax").value.trim();if(an&&ax)saveAlias(grp,an,ax);};
-  main.appendChild(add);
-  const rows=(data[grp]||[]).filter(a=>matchTxt(a.name,filter)||matchTxt(a.expansion,filter));
-  if(!rows.length){main.appendChild(el("div","empty","No aliases"+(filter?' match "'+esc(filter)+'"':"")+"."));return;}
-  rows.forEach(a=>{const r=el("div","arow");
-    r.innerHTML=`<span class="an">${esc(a.name)}</span><span class="aw">→</span><input class="ax" value="${escA(a.expansion)}"/><button class="btn sm save">Save</button><button class="btn sm del">Delete</button>`;
-    r.querySelector(".save").onclick=()=>saveAlias(grp,a.name,r.querySelector(".ax").value.trim());
-    r.querySelector(".del").onclick=()=>saveAlias(grp,a.name,null);main.appendChild(r);});
-}
-async function saveAlias(scope,name,expansion){try{await post("/api/alias",{scope,name,expansion});
-  toast(expansion===null?`Deleted ${name}`:`Alias ${name} saved`);loadSidebar();loadMain();}catch(e){toast("Error: "+e.message,true);}}
 
 // ---- BUILT-INS ----
 const BSTATES=[["true","SHOWN"],["dev","DEV"],["hidden","HIDDEN"],["false","DISABLED"]];

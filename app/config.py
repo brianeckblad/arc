@@ -499,6 +499,22 @@ def list_profiles() -> list[dict]:
     }]
 
 
+def has_configured_profiles() -> bool:
+    """True if any real credential profile has been persisted.
+
+    Distinguishes a fresh install (no profiles materialized — ``_all_profile_names``
+    would only return the synthetic ``default`` fallback) from one that already has
+    at least one saved profile.  Used to decide whether first-time setup may
+    auto-name the initial profile after the account.
+    """
+    config_raw = _read_config_file()
+    auth_raw = _read_auth_file()
+    for src in (auth_raw.get("profiles"), config_raw.get("profiles")):
+        if isinstance(src, dict) and src:
+            return True
+    return False
+
+
 def get_active_profile() -> str:
     """Return the name of the currently active profile (default: ``"default"``)."""
     return _active_profile_name(_read_config_file())

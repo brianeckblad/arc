@@ -70,7 +70,15 @@ from app.commands.registry import (
     ExecutionContext,
     match_command,
 )
-from app.config import ArcConfig, list_profiles, load_config, set_active_profile
+from app.config import (
+    ArcConfig,
+    delete_profile,
+    get_active_profile,
+    has_configured_profiles,
+    list_profiles,
+    load_config,
+    set_active_profile,
+)
 from app.settings.cli_structure import (
     cd_hint as _cd_hint,
     configure_banner as _configure_banner,
@@ -345,6 +353,7 @@ __all__ = [
     "SCMClient", "__version__", "_BANNER_FILE", "_GOODBYE_FILE",
     "COMMANDS", "CATEGORIES", "CommandDef", "ExecutionContext", "match_command",
     "ArcConfig", "list_profiles", "load_config", "set_active_profile",
+    "delete_profile", "get_active_profile", "has_configured_profiles",
     "_cd_hint", "_configure_banner", "_help_footer", "_section_label",
     "_verb_description", "_verb_visible",
     "available_help_topics", "cisco_pager", "open_docs_in_browser", "page_length",

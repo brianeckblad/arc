@@ -1,92 +1,51 @@
 # account
 
-**Category:** shell built-in  
+**Category:** shell built-in
 **Scope:** global — works regardless of device or folder context
 
 ## Description
 
-Lists all configured credential profiles and switches between them without
-restarting ARC.  A **profile** is a complete set of SCM credentials
-(client_id, client_secret, tsg_id) stored in the OS keychain under a named
-slot.  Profiles let you maintain separate read-only and read-write service
-accounts — or accounts for different tenants — and flip between them in
-seconds.
+`account` is an **alias of [`scm login`](scm.md)** — it switches the active SCM
+credential profile without restarting ARC. A **profile** is a complete set of SCM
+credentials (client_id, client_secret, tsg_id) stored under a named slot in the OS
+keychain (or `auth.json` in file mode).
 
-Switching a profile:
-- Reinitialises the SCM client with the new credentials.
-- Clears the current device context, folder, and TSG (new account = fresh scope).
-- Refreshes device/folder/TSG caches for the new account.
-- Persists the new active profile to `config.json` so the next ARC launch
-  uses it automatically.
+Switching a profile reinitialises the SCM client, clears the current device /
+folder / TSG context, refreshes caches for the new account, and persists the new
+active profile to `config.json` for the next launch.
 
 ## Usage
 
 ```
-account                  — list all profiles with active marker
+account                  — pick a profile to log into (numbered menu)
 account <name>           — switch to the named profile
 ```
 
-**Tab** after `account ` shows available profile names.
+**Tab** after `account ` completes profile names. Prefer `scm login` /
+`scm status` / `scm setup` for the full profile surface; `account` is kept for
+muscle memory.
 
 ## Creating profiles
 
-Create or update a named profile from your shell (outside ARC):
+Create profiles interactively — no flags needed:
 
-```bash
-# Create a read-write profile
-arc auth configure --profile readwrite
-
-# Inspect a profile
-arc auth show --profile readwrite
-
-# Delete a profile (cannot delete 'default')
-arc auth delete-profile readwrite
 ```
+scm setup                 # inside ARC: choose "create new profile"
+arc setup scm keystore    # outside ARC: same wizard
+```
+
+Manage them with `scm delete <name>`, `arc auth show`, or the browser console
+(`arc gui-configure` → Profiles).
 
 ## Examples
 
-List profiles:
 ```
-arc:global > account
-
-  Credential Profiles  (use account <name> to switch)
-
-  default                pa-readonly@1234.iam.panserviceaccount.com   1234567890  ◀ active
-  readwrite              pa-rw@1234.iam.panserviceaccount.com         1234567890
-```
-
-Switch to read-write account:
-```
-arc:global > account readwrite
-
-  Loading profile 'readwrite'…
-  Refreshing caches for profile 'readwrite'…
-  ✓ Switched to profile readwrite  (3 device(s) — pa-rw@1234... TSG: 1234567890)
-```
-
-Switch back:
-```
-arc:global > account default
-```
-
-## Typical workflow
-
-```bash
-# One-time setup (outside ARC)
-arc auth configure                         # configure default read-only account
-arc auth configure --profile readwrite     # configure read-write account
-
-# Inside ARC during a session
-arc:global > account                   # check which account is active
-arc:global > show security-policy      # safe read via default account
-arc:global > account readwrite         # elevate to read-write
-arc:global > commit                    # make changes
-arc:global > account default           # drop back to read-only
+arc:global > account            # open the profile picker
+arc:global > account prod-rw    # switch straight to a named profile
 ```
 
 ## See Also
 
+- `help scm` — the full SCM credential/profile command (login/setup/status/delete/gui)
 - `help tsg` — switch between Tenant Services Groups within one account
 - `help pwd` — shows active profile alongside device, folder, and TSG
-- `help configuration` — credential setup guide
-

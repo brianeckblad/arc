@@ -220,8 +220,8 @@ class ArcCompleter(Completer):
         has_arg_space = len(parts) > 1 or text.endswith(" ")
         partial_arg = parts[1] if len(parts) > 1 else ""
 
-        # ---- cd / connect / login → device name or subcommand completion ----
-        if first in ("cd", "connect", "login") and has_arg_space:
+        # ---- cd / connect → device name or subcommand completion ----
+        if first in ("cd", "connect") and has_arg_space:
             second = parts[1].lower() if len(parts) > 1 else ""
             # cd device / cd folder sub-commands
             if first == "cd" and len(parts) <= 2:
@@ -558,6 +558,32 @@ class ArcCompleter(Completer):
                 for key in THEME_KEYS:
                     if key.startswith(partial_key.lower()):
                         yield Completion(key, start_position=-len(partial_key))
+            return
+
+        # ---- scm → subcommand, then profile names for login/delete ----
+        if first == "scm" and has_arg_space:
+            sub = parts[1].lower() if len(parts) > 1 else ""
+            typing_sub = len(parts) < 2 or (len(parts) == 2 and not text.endswith(" "))
+            if typing_sub:
+                subs = {
+                    "login":  "switch profile + authenticate",
+                    "setup":  "create/edit a profile",
+                    "status": "show active profile & connection",
+                    "delete": "delete a profile",
+                    "gui":    "open the settings console",
+                }
+                for name, meta in subs.items():
+                    if name.startswith(partial_arg.lower()):
+                        yield Completion(name, start_position=-len(partial_arg), display_meta=meta)
+                return
+            if sub in ("login", "delete"):
+                partial_name = parts[2] if len(parts) > 2 else ""
+                for p in list_profiles():
+                    if p["name"].lower().startswith(partial_name.lower()):
+                        meta = "(active)" if p["active"] else (p["tsg_id"] or p["client_id"] or "")
+                        yield Completion(
+                            p["name"], start_position=-len(partial_name), display_meta=meta
+                        )
             return
 
         # ---- account → profile name completion ----

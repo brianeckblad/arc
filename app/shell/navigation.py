@@ -747,69 +747,52 @@ class NavigationMixin:
             )
 
     def _cmd_account(self, args: list[str]) -> None:
-        """List or switch named credential profiles.
+        """Alias for `scm login` — pick/switch the active SCM credential profile."""
+        self._cmd_scm(["login", *args])
 
-        Profiles hold a separate set of SCM credentials (client_id, client_secret,
-        tsg_id) stored under their own keychain entries.  A typical setup has a
-        read-only profile for day-to-day monitoring and a read-write profile for
-        making policy changes.
-
-        Create profiles outside the shell with:
-          arc auth configure --profile <name>
-
-        Usage:
-          account               — list all profiles with active marker
-          account <name>        — switch to the named profile
-        """
+    def _print_profile_list(self) -> None:
+        """Render the credential-profile table (used by `scm` / `scm status`)."""
         profiles = list_profiles()
+        active_name = self._config.profile_name
 
-        if not args:
-            # List all configured profiles.
-            active_name = self._config.profile_name
-
-            if len(profiles) == 1 and profiles[0]["name"] == "default":
-                p = profiles[0]
-                client_id = p["client_id"] or "(not set)"
-                tsg_id    = p["tsg_id"]    or "(not set)"
-                console.print(
-                    f"\n[cyan]Active account:[/cyan] [bold]{active_name}[/bold]\n"
-                    f"  client_id : {client_id}\n"
-                    f"  tsg_id    : {tsg_id}\n\n"
-                    "[dim]Create additional profiles with: "
-                    "[bold]arc auth configure --profile <name>[/bold][/dim]"
-                )
-                return
-
+        if len(profiles) == 1 and profiles[0]["name"] == "default":
+            p = profiles[0]
+            client_id = p["client_id"] or "(not set)"
+            tsg_id    = p["tsg_id"]    or "(not set)"
             console.print(
-                "\n[bold yellow]Credential Profiles[/bold yellow]  "
-                "[dim](use [bold]account <name>[/bold] to switch)[/dim]\n"
-            )
-            for p in profiles:
-                marker      = " [green]◀ active[/green]" if p["active"] else ""
-                name_col    = f"[bold]{p['name']}[/bold]" if p["active"] else p["name"]
-                client_id   = p["client_id"] or "[dim](not set)[/dim]"
-                tsg_id      = p["tsg_id"]    or "[dim](not set)[/dim]"
-                console.print(f"  {name_col:<22} {client_id:<55} {tsg_id}{marker}")
-            return
-
-        target       = args[0].strip()
-        profile_names = [p["name"] for p in profiles]
-
-        if target not in profile_names:
-            console.print(
-                f"[red]Profile '{target}' not found.[/red]\n"
-                f"  Available: [bold]{', '.join(profile_names)}[/bold]\n"
-                f"  Create it with: [bold]arc auth configure --profile {target}[/bold]"
+                f"\n[cyan]Active account:[/cyan] [bold]{active_name}[/bold]\n"
+                f"  client_id : {client_id}\n"
+                f"  tsg_id    : {tsg_id}\n\n"
+                "[dim]Create more with [bold]scm setup[/bold]; switch with [bold]scm login[/bold].[/dim]"
             )
             return
 
+        console.print(
+            "\n[bold yellow]Credential Profiles[/bold yellow]  "
+            "[dim](switch with [bold]scm login[/bold])[/dim]\n"
+        )
+        for p in profiles:
+            marker      = " [green]◀ active[/green]" if p["active"] else ""
+            name_col    = f"[bold]{p['name']}[/bold]" if p["active"] else p["name"]
+            client_id   = p["client_id"] or "[dim](not set)[/dim]"
+            tsg_id      = p["tsg_id"]    or "[dim](not set)[/dim]"
+            console.print(f"  {name_col:<22} {client_id:<55} {tsg_id}{marker}")
+
+    def _switch_profile(self, target: str) -> bool:
+        """Switch the active profile to *target*: reload config, rebuild the SCM
+        client (which re-authenticates), and reset device/folder/TSG context.
+
+        Returns True on success.  Rolls config/scm back on any failure.  Shared by
+        `scm login` and the `account` alias.
+        """
         if target == self._config.profile_name:
-            p = next(p for p in profiles if p["name"] == target)
+            p = next((p for p in list_profiles() if p["name"] == target), None)
+            tsg = (p or {}).get("tsg_id") or "n/a"
             console.print(
                 f"[cyan]Already using profile:[/cyan] [bold]{target}[/bold]  "
-                f"[dim](TSG: {p['tsg_id'] or 'n/a'})[/dim]"
+                f"[dim](TSG: {tsg})[/dim]"
             )
-            return
+            return True
 
         console.print(f"[dim]Loading profile '{target}'…[/dim]")
 
@@ -848,7 +831,7 @@ class NavigationMixin:
 
                 device_count = len(self._state.devices_cache)
                 console.print(
-                    f"[green]✓[/green] Switched to profile [bold]{target}[/bold]  "
+                    f"[green]✓[/green] Logged in to profile [bold]{target}[/bold]  "
                     f"[dim]|  TSG:[/dim] [cyan]{new_cfg.scm.tsg_id}[/cyan]  "
                     f"[dim]{device_count} device(s)[/dim]"
                 )
@@ -862,8 +845,9 @@ class NavigationMixin:
                 console.print(
                     f"[yellow]⚠[/yellow] Switched to profile [bold]{target}[/bold] "
                     f"but SCM is not configured for this profile.\n"
-                    f"  Run [bold]arc auth configure --profile {target}[/bold] to add credentials."
+                    f"  Run [bold]scm setup[/bold] to add credentials."
                 )
+            return True
 
         except Exception as exc:
             # Roll back to the previous config on any failure.
@@ -873,3 +857,4 @@ class NavigationMixin:
                 f"[red]Failed to switch to profile '{target}':[/red] {exc}\n"
                 f"[dim]Still using profile '{previous_config.profile_name}'.[/dim]"
             )
+            return False

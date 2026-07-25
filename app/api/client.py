@@ -40,7 +40,7 @@ from typing import Any, Callable, Optional
 
 import httpx
 
-from app.api._auth import fetch_userinfo, oauth_token
+from app.api._auth import oauth_token
 from app.config import SCMConfig
 
 
@@ -168,17 +168,6 @@ class SCMClient:
         expiry rather than a fabricated one.
         """
         return int(getattr(self, "_token_expires_in", 0) or 0)
-
-    def get_userinfo(self) -> dict:
-        """Return the SCM OAuth 2.0 identity claims for the current token.
-
-        pan.dev ref: /scm/api/auth/post-auth-v-1-oauth-2-userinfo/.  Best-effort:
-        returns ``{}`` if unauthenticated or the endpoint declines — callers show
-        identity when present and carry on otherwise.
-        """
-        if not self._token:
-            return {}
-        return fetch_userinfo(self._http, self._token)
 
     # ------------------------------------------------------------------
     # Generic request helpers

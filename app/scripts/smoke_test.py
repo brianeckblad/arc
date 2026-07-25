@@ -1783,6 +1783,7 @@ def test_gui_endpoints() -> None:
             "/api/nav": "sections", "/api/theme": "active", "/api/status": "scm_connected",
             "/api/prefs": "spinner", "/api/config": "default_folder",
             "/api/credentials": "scm", "/api/branding": "banner",
+            "/api/profiles": "profiles", "/api/aliases": "system",
             "/api/sources?which=panos": "pages", "/api/sources?which=scm": "specs",
         }
         arc_get_fail = []
@@ -1798,7 +1799,7 @@ def test_gui_endpoints() -> None:
         # --- Feature console GET routes (read-only) ---
         feat_gets = {
             "/api/nav": None, "/api/areas": None, "/api/features": None,
-            "/api/domains": None, "/api/files": None, "/api/aliases": None,
+            "/api/domains": None, "/api/files": None,
             "/api/builtins": None, "/api/structure/list": None, "/api/theme": "active",
         }
         feat_get_fail = []
@@ -1820,6 +1821,8 @@ def test_gui_endpoints() -> None:
             (4744, "/api/theme", {"base": "NoSuchTheme", "overrides": {}}),
             (4744, "/api/sources", {"which": "bogus"}),
             (4744, "/api/config", {"features_gui": {"port": 4444}, "arc_gui": {"port": 4444}}),
+            (4744, "/api/alias", {"scope": "bogus", "name": "x", "expansion": "show"}),
+            (4744, "/api/profile", {"create": True}),
         ]
         dispatch_fail = []
         for port, path, body in bad_posts:
@@ -1923,11 +1926,15 @@ def test_new_commands() -> None:
     else:
         fail("cd builtin missing")
 
-    # login builtin present
-    if "login" in _SHELL_BUILTINS:
-        ok("login builtin present")
+    # scm builtin present (SCM credential/profile management); login is retired
+    if "scm" in _SHELL_BUILTINS:
+        ok("scm builtin present")
     else:
-        fail("login builtin missing from settings/builtin-commands.json")
+        fail("scm builtin missing from settings/builtin-commands.json")
+    if "login" not in _SHELL_BUILTINS:
+        ok("login builtin retired (replaced by scm login + folder-aware connect)")
+    else:
+        fail("login builtin still present — should be removed")
 
 
 def _test_gui_and_commands() -> None:

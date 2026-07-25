@@ -16,12 +16,13 @@ class SessionsMixin:
             return
 
         if not args and not self._state.device:
-            console.print(
-                "[yellow]Usage:[/yellow] cd <device> then connect, "
-                "or remote <device-name | hostname | ip | serial>\n"
-                "Tab after 'remote ' to see available devices."
-            )
-            return
+            # No explicit target and no device selected — resolve from the
+            # current folder: auto-connect when it holds one device, prompt to
+            # choose when it holds several, explain when it holds none.
+            device = self._pick_folder_device()
+            if device is None:
+                return
+            self._state.device = device
 
         # Snapshot the current device context so we can restore it if the
         # connection fails.  A failed connect should not permanently change
@@ -105,6 +106,68 @@ class SessionsMixin:
         # The interactive session authenticated (2FA done) and left the
         # pooled transport warm — mark attached so remote commands reuse it.
         self._state.attached = True
+
+    def _pick_folder_device(self) -> "Optional[dict]":
+        """Return the device to SSH into from the current folder.
+
+        Auto-selects when the folder holds exactly one device, prompts a numbered
+        chooser when it holds several, and explains when it holds none. Returns
+        ``None`` (after a message) when there is nothing to connect to or the
+        user cancels the chooser.
+        """
+        if not self._state.devices_cache:
+            self._refresh_devices()
+        folder = self._state.folder
+        in_folder = [
+            d for d in list(self._state.devices_cache)
+            if (d.get("folder") or "") == folder
+        ]
+
+        if not in_folder:
+            console.print(
+                f"[yellow]No devices found in folder '{folder}'.[/yellow]\n"
+                "  [dim]Use [bold]show devices[/bold] to list all devices, "
+                "[bold]cd folder <name>[/bold] to switch folder, "
+                "or [bold]connect <name>[/bold] to target one directly.[/dim]"
+            )
+            return None
+
+        if len(in_folder) == 1:
+            return in_folder[0]
+
+        # Several devices in this folder — present a numbered chooser.
+        console.print(f"\n  [dim]Devices in folder '{folder}':[/dim]")
+        console.print(f"  [dim]{'#':<5}{'Device':<30}{'IP':<18}Status[/dim]")
+        console.print("  " + "─" * 58)
+        for i, d in enumerate(in_folder, start=1):
+            name   = device_display_name(d, "?")
+            ip     = d.get("ip_address") or d.get("ip-address") or "—"
+            status = "connected" if d.get("is_connected") else "—"
+            console.print(
+                f"  [cyan]{i:<5}[/cyan][green]{name:<30}[/green]"
+                f"[dim]{str(ip):<18}{status}[/dim]"
+            )
+        console.print()
+
+        try:
+            raw = input("  Enter # or device name [1]: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            console.print("\n[dim]Cancelled.[/dim]")
+            return None
+
+        if not raw:
+            return in_folder[0]
+        if raw.isdigit():
+            idx = int(raw) - 1
+            if 0 <= idx < len(in_folder):
+                return in_folder[idx]
+            console.print(f"[red]Invalid number: {raw}  (valid range 1–{len(in_folder)})[/red]")
+            return None
+        match = self._find_device(raw)
+        if match:
+            return match
+        console.print(f"[red]Device '{raw}' not found.[/red]")
+        return None
 
     def _run_interactive_shell(self, channel, device_name: str) -> None:
         """Hand the terminal over to *channel* for a fully interactive SSH session.

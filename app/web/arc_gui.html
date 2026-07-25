@@ -75,7 +75,7 @@ async function route(){
   const main=document.getElementById("main");main.innerHTML="";
   try{
     const fn={dashboard:mainDashboard,theme:mainTheme,preferences:mainPreferences,
-      connection:mainConnection,credentials:mainCredentials,authentication:mainAuthentication,
+      connection:mainConnection,profiles:mainProfiles,aliases:mainAliases,authentication:mainAuthentication,
       branding:mainBranding,sources:mainSources,maintenance:mainMaintenance}[cur.section];
     if(fn)return fn(main);
     return mainStub(main);
@@ -172,7 +172,8 @@ async function mainConnection(main){
   main.appendChild(pageHead("Connection / config.json","connection"));
   const c=await api("/api/config");
   const box=panel("General");
-  box.appendChild(fieldRow("Active profile",`<span class="badge">${esc(c.profile)}</span> <span class="muted">${(c.profiles||[]).length} profile(s)</span>`,{hint:"Switch/create in the shell: account"}));
+  const apRow=fieldRow("Active profile",`<span class="badge">${esc(c.profile)}</span> <span class="muted">${(c.profiles||[]).length} profile(s)</span> <a href="#profiles" class="muted" style="margin-left:.4rem">manage in Profiles →</a>`,{hint:"Switch/create under Profiles & Credentials"});
+  box.appendChild(apRow);
   box.appendChild(fieldRow("Default folder",txtInput("cf",c.default_folder),{help:"item.default_folder"}));
   box.appendChild(fieldRow("Debug logging",toggleHtml("cdg",c.debug),{help:"item.debug"}));
   main.appendChild(box);
@@ -186,52 +187,113 @@ async function mainConnection(main){
     toast("config.json saved (port changes apply next launch)");}catch(e){toast("Error: "+e.message,true);}}));
 }
 
-/* ---- Credentials & Keychain ---- */
-async function mainCredentials(main){
-  main.appendChild(pageHead("Credentials & Keychain",null));
-  const c=await api("/api/credentials");
-  if(!c.keychain_available)main.appendChild(intro('<span style="color:var(--yellow)">⚠ OS keychain unavailable — secrets cannot be stored in the keychain. Use file storage or environment variables.</span>'));
+/* ---- Profiles & Credentials (multi-profile CRUD) ---- */
+let profEdit=null; // {name, create} when the edit form is open, else null
+async function mainProfiles(main){
+  main.appendChild(pageHead("Profiles & Credentials","profiles"));
+  const d=await api("/api/profiles");
+  if(!d.keychain)main.appendChild(intro('<span style="color:var(--yellow)">⚠ OS keychain unavailable — secrets cannot be stored in the keychain. Use file storage or environment variables.</span>'));
 
-  // ---- Storage mode (full parity with the setup CLI) ----
-  const stBox=panel("Secret storage");
-  stBox.appendChild(intro("Where ARC keeps secrets. <b>Keychain</b> = OS-encrypted (recommended). <b>File</b> = plaintext <code>config/&lt;user&gt;/auth.json</code> (0600) — INSECURE, anyone who can read the file gets your credentials."));
-  const stSeg=segmented("st-storage",[{v:"keychain",label:"Keychain (secure)"},{v:"file",label:"File (insecure)"}],c.auth_storage||"keychain",v=>{
-    document.getElementById("st-warn").style.display=(v==="file")?"":"none";});
-  stBox.appendChild(stSeg);
-  const warn=el("div");warn.id="st-warn";warn.style.cssText="color:var(--red);font-size:12.5px;margin-top:.5rem;"+((c.auth_storage==="file")?"":"display:none");
-  warn.innerHTML="⚠ File mode writes your client secret, bearer token and SSH password in <b>plaintext</b> to auth.json.";
-  stBox.appendChild(warn);
-  if(c.token_expiry){const exp=new Date(c.token_expiry*1000);
-    stBox.appendChild(el("div","muted","Current token expires: "+exp.toLocaleString()));}
-  main.appendChild(stBox);
+  const listBox=panel("Profiles");
+  const list=el("div");
+  (d.profiles||[]).forEach(p=>{
+    const row=el("div","rowcard");row.style.gridTemplateColumns="1.4fr 2fr 1.4fr auto";
+    const nm=el("div",null,`<b>${esc(p.name)}</b>${p.active?' <span class="badge">active</span>':""}`);
+    const cid=el("div","muted",p.client_id?esc(p.client_id):"<i>no client id</i>");
+    const tsg=el("div","muted",p.tsg_id?("TSG "+esc(p.tsg_id)):"<i>no TSG</i>");
+    const btns=el("div");btns.style.cssText="display:flex;gap:.4rem;flex-wrap:wrap";
+    if(!p.active){const sw=el("button","btn sm primary","Switch");sw.type="button";
+      sw.onclick=async()=>{try{await post("/api/profile/switch",{name:p.name});toast("Switched to "+p.name);profEdit=null;route();}catch(e){toast("Error: "+e.message,true);}};
+      btns.appendChild(sw);}
+    const ed=el("button","btn sm","Edit");ed.type="button";ed.onclick=()=>{profEdit={name:p.name,create:false};route();};btns.appendChild(ed);
+    const del=el("button","btn sm","Delete");del.type="button";
+    del.onclick=async()=>{if(!confirm(`Delete profile "${p.name}"? This removes its stored credentials.`))return;
+      try{await post("/api/profile/delete",{name:p.name});toast("Deleted "+p.name);profEdit=null;route();}catch(e){toast("Error: "+e.message,true);}};
+    btns.appendChild(del);
+    row.appendChild(nm);row.appendChild(cid);row.appendChild(tsg);row.appendChild(btns);list.appendChild(row);
+  });
+  listBox.appendChild(list);
+  const add=el("button","btn primary","+ Create new profile");add.type="button";add.style.marginTop=".6rem";
+  add.onclick=()=>{profEdit={name:"",create:true};route();};
+  listBox.appendChild(add);main.appendChild(listBox);
 
-  const scmBox=panel("SCM — Service Account");
-  scmBox.appendChild(fieldRow("Client ID",txtInput("sc-id",c.scm.client_id),{help:"item.client_id"}));
-  scmBox.appendChild(fieldRow("TSG ID",txtInput("sc-tsg",c.scm.tsg_id),{help:"item.tsg_id"}));
-  scmBox.appendChild(fieldRow("Client secret",secInput("sc-secret",c.scm.has_secret?"•••• stored — type to replace":"not set"),{hint:"keychain or auth.json",help:"item.client_secret"}));
-  scmBox.appendChild(fieldRow("Bearer token",secInput("sc-bearer",c.scm.has_bearer?"•••• stored — type to replace":"not set"),{hint:"overrides service account",help:"item.bearer"}));
-  main.appendChild(scmBox);
-  const sshBox=panel("Device SSH");
-  sshBox.appendChild(fieldRow("SSH user",txtInput("sh-user",c.ssh.user)));
-  sshBox.appendChild(fieldRow("Use SSH key",toggleHtml("sh-keyen",c.ssh.key_enabled),{hint:"off = password auth",help:"item.ssh_key_enabled"}));
-  const keyRow=fieldRow("SSH key path",txtInput("sh-key",c.ssh.key_path),{help:"item.ssh_key_path"});
-  keyRow.id="sh-keyrow";keyRow.style.display=c.ssh.key_enabled?"":"none";sshBox.appendChild(keyRow);
-  sshBox.appendChild(fieldRow("SSH port",numInput("sh-port",c.ssh.port)));
-  sshBox.appendChild(fieldRow("SSH password",secInput("sh-pass",c.ssh.has_password?"•••• stored — type to replace":"not set"),{hint:"keychain or auth.json",help:"item.ssh_password"}));
-  main.appendChild(sshBox);
-  wireToggle("sh-keyen",on=>{document.getElementById("sh-keyrow").style.display=on?"":"none";});
-  const bar=saveBar(async()=>{try{await post("/api/credentials",{
-    auth_storage:segVal("st-storage"),
-    scm:{client_id:document.getElementById("sc-id").value,tsg_id:document.getElementById("sc-tsg").value,
-      client_secret:document.getElementById("sc-secret").value,bearer_token:document.getElementById("sc-bearer").value},
-    ssh:{user:document.getElementById("sh-user").value,key_enabled:toggleVal("sh-keyen"),
-      key_path:document.getElementById("sh-key").value,port:+document.getElementById("sh-port").value,
-      password:document.getElementById("sh-pass").value}});
-    toast("Credentials saved");route();}catch(e){toast("Error: "+e.message,true);}},"Save credentials");
+  if(profEdit)await profileForm(main,profEdit);
+}
+async function profileForm(main,ctx){
+  const c=ctx.create
+    ? {name:"",auth_storage:"keychain",token_expiry:0,scm:{client_id:"",tsg_id:"",has_secret:false,has_bearer:false},
+       ssh:{user:"",key_path:"",key_enabled:false,port:22,has_ssh_password:false}}
+    : await api("/api/profile?name="+encodeURIComponent(ctx.name));
+
+  const box=panel(ctx.create?"Create profile":("Edit profile — "+esc(ctx.name)));
+  if(ctx.create)box.appendChild(fieldRow("Profile name",txtInput("pf-name",""),{hint:"unique account label"}));
+  else box.appendChild(fieldRow("Profile name",`<span class="badge">${esc(ctx.name)}</span>`));
+
+  // storage mode
+  box.appendChild(intro("Where ARC keeps this profile's secrets. <b>Keychain</b> = OS-encrypted (recommended). <b>File</b> = plaintext <code>auth.json</code> (0600) — INSECURE."));
+  const stSeg=segmented("pf-storage",[{v:"keychain",label:"Keychain (secure)"},{v:"file",label:"File (insecure)"}],c.auth_storage||"keychain",v=>{
+    document.getElementById("pf-warn").style.display=(v==="file")?"":"none";});
+  box.appendChild(stSeg);
+  const warn=el("div");warn.id="pf-warn";warn.style.cssText="color:var(--red);font-size:12.5px;margin:.5rem 0;"+((c.auth_storage==="file")?"":"display:none");
+  warn.innerHTML="⚠ File mode writes client secret, bearer token and SSH password in <b>plaintext</b> to auth.json.";
+  box.appendChild(warn);
+  if(c.token_expiry){const exp=new Date(c.token_expiry*1000);box.appendChild(el("div","muted","Current token expires: "+exp.toLocaleString()));}
+
+  box.appendChild(fieldRow("Client ID",txtInput("pf-id",c.scm.client_id),{help:"item.client_id"}));
+  box.appendChild(fieldRow("TSG ID",txtInput("pf-tsg",c.scm.tsg_id),{help:"item.tsg_id"}));
+  box.appendChild(fieldRow("Client secret",secInput("pf-secret",c.scm.has_secret?"•••• (stored) — type to replace":"not set"),{hint:"keychain or auth.json",help:"item.client_secret"}));
+  box.appendChild(fieldRow("Bearer token",secInput("pf-bearer",c.scm.has_bearer?"•••• (stored) — type to replace":"not set"),{hint:"overrides service account",help:"item.bearer"}));
+
+  box.appendChild(fieldRow("SSH user",txtInput("pf-shuser",c.ssh.user)));
+  box.appendChild(fieldRow("Use SSH key",toggleHtml("pf-keyen",c.ssh.key_enabled),{hint:"off = password auth",help:"item.ssh_key_enabled"}));
+  const keyRow=fieldRow("SSH key path",txtInput("pf-shkey",c.ssh.key_path),{help:"item.ssh_key_path"});
+  keyRow.id="pf-keyrow";keyRow.style.display=c.ssh.key_enabled?"":"none";box.appendChild(keyRow);
+  box.appendChild(fieldRow("SSH port",numInput("pf-shport",c.ssh.port)));
+  box.appendChild(fieldRow("SSH password",secInput("pf-shpass",c.ssh.has_ssh_password?"•••• (stored) — type to replace":"not set"),{hint:"keychain or auth.json",help:"item.ssh_password"}));
+  main.appendChild(box);
+  wireToggle("pf-keyen",on=>{document.getElementById("pf-keyrow").style.display=on?"":"none";});
+
+  const bar=saveBar(async()=>{
+    const name=ctx.create?document.getElementById("pf-name").value.trim():ctx.name;
+    if(!name){toast("Profile name is required",true);return;}
+    try{const r=await post("/api/profile",{name:name,create:!!ctx.create,auth_storage:segVal("pf-storage"),
+      scm:{client_id:document.getElementById("pf-id").value,tsg_id:document.getElementById("pf-tsg").value,
+        client_secret:document.getElementById("pf-secret").value,bearer_token:document.getElementById("pf-bearer").value},
+      ssh:{user:document.getElementById("pf-shuser").value,key_enabled:toggleVal("pf-keyen"),
+        key_path:document.getElementById("pf-shkey").value,port:+document.getElementById("pf-shport").value,
+        password:document.getElementById("pf-shpass").value}});
+      toast(r.warning?("Saved (warning: "+r.warning+")"):"Profile saved",!!r.warning);
+      profEdit=null;route();}catch(e){toast("Error: "+e.message,true);}
+  },ctx.create?"Create profile":"Save profile");
+  const cancel=el("button","btn sm","Cancel");cancel.type="button";cancel.onclick=()=>{profEdit=null;route();};bar.appendChild(cancel);
   const test=el("button","btn","Test SCM auth");test.type="button";test.onclick=testAuth;bar.appendChild(test);
   main.appendChild(bar);
 }
 async function testAuth(){toast("Testing SCM authentication…");try{const r=await post("/api/test-auth",{});toast(r.message,!r.ok);}catch(e){toast("Error: "+e.message,true);}}
+
+/* ---- Aliases (moved here from the feature editor) ---- */
+async function mainAliases(main){
+  main.appendChild(pageHead("Aliases","aliases"));
+  main.appendChild(intro("Shortcuts you type instead of a full command. <b>System</b> aliases are shared (settings/command-aliases.json); <b>My aliases</b> are personal to you. An alias cannot shadow a built-in or a real command word."));
+  const d=await api("/api/aliases");
+  aliasGroup(main,"System (shared)","system",d.system||[]);
+  aliasGroup(main,"My aliases (personal)","user",d.user||[]);
+}
+function aliasGroup(main,title,scope,rows){
+  const box=panel(title);
+  const add=el("div","aadd");
+  add.innerHTML=`<input class="an" placeholder="alias (e.g. sap)"/><input class="ax" placeholder="expands to… (e.g. show address)"/><button class="btn" type="button">Add</button>`;
+  add.querySelector(".btn").onclick=()=>{const an=add.querySelector(".an").value.trim(),ax=add.querySelector(".ax").value.trim();if(an&&ax)saveAlias(scope,an,ax);};
+  box.appendChild(add);
+  if(!rows.length){box.appendChild(el("div","empty","No aliases."));}
+  rows.forEach(a=>{const r=el("div","arow");
+    r.innerHTML=`<span class="an">${esc(a.name)}</span><span class="aw">→</span><input class="ax" value="${escA(a.expansion)}"/><button class="btn sm save" type="button">Save</button><button class="btn sm del" type="button">Delete</button>`;
+    r.querySelector(".save").onclick=()=>saveAlias(scope,a.name,r.querySelector(".ax").value.trim());
+    r.querySelector(".del").onclick=()=>saveAlias(scope,a.name,null);box.appendChild(r);});
+  main.appendChild(box);
+}
+async function saveAlias(scope,name,expansion){try{await post("/api/alias",{scope,name,expansion});
+  toast(expansion===null?`Deleted ${name}`:`Alias ${name} saved`);route();}catch(e){toast("Error: "+e.message,true);}}
 
 /* ---- Authentication ---- */
 async function mainAuthentication(main){
@@ -242,7 +304,7 @@ async function mainAuthentication(main){
   const cur=(c.scm&&c.scm.auth_method)?c.scm.auth_method:"none";
   p.appendChild(el("div","muted","Currently configured: "+esc(cur)));
   const tb=el("button","btn","Test SCM auth");tb.type="button";tb.onclick=testAuth;p.appendChild(tb);
-  const b=el("button","btn sm","Go to Credentials");b.type="button";b.style.marginLeft=".6rem";b.onclick=()=>go("credentials");p.appendChild(b);
+  const b=el("button","btn sm","Go to Profiles");b.type="button";b.style.marginLeft=".6rem";b.onclick=()=>go("profiles");p.appendChild(b);
   main.appendChild(p);
 }
 

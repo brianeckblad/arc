@@ -1320,36 +1320,149 @@ class ConfigureMixin:
             status = "ARC settings console closed."
         console.print(f"[cyan]{status}[/cyan]")
 
-    def _cmd_login(self, args: list[str]) -> None:
-        """SSH into the current device (select one with ``cd device <name>`` first).
+    def _cmd_scm(self, args: list[str]) -> None:
+        """Manage SCM credentials and profiles.
 
-        ``login`` opens an interactive SSH session to the device you have ``cd``'d
-        into — the same action as ``connect``. It reuses your stored SSH
-        credentials; TACACS/2FA may prompt. SCM API access is separate and
-        authenticates automatically at startup (verify with ``arc auth test``).
+          scm                 — show active profile, TSG and connection status
+          scm status          — same as bare `scm`
+          scm login [profile] — switch to a profile and authenticate (prompts if omitted)
+          scm setup [profile] — create or edit a credential profile (interactive)
+          scm delete <name>   — delete a credential profile
+          scm gui             — open the browser settings console (profiles, creds…)
         """
-        if args and args[0] in ("?", "help"):
+        sub = args[0].lower() if args else "status"
+        rest = args[1:]
+
+        if sub in ("?", "help"):
             console.print(
-                "[bold]login[/bold] — SSH into the current device\n"
-                "  Select a device first: [bold]cd device <name>[/bold], then [bold]login[/bold].\n"
-                "  [dim]login <name>[/dim] also works. Uses your stored SSH credentials; "
-                "TACACS/2FA may prompt.\n"
-                "  [dim]SCM API auth is automatic at startup — check it with [bold]arc auth test[/bold].[/dim]"
+                "[bold]scm[/bold] — manage SCM credentials & profiles\n"
+                "  [bold]scm[/bold] / [bold]scm status[/bold]    show active profile, TSG, connection\n"
+                "  [bold]scm login [profile][/bold]   switch profile + authenticate (prompts if omitted)\n"
+                "  [bold]scm setup [profile][/bold]   create/edit a profile (interactive wizard)\n"
+                "  [bold]scm delete <name>[/bold]     delete a profile\n"
+                "  [bold]scm gui[/bold]               open the browser settings console"
             )
             return
 
-        if not args and not self._state.device:
+        if sub == "status":
+            self._cmd_scm_status()
+        elif sub == "login":
+            self._cmd_scm_login(rest)
+        elif sub == "setup":
+            self._cmd_scm_setup(rest)
+        elif sub == "delete":
+            self._cmd_scm_delete(rest)
+        elif sub == "gui":
+            self._cmd_arc_gui()
+        else:
             console.print(
-                "[yellow]login opens an SSH session to a device — none selected.[/yellow]\n"
-                "  Choose one: [bold]cd device <name>[/bold], then [bold]login[/bold]  "
-                "(or [bold]login <name>[/bold]).\n"
-                "  [dim]SCM API auth is automatic — verify it with [bold]arc auth test[/bold].[/dim]"
+                f"[yellow]Unknown scm subcommand:[/yellow] {sub!r}\n"
+                "  Try: [bold]scm login[/bold] · [bold]scm setup[/bold] · "
+                "[bold]scm status[/bold] · [bold]scm delete <name>[/bold] · [bold]scm gui[/bold]"
+            )
+
+    def _cmd_scm_status(self) -> None:
+        """Show the profile table plus the live connection state."""
+        self._print_profile_list()
+        active = self._config.profile_name
+        tsg = self._config.scm.tsg_id or "n/a"
+        if self._scm is not None:
+            state = "[green]connected[/green]"
+        else:
+            state = "[yellow]not authenticated — run [bold]scm login[/bold][/yellow]"
+        console.print(
+            f"\n  Active: [bold]{active}[/bold]   TSG: [cyan]{tsg}[/cyan]   SCM: {state}\n"
+        )
+
+    def _cmd_scm_login(self, rest: list[str]) -> None:
+        """Switch to a profile and authenticate. No arg → numbered picker."""
+        if not has_configured_profiles():
+            console.print(
+                "[yellow]No SCM profiles configured yet.[/yellow]\n"
+                "  Run [bold]scm setup[/bold] to create one."
             )
             return
 
-        # Delegate to the interactive SSH path — shares self._state / self._ssh
-        # and reuses the connect PTY loop, credential lookup, and 2FA handling.
-        self._cmd_connect(args)
+        if rest:
+            target = rest[0].strip()
+            names = [p["name"] for p in list_profiles()]
+            if target not in names:
+                console.print(
+                    f"[red]Profile '{target}' not found.[/red]\n"
+                    f"  Available: [bold]{', '.join(names)}[/bold]  ·  "
+                    "create one with [bold]scm setup[/bold]"
+                )
+                return
+            self._switch_profile(target)
+            return
+
+        target = self._pick_profile()
+        if target:
+            self._switch_profile(target)
+
+    def _pick_profile(self) -> "Optional[str]":
+        """Numbered profile chooser for `scm login`. Returns a name or None."""
+        profiles = list_profiles()
+        active = self._config.profile_name
+
+        console.print("\n  [dim]Select a profile to log into:[/dim]")
+        for i, p in enumerate(profiles, start=1):
+            mark = " [green](active)[/green]" if p["name"] == active else ""
+            cid  = p["client_id"] or "[dim](not set)[/dim]"
+            console.print(f"  [cyan]{i:<3}[/cyan][green]{p['name']:<22}[/green][dim]{cid}[/dim]{mark}")
+        console.print()
+
+        try:
+            raw = input(f"  Enter # or name [{active}]: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            console.print("\n[dim]Cancelled.[/dim]")
+            return None
+
+        if not raw:
+            return active
+        if raw.isdigit():
+            idx = int(raw) - 1
+            if 0 <= idx < len(profiles):
+                return profiles[idx]["name"]
+            console.print(f"[red]Invalid number: {raw} (valid range 1–{len(profiles)})[/red]")
+            return None
+        names = {p["name"] for p in profiles}
+        if raw in names:
+            return raw
+        console.print(f"[red]Profile '{raw}' not found.[/red]")
+        return None
+
+    def _cmd_scm_setup(self, rest: list[str]) -> None:
+        """Run the interactive credential wizard, then log into the saved profile."""
+        from app.auth.wizard import WizardCancelled, run_credential_wizard
+
+        profile = rest[0].strip() if rest else None
+        try:
+            saved = run_credential_wizard(profile=profile)
+        except WizardCancelled:
+            console.print("\n[yellow]Cancelled — nothing saved.[/yellow]")
+            return
+        if saved:
+            self._switch_profile(saved)
+
+    def _cmd_scm_delete(self, rest: list[str]) -> None:
+        """Delete a credential profile (cannot delete the active one)."""
+        if not rest:
+            console.print("[yellow]Usage:[/yellow] scm delete <profile>")
+            return
+        name = rest[0].strip()
+        if name == self._config.profile_name:
+            console.print(
+                f"[red]Cannot delete the active profile '{name}'.[/red]\n"
+                "  Switch to another first: [bold]scm login <other>[/bold]."
+            )
+            return
+        try:
+            delete_profile(name)
+        except ValueError as exc:
+            console.print(f"[red]{exc}[/red]")
+            return
+        console.print(f"[green]✓[/green] Deleted profile [bold]{name}[/bold].")
 
 
     # ------------------------------------------------------------------

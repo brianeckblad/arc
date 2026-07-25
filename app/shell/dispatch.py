@@ -650,9 +650,9 @@ class DispatchMixin:
                 if prefix_tokens[0].lower() in ("find",):
                     self._cmd_find(["?"])
                     return False
-                # `login ?` — device-SSH command help (not a registry command).
-                if prefix_tokens[0].lower() == "login":
-                    self._cmd_login(["?"])
+                # `scm ?` — SCM credential/profile command help (not a registry command).
+                if prefix_tokens[0].lower() == "scm":
+                    self._cmd_scm(["?"])
                     return False
                 # General case: prefix help for registered commands.
                 self._cmd_help_inline(prefix_tokens)
@@ -775,6 +775,10 @@ class DispatchMixin:
             self._cmd_account(tokens[1:])
             return False
 
+        if cmd == "scm":
+            self._cmd_scm(tokens[1:])
+            return False
+
         if cmd == "configure":
             self._cmd_configure(tokens[1:])
             return False
@@ -789,10 +793,6 @@ class DispatchMixin:
 
         if cmd == "arc":
             self._cmd_arc(tokens[1:])
-            return False
-
-        if cmd == "login":
-            self._cmd_login(tokens[1:])
             return False
 
         # Hidden command — not advertised in ? or tab completion.  Reveals

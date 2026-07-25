@@ -23,7 +23,7 @@ a URL or path.
 
 **Key files:**
 - `app/api/client.py` — `SCMClient`: `_request()`, per-domain wrappers, gateway
-  base URLs, `authenticate_now()` / `get_userinfo()`.
+  base URLs, `_authenticate()` / `reauthenticate()` / `get_userinfo()`.
 - `app/api/_auth.py` — shared `oauth_token()` (returns `(token, expires_in)`) +
   `fetch_userinfo()`. The `login` flow.
 - `app/api/sls.py` — SLS Query Service v2 client (UNVERIFIED against a live

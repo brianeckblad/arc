@@ -18,14 +18,23 @@
     "onlogin": false,
     "startup_hint": ""
   },
-  "account": {
+  "scm": {
     "visible": true,
-    "display": "account <name>",
-    "help": "List or switch credential profiles  (Tab -> profile names)",
+    "display": "scm <login|setup|status|delete|gui>",
+    "help": "Manage SCM credentials & profiles  (login / setup / status / delete / gui)",
     "configure_only": false,
     "hide_in_configure": false,
     "onlogin": true,
-    "startup_hint": "List / switch credential profiles"
+    "startup_hint": "Log into SCM / manage profiles  (scm login | scm setup)"
+  },
+  "account": {
+    "visible": true,
+    "display": "account <name>",
+    "help": "Alias of 'scm login' — switch SCM credential profile  (Tab -> profile names)",
+    "configure_only": false,
+    "hide_in_configure": false,
+    "onlogin": false,
+    "startup_hint": ""
   },
   "alias": {
     "visible": true,
@@ -44,15 +53,6 @@
     "hide_in_configure": false,
     "onlogin": true,
     "startup_hint": "Application info  (arc show | arc ?)"
-  },
-  "login": {
-    "visible": true,
-    "display": "login",
-    "help": "SSH into the current device (select it with 'cd device <name>' first)",
-    "configure_only": false,
-    "hide_in_configure": false,
-    "onlogin": false,
-    "startup_hint": ""
   },
   "catalog": {
     "visible": "dev",
@@ -129,7 +129,7 @@
   "connect": {
     "visible": true,
     "display": "connect <device>",
-    "help": "SSH to device — interactive session  (keyboard-interactive + 2FA)",
+    "help": "SSH to a device — no arg uses the current folder's device (prompts if several); 2FA",
     "configure_only": false,
     "hide_in_configure": false,
     "onlogin": true,

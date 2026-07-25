@@ -1,1 +1,1 @@
-"""ARC authentication helpers (SCM token + userinfo)."""
+"""ARC authentication helpers (SCM token)."""

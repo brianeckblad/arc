@@ -26,9 +26,10 @@ _HTML_FILE = Path(__file__).with_name("arc_gui.html")
 _SECTIONS = [
     {"key": "dashboard", "label": "Dashboard", "icon": "◉"},
     {"key": "authentication", "label": "Authentication", "icon": "⚿"},
-    {"key": "credentials", "label": "Credentials & Keychain", "icon": "🔑"},
+    {"key": "profiles", "label": "Profiles & Credentials", "icon": "🔑"},
     {"key": "connection", "label": "Connection / config.json", "icon": "⚙"},
     {"key": "preferences", "label": "Preferences", "icon": "☰"},
+    {"key": "aliases", "label": "Aliases", "icon": "⇢"},
     {"key": "theme", "label": "Appearance / Theme", "icon": "◐"},
     {"key": "branding", "label": "Branding & Variables", "icon": "✎"},
     {"key": "sources", "label": "API Sources", "icon": "⇅"},
@@ -51,6 +52,21 @@ _SECTION_HELP = {
         "<h3>Connection / config.json</h3><p>Non-secret settings stored in your "
         "per-user <code>config.json</code>: default folder, debug, and the local "
         "ports the two browser GUIs listen on (feature editor + this console).</p>"
+    ),
+    "profiles": (
+        "<h3>Profiles &amp; Credentials</h3><p>Each <strong>profile</strong> is a "
+        "self-contained SCM account: service-account credentials (client id / "
+        "secret / TSG), an optional bearer token, and device-SSH settings. Create "
+        "as many as you need, switch the active one, and edit or delete them here. "
+        "Secrets go to the OS keychain (or plaintext <code>auth.json</code> in file "
+        "mode) — the GUI never reads a stored secret back.</p>"
+    ),
+    "aliases": (
+        "<h3>Aliases</h3><p>Shortcuts you type instead of a full command. "
+        "<strong>System</strong> aliases are shared by everyone "
+        "(<code>settings/command-aliases.json</code>); <strong>My aliases</strong> "
+        "are personal to you. An alias cannot shadow a built-in or a real "
+        "command word.</p>"
     ),
     # --- per-item topics ---
     "item.default_folder": "<h3>Default folder</h3><p>The SCM folder ARC scopes to at startup. Change context in the shell with <code>cd folder &lt;name&gt;</code>.</p>",
@@ -107,6 +123,12 @@ class ArcGuiServer(BaseGuiServer):
             return self._get_branding()
         if path == "/api/credentials":
             return self._get_credentials()
+        if path == "/api/profiles":
+            return self._get_profiles()
+        if path == "/api/profile":
+            return self._get_profile((qs.get("name") or [""])[0])
+        if path == "/api/aliases":
+            return self._get_aliases()
         if path == "/api/help":
             topic = (qs.get("topic") or [""])[0]
             if topic in _SECTION_HELP:
@@ -131,6 +153,19 @@ class ArcGuiServer(BaseGuiServer):
             return self._apply_branding(data)
         if path == "/api/credentials":
             return self._apply_credentials(data)
+        if path == "/api/profile":
+            return self._apply_profile(data)
+        if path == "/api/profile/switch":
+            return self._switch_profile(str(data.get("name", "")).strip())
+        if path == "/api/profile/delete":
+            return self._delete_profile(str(data.get("name", "")).strip())
+        if path == "/api/alias":
+            scope = str(data.get("scope", "")).strip().lower()
+            name = str(data.get("name", "")).strip()
+            expansion = data.get("expansion")
+            if expansion is not None:
+                expansion = str(expansion)
+            return self._apply_alias(scope, name, expansion)
         if path == "/api/test-auth":
             return self._test_auth()
         if path == "/api/maintenance":
@@ -559,6 +594,209 @@ class ArcGuiServer(BaseGuiServer):
             except ConfigSecurityError as exc:
                 raise RuntimeError(str(exc))
         return self._get_credentials()
+
+    # -- profiles (multi-profile CRUD) ------------------------------------
+
+    def _get_profiles(self) -> dict:
+        """List all profiles (no secrets) + the active one + keychain status."""
+        from app.config import (get_active_profile, keychain_available,
+                                list_profiles)
+
+        return {
+            "profiles": list_profiles(),
+            "active": get_active_profile(),
+            "keychain": keychain_available(),
+        }
+
+    def _get_profile(self, name: str) -> dict:
+        """Non-secret fields for ONE profile (models on ``_get_credentials``)."""
+        from app.config import keychain_available, load_config
+
+        name = (name or "").strip()
+        if not name:
+            raise ValueError("profile name is required")
+        cfg = load_config(profile=name)
+        scm = getattr(cfg, "scm", None)
+        ssh = getattr(cfg, "ssh", None)
+        has_secret = bool(getattr(scm, "client_secret", "")) if scm else False
+        has_bearer = bool(getattr(scm, "bearer_token", "")) if scm else False
+        return {
+            "name": name,
+            "keychain_available": keychain_available(),
+            "auth_storage": getattr(cfg, "auth_storage", "keychain"),
+            "token_expiry": getattr(scm, "token_expiry", 0) if scm else 0,
+            "scm": {
+                "client_id": getattr(scm, "client_id", "") if scm else "",
+                "tsg_id": getattr(scm, "tsg_id", "") if scm else "",
+                "has_secret": has_secret,
+                "has_bearer": has_bearer,
+            },
+            "ssh": {
+                "user": getattr(ssh, "user", "") if ssh else "",
+                "key_path": getattr(ssh, "key_path", "") if ssh else "",
+                "key_enabled": bool(getattr(ssh, "key_path", "")) if ssh else False,
+                "port": getattr(ssh, "port", 22) if ssh else 22,
+                "has_ssh_password": bool(getattr(ssh, "password", "")) if ssh else False,
+            },
+        }
+
+    def _apply_profile(self, data: dict) -> dict:
+        """Create or edit a profile.  Blank secret fields = leave unchanged.
+
+        Secrets route through ``save_config`` (keychain vs auth.json per mode).
+        For CREATE we start from a fresh ``ArcConfig`` (NOT ``load_config``, which
+        falls back to the active profile for an unknown name).
+        """
+        from app.config import (ArcConfig, ConfigSecurityError, load_config,
+                                save_config)
+
+        name = str(data.get("name", "")).strip()
+        if not name:
+            raise ValueError("profile name is required")
+        if data.get("create"):
+            cfg = ArcConfig()
+        else:
+            cfg = load_config(profile=name)
+        cfg.profile_name = name
+
+        scm = data.get("scm") or {}
+        ssh = data.get("ssh") or {}
+        warning = None
+        with self._lock:
+            if data.get("auth_storage") in ("keychain", "file"):
+                cfg.auth_storage = data["auth_storage"]
+            if "client_id" in scm:
+                cfg.scm.client_id = str(scm["client_id"]).strip()
+            if "tsg_id" in scm:
+                cfg.scm.tsg_id = str(scm["tsg_id"]).strip()
+            if scm.get("client_secret"):
+                cfg.scm.client_secret = str(scm["client_secret"]).strip()
+            if scm.get("bearer_token"):
+                cfg.scm.bearer_token = str(scm["bearer_token"]).strip()
+            if scm.get("clear_bearer"):
+                cfg.scm.bearer_token = ""
+            if "user" in ssh:
+                cfg.ssh.user = str(ssh["user"]).strip()
+            if ssh.get("key_enabled") is False:
+                cfg.ssh.key_path = ""
+            elif "key_path" in ssh:
+                cfg.ssh.key_path = str(ssh["key_path"]).strip()
+            if "port" in ssh:
+                try:
+                    cfg.ssh.port = int(ssh["port"])
+                except (TypeError, ValueError):
+                    raise ValueError("SSH port must be a number")
+            if ssh.get("password"):
+                cfg.ssh.password = str(ssh["password"])
+            try:
+                save_config(cfg, profile=name)
+            except ConfigSecurityError as exc:
+                warning = str(exc)
+        result = self._get_profile(name)
+        if warning:
+            result["warning"] = warning
+        return result
+
+    def _switch_profile(self, name: str) -> dict:
+        """Set the active profile and reload the LIVE shell (mirrors the shell's
+        ``_switch_profile`` reset list).  Rolls back on SCM-client failure."""
+        from app.config import load_config, set_active_profile
+
+        name = (name or "").strip()
+        if not name:
+            raise ValueError("profile name is required")
+
+        shell = self._shell
+        with self._lock:
+            set_active_profile(name)
+            prev_config = getattr(shell, "_config", None)
+            prev_scm = getattr(shell, "_scm", None)
+            try:
+                cfg = load_config(profile=name)
+                if getattr(cfg, "debug", None) is not None and prev_config is not None:
+                    cfg.debug = prev_config.debug  # preserve session debug flag
+                new_scm = None
+                if getattr(cfg.scm, "is_configured", False):
+                    from app.api.client import SCMClient
+                    new_scm = SCMClient(cfg.scm)
+                shell._config = cfg
+                shell._scm = new_scm
+                state = getattr(shell, "_state", None)
+                if state is not None:
+                    state.device = None
+                    state.folder = cfg.default_folder
+                    state.tsg_id = cfg.scm.tsg_id
+                    state.devices_cache = []
+                    state.folders_cache = ["Shared", "Global"]
+                    state.tsgs_cache = []
+            except Exception as exc:  # noqa: BLE001 — roll back on any failure
+                shell._config = prev_config
+                shell._scm = prev_scm
+                raise RuntimeError(f"failed to switch profile: {exc}")
+        return {"active": name}
+
+    def _delete_profile(self, name: str) -> dict:
+        """Delete a profile (``ValueError`` for default/unknown/active-reset)."""
+        from app.config import delete_profile
+
+        name = (name or "").strip()
+        if not name:
+            raise ValueError("profile name is required")
+        with self._lock:
+            delete_profile(name)
+        return {"deleted": name}
+
+    # -- aliases (moved here from the feature editor) ---------------------
+
+    def _get_aliases(self) -> dict:
+        """System + personal aliases for the Aliases section."""
+        from app.settings.aliases import load_system_aliases
+
+        system = [{"name": k, "expansion": v}
+                  for k, v in sorted(load_system_aliases().items())]
+        user_map = getattr(getattr(self._shell, "_prefs", None), "aliases", {}) or {}
+        user = [{"name": k, "expansion": v} for k, v in sorted(user_map.items())]
+        return {"system": system, "user": user}
+
+    def _apply_alias(self, scope: str, name: str, expansion: str | None) -> dict:
+        """Create/update/delete a system or personal alias (thread-safe)."""
+        from app.settings.aliases import (alias_conflict, load_system_aliases,
+                                          set_system_alias)
+
+        name = (name or "").strip()
+        if not name:
+            raise ValueError("alias name is required")
+        if scope not in ("system", "user"):
+            raise ValueError(f"invalid alias scope: {scope!r}")
+
+        # Validate against builtins + command words (unless deleting).
+        if expansion is not None and expansion.strip():
+            builtins = None
+            try:
+                from app.shell import _SHELL_BUILTINS
+                builtins = set(_SHELL_BUILTINS)
+            except Exception:  # noqa: BLE001
+                builtins = None
+            reason = alias_conflict(name, builtins=builtins)
+            if reason:
+                raise ValueError(reason)
+
+        with self._lock:
+            if scope == "system":
+                set_system_alias(name, expansion if expansion else None)
+                self._shell._builtin_aliases = load_system_aliases()
+            else:
+                prefs = getattr(self._shell, "_prefs", None)
+                if prefs is None:
+                    raise RuntimeError("personal aliases unavailable (no prefs)")
+                if expansion and expansion.strip():
+                    prefs.aliases[name.lower()] = expansion.strip()
+                else:
+                    prefs.aliases.pop(name.lower(), None)
+                from app.settings.user_prefs import save_prefs
+                save_prefs(prefs)
+        return {"scope": scope, "name": name.lower(),
+                "expansion": (expansion or "").strip() or None}
 
     def _test_auth(self) -> dict:
         """Attempt SCM authentication with the current credentials."""

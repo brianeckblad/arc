@@ -341,16 +341,6 @@ def build_domains(shell) -> dict:
     return {"domains": domains}
 
 
-def build_aliases(shell) -> dict:
-    """System + personal aliases for the Aliases section."""
-    from app.settings.aliases import load_system_aliases
-
-    system = [{"name": k, "expansion": v} for k, v in sorted(load_system_aliases().items())]
-    user_map = getattr(getattr(shell, "_prefs", None), "aliases", {}) or {}
-    user = [{"name": k, "expansion": v} for k, v in sorted(user_map.items())]
-    return {"system": system, "user": user}
-
-
 def build_structure_list(shell) -> dict:
     """List of set/update/delete commands that can carry a structure, by area."""
     from app.commands.registry import COMMANDS
@@ -530,14 +520,6 @@ def build_nav(shell, section: str) -> dict:
         groups.sort(key=lambda g: g["label"].lower())
         return {"section": section, "groups": groups}
 
-    if section == "aliases":
-        from app.settings.aliases import load_system_aliases
-        user_map = getattr(getattr(shell, "_prefs", None), "aliases", {}) or {}
-        return {"section": section, "groups": [
-            {"key": "system", "label": "System (shared)", "count": len(load_system_aliases()), "meta": {}},
-            {"key": "user", "label": "My aliases", "count": len(user_map), "meta": {}},
-        ]}
-
     if section == "builtins":
         from app.settings.commands import load_builtins_full
         full = load_builtins_full()
@@ -649,13 +631,6 @@ _SECTION_HELP = {
         "(value / choice / keyword), whether it is required, its hint, and its "
         "choices. Saving locks the entry so regeneration won't overwrite it.</p>"
     ),
-    "aliases": (
-        "<h3>Aliases</h3><p>Shortcuts you type instead of a full command. "
-        "<strong>System</strong> aliases are shared by everyone "
-        "(<code>settings/command-aliases.json</code>); <strong>My aliases</strong> "
-        "are personal to you. An alias cannot shadow a built-in or a real "
-        "command word.</p>"
-    ),
     "files": (
         "<h3>Advanced · Files</h3><p>These are <strong>regeneration settings, "
         "not on/off switches</strong>. To turn features on or off use "
@@ -756,7 +731,6 @@ class FeatureGuiServer(BaseGuiServer):
         "/api/features/header": "features-header",
         "/api/domains": "domains",
         "/api/files": "files",
-        "/api/aliases": "aliases",
         "/api/builtins": "builtins",
         "/api/structure/list": "structure-list",
         "/api/structure/area": "structure-area",
@@ -803,13 +777,6 @@ class FeatureGuiServer(BaseGuiServer):
             if not area:
                 raise ValueError("missing area")
             return self._apply_area(area, disabled)
-        if path == "/api/alias":
-            scope = str(data.get("scope", "")).strip().lower()
-            name = str(data.get("name", "")).strip()
-            expansion = data.get("expansion")
-            if expansion is not None:
-                expansion = str(expansion)
-            return self._apply_alias(scope, name, expansion)
         if path == "/api/builtin":
             name = str(data.get("name", "")).strip()
             field = str(data.get("field", "")).strip()
@@ -853,46 +820,6 @@ class FeatureGuiServer(BaseGuiServer):
             if hasattr(self._shell, "_invalidate_visible_keys"):
                 self._shell._invalidate_visible_keys()
         return {"area": area, "disabled": area in self._shell._disabled_areas}
-
-    def _apply_alias(self, scope: str, name: str, expansion: str | None) -> dict:
-        """Create/update/delete a system or personal alias (thread-safe)."""
-        from app.settings.aliases import (alias_conflict, load_system_aliases,
-                                          set_system_alias)
-
-        name = (name or "").strip()
-        if not name:
-            raise ValueError("alias name is required")
-        if scope not in ("system", "user"):
-            raise ValueError(f"invalid alias scope: {scope!r}")
-
-        # Validate against builtins + command words (unless deleting).
-        if expansion is not None and expansion.strip():
-            builtins = None
-            try:
-                from app.shell import _SHELL_BUILTINS
-                builtins = set(_SHELL_BUILTINS)
-            except Exception:
-                builtins = None
-            reason = alias_conflict(name, builtins=builtins)
-            if reason:
-                raise ValueError(reason)
-
-        with self._lock:
-            if scope == "system":
-                set_system_alias(name, expansion if expansion else None)
-                self._shell._builtin_aliases = load_system_aliases()
-            else:
-                prefs = getattr(self._shell, "_prefs", None)
-                if prefs is None:
-                    raise RuntimeError("personal aliases unavailable (no prefs)")
-                if expansion and expansion.strip():
-                    prefs.aliases[name.lower()] = expansion.strip()
-                else:
-                    prefs.aliases.pop(name.lower(), None)
-                from app.settings.user_prefs import save_prefs
-                save_prefs(prefs)
-        return {"scope": scope, "name": name.lower(),
-                "expansion": (expansion or "").strip() or None}
 
     def _apply_structure(self, command: str, fields: list) -> dict:
         """Persist an override structure entry for a command (thread-safe)."""
@@ -995,8 +922,6 @@ class FeatureGuiServer(BaseGuiServer):
                 return build_features_header(self._shell, (query.get("area") or [""])[0])
             if name in ("domains", "files"):
                 return build_domains(self._shell)
-            if name == "aliases":
-                return build_aliases(self._shell)
             if name == "builtins":
                 return build_builtins(self._shell, (query.get("group") or [""])[0])
             if name == "structure-list":

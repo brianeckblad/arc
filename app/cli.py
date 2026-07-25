@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import getpass
 import json
 import os
 import shlex
@@ -16,18 +15,21 @@ from rich.console import Console
 
 from app.api.client import SCMClient
 from app.config import (
+    AUTH_FILE,
     CONFIG_DIR,
     CONFIG_FILE,
     ConfigSecurityError,
     clear_keychain,
     delete_profile,
     get_active_profile,
+    has_configured_profiles,
     keychain_available,
     list_profiles,
     load_config,
     save_config,
+    set_active_profile,
 )
-from app.docs import DOCS_ROOT, open_docs_in_browser
+from app.docs import DOCS_ROOT, open_docs_in_browser, slugify
 from app.shell import ArcShell
 
 app = typer.Typer(
@@ -48,54 +50,17 @@ err_console = Console(stderr=True)
 # Wizard helpers — shared by the credential wizards (keychain + env-var)
 # ---------------------------------------------------------------------------
 
-class _WizardCancelled(Exception):
-    """Raised inside a wizard prompt when the user hits Ctrl-C / Ctrl-D."""
-
-
-def _wizard_prompt(
-    label: str,
-    current: str = "",
-    *,
-    secret: bool = False,
-    hint: str = "",
-    out: "Console | None" = None,
-) -> str:
-    """Prompt for a value. Enter keeps the existing value; Ctrl-C/Ctrl-D aborts.
-
-    ``out`` is the Console the label is printed to — pass the stderr console in
-    --export mode so stdout carries only the export lines.
-    """
-    out = out or console
-    display_current = "****" if (secret and current) else (current or "")
-    display_hint = f" [dim][{display_current}][/dim]" if display_current else ""
-    extra_hint = f"\n    [dim]{hint}[/dim]" if hint else ""
-    out.print(f"  {label}{display_hint}{extra_hint}: ", end="")
-    try:
-        val = getpass.getpass("") if secret else input()
-    except (EOFError, KeyboardInterrupt):
-        raise _WizardCancelled()
-    # Empty input = keep existing value
-    return val.strip() or current
-
-
-def _wizard_confirm(prompt: str, *, out: "Console | None" = None) -> bool:
-    """Yes/No prompt (default No). Ctrl-C/Ctrl-D aborts the wizard."""
-    out = out or console
-    out.print(f"  {prompt} [dim][y/N][/dim]: ", end="")
-    try:
-        ans = input()
-    except (EOFError, KeyboardInterrupt):
-        raise _WizardCancelled()
-    return ans.strip().lower() in ("y", "yes")
-
-
-def _run_wizard_guarded(fn, *args, **kwargs) -> None:
-    """Run a wizard function, turning a Ctrl-C/Ctrl-D abort into a clean exit."""
-    try:
-        fn(*args, **kwargs)
-    except _WizardCancelled:
-        err_console.print("\n[yellow]Cancelled — nothing saved.[/yellow]")
-        raise typer.Exit(130)
+# The credential wizard + its prompt helpers live in app/auth/wizard.py so the
+# in-shell `scm setup` command shares the exact same implementation.  Imported
+# here under the original private names to keep the env-var wizard below unchanged.
+from app.auth.wizard import (  # noqa: E402
+    WizardCancelled as _WizardCancelled,
+    run_credential_wizard,
+    run_wizard_guarded as _run_wizard_guarded,
+    select_or_create_profile,
+    wizard_confirm as _wizard_confirm,
+    wizard_prompt as _wizard_prompt,
+)
 
 
 def _detect_shell_style() -> str:
@@ -115,15 +80,6 @@ def _export_line(name: str, value: str, style: str) -> str:
     if style == "powershell":
         return f'$env:{name} = "{value}"'
     return f"export {name}={shlex.quote(value)}"
-
-
-def _identity_name(claims: dict) -> str:
-    """Best display name from userinfo claims (mirrors the in-shell helper)."""
-    for key in ("name", "email", "preferred_username", "sub"):
-        val = claims.get(key)
-        if val:
-            return str(val)
-    return ""
 
 
 # ---------------------------------------------------------------------------
@@ -299,7 +255,7 @@ def setup_scm_wizard(
 @scm_app.command("keystore")
 def setup_scm_keystore() -> None:
     """Store SCM/SSH credentials in the OS keychain (persistent, secure)."""
-    _run_wizard_guarded(_run_auth_configure)
+    _run_wizard_guarded(run_credential_wizard)
 
 
 def _scm_manual_and_offer() -> None:
@@ -310,8 +266,16 @@ def _scm_manual_and_offer() -> None:
     console.print("\n[bold cyan]Set up SCM — environment variables (no keychain)[/bold cyan]")
     console.print(
         "  [dim]Session-only: these live in the current terminal and are gone when\n"
-        "  you close it or reboot. Set them by hand below, or let the wizard build them.[/dim]\n"
+        "  you close it or reboot. The guided wizard builds them for you, or set\n"
+        "  them by hand.  Prefer persistent secrets? [bold]arc setup scm keystore[/bold][/dim]\n"
     )
+
+    if _wizard_confirm("Build these with a guided wizard now?"):
+        _run_env_wizard(export_mode=False)
+        return
+
+    # Declined the wizard — fall back to the manual reference.
+    console.print("\n[dim]No problem — here are the variables to set by hand:[/dim]\n")
     console.print("[yellow]─ Option A: a token (recommended — no secret on the machine) ─[/yellow]")
     console.print("    " + _export_line("SCM_BEARER_TOKEN", "<your-token>", style))
     console.print("    " + _export_line("SCM_TSG_ID", "<tsg-id>", style) + "   [dim](optional)[/dim]")
@@ -332,13 +296,10 @@ def _scm_manual_and_offer() -> None:
         "  Keychain instead? [bold]arc setup scm keystore[/bold][/dim]\n"
     )
 
-    if _wizard_confirm("Build these with a guided wizard now?"):
-        _run_env_wizard(export_mode=False)
-
 
 def _run_env_wizard(*, export_mode: bool) -> None:
     """Collect SCM/SSH credentials and emit shell `export` lines (writes nothing)."""
-    from app.api._auth import fetch_userinfo, oauth_token
+    from app.api._auth import oauth_token
 
     style = _detect_shell_style()
     ui = err_console if export_mode else console  # prompts/status never touch stdout in export mode
@@ -346,7 +307,7 @@ def _run_env_wizard(*, export_mode: bool) -> None:
     ui.print("\n[bold cyan]ARC SCM env-var setup[/bold cyan]  [dim](session-only, no keychain)[/dim]")
     ui.print(
         "  [bold]1[/bold]  Paste a static SCM bearer token\n"
-        "  [bold]2[/bold]  Log in now — mint a temporary token from a service account\n"
+        "  [bold]2[/bold]  Mint a temporary token from a service account\n"
     )
     choice = _wizard_prompt("Choose 1 or 2", "1", out=ui)
 
@@ -366,14 +327,11 @@ def _run_env_wizard(*, export_mode: bool) -> None:
         try:
             with httpx.Client(timeout=30) as http:
                 token, expires_in = oauth_token(http, client_id, client_secret, tsg)
-                claims = fetch_userinfo(http, token)
         except Exception as exc:  # noqa: BLE001
-            ui.print(f"[red]Login failed:[/red] {exc}")
+            ui.print(f"[red]Token request failed:[/red] {exc}")
             raise typer.Exit(1)
-        who = _identity_name(claims)
         mins = f" (~{expires_in // 60} min)" if expires_in else ""
-        ui.print(f"[green]✓[/green] Token minted{mins}."
-                 + (f"  Signed in as [bold]{who}[/bold]." if who else ""))
+        ui.print(f"[green]✓[/green] Token minted{mins}.")
         pairs.append(("SCM_BEARER_TOKEN", token))
         pairs.append(("SCM_TSG_ID", tsg))
     else:
@@ -542,161 +500,22 @@ def auth_configure(
     these to obtain a fresh OAuth token on every startup.  Secrets are stored
     in the OS keychain; non-sensitive values go to the config file.
 
-    Use --profile to create or update a named profile (e.g. --profile readwrite).
-    Switch between profiles inside the ARC shell with the `account` command.
+    Without --profile you'll be shown a menu to pick an existing profile or
+    create a new one, so --profile is optional.  Switch between profiles inside
+    the ARC shell with `scm login`.
 
     Press Enter to keep any value that is already stored.
     """
     _run_wizard_guarded(
-        _run_auth_configure,
+        run_credential_wizard,
+        profile=profile,
         scm_bearer_token=scm_bearer_token,
         scm_client_id=scm_client_id,
         scm_secret=scm_secret,
         scm_tsg=scm_tsg,
         ssh_user=ssh_user,
         ssh_key=ssh_key,
-        profile=profile,
     )
-
-
-def _run_auth_configure(
-    *,
-    scm_bearer_token: Optional[str] = None,
-    scm_client_id: Optional[str] = None,
-    scm_secret: Optional[str] = None,
-    scm_tsg: Optional[str] = None,
-    ssh_user: Optional[str] = None,
-    ssh_key: Optional[str] = None,
-    profile: str = "default",
-) -> None:
-    """Interactive credential wizard body — shared by `arc auth configure`
-    and `arc setup scm` so there is a single implementation.
-    """
-    cfg = load_config(profile=profile)
-    kc = keychain_available()
-
-    console.print("\n[bold cyan]ARC Credential Setup[/bold cyan]")
-    if profile != "default":
-        console.print(f"  Profile: [bold yellow]{profile}[/bold yellow]")
-    console.print(
-        "  Press [bold]Enter[/bold] to keep an existing value.\n"
-        "  Secrets are shown as [dim]****[/dim] when already stored in the keychain.\n"
-    )
-    if kc:
-        console.print(
-            f"  Secrets  → [green]OS keychain[/green]  (client_secret, SSH password)\n"
-            f"  Config   → [dim]{CONFIG_FILE}[/dim]  (client_id, tsg_id, SSH user/key/port)\n"
-        )
-    else:
-        console.print(
-            "  [yellow]⚠  OS keychain unavailable — ARC will not write secrets to disk.[/yellow]\n"
-            "  Use environment variables for secrets until keychain access is available.\n"
-        )
-
-    _prompt = _wizard_prompt
-
-    # ── SCM service account (primary auth method) ────────────────────────────
-    console.print("[yellow]─ Strata Cloud Manager — Service Account ─[/yellow]")
-    console.print(
-        "  [dim]Your service account credentials come from the Palo Alto SCM portal.[/dim]\n"
-        "  [dim]SCM portal → Settings → Identity & Access → Service Accounts → your account[/dim]\n"
-    )
-
-    cfg.scm.client_id = scm_client_id or _prompt(
-        "Client ID",
-        cfg.scm.client_id,
-        hint="From SCM portal: the service account email, e.g. pa-api-you@1234567890.iam.panserviceaccount.com",
-    )
-    cfg.scm.client_secret = scm_secret or _prompt(
-        "Client Secret",
-        cfg.scm.client_secret,
-        secret=True,
-        hint="From SCM portal: the secret shown when you created or reset the service account",
-    )
-    cfg.scm.tsg_id = scm_tsg or _prompt(
-        "TSG ID",
-        cfg.scm.tsg_id,
-        hint="Your Tenant Services Group ID — the number in your SCM URL or service account name",
-    )
-
-    # ── Bearer token (advanced / optional) ───────────────────────────────────
-    console.print(
-        "\n[yellow]─ Bearer Token (optional — leave blank if using client credentials above) ─[/yellow]"
-    )
-    console.print(
-        "  [dim]Only needed for pre-issued tokens or testing.  ARC prefers client credentials.[/dim]\n"
-    )
-    cfg.scm.bearer_token = scm_bearer_token or _prompt(
-        "Bearer Token",
-        cfg.scm.bearer_token,
-        secret=True,
-        hint="Leave blank to have ARC generate tokens automatically from your client credentials",
-    )
-
-    # ── SSH Defaults ─────────────────────────────────────────────────────────
-    console.print("\n[yellow]─ SSH Defaults ─[/yellow]")
-    cfg.ssh.user = ssh_user or _prompt(
-        "SSH Username",
-        cfg.ssh.user,
-        hint="Username for SSH sessions to managed devices (default: admin)",
-    )
-    cfg.ssh.key_path = ssh_key or _prompt(
-        "SSH Key Path",
-        cfg.ssh.key_path,
-        hint="Path to your SSH private key, e.g. ~/.ssh/id_ed25519 (leave blank to use password)",
-    )
-    cfg.ssh.password = _prompt(
-        "SSH Password",
-        cfg.ssh.password,
-        secret=True,
-        hint="Leave blank if using key auth or SSH agent",
-    )
-
-    try:
-        save_config(cfg, profile=profile)
-    except ConfigSecurityError as exc:
-        console.print(f"\n[yellow]⚠[/yellow] {exc}")
-        console.print(
-            f"[green]✓[/green] Non-sensitive config saved to [bold]{CONFIG_FILE}[/bold]  "
-            "[dim](mode 0600)[/dim]"
-        )
-        raise typer.Exit(1) from exc
-
-    if kc:
-        profile_label = f" (profile: [bold]{profile}[/bold])" if profile != "default" else ""
-        console.print(
-            f"\n[green]✓[/green] Secrets saved to OS keychain{profile_label}\n"
-            f"[green]✓[/green] Config file: [bold]{CONFIG_FILE}[/bold]  [dim](mode 0600)[/dim]\n"
-        )
-    else:
-        console.print(
-            f"\n[green]✓[/green] Non-sensitive config saved to [bold]{CONFIG_FILE}[/bold]  "
-            "[dim](mode 0600)[/dim]\n"
-        )
-
-    if profile != "default":
-        console.print(
-            f"Switch to this profile in ARC with: [bold]account {profile}[/bold]\n"
-        )
-
-    # Auto-verify credentials immediately so the operator knows right away
-    # if something was entered incorrectly, without needing a separate command.
-    if cfg.scm.is_configured:
-        console.print("[dim]Verifying credentials…[/dim]")
-        try:
-            from app.api.client import SCMClient
-            SCMClient(cfg.scm)
-            console.print("[green]✓[/green] SCM credentials verified — token obtained successfully.\n")
-        except Exception as exc:
-            console.print(
-                f"[yellow]⚠  Credential check failed:[/yellow] {exc}\n"
-                "  Credentials were saved. Run [bold]arc auth test[/bold] for a full diagnostic,\n"
-                "  or re-run [bold]arc auth configure[/bold] to correct the values.\n"
-            )
-    else:
-        console.print(
-            "Run [bold]arc auth test[/bold] to verify your credentials work end-to-end."
-        )
 
 
 @auth_app.command("show")
