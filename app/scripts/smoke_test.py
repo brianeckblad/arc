@@ -1736,6 +1736,26 @@ def test_configure_flow() -> None:
     except Exception as exc:
         fail("cd .. context-aware navigation", str(exc))
 
+    # ── configure accepts the full Cisco form (configure terminal / term / t) ──
+    try:
+        from app.shell._base import ShellState
+        from app.shell.configure import ConfigureMixin
+
+        def _enters(argv):
+            m = object.__new__(ConfigureMixin)
+            m._state = ShellState()
+            m._cmd_configure(argv)
+            return m._state.configure_mode
+
+        entered = all(_enters(a) for a in ([], ["terminal"], ["term"], ["t"], ["TERMINAL"]))
+        rejected = not _enters(["bogus"])  # unknown trailing word must NOT enter
+        if entered and rejected:
+            ok("configure: enters on terminal/term/t (Cisco form), rejects unknown args")
+        else:
+            fail("configure Cisco-form handling", f"entered={entered} rejected={rejected}")
+    except Exception as exc:
+        fail("configure terminal form test", str(exc))
+
 
 def test_gui_endpoints() -> None:
     """Section 14 — Browser-console endpoint coverage (offline, no SCM).

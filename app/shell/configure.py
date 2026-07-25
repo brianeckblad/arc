@@ -55,12 +55,16 @@ class ConfigureMixin:
     def _cmd_configure(self, args: list[str]) -> None:
         """Enter configure mode (Cisco-style).
 
-        In configure mode, 'set' creates objects and 'exit' leaves configure mode.
-        Shortcuts like 'conf' and 'conf t' are defined in settings/builtin-commands.json.
+        Accepts the full Cisco form: ``configure``, ``configure terminal``,
+        ``configure term``, ``configure t`` (plus the ``conf*`` aliases).  In
+        configure mode, 'set' creates objects and 'exit' leaves configure mode.
         """
-        if args:
+        # Tolerate the Cisco "terminal" sub-word (configure terminal / term / t);
+        # reject only genuinely unknown trailing arguments.
+        extra = [a for a in args if a.lower() not in ("terminal", "term", "t")]
+        if extra:
             console.print(
-                "[yellow]Usage:[/yellow] configure\n"
+                "[yellow]Usage:[/yellow] configure  [dim](or: configure terminal)[/dim]\n"
                 "  Then use [bold]set[/bold] to create objects, [bold]cli[/bold] for theme operations."
             )
             return
