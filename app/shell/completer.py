@@ -216,8 +216,16 @@ class ArcCompleter(Completer):
         Called from both get_completions and _complete_dev_shell fallthrough.
         """
         first = parts[0].lower()
+        # When the line ends with a space the user has started a NEW (empty)
+        # token — represent it explicitly so every branch's len(parts)/parts[N]
+        # math lines up with the cursor.  Without this the trailing space is
+        # invisible to str.split(), so parts[N] returns the *previous* complete
+        # token and a Completion with start_position=-len(partial) deletes back
+        # into it (e.g. "cd folder " → "cd ffolder").
+        if text.endswith(" "):
+            parts = parts + [""]
         # True if the user has typed at least one space after the first token
-        has_arg_space = len(parts) > 1 or text.endswith(" ")
+        has_arg_space = len(parts) > 1
         partial_arg = parts[1] if len(parts) > 1 else ""
 
         # ---- cd / connect → device name or subcommand completion ----
@@ -563,7 +571,9 @@ class ArcCompleter(Completer):
         # ---- scm → subcommand, then profile names for login/delete ----
         if first == "scm" and has_arg_space:
             sub = parts[1].lower() if len(parts) > 1 else ""
-            typing_sub = len(parts) < 2 or (len(parts) == 2 and not text.endswith(" "))
+            # parts already carries the trailing empty token, so "still on the
+            # subcommand slot" is simply: nothing typed past the subcommand.
+            typing_sub = len(parts) <= 2
             if typing_sub:
                 subs = {
                     "login":  "switch profile + authenticate",
@@ -648,7 +658,9 @@ class ArcCompleter(Completer):
             # parts[0]="show", parts[1]="snippet", parts[2]=name-or-partial, parts[3]=subcommand
             name_part    = parts[2] if len(parts) > 2 else ""
             subcmd_part  = parts[3] if len(parts) > 3 else ""
-            has_subcmd_space = len(parts) > 3 or (len(parts) == 3 and text.endswith(" "))
+            # parts carries the trailing empty token, so the name is complete
+            # once there's a token past it.
+            has_subcmd_space = len(parts) > 3
 
             # Collect candidate snippet names
             device = self._shell._state.device

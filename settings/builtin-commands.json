@@ -111,7 +111,7 @@
   "commit": {
     "visible": true,
     "display": "commit",
-    "help": "Apply staged changes + push to devices  (commit watch → follow the job)",
+    "help": "Apply staged changes + push to devices  (commit check → pre-flight/validate; commit watch → follow the job)",
     "configure_only": true,
     "hide_in_configure": false,
     "onlogin": false,

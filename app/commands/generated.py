@@ -135,6 +135,60 @@ def _payload_from_fields(
     return body
 
 
+def validate_request_body(command_key: str, body: "dict | None") -> list[str]:
+    """Offline schema check of an already-captured request body.
+
+    Validates *body* (the JSON a staged write will POST/PUT) against the
+    OpenAPI-derived ``FIELD_CATALOG`` for *command_key*: required fields present,
+    enum values valid, and maxLength/pattern satisfied.  Returns a list of
+    human-readable problems ([] means valid, or no schema is known for this
+    command — hand-written commands not in the catalog are left to their own
+    handler validation).  Never raises and never touches the network — used by
+    ``commit check`` to pre-flight the whole staged queue offline.
+
+    Validating the real body (API field names) rather than re-deriving from CLI
+    args avoids false positives from arg-name differences between generated and
+    hand-written handlers.
+    """
+    entry = FIELD_CATALOG.get(command_key)
+    if not entry or not isinstance(body, dict):
+        return []
+    spec_args = {a["name"]: a for a in entry.get("args") or []}
+    payload_spec = entry.get("payload") or {}
+    problems: list[str] = []
+
+    for cli_name, api_name in (payload_spec.get("fields") or {}).items():
+        meta = spec_args.get(cli_name, {})
+        val = body.get(api_name)
+        present = not (
+            val is None
+            or (isinstance(val, str) and not val.strip())
+            or (isinstance(val, (list, dict)) and not val)
+        )
+        if not present:
+            if meta.get("required"):
+                problems.append(f"missing required field <{cli_name}>")
+            continue
+        choices = meta.get("choices")
+        if choices and isinstance(val, str) and val not in choices \
+                and not any(c.lower() == val.lower() for c in choices):
+            shown = ", ".join(choices[:8]) + (", …" if len(choices) > 8 else "")
+            problems.append(f"{cli_name} must be one of: {shown}")
+        if isinstance(val, str):
+            try:
+                _validate_constraints(command_key, cli_name, val, meta)
+            except ValueError as exc:
+                problems.append(str(exc))
+
+    variant = payload_spec.get("variant")
+    if variant:
+        api_names = set((variant.get("choices") or {}).values())
+        if not any(body.get(k) not in (None, "") for k in api_names):
+            keys = ", ".join(sorted((variant.get("choices") or {}).keys()))
+            problems.append(f"needs one of: {keys}")
+    return problems
+
+
 def _json_payload(args: dict) -> Any:
     """Return JSON from ``json <payload>`` or ``file <path>`` command args."""
     if "json" in args:

@@ -116,61 +116,75 @@ class ExecutionMixin:
                     self._scm._container_override = None
             self._render(key, cmd_def, data)
         except httpx.HTTPStatusError as exc:
+            console.print(self._format_api_error(exc))
+        except httpx.HTTPError as exc:
+            console.print(self._format_api_error(exc))
+        except ValueError as exc:
+            console.print(self._format_api_error(exc))
+
+    def _format_api_error(self, exc: Exception) -> str:
+        """Return a markup-ready, secret-sanitized message for an API/handler error.
+
+        Shared by interactive execution (`_execute_api`) and the `commit` replay
+        loop so a write rejected by SCM shows the *real* reason (which field / why)
+        instead of a bare httpx line.  For an HTTP error it maps 401/403/404 to
+        actionable guidance and otherwise surfaces the SCM response body with any
+        bearer tokens / secrets redacted.
+        """
+        if isinstance(exc, httpx.HTTPStatusError):
             status = exc.response.status_code
             if status == 401:
-                console.print(
+                return (
                     "[red]Authentication failed (401).[/red] Token may be expired — "
                     "run [bold]arc auth test[/bold] outside the shell, or "
-                    "[bold]account <profile>[/bold] to re-select credentials."
+                    "[bold]scm login <profile>[/bold] to re-select credentials."
                 )
-            elif status == 403:
-                console.print(
+            if status == 403:
+                return (
                     "[red]Permission denied (403).[/red] Your role or TSG scope may "
                     "not allow this — check [bold]tsg[/bold] and your "
                     "service-account role."
                 )
-            elif status == 404:
-                console.print(
+            if status == 404:
+                return (
                     "[red]Not found (404)[/red] — the resource or folder may not "
                     "exist in this TSG. Active folder: "
                     f"[bold]{self._state.folder}[/bold]."
                 )
-            else:
-                raw_detail = (exc.response.text or "").strip()
-                # Sanitize: mask anything that looks like a bearer token or secret
-                # before displaying to avoid leaking credentials from API error bodies.
-                import re as _re
-                sanitized = _re.sub(
-                    r'(Bearer\s+)[A-Za-z0-9\-._~+/]+=*',
-                    r'\1[REDACTED]',
-                    raw_detail,
-                    flags=_re.IGNORECASE,
-                )
-                sanitized = _re.sub(
-                    r'("(?:token|secret|password|bearer)"\s*:\s*")[^"]{8,}(")',
-                    r'\1[REDACTED]\2',
-                    sanitized,
-                    flags=_re.IGNORECASE,
-                )
-                # Collapse whitespace and truncate at a word boundary so we
-                # never chop a useful error message mid-word.  400 chars gives
-                # enough context for most SCM error bodies.
-                collapsed = " ".join(sanitized.split())
-                if len(collapsed) > 400:
-                    trunc = collapsed[:400]
-                    last_space = trunc.rfind(" ")
-                    collapsed = (trunc[:last_space] if last_space > 300 else trunc) + " …"
-                detail = collapsed
-                console.print(
-                    f"[red]API error ({status}).[/red] {detail}"
-                    if detail else f"[red]API error ({status}).[/red]"
-                )
-        except httpx.HTTPError as exc:
-            console.print(
-                f"[red]Cannot reach SCM API:[/red] {exc}. Check network/VPN and retry."
+            raw_detail = (exc.response.text or "").strip()
+            # Sanitize: mask anything that looks like a bearer token or secret
+            # before displaying to avoid leaking credentials from API error bodies.
+            import re as _re
+            sanitized = _re.sub(
+                r'(Bearer\s+)[A-Za-z0-9\-._~+/]+=*',
+                r'\1[REDACTED]',
+                raw_detail,
+                flags=_re.IGNORECASE,
             )
-        except ValueError as exc:
-            console.print(f"[yellow]{exc}[/yellow]")
+            sanitized = _re.sub(
+                r'("(?:token|secret|password|bearer)"\s*:\s*")[^"]{8,}(")',
+                r'\1[REDACTED]\2',
+                sanitized,
+                flags=_re.IGNORECASE,
+            )
+            # Collapse whitespace and truncate at a word boundary so we never
+            # chop a useful error message mid-word.  400 chars gives enough
+            # context for most SCM error bodies.
+            collapsed = " ".join(sanitized.split())
+            if len(collapsed) > 400:
+                trunc = collapsed[:400]
+                last_space = trunc.rfind(" ")
+                collapsed = (trunc[:last_space] if last_space > 300 else trunc) + " …"
+            detail = collapsed
+            return (
+                f"[red]API error ({status}).[/red] {detail}"
+                if detail else f"[red]API error ({status}).[/red]"
+            )
+        if isinstance(exc, httpx.HTTPError):
+            return f"[red]Cannot reach SCM API:[/red] {exc}. Check network/VPN and retry."
+        if isinstance(exc, ValueError):
+            return f"[yellow]{exc}[/yellow]"
+        return f"[red]{exc}[/red]"
 
     def _execute_remote(self, key: str, cmd_def: CommandDef, args: dict) -> None:
         if cmd_def.ssh_command is None:

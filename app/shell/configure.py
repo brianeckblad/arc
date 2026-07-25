@@ -287,7 +287,9 @@ class ConfigureMixin:
         ``commit confirmed [minutes]`` — push, then AUTO-REVERT to the current
         running version unless ``commit confirm`` arrives in time (default 10).
         ``commit confirm`` — make a pending confirmed-commit permanent.
-        ``commit check`` — re-validate staged changes without applying.
+        ``commit check`` — pre-flight staged changes without applying: offline
+        schema validation (required fields, enums, length/pattern) plus, when
+        connected, a re-check against current SCM state.
         All accept a trailing ``description <text>``.
         """
         tokens = list(args)
@@ -342,8 +344,11 @@ class ConfigureMixin:
                         )
                 except Exception as exc:  # noqa: BLE001 — report, keep the rest staged
                     self._state.staged_ops = staged[index - 1:]
+                    # Surface the REAL SCM rejection (which field / why), sanitized —
+                    # not the bare httpx "400 Bad Request" line.
+                    reason = self._format_api_error(exc)
                     console.print(
-                        f"  [red]✗[/red] {index}/{total}  {label} — {exc}\n"
+                        f"  [red]✗[/red] {index}/{total}  {label} — {reason}\n"
                         f"[yellow]{applied} change(s) applied; "
                         f"{len(self._state.staged_ops)} still staged (push skipped).[/yellow]\n"
                         "  Fix or [bold]abandon[/bold] the failing change, then commit again."
@@ -381,46 +386,75 @@ class ConfigureMixin:
             )
 
     def _commit_check(self) -> None:
-        """Re-validate every staged change against CURRENT SCM state (Junos-style).
+        """Pre-flight every staged change before commit (Junos-style).
 
-        The world can change between staging and commit — a colleague may have
-        deleted the object your update targets. Each entry's handler is re-run
-        through the recording client (fresh GETs, no mutations); entries that
-        still validate get their captured ops refreshed (ids re-resolved),
-        failures are reported and left staged for the operator to fix or abandon.
+        Two passes, combined into one report per entry:
+
+        1. **Schema (offline):** each captured request body is validated against
+           the OpenAPI-derived field catalog — required fields present, enums
+           valid, maxLength/pattern satisfied. No network; works even when SCM
+           is not connected.
+        2. **State (needs SCM):** when connected, each entry's handler is re-run
+           through the recording client (fresh GETs, no mutations) to catch drift
+           — e.g. a colleague deleted the object your update targets — and to
+           refresh captured ops (ids re-resolved).
+
+        Failures are reported and left staged for the operator to fix or abandon.
         """
+        from app.commands.generated import validate_request_body
+
         staged = self._state.staged_ops
         if not staged:
             console.print("[dim]No staged changes to check.[/dim]")
             return
-        if not self._scm:
-            console.print("[red]SCM is not configured — run [bold]arc auth configure[/bold] to set up credentials.[/red]")
-            return
+
+        connected = self._scm is not None
         failures = 0
         for index, entry in enumerate(staged, 1):
             label = f"{entry['command']} {entry['detail']}".strip()
-            cmd_def = COMMANDS.get(entry["command"])
-            if cmd_def is None or cmd_def.api_handler is None:
+            problems: list[str] = []
+
+            # 1. Offline schema check of the captured request bodies.
+            for op in entry.get("ops") or []:
+                if op.get("method") in ("POST", "PUT") and op.get("json"):
+                    problems.extend(validate_request_body(entry["command"], op["json"]))
+
+            # 2. Live state re-check (re-run the handler) when connected.
+            if connected:
+                cmd_def = COMMANDS.get(entry["command"])
+                if cmd_def is None or cmd_def.api_handler is None:
+                    problems.append("command no longer registered")
+                else:
+                    ctx = ExecutionContext(
+                        scm=self._scm, ssh=self._ssh, config=self._config,
+                        device=self._state.device, folder=entry["folder"],
+                        snippet=entry.get("snippet"),
+                        tsg_id=self._state.tsg_id,
+                    )
+                    try:
+                        entry["ops"] = capture_write_ops(
+                            self._scm, cmd_def.api_handler, ctx, entry.get("args") or {}
+                        )
+                    except Exception as exc:  # noqa: BLE001 — reported per entry
+                        problems.append(self._format_api_error(exc))
+
+            if problems:
                 failures += 1
-                console.print(f"  [red]✗[/red] {index}/{len(staged)}  {label} — command no longer registered")
-                continue
-            ctx = ExecutionContext(
-                scm=self._scm, ssh=self._ssh, config=self._config,
-                device=self._state.device, folder=entry["folder"],
-                snippet=entry.get("snippet"),
-                tsg_id=self._state.tsg_id,
-            )
-            try:
-                entry["ops"] = capture_write_ops(
-                    self._scm, cmd_def.api_handler, ctx, entry.get("args") or {}
+                console.print(
+                    f"  [red]✗[/red] {index}/{len(staged)}  {label} — "
+                    + "; ".join(problems)
                 )
+            else:
                 console.print(f"  [green]✓[/green] {index}/{len(staged)}  {label}")
-            except Exception as exc:  # noqa: BLE001 — each failure reported individually
-                failures += 1
-                console.print(f"  [red]✗[/red] {index}/{len(staged)}  {label} — {exc}")
+
+        if not connected:
+            console.print(
+                "[dim]SCM not connected — validated offline against the schema only; "
+                "reconnect to also re-check against current SCM state.[/dim]"
+            )
         if failures:
             console.print(
-                f"[yellow]commit check: {failures} of {len(staged)} staged change(s) no longer valid.[/yellow]\n"
+                f"[yellow]commit check: {failures} of {len(staged)} staged change(s) have problems.[/yellow]\n"
                 "  Fix or [bold]abandon[/bold] before committing."
             )
         else:
