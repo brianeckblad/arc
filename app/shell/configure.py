@@ -92,6 +92,20 @@ class ConfigureMixin:
                 f"[yellow]'{key}' made no configuration change — nothing staged.[/yellow]"
             )
             return
+        # Soft schema pre-check against the endpoint's OpenAPI request schema —
+        # warn (never block) if the body looks like SCM will reject it; still stage.
+        from app.commands.request_validate import validate_request_body_by_route
+        warn: list[str] = []
+        for op in ops:
+            warn.extend(validate_request_body_by_route(
+                op.get("method"), op.get("base_url"), op.get("path"),
+                op.get("json"), op.get("params"),
+            ))
+        if warn:
+            console.print(
+                "[yellow]⚠ may be rejected by SCM:[/yellow] " + "; ".join(warn)
+                + " [dim](staged anyway — re-checked at commit)[/dim]"
+            )
         detail = str(args.get("name") or (args.get("_positional") or [""])[0] or "").strip()
         # args are kept so `commit check` can re-run validation later.
         self._state.staged_ops.append(
@@ -317,6 +331,11 @@ class ConfigureMixin:
             console.print("[red]SCM is not configured — run [bold]arc auth configure[/bold] to set up credentials.[/red]")
             return
 
+        # Schema pre-flight over the whole staged queue — if anything looks
+        # invalid, ask how to proceed (never silently abandon).
+        if not self._commit_preflight():
+            return
+
         # commit confirmed: capture the revert target BEFORE anything changes.
         rollback_version: int | None = None
         if confirmed_minutes:
@@ -385,15 +404,63 @@ class ConfigureMixin:
                 "(or use [bold]commit watch[/bold] next time)[/dim]"
             )
 
+    def _commit_preflight(self) -> bool:
+        """Validate the staged queue against endpoint schemas before applying.
+
+        Returns True to proceed with the commit, False to stop.  When problems are
+        found, prompts the operator: [P]roceed anyway, [F]ix (stop, keep the queue
+        intact), or [A]bandon (discard the queue, stop).  Enter or Ctrl-C = Fix —
+        the staged config is NEVER discarded unless the operator chooses Abandon.
+        """
+        from app.commands.request_validate import validate_request_body_by_route
+
+        problems: list[tuple[str, list[str]]] = []
+        for entry in self._state.staged_ops:
+            issues: list[str] = []
+            for op in entry.get("ops") or []:
+                issues.extend(validate_request_body_by_route(
+                    op.get("method"), op.get("base_url"), op.get("path"),
+                    op.get("json"), op.get("params"),
+                ))
+            if issues:
+                problems.append((f"{entry['command']} {entry['detail']}".strip(), issues))
+
+        if not problems:
+            return True
+
+        console.print("[yellow]Schema pre-flight found problems before commit:[/yellow]")
+        for label, issues in problems:
+            console.print(f"  [red]✗[/red] {label} — " + "; ".join(issues))
+        console.print(
+            "  [dim]SCM is the final authority — these are local schema checks.[/dim]"
+        )
+        try:
+            choice = input(
+                "  [P]roceed anyway, [F]ix (keep staged, stop), or [A]bandon (discard)? [F]: "
+            ).strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            console.print("\n[dim]Stopped — staged changes kept. Fix or abandon, then commit.[/dim]")
+            return False
+
+        if choice in ("p", "proceed"):
+            return True
+        if choice in ("a", "abandon"):
+            self._state.staged_ops = []
+            console.print("[yellow]Abandoned all staged changes.[/yellow]")
+            return False
+        console.print("[dim]Stopped — staged changes kept. Fix or abandon, then commit.[/dim]")
+        return False
+
     def _commit_check(self) -> None:
         """Pre-flight every staged change before commit (Junos-style).
 
         Two passes, combined into one report per entry:
 
         1. **Schema (offline):** each captured request body is validated against
-           the OpenAPI-derived field catalog — required fields present, enums
-           valid, maxLength/pattern satisfied. No network; works even when SCM
-           is not connected.
+           the OpenAPI request schema of the endpoint it hits (route-keyed, so it
+           covers EVERY command — generated and hand-written) — required fields
+           present, enums valid, length/pattern/range satisfied. No network; works
+           even when SCM is not connected.
         2. **State (needs SCM):** when connected, each entry's handler is re-run
            through the recording client (fresh GETs, no mutations) to catch drift
            — e.g. a colleague deleted the object your update targets — and to
@@ -401,7 +468,7 @@ class ConfigureMixin:
 
         Failures are reported and left staged for the operator to fix or abandon.
         """
-        from app.commands.generated import validate_request_body
+        from app.commands.request_validate import validate_request_body_by_route
 
         staged = self._state.staged_ops
         if not staged:
@@ -414,10 +481,12 @@ class ConfigureMixin:
             label = f"{entry['command']} {entry['detail']}".strip()
             problems: list[str] = []
 
-            # 1. Offline schema check of the captured request bodies.
+            # 1. Offline schema check of each captured request body vs. its route.
             for op in entry.get("ops") or []:
-                if op.get("method") in ("POST", "PUT") and op.get("json"):
-                    problems.extend(validate_request_body(entry["command"], op["json"]))
+                problems.extend(validate_request_body_by_route(
+                    op.get("method"), op.get("base_url"), op.get("path"),
+                    op.get("json"), op.get("params"),
+                ))
 
             # 2. Live state re-check (re-run the handler) when connected.
             if connected:

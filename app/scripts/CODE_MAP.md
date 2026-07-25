@@ -14,73 +14,74 @@
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 
-## `app/shell/configure.py`  (2618 lines)
+## `app/shell/configure.py`  (2687 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
 _prefs_file_label()                      9-15           Repo-relative path of the config file (holds preferences), for display
 capture_write_ops()                      18-51          Run a write handler against a recording client and capture its mutatio
-class ConfigureMixin                     54-2615        
+class ConfigureMixin                     54-2684        
   ._cmd_configure()                      55-76          Enter configure mode (Cisco-style).
-  ._stage_write()                        78-109         Validate a configure-mode write and stage it locally (no SCM change).
-  ._cmd_show_pending()                   111-134        List the locally staged configure-mode changes (`show config`).
-  ._cmd_abandon()                        136-156        Discard all locally staged changes (configure mode only).
-  ._cmd_unstage()                        158-190        Remove a single staged change by its index number (configure mode only
-  ._rollback_version()                   196-219        Version number of the CURRENT running config (the revert target).
-  ._arm_commit_confirmed()               221-236        
-  ._cancel_commit_confirmed()            238-250        
-  ._commit_confirmed_expired()           252-280        Timer thread: the operator never confirmed — revert and re-push.
-  ._cmd_commit_staged()                  282-386        Apply all staged changes to SCM, then push the candidate to devices.
-  ._commit_check()                       388-461        Pre-flight every staged change before commit (Junos-style).
-  ._watch_job()                          463-494        Poll a push job every few seconds until it finishes (or timeout).
-  ._confirm_configure_exit()             496-523        Ask what to do with staged changes when leaving configure mode.
-  ._cmd_terminal()                       525-658        Per-user terminal preferences — persisted to config/<user>/config.json
-  ._cmd_cli()                            660-714        Read/write CLI theme settings (configure mode only).
-  ._cmd_feature()                        716-1030       Show or change feature-flag states at runtime.
-  ._cmd_feature_info()                   1033-1090      Describe a flag: state, gated commands, and their effective scope.
-  ._cmd_feature_area()                   1092-1159      List areas, or enable/disable a whole area.
-  ._cmd_feature_scope()                  1161-1231      Set or clear a per-command run-scope override.
-  ._cmd_feature_meta()                   1233-1282      Set per-domain file meta: default state or carry flag.
-  ._cmd_feature_gui()                    1285-1319      Launch the browser-based feature editor and block until it closes.
-  ._cmd_arc_gui()                        1321-1355      Launch the browser-based ARC settings console and block until closed.
-  ._cmd_scm()                            1357-1396      Manage SCM credentials and profiles.
-  ._cmd_scm_status()                     1398-1409      Show the profile table plus the live connection state.
-  ._cmd_scm_login()                      1411-1435      Switch to a profile and authenticate. No arg → numbered picker.
-  ._pick_profile()                       1437-1467      Numbered profile chooser for `scm login`. Returns a name or None.
-  ._cmd_scm_setup()                      1469-1480      Run the interactive credential wizard, then log into the saved profile
-  ._cmd_scm_delete()                     1482-1499      Delete a credential profile (cannot delete the active one).
-  ._cs_tier()                            1506-1532      Return the tier label based on override flag in command-structure.json
-  ._format_spec()                        1535-1559      Format a command arg spec in PAN-OS style.
-  ._cs_list()                            1561-1656      List enabled/disabled commands with PAN-OS-style field display and pag
-  ._cs_update()                          1659-1692      Stream app/scripts/commandupdate.py — same script the LLM 'commandupda
-  ._cs_clear()                           1695-1716      Remove all override:false (cli-generated) entries from command-structu
-  ._cmd_dev()                            1722-1760      Enter the dev shell (modal, like configure mode).
-  ._dev_shell_enter()                    1762-1794      Enter the dev shell — enable dev mode and show the dev menu.
-  ._dev_shell_exit()                     1796-1804      Leave the dev shell.
-  ._dispatch_dev_shell()                 1806-1885      Route dev-shell commands.
-  ._dev_inline_help()                    1887-1972      Show contextual help for a dev shell command or sub-command.
-  ._dev_shell_help()                     1974-2003      Print full dev shell command reference.
-  ._cs_tier_legend()                     2005-2041      Print the tier legend for command-structure list.
-  ._dev_status()                         2049-2144      Unified health dashboard for the dev shell.
-  ._dev_docs()                           2150-2161      Handle dev-shell 'docs' sub-commands.
-  ._dev_docs_update()                    2163-2211      Stream docsupdate.py to pull latest pan.dev specs and regenerate catal
-  ._dev_docs_status()                    2213-2261      Show doc/spec freshness with last pull date from MANIFEST.md.
-  ._dev_catalog()                        2267-2276      Handle dev-shell 'catalog' sub-commands.
-  ._dev_catalog_rebuild()                2278-2322      Run the canonical catalog rebuild, then refresh the live shell's cache
-  ._dev_invalidate_caches()              2324-2334      Refresh the live shell's in-memory caches after generators rewrote
-  ._print_dev_status()                   2338-2352      Print current dev mode state (used by 'dev on/off' outside the shell).
-  ._cmd_arc()                            2359-2417      ARC application information and management.
-  ._arc_help()                           2419-2443      Print arc sub-command reference.
-  ._arc_row()                            2449-2455      Print one labelled row in the arc show style.
-  ._arc_show_version()                   2457-2480      arc show version — version, Python, platform.
-  ._arc_show_paths()                     2482-2495      arc show paths — app root, settings, config directories.
-  ._arc_show_scm()                       2497-2535      arc show scm — SCM API spec freshness and last change.
-  ._arc_show_commands()                  2537-2568      arc show commands — command counts and feature flag stats.
-  ._arc_show_settings()                  2570-2592      arc show settings — settings file inventory.
-  ._arc_show_session()                   2594-2611      arc show session — active profile, TSG, folder, device, modes.
-  ._arc_show()                           2613-2615      arc show (all) — kept for backward compat; calls _cmd_arc(['show']).
+  ._stage_write()                        78-123         Validate a configure-mode write and stage it locally (no SCM change).
+  ._cmd_show_pending()                   125-148        List the locally staged configure-mode changes (`show config`).
+  ._cmd_abandon()                        150-170        Discard all locally staged changes (configure mode only).
+  ._cmd_unstage()                        172-204        Remove a single staged change by its index number (configure mode only
+  ._rollback_version()                   210-233        Version number of the CURRENT running config (the revert target).
+  ._arm_commit_confirmed()               235-250        
+  ._cancel_commit_confirmed()            252-264        
+  ._commit_confirmed_expired()           266-294        Timer thread: the operator never confirmed — revert and re-push.
+  ._cmd_commit_staged()                  296-405        Apply all staged changes to SCM, then push the candidate to devices.
+  ._commit_preflight()                   407-452        Validate the staged queue against endpoint schemas before applying.
+  ._commit_check()                       454-530        Pre-flight every staged change before commit (Junos-style).
+  ._watch_job()                          532-563        Poll a push job every few seconds until it finishes (or timeout).
+  ._confirm_configure_exit()             565-592        Ask what to do with staged changes when leaving configure mode.
+  ._cmd_terminal()                       594-727        Per-user terminal preferences — persisted to config/<user>/config.json
+  ._cmd_cli()                            729-783        Read/write CLI theme settings (configure mode only).
+  ._cmd_feature()                        785-1099       Show or change feature-flag states at runtime.
+  ._cmd_feature_info()                   1102-1159      Describe a flag: state, gated commands, and their effective scope.
+  ._cmd_feature_area()                   1161-1228      List areas, or enable/disable a whole area.
+  ._cmd_feature_scope()                  1230-1300      Set or clear a per-command run-scope override.
+  ._cmd_feature_meta()                   1302-1351      Set per-domain file meta: default state or carry flag.
+  ._cmd_feature_gui()                    1354-1388      Launch the browser-based feature editor and block until it closes.
+  ._cmd_arc_gui()                        1390-1424      Launch the browser-based ARC settings console and block until closed.
+  ._cmd_scm()                            1426-1465      Manage SCM credentials and profiles.
+  ._cmd_scm_status()                     1467-1478      Show the profile table plus the live connection state.
+  ._cmd_scm_login()                      1480-1504      Switch to a profile and authenticate. No arg → numbered picker.
+  ._pick_profile()                       1506-1536      Numbered profile chooser for `scm login`. Returns a name or None.
+  ._cmd_scm_setup()                      1538-1549      Run the interactive credential wizard, then log into the saved profile
+  ._cmd_scm_delete()                     1551-1568      Delete a credential profile (cannot delete the active one).
+  ._cs_tier()                            1575-1601      Return the tier label based on override flag in command-structure.json
+  ._format_spec()                        1604-1628      Format a command arg spec in PAN-OS style.
+  ._cs_list()                            1630-1725      List enabled/disabled commands with PAN-OS-style field display and pag
+  ._cs_update()                          1728-1761      Stream app/scripts/commandupdate.py — same script the LLM 'commandupda
+  ._cs_clear()                           1764-1785      Remove all override:false (cli-generated) entries from command-structu
+  ._cmd_dev()                            1791-1829      Enter the dev shell (modal, like configure mode).
+  ._dev_shell_enter()                    1831-1863      Enter the dev shell — enable dev mode and show the dev menu.
+  ._dev_shell_exit()                     1865-1873      Leave the dev shell.
+  ._dispatch_dev_shell()                 1875-1954      Route dev-shell commands.
+  ._dev_inline_help()                    1956-2041      Show contextual help for a dev shell command or sub-command.
+  ._dev_shell_help()                     2043-2072      Print full dev shell command reference.
+  ._cs_tier_legend()                     2074-2110      Print the tier legend for command-structure list.
+  ._dev_status()                         2118-2213      Unified health dashboard for the dev shell.
+  ._dev_docs()                           2219-2230      Handle dev-shell 'docs' sub-commands.
+  ._dev_docs_update()                    2232-2280      Stream docsupdate.py to pull latest pan.dev specs and regenerate catal
+  ._dev_docs_status()                    2282-2330      Show doc/spec freshness with last pull date from MANIFEST.md.
+  ._dev_catalog()                        2336-2345      Handle dev-shell 'catalog' sub-commands.
+  ._dev_catalog_rebuild()                2347-2391      Run the canonical catalog rebuild, then refresh the live shell's cache
+  ._dev_invalidate_caches()              2393-2403      Refresh the live shell's in-memory caches after generators rewrote
+  ._print_dev_status()                   2407-2421      Print current dev mode state (used by 'dev on/off' outside the shell).
+  ._cmd_arc()                            2428-2486      ARC application information and management.
+  ._arc_help()                           2488-2512      Print arc sub-command reference.
+  ._arc_row()                            2518-2524      Print one labelled row in the arc show style.
+  ._arc_show_version()                   2526-2549      arc show version — version, Python, platform.
+  ._arc_show_paths()                     2551-2564      arc show paths — app root, settings, config directories.
+  ._arc_show_scm()                       2566-2604      arc show scm — SCM API spec freshness and last change.
+  ._arc_show_commands()                  2606-2637      arc show commands — command counts and feature flag stats.
+  ._arc_show_settings()                  2639-2661      arc show settings — settings file inventory.
+  ._arc_show_session()                   2663-2680      arc show session — active profile, TSG, folder, device, modes.
+  ._arc_show()                           2682-2684      arc show (all) — kept for backward compat; calls _cmd_arc(['show']).
 
-## `app/scripts/smoke_test.py`  (2015 lines)
+## `app/scripts/smoke_test.py`  (2066 lines)
 
 Symbol                                   Lines          Purpose
 ──────────────────────────────────────── ────────────── ────────────────────────────────────────
@@ -91,20 +92,20 @@ _parse_cli_args()                        95-162         Return (sections_to_run,
 test_syntax()                            169-178        
 test_imports()                           185-242        
 test_registry()                          249-370        
-test_arg_parser()                        377-619        
-test_token_optimizations()               626-638        
-test_config()                            645-793        
-test_formatter()                         800-837        
-test_banner_alignment()                  852-876        
-test_inline_help_alignment()             892-1195       
-test_theme()                             1203-1305      
-test_code_map()                          1315-1350      
-test_command_visibility()                1353-1538      
-test_configure_flow()                    1545-1686      Section 13 — Configure/commit flow unit tests.
-test_gui_endpoints()                     1689-1907      Section 14 — Browser-console endpoint coverage (offline, no SCM).
-test_new_commands()                      1910-1937      Section 14b — the session's new features stay wired (registry + builti
-_test_gui_and_commands()                 1940-1943      Section 14 driver — GUI endpoint coverage + new-command wiring.
-main()                                   1965-2010      
+test_arg_parser()                        377-670        
+test_token_optimizations()               677-689        
+test_config()                            696-844        
+test_formatter()                         851-888        
+test_banner_alignment()                  903-927        
+test_inline_help_alignment()             943-1246       
+test_theme()                             1254-1356      
+test_code_map()                          1366-1401      
+test_command_visibility()                1404-1589      
+test_configure_flow()                    1596-1737      Section 13 — Configure/commit flow unit tests.
+test_gui_endpoints()                     1740-1958      Section 14 — Browser-console endpoint coverage (offline, no SCM).
+test_new_commands()                      1961-1988      Section 14b — the session's new features stay wired (registry + builti
+_test_gui_and_commands()                 1991-1994      Section 14 driver — GUI endpoint coverage + new-command wiring.
+main()                                   2016-2061      
 
 ## `app/settings/field_catalog.py`  (1974 lines)
 
@@ -886,6 +887,11 @@ _set_snippet()                           285-329        Create a new SCM snippet
 _delete_snippet()                        332-362        Delete an SCM snippet.
 COMMANDS                                 369-447        command registry dict
 
+## `app/settings/request_schemas.py`  (411 lines)
+
+Symbol                                   Lines          Purpose
+──────────────────────────────────────── ────────────── ────────────────────────────────────────
+
 ## `app/shell/execution.py`  (402 lines)
 
 Symbol                                   Lines          Purpose
@@ -999,23 +1005,6 @@ wizard_confirm()                         68-76          Yes/No prompt (default N
 run_wizard_guarded()                     79-89          Run a wizard function, turning a Ctrl-C/Ctrl-D abort into a clean exit
 select_or_create_profile()               92-134         Interactive profile picker for setup.
 run_credential_wizard()                  137-347        Interactive credential wizard — create or edit a profile's SCM/SSH cre
-
-## `app/commands/generated.py`  (337 lines)
-
-Symbol                                   Lines          Purpose
-──────────────────────────────────────── ────────────── ────────────────────────────────────────
-_validate_constraints()                  46-78          Enforce schema-declared maxLength/pattern on one CLI field value.
-_payload_from_fields()                   81-135         Build a request body from structured CLI fields (prompt-time validatio
-validate_request_body()                  138-189        Offline schema check of an already-captured request body.
-_json_payload()                          192-202        Return JSON from ``json <payload>`` or ``file <path>`` command args.
-_fill_path()                             205-214        Substitute OpenAPI ``{param}`` slots from named or positional args.
-_query()                                 217-234        Populate known query params from context first, then command args.
-_make_handler()                          237-274        Return a generic endpoint handler for one catalog entry.
-_humanize()                              277-280        'show syslog-server-profiles' -> 'Show syslog server profiles'.
-_field_usage()                           283-296        Build a usage line from spec-derived CLI fields (drives Tab + `?`).
-_usage()                                 299-312        
-_build()                                 315-333        
-COMMANDS                                 336-336        command registry dict
 
 ## `app/scripts/panosupdate.py`  (336 lines)
 

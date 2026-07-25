@@ -548,6 +548,57 @@ def test_arg_parser() -> None:
             fail("payload builder constraint validation misbehaved",
                  f"built={built!r} pattern={pattern_rejected} max_length={too_long_rejected}")
 
+    # 4c3 — route-keyed request schemas (cover EVERY write command) + validator.
+    try:
+        from app.settings.request_schemas import REQUEST_SCHEMAS as _rs
+    except Exception as exc:  # noqa: BLE001
+        _rs = None
+        fail("request_schemas import failed", str(exc))
+    if _rs is not None:
+        malformed = [r for r in _rs if not (
+            r.get("method") and r.get("path") is not None
+            and isinstance(r.get("required"), list)
+            and isinstance(r.get("props"), dict)
+            and isinstance(r.get("variants"), list))]
+        if _rs and not malformed:
+            ok(f"request schemas: {len(_rs)} write route(s) well-formed")
+        else:
+            fail("request schemas malformed/empty", f"{len(malformed)} bad of {len(_rs)}")
+
+        # Drift check, in-process (mirrors the code-map drift check).
+        import importlib.util as _ilu
+        from pathlib import Path as _P
+        _gen = _P(__file__).resolve().parent / "generate_request_schemas.py"
+        _spec = _ilu.spec_from_file_location("generate_request_schemas", _gen)
+        try:
+            _mod = _ilu.module_from_spec(_spec)
+            _spec.loader.exec_module(_mod)
+            _fresh = _mod._render(_mod._build_records())
+            if _fresh == _mod.OUT_FILE.read_text(encoding="utf-8"):
+                ok("app/settings/request_schemas.py is current (no drift)")
+            else:
+                fail("app/settings/request_schemas.py is STALE",
+                     "Run: python app/scripts/generate_request_schemas.py")
+        except ModuleNotFoundError:
+            ok("request schemas drift check skipped (PyYAML not installed)")
+        except Exception as exc:  # noqa: BLE001
+            fail("request schemas drift check raised", str(exc))
+
+        # Runtime validator sanity: valid body clean, invalid body flagged.
+        try:
+            from app.commands.request_validate import validate_request_body_by_route as _V
+            from app.api.client import SCMClient as _SC
+            _obj = _SC.OBJECTS_URL
+            _good = _V("POST", _obj, "/addresses",
+                       {"name": "h", "ip_netmask": "1.1.1.1/32", "folder": "P"})
+            _bad = _V("POST", _obj, "/addresses", {"folder": "P"})
+            if _good == [] and _bad:
+                ok("request validator: valid body passes, invalid body flagged")
+            else:
+                fail("request validator sanity failed", f"good={_good} bad={_bad}")
+        except Exception as exc:  # noqa: BLE001
+            fail("request validator sanity raised", str(exc))
+
     # 4d — user preferences round-trip (now stored in config/<user>/config.json)
     import json as _json
 

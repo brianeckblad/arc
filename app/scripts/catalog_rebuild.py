@@ -41,6 +41,7 @@ REBUILD_STEPS: list[tuple[str, str]] = [
     ("generate_panos_catalog.py",    "PAN-OS catalog     → app/commands/panos_catalog.py"),
     ("generate_feature_flags.py",    "feature flags      → settings/features/"),
     ("generate_field_library.py",    "field library      → app/settings/field_catalog.py"),
+    ("generate_request_schemas.py",  "request schemas    → app/settings/request_schemas.py"),
     ("commandupdate.py",             "command structure  → settings/command-structure.json"),
     ("generate_command_docs.py",     "command docs       → docs/commands/"),
     ("generate_api_index.py",        "API index          → app/scripts/API_INDEX.md"),
