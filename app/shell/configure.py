@@ -1432,8 +1432,9 @@ class ConfigureMixin:
 
           scm                 — show active profile, TSG and connection status
           scm status          — same as bare `scm`
-          scm login [profile] — switch to a profile and authenticate (prompts if omitted)
-          scm setup [profile] — create or edit a credential profile (interactive)
+          scm login [profile] — log in: prompts for credentials if no profile saved yet;
+                                otherwise picks from saved profiles (or switches directly)
+          scm setup [profile] — create or edit a saved credential profile (full wizard)
           scm delete <name>   — delete a credential profile
           scm gui             — open the browser settings console (profiles, creds…)
         """
@@ -1444,8 +1445,8 @@ class ConfigureMixin:
             console.print(
                 "[bold]scm[/bold] — manage SCM credentials & profiles\n"
                 "  [bold]scm[/bold] / [bold]scm status[/bold]    show active profile, TSG, connection\n"
-                "  [bold]scm login [profile][/bold]   switch profile + authenticate (prompts if omitted)\n"
-                "  [bold]scm setup [profile][/bold]   create/edit a profile (interactive wizard)\n"
+                "  [bold]scm login [profile][/bold]   log in: prompts inline if no profile saved, else picks saved profile\n"
+                "  [bold]scm setup [profile][/bold]   create/edit a saved profile (full wizard + keychain)\n"
                 "  [bold]scm delete <name>[/bold]     delete a profile\n"
                 "  [bold]scm gui[/bold]               open the browser settings console"
             )
@@ -1482,12 +1483,11 @@ class ConfigureMixin:
         )
 
     def _cmd_scm_login(self, rest: list[str]) -> None:
-        """Switch to a profile and authenticate. No arg → numbered picker."""
+        """Switch to a profile and authenticate. No arg → numbered picker.
+        When no profiles exist, prompt for credentials inline (optionally save).
+        """
         if not has_configured_profiles():
-            console.print(
-                "[yellow]No SCM profiles configured yet.[/yellow]\n"
-                "  Run [bold]scm setup[/bold] to create one."
-            )
+            self._cmd_scm_login_inline()
             return
 
         if rest:
@@ -1506,6 +1506,83 @@ class ConfigureMixin:
         target = self._pick_profile()
         if target:
             self._switch_profile(target)
+
+    def _cmd_scm_login_inline(self) -> None:
+        """Prompt for SCM credentials inline when no profiles are configured.
+
+        The user can connect for this session only (creds held in-memory, not saved)
+        or choose to save them as a named profile via the full wizard.
+        """
+        import getpass as _getpass
+
+        from app.config import SCMConfig
+
+        console.print(
+            "\n[bold cyan]SCM credentials[/bold cyan]  "
+            "[dim](no profiles configured yet)[/dim]\n"
+            "  Get these from: SCM portal → Settings → Identity & Access → Service Accounts\n"
+        )
+
+        try:
+            client_id     = input("  Client ID     (leave blank to use a bearer token): ").strip()
+            client_secret = ""
+            tsg_id        = ""
+            bearer_token  = ""
+
+            if client_id:
+                client_secret = _getpass.getpass("  Client Secret : ")
+                tsg_id        = input("  TSG ID        : ").strip()
+            else:
+                bearer_token = _getpass.getpass("  Bearer Token  : ")
+
+            if not client_id and not bearer_token:
+                console.print("[yellow]No credentials entered — cancelled.[/yellow]")
+                return
+
+            console.print()
+            save = input("  Save as a profile for future sessions? [y/N]: ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            console.print("\n[dim]Cancelled.[/dim]")
+            return
+
+        if save in ("y", "yes"):
+            from app.auth.wizard import WizardCancelled, run_credential_wizard
+            try:
+                saved = run_credential_wizard(
+                    scm_client_id=client_id,
+                    scm_secret=client_secret,
+                    scm_tsg=tsg_id,
+                    scm_bearer_token=bearer_token,
+                )
+            except WizardCancelled:
+                console.print("\n[yellow]Cancelled — nothing saved.[/yellow]")
+                return
+            if saved:
+                self._switch_profile(saved)
+            return
+
+        # Session-only: build a temporary SCMClient without saving anything.
+        from app.api.client import SCMClient, SCMError
+        scm_cfg = SCMConfig(
+            client_id=client_id,
+            client_secret=client_secret,
+            tsg_id=tsg_id,
+            bearer_token=bearer_token,
+        )
+        try:
+            self._scm = SCMClient(scm_cfg)
+            self._scm_manual = True
+            tsg_label = tsg_id or "n/a"
+            console.print(
+                f"[green]✓[/green] SCM connected  [dim](session only — not saved)[/dim]"
+                f"  [dim]TSG:[/dim] [cyan]{tsg_label}[/cyan]"
+            )
+            self._refresh_devices(silent=True)
+            self._refresh_folders(silent=True)
+        except SCMError as exc:
+            console.print(f"[red]✗  Connection failed:[/red] {exc}")
+            self._scm = None
+            self._scm_manual = False
 
     def _pick_profile(self) -> "Optional[str]":
         """Numbered profile chooser for `scm login`. Returns a name or None."""

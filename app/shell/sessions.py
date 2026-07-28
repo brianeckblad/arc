@@ -73,17 +73,28 @@ class SessionsMixin:
         ssh_password = str(cfg_ssh.password)
         ssh_port = int(cfg_ssh.port)
 
+        if not ssh_user:
+            try:
+                ssh_user = input("  SSH Username [admin]: ").strip() or "admin"
+            except (EOFError, KeyboardInterrupt):
+                console.print("\n[dim]Cancelled.[/dim]")
+                self._state.device = previous_device
+                return
+
         if not ssh_key_path and not ssh_password:
-            console.print(
-                "[yellow]⚠  No SSH credentials stored for ARC.[/yellow]\n"
-                "  Trying SSH agent and default key files — if those are absent\n"
-                "  you will be prompted during the keyboard-interactive exchange.\n"
-                "  Run [bold]arc auth configure[/bold] to store credentials so they\n"
-                "  auto-fill next time, or see [bold]arc setup osx[/bold] / "
-                "[bold]arc setup win[/bold] / [bold]arc setup linux[/bold].\n"
-                "  [dim]Tip: prefer SSH agent ([bold]ssh-add[/bold]) over stored keys —\n"
-                "  agent-based auth never writes private key material to ARC config.[/dim]\n"
-            )
+            try:
+                import getpass as _getpass
+                ssh_password = _getpass.getpass(
+                    "  SSH Password (blank to use SSH agent / default keys): "
+                )
+            except (EOFError, KeyboardInterrupt):
+                console.print("\n[dim]Cancelled.[/dim]")
+                self._state.device = previous_device
+                return
+            if not ssh_password:
+                console.print(
+                    "[dim]No password entered — trying SSH agent and default key files.[/dim]"
+                )
 
         console.print(f"[dim]Connecting SSH: {ssh_user}@{host}:{ssh_port}…[/dim]")
 

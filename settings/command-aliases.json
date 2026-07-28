@@ -10,5 +10,6 @@
   "_comment_examples": "=== Add your own ===",
   "_example_1": "\"sp\": \"show security policy\"  — type 'sp' to run 'show security policy'",
   "_example_2": "\"sif\": \"show interface all\"    — type 'sif' to run 'show interface all'",
-  "ls": "show"
+  "ls": "show",
+  "eixt": "exit"
 }

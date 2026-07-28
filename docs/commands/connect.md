@@ -53,14 +53,24 @@ arc:Production > connect fw-edge-02
 
 ## Authentication
 
-ARC tries authentication methods in this order:
-1. SSH agent keys
-2. Configured key file (`arc auth configure --ssh-key`)
-3. Default key files (`~/.ssh/id_ed25519`, `id_rsa`, `id_ecdsa`)
-4. Keyboard-interactive (auto-fills stored password from keychain, surfaces 2FA prompts)
-5. Plain password fallback
+If no SSH credentials are stored for your profile, `connect` prompts you inline
+before opening the session:
 
-If you have no stored credentials, you'll be prompted during the keyboard-interactive exchange.
+```
+arc:Production > connect fw-edge-01
+  SSH Username [admin]:
+  SSH Password (blank to use SSH agent / default keys):
+```
+
+The entered credentials are used for this session only — they are not saved.
+To store them for future sessions, use `scm setup` (in-shell wizard) or `arc auth configure`.
+
+When credentials are stored, ARC tries them in this order:
+1. SSH agent keys
+2. Configured key file (from your profile)
+3. Default key files (`~/.ssh/id_ed25519`, `id_rsa`, `id_ecdsa`)
+4. Keyboard-interactive (surfaces 2FA prompts)
+5. Stored password fallback
 
 ## See Also
 

@@ -47,6 +47,8 @@ class PromptMixin:
         noscm_seg = ""
         if not getattr(self, "_scm", None):
             noscm_seg = "<sep> </sep><noscm>[no-scm]</noscm>"
+        elif getattr(self, "_scm_manual", False):
+            noscm_seg = "<sep> </sep><noscm>[manual]</noscm>"
 
         # Attached marker — a warm SSH session to the active device exists
         # (2FA already completed); remote commands reuse it with no re-auth.

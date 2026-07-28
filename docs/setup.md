@@ -23,9 +23,11 @@ storing those credentials safely for your platform.
 |--------|---------|
 | An **SSH key file** | [SSH key setup](#ssh-key) |
 | A **password** | [SSH password setup](#ssh-password) |
+| Type it in each time | No setup needed — `connect` will prompt you |
 
-> **Tip:** Run `arc setup` in your terminal (before launching the ARC shell) for
-> a guided menu that detects your OS and links the wizard and per-OS guides.
+> **Tip:** You can skip upfront setup entirely — just run `arc` and type `scm login`
+> to enter credentials interactively. Choose to save them as a profile at the end,
+> or connect for the session only. Run `arc setup` for the full persistent wizard.
 
 ---
 
@@ -151,16 +153,29 @@ arc auth configure
 
 ---
 
-## SCM authentication is automatic
+## SCM authentication — automatic or on-demand
 
-There is no "log in to SCM" step. Once your service account (or bearer token) is
-configured, ARC mints a fresh token from the client-credentials endpoint
-automatically at startup and re-mints as needed — SCM has no interactive/browser
-login. Confirm it works with `arc auth test` (see
-[Verify your credentials](#verify-your-credentials)).
+**Saved profile:** Once credentials are saved (via `scm setup` or `arc setup scm
+keystore`), ARC authenticates to SCM automatically at startup using OAuth
+client-credentials — no interactive sign-in required. Confirm it works with
+`arc auth test`.
 
-> The in-shell `login` command is **not** for SCM — it opens an **SSH** session to
-> the device you've `cd`'d into (see `help login` / `help connect`).
+**On-demand (no saved profile):** ARC starts normally and shows a single info
+line. Type `scm login` inside the shell to enter credentials interactively.
+You can connect for the session only (credentials held in-memory, prompt shows
+`[manual]`), or save them as a persistent profile by answering `y` at the prompt.
+
+```
+arc:global [no-scm] > scm login
+
+SCM credentials  (no profiles configured yet)
+  Client ID     : pa-api-you@1234.iam.panserviceaccount.com
+  Client Secret : ****
+  TSG ID        : 1234567890
+
+  Save as a profile for future sessions? [y/N]: n
+✓ SCM connected  (session only — not saved)
+```
 
 Token endpoint (for reference): `POST /auth/v1/oauth2/access_token` — Client ID +
 Secret as HTTP Basic, `grant_type=client_credentials`, `scope=tsg_id:<TSG>`.
@@ -295,7 +310,7 @@ After `arc auth test` shows a green check, these are the high-value entry points
 | `arc gui-configure` | Browser settings console: authentication, credentials/keychain, theme, API sources, maintenance |
 | `feature gui-configure` | Browser feature editor: turn commands on/dev/hidden/off, areas, scope, aliases, built-ins |
 | `feature show` / `feature find <text>` | List/search every capability flag and the commands it gates |
-| `cd device <name>` → `login` | Select a device, then SSH into it (2FA may prompt) |
+| `cd device <name>` → `connect` | Select a device, then SSH into it (prompts for UN/PW if not stored) |
 | `show log traffic\|threat\|system` | Fleet logs from Strata Logging Service — no device context needed |
 | `clone <res> <src> <new>` | Duplicate any named object into the active container |
 | `cd snippet <name>` | Work inside an SCM snippet container instead of a folder |

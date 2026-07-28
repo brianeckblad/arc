@@ -18,15 +18,17 @@ anyone tired of clicking through the SCM web UI to change an address object.
 uv pip install -e .
 arc                      # or, without installing: python run.py
 
-# first run — credentials (stored in the OS keychain, never in files)
-arc auth configure       # wizard: client_id / client_secret / TSG / SSH
+# first run — arc starts even with no credentials configured
+# type `scm login` inside the shell to connect (session-only or save a profile)
+# or run the persistent wizard before launching:
+arc setup scm            # wizard: client_id / client_secret / TSG → stores in keychain
 arc auth test            # 5-step connectivity + auth diagnostic
-# or, inside the shell, type `setup` for the guided two-question wizard
 
 # build the offline browser docs portal (run once after install, and after `docs update`)
 arc cliup                # downloads vendor JS/CSS + bundles all docs → docs/index.html
 
 # first commands
+arc:global > scm login   # enter SCM credentials (prompts inline if no profile saved)
 arc:global > show devices
 arc:global > folder Production        # scope SCM calls to a folder
 arc:Production > show address

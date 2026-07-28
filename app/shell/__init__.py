@@ -77,6 +77,7 @@ class ArcShell(
 
         # Build clients
         self._scm: Optional[SCMClient] = None
+        self._scm_manual: bool = False   # True when scm login used session-only (unsaved) creds
         self._ssh = SSHManager()
 
         # Load CLI theme (colours for ? help, banner, etc.)
@@ -166,9 +167,8 @@ class ArcShell(
 
         if not self._scm:
             console.print(
-                "[red]✗[/red] [bold red]SCM not connected.[/bold red]  "
-                "Run [bold cyan]arc setup scm[/bold cyan] from your terminal for the credential "
-                "wizard, or [bold cyan]help configuration[/bold cyan] to read the setup steps.\n"
+                "[dim]ℹ  No SCM profile configured — run [bold]scm login[/bold] to connect "
+                "interactively, or [bold]arc setup scm[/bold] to save credentials.[/dim]\n"
             )
             return
 
